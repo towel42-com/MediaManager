@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>resources/rename.png</file>
+        <file>resources/open.png</file>
+    </qresource>
+</RCC>
