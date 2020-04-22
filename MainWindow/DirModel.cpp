@@ -75,7 +75,7 @@ void CDirModel::slotInputPatternChanged( const QString& inPattern )
     fInPattern.replace( "%T", "(?<title>.+)" );
 
     fInPatternRegExp.setPattern( fInPattern );
-    Q_ASSERT( fInPatternRegExp.isValid() );
+    //Q_ASSERT( fInPatternRegExp.isValid() );
     patternChanged();
 }
 

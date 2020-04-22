@@ -29,6 +29,7 @@
 #include <QSettings>
 #include <QFileInfo>
 #include <QFileDialog>
+#include <QCompleter>
 
 CMainWindow::CMainWindow( QWidget* parent )
     : QMainWindow( parent ),
@@ -39,6 +40,15 @@ CMainWindow::CMainWindow( QWidget* parent )
     (void)connect( fImpl->directory, &QLineEdit::textChanged, this, &CMainWindow::slotDirectoryChanged );
     (void)connect( fImpl->btnSelectDir, &QPushButton::clicked, this, &CMainWindow::slotSelectDirectory );
     (void)connect( fImpl->btnLoad, &QPushButton::clicked, this, &CMainWindow::slotLoad );
+
+    auto completer = new QCompleter( this );
+    auto fsModel = new QFileSystemModel( completer );
+    fsModel->setRootPath( "" );
+    completer->setModel( fsModel );
+    completer->setCompletionMode( QCompleter::PopupCompletion );
+    completer->setCaseSensitivity( Qt::CaseInsensitive );
+
+    fImpl->directory->setCompleter( completer );
 
     loadSettings();
 }
