@@ -56,9 +56,7 @@ INSTALL( CODE "
         MESSAGE( STATUS \"Installing to \${CMAKE_INSTALL_PREFIX}\" )
     " )
 
-add_custom_target( SABTests_SABUtils )
 add_subdirectory( SABUtils )
-add_subdirectory( SABUtils/UnitTests )
 add_subdirectory( MainWindow )
 add_subdirectory( main )
 
