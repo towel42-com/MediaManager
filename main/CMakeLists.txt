@@ -49,7 +49,7 @@ target_link_libraries( FileRenamer
                  MainWindow
           )
 DeployQt( FileRenamer . )
-DeploySystem( FileRenamer )
+DeploySystem( FileRenamer . )
 
 INSTALL( TARGETS ${PROJECT_NAME} RUNTIME DESTINATION . )
 INSTALL( FILES ${CMAKE_CURRENT_BINARY_DIR}/Debug/${PROJECT_NAME}.pdb DESTINATION . CONFIGURATIONS Debug )
