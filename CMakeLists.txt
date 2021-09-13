@@ -43,10 +43,9 @@ set_target_properties( gtest PROPERTIES FOLDER 3rdParty/google )
 set_target_properties( gtest_main PROPERTIES FOLDER 3rdParty/google )
 set_property( GLOBAL PROPERTY USE_FOLDERS ON )
 
-SET( CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/Install )
-IF( ${CMAKE_INSTALL_CONFIG_NAME} MATCHES "^( [Dd][Ee][Bb][Uu][Gg] )$" )
-    SET( CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}.debug )
-ENDIF(  )
+file( REAL_PATH ~/bin/FileRenamer CMAKE_INSTALL_PREFIX EXPAND_TILDE)
+
+#SET( CMAKE_INSTALL_PREFIX C:/Users/sbloom/bin/FileRenamer )
 
 INSTALL( CODE "
         MESSAGE( STATUS \"Making a \${CMAKE_INSTALL_CONFIG_NAME} install area\" )
