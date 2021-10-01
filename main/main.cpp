@@ -23,17 +23,16 @@
 #include "MainWindow/MainWindow.h"
 
 #include <QApplication>
-#include <QLabel>
 
 int main( int argc, char ** argv )
 {
+    Q_INIT_RESOURCE( application );
     QApplication appl( argc, argv );
     appl.setApplicationName( "File Renamer" );
     appl.setApplicationVersion( "0.9" );
     appl.setOrganizationName( "Scott Aron Bloom" );
     appl.setOrganizationDomain( "www.towel42.com" );
 
-    Q_INIT_RESOURCE( application );
     CMainWindow mainWindow;
     mainWindow.show();
     return appl.exec();

@@ -41,15 +41,16 @@ add_executable( FileRenamer WIN32
                 application.rc 
           )
 set_target_properties( FileRenamer PROPERTIES FOLDER Apps )
-          
+
 target_link_libraries( FileRenamer 
                  Qt5::Widgets
                  Qt5::Core
+                 Qt5::Multimedia
                  SABUtils
                  MainWindow
           )
 DeployQt( FileRenamer . )
-DeploySystem( FileRenamer )
+DeploySystem( FileRenamer . )
 
 INSTALL( TARGETS ${PROJECT_NAME} RUNTIME DESTINATION . )
 INSTALL( FILES ${CMAKE_CURRENT_BINARY_DIR}/Debug/${PROJECT_NAME}.pdb DESTINATION . CONFIGURATIONS Debug )
