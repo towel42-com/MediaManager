@@ -21,6 +21,14 @@
 // SOFTWARE.
 
 #include "DirModel.h"
+#include <QDebug>
+#include <QUrl>
+#include <QInputDialog>
+#include <QTextStream>
+#include <QCollator>
+#include <set>
+#include <list>
+
 CDirModel::CDirModel( QObject * parent /*= 0*/ ) : 
     QFileSystemModel( parent )
 {
@@ -62,19 +70,19 @@ int CDirModel::columnCount( const QModelIndex& parent ) const
     return retVal ? retVal + 1 : 0;
 }
 
+int CDirModel::rowCount( const QModelIndex& parent ) const
+{
+    if ( parent.data() == "#recycle" )
+    {
+        return 0;
+    }
+    return QFileSystemModel::rowCount( parent );
+}
+
 void CDirModel::slotInputPatternChanged( const QString& inPattern )
 {
-    fInPattern = inPattern;
-
-    //QRegularExpression regEx( "([\\^\\$\\.\\*\\+\\?\\|\\(\\)\\[\\]\\{\\}\\\\])" );
-    //fInPattern.replace( regEx, "\\\\1" );
-
-    fInPattern.replace( "%P", "(?<program>.+)" );
-    fInPattern.replace( "%S", "(?<season>\\d+)" );
-    fInPattern.replace( "%E", "(?<episode>\\d+)" );
-    fInPattern.replace( "%T", "(?<title>.+)" );
-
-    fInPatternRegExp.setPattern( fInPattern );
+	fInPattern = inPattern;
+	fInPatternRegExp.setPattern(fInPattern);
     //Q_ASSERT( fInPatternRegExp.isValid() );
     patternChanged();
 }
@@ -84,6 +92,52 @@ void CDirModel::slotOutputPatternChanged( const QString& outPattern )
     fOutPattern = outPattern;
     // need to emit datachanged on column 4 for all known indexes
     patternChanged();
+}
+
+// do not include <> in the capture name
+QString CDirModel::replaceCapture(const QString & captureName, const QString& returnPattern, const QString& value) const
+{
+    if (captureName.isEmpty())
+        return returnPattern;
+
+    // see if the capture name exists in the return pattern
+    auto capRegEx = QString("\\<%1\\>").arg(captureName);
+    auto regExp = QRegularExpression( capRegEx );
+
+	int start = -1;
+	int replLength = -1;
+	
+    auto match = regExp.match(returnPattern);
+    if (!match.hasMatch())
+        return returnPattern;
+    else
+    {
+        start = match.capturedStart(0);
+        replLength = match.capturedLength(0);
+    }
+
+    // its in there..now lets see if its optional
+    auto optRegExStr = QString("\\((?<replText>.*)\\)\\:%1").arg(capRegEx);
+    regExp = QRegularExpression( optRegExStr );
+    match = regExp.match(returnPattern);
+    bool optional = match.hasMatch();
+	QString replText = value;
+    if (optional)
+    {
+		start = match.capturedStart(0);
+		replLength = match.capturedLength(0);
+		
+        replText = match.captured("replText");
+        if (value.isEmpty())
+            replText.clear();
+        else
+        {
+            replText = replaceCapture(captureName, replText, value);;
+        }
+    }
+    auto retVal = returnPattern;
+    retVal.replace(start, replLength, replText);
+    return retVal;
 }
 
 std::pair< bool, QString > CDirModel::transformFile( const QModelIndex& idx ) const
@@ -118,10 +172,10 @@ std::pair< bool, QString > CDirModel::transformFile( const QModelIndex& idx ) co
             auto title = match.captured( "title" ).replace( '.', ' ' ).trimmed();
 
             retVal.second = fOutPattern;
-            retVal.second.replace( "%P", program );
-            retVal.second.replace( "%S", season );
-            retVal.second.replace( "%E", episode );
-            retVal.second.replace( "%T", title );
+            retVal.second = replaceCapture("program", retVal.second, program);
+            retVal.second = replaceCapture("season", retVal.second, season);
+            retVal.second = replaceCapture("episode", retVal.second, episode);
+            retVal.second = replaceCapture("title", retVal.second, title);
 
             retVal.second += "." + ext;
             retVal.first = true;
@@ -134,7 +188,94 @@ std::pair< bool, QString > CDirModel::transformFile( const QModelIndex& idx ) co
     return retVal;
 }
 
-std::pair< bool, QStringList > CDirModel::transform( const QModelIndex & idx, bool displayOnly )
+void CDirModel::saveM3U(QWidget* parent) const
+{
+    auto rootIndex = this->rootIndex();
+
+    auto baseName = QInputDialog::getText(parent, tr("Series Name"), tr("Name:"));
+    if (baseName.isEmpty())
+        return;
+
+    saveM3U(rootIndex, baseName);
+}
+
+QString CDirModel::saveM3U( const QModelIndex & parentIndex, const QString & baseName ) const
+{
+    if ( isDir(parentIndex) )
+    {
+        auto parentDir = fileInfo(parentIndex).absoluteDir();
+        std::list< QFileInfo > myMedia;
+        auto numRows = rowCount(parentIndex);
+        for (int ii = 0; ii < numRows; ++ii)
+        {
+            auto childIndex = index(ii, 0, parentIndex);
+            if (!childIndex.isValid())
+                continue;
+
+            if (isDir(childIndex))
+            {
+                auto childPlayList = saveM3U(childIndex, baseName);
+                if ( childPlayList.isEmpty() ) // no media files found
+                    continue;
+                myMedia.push_back(QFileInfo(childPlayList));;
+            }
+            else
+            {
+                auto suffix = fileInfo(childIndex).suffix();
+                std::set< QString > media = { "mkv", "mp4", "avi" };
+                if (media.find(suffix) == media.end())
+                    continue;
+                myMedia.push_back(fileInfo(childIndex));
+            }
+        }
+		if (!myMedia.empty())
+        {
+            qDebug() << myMedia;
+            myMedia.sort([](const QFileInfo& lhs, const QFileInfo& rhs)
+                {
+                    qDebug() << lhs << "vs" << rhs;
+                    if (lhs.isDir() == rhs.isDir())
+                    {
+						QCollator coll;
+						coll.setNumericMode(true);
+						coll.setIgnorePunctuation(true);
+						coll.setCaseSensitivity(Qt::CaseSensitivity::CaseInsensitive);
+                        if (lhs.absoluteDir() == rhs.absoluteDir())
+                            return coll.compare(lhs.absoluteFilePath(), rhs.absoluteFilePath()) < 0;
+                        else
+                            return coll.compare(lhs.absolutePath(), rhs.absolutePath()) < 0;
+
+                    }
+                    if (lhs.isDir())
+                        return false;
+                    return true;
+                } );
+			qDebug() << myMedia;
+			auto fi = fileInfo(parentIndex);
+			auto fn = QString("%1 - %2.m3u").arg(baseName).arg(fi.baseName());
+			if (baseName == fi.baseName())
+				fn = QString("%1.m3u").arg(baseName);
+			auto m3uPath = QDir(fi.absoluteFilePath()).absoluteFilePath(fn);
+			QFile file( m3uPath );
+            if (!file.open(QFile::WriteOnly | QFile::Text))
+                return QString();
+
+            QTextStream ts(&file);
+
+			for (auto&& ii : myMedia)
+			{
+				auto myPath = ii.absoluteFilePath();
+				auto myRelPath = QDir(fi.absoluteFilePath()).relativeFilePath(myPath);
+                ts << myRelPath << "\n";
+			}
+            return m3uPath;
+        }
+    }
+
+    return QString();
+}
+
+std::pair< bool, QStringList > CDirModel::transform( const QModelIndex & idx, bool displayOnly ) const
 {
     if ( !idx.isValid() )
         return std::make_pair( false, QStringList() );
@@ -211,4 +352,17 @@ void CDirModel::patternChanged( const QModelIndex & idx )
             patternChanged( childIndex );
         }
     }
+}
+
+CDirFilterModel::CDirFilterModel( QObject* parent /*= nullptr */ ) :
+    QSortFilterProxyModel( parent )
+{
+
+}
+
+bool CDirFilterModel::filterAcceptsRow( int sourceRow, const QModelIndex& parent ) const
+{
+    auto index = sourceModel()->index( sourceRow, 0, parent );
+    auto data = index.data().toString();
+    return data != "#recycle";
 }
