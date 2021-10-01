@@ -15,30 +15,10 @@
   </property>
   <property name="windowIcon">
    <iconset resource="application.qrc">
-    <normaloff>:/resources/rename.png</normaloff>:/resources/rename.png</iconset>
+    <normaloff>:/resources/open.png</normaloff>:/resources/open.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="4">
-     <spacer name="horizontalSpacer">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>343</width>
-        <height>20</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item row="2" column="1">
-     <widget class="QLineEdit" name="inPattern">
-      <property name="text">
-       <string>%P.S%SE%E</string>
-      </property>
-     </widget>
-    </item>
     <item row="0" column="2">
      <widget class="QToolButton" name="btnSelectDir">
       <property name="text">
@@ -50,6 +30,19 @@
       </property>
      </widget>
     </item>
+    <item row="2" column="1">
+     <widget class="QLineEdit" name="inPattern">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string>%P.S%SE%E</string>
+      </property>
+     </widget>
+    </item>
     <item row="0" column="3">
      <widget class="QPushButton" name="btnLoad">
       <property name="text">
@@ -57,22 +50,12 @@
       </property>
      </widget>
     </item>
-    <item row="0" column="0">
-     <widget class="QLabel" name="label">
+    <item row="1" column="0">
+     <widget class="QLabel" name="label_5">
       <property name="text">
-       <string>Directory:</string>
+       <string>Extensions:</string>
       </property>
      </widget>
-    </item>
-    <item row="3" column="1">
-     <widget class="QLineEdit" name="outPattern">
-      <property name="text">
-       <string>%P - S%SE%E</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="1">
-     <widget class="QLineEdit" name="directory"/>
     </item>
     <item row="3" column="0">
      <widget class="QLabel" name="label_4">
@@ -81,21 +64,17 @@
       </property>
      </widget>
     </item>
-    <item row="3" column="3">
-     <widget class="QPushButton" name="btnTransform">
+    <item row="4" column="0" colspan="6">
+     <widget class="QLabel" name="label_3">
       <property name="text">
-       <string>Transform</string>
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Use named capture groups , for the pattern (?&amp;lt;capturename&amp;gt;XXXXX) for the capture group, in the output use &amp;lt;capturename&amp;gt;&lt;/p&gt;&lt;p&gt;&amp;lt;program&amp;gt;: Program Title&lt;br/&gt;&amp;lt;season&amp;gt;: Season Number (Don't include S in captured text)&lt;br/&gt;&amp;lt;episode&amp;gt;: Episode Number (Don't Include E in captured text)&lt;br/&gt;&amp;lt;title&amp;gt;: Episode Title&lt;br/&gt;&lt;br/&gt;(XXXX):&amp;lt;capturename&amp;gt; sets XXX to replace capture group &amp;lt;capturename&amp;gt;&lt;br/&gt;&lt;br/&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="wordWrap">
+       <bool>true</bool>
       </property>
      </widget>
     </item>
-    <item row="2" column="0">
-     <widget class="QLabel" name="label_2">
-      <property name="text">
-       <string>Pattern:</string>
-      </property>
-     </widget>
-    </item>
-    <item row="5" column="0" colspan="5">
+    <item row="5" column="0" colspan="6">
      <widget class="QTreeView" name="files">
       <property name="editTriggers">
        <set>QAbstractItemView::NoEditTriggers</set>
@@ -108,28 +87,67 @@
       </property>
      </widget>
     </item>
-    <item row="1" column="0">
-     <widget class="QLabel" name="label_5">
+    <item row="2" column="0">
+     <widget class="QLabel" name="label_2">
       <property name="text">
-       <string>Extensions:</string>
+       <string>Pattern:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="0">
+     <widget class="QLabel" name="label">
+      <property name="text">
+       <string>Directory:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="1">
+     <widget class="QLineEdit" name="outPattern">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string>%P - S%SE%E</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QLineEdit" name="directory">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
       </property>
      </widget>
     </item>
     <item row="1" column="1">
      <widget class="QLineEdit" name="extensions">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
       <property name="text">
        <string>*.mkv;*.mp4;*.avi;*.idx;*.sub</string>
       </property>
      </widget>
     </item>
-    <item row="4" column="0" colspan="5">
-     <widget class="QLabel" name="label_3">
+    <item row="3" column="3">
+     <widget class="QPushButton" name="btnTransform">
       <property name="text">
-       <string>%P -&gt; Program Title
-%S -&gt; Season Number (Don't include S)
-%E -&gt; Episode Number (Don't Include E)
-%T -&gt; Episode Title
-</string>
+       <string>Transform</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="4">
+     <widget class="QPushButton" name="btnSaveM3U">
+      <property name="text">
+       <string>Save M3U</string>
       </property>
      </widget>
     </item>
@@ -141,7 +159,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -174,6 +192,7 @@
   <tabstop>inPattern</tabstop>
   <tabstop>outPattern</tabstop>
   <tabstop>btnTransform</tabstop>
+  <tabstop>btnSaveM3U</tabstop>
   <tabstop>files</tabstop>
  </tabstops>
  <resources>

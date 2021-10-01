@@ -25,26 +25,30 @@
 
 #include <QMainWindow>
 class CDirModel;
+class CDirFilterModel;
 namespace Ui {class CMainWindow;};
 
 class CMainWindow : public QMainWindow
 {
     Q_OBJECT
 public:
-    CMainWindow(QWidget *parent = 0);
+    CMainWindow(QWidget* parent = 0);
     ~CMainWindow();
 public Q_SLOTS:
     void slotSelectDirectory();
     void slotDirectoryChanged();
     void slotLoad();
-    void slotDirLoaded( const QString& dirName );
+    void slotDirLoaded(const QString& dirName);
     void slotTransform();
+    void slotSaveM3U();
+    void slotInputPatternChanged(const QString& inPattern);
 private:
     void loadSettings();
     void saveSettings();
     void loadDirectory();
-    void expandAll( const QModelIndex & idx );
-    CDirModel * fDirModel{ nullptr };
+
+    CDirModel* fDirModel{ nullptr };
+    CDirFilterModel* fDirFilterModel{ nullptr };
     std::unique_ptr< Ui::CMainWindow > fImpl;
 };
 
