@@ -20,12 +20,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-cmake_minimum_required(VERSION 3.2)
+cmake_minimum_required(VERSION 3.21)
 if(CMAKE_VERSION VERSION_LESS "3.7.0")
     set(CMAKE_INCLUDE_CURRENT_DIR ON)
 endif()
 
-project(FileRenamer) 
+project(root-FileRenamer) 
 
 SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/SABUtils/Modules ${CMAKE_MODULE_PATH})
 
@@ -44,15 +44,6 @@ set_target_properties( gtest_main PROPERTIES FOLDER 3rdParty/google )
 set_property( GLOBAL PROPERTY USE_FOLDERS ON )
 
 file( REAL_PATH ~/bin/FileRenamer CMAKE_INSTALL_PREFIX EXPAND_TILDE)
-#SET( CMAKE_INSTALL_PREFIX C:/Users/sbloom/bin/FileRenamer )
-
-INSTALL( CODE "
-        MESSAGE( STATUS \"Making a \${CMAKE_INSTALL_CONFIG_NAME} install area\" )
-        IF( \${CMAKE_INSTALL_CONFIG_NAME} MATCHES \"^([Dd][Ee][Bb][Uu][Gg])$\" )
-            SET( CMAKE_INSTALL_PREFIX \${CMAKE_INSTALL_PREFIX}.debug )
-        ENDIF(  )
-        MESSAGE( STATUS \"Installing to \${CMAKE_INSTALL_PREFIX}\" )
-    " )
 
 add_subdirectory( SABUtils )
 add_subdirectory( MainWindow )

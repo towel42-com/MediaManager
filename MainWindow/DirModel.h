@@ -31,48 +31,54 @@ class CDirModel : public QFileSystemModel
 {
     Q_OBJECT
 public:
-    CDirModel(QObject *parent = nullptr);
+    CDirModel( QObject *parent = nullptr );
     ~CDirModel();
-    virtual QVariant data( const QModelIndex & index, int role = Qt::DisplayRole ) const override;
+    virtual QVariant data( const QModelIndex &index, int role = Qt::DisplayRole ) const override;
     virtual QVariant headerData( int section, Qt::Orientation orientation, int role = Qt::DisplayRole ) const override;
-    virtual Qt::ItemFlags flags( const QModelIndex & idx ) const override;
-    virtual int columnCount( const QModelIndex & parent ) const override;
-    virtual int rowCount( const QModelIndex & parent ) const override;
+    virtual Qt::ItemFlags flags( const QModelIndex &idx ) const override;
+    virtual int columnCount( const QModelIndex &parent ) const override;
+    virtual int rowCount( const QModelIndex &parent ) const override;
 
     QModelIndex rootIndex() const;
 
-	std::pair< bool, QStringList > transform(bool displayOnly) const
+    std::pair< bool, QStringList > transform( bool displayOnly ) const
     {
-        return transform(rootIndex(), displayOnly);
+        return transform( rootIndex(), displayOnly );
     }
-    void saveM3U(QWidget* parent) const;
+    void saveM3U( QWidget *parent ) const;
 
 Q_SIGNALS:
 public Q_SLOTS:
-    void slotInputPatternChanged( const QString & inPattern );
-    void slotOutputPatternChanged( const QString& outPattern );
+    void slotInputPatternChanged( const QString &inPattern );
+    void slotOutputDirPatternChanged( const QString &outPattern );
+    void slotOutputFilePatternChanged( const QString &outPattern );
+    void slotTreatAsMovieChanged( bool treatAsMovie );
 private:
-	std::pair< bool, QStringList > transform(const QModelIndex& idx, bool displayOnly) const;
-    QString saveM3U(const QModelIndex& parentIndex, const QString & baseName ) const;
+    std::pair< bool, QStringList > transform( const QModelIndex &idx, bool displayOnly ) const;
+    QString saveM3U( const QModelIndex &parentIndex, const QString &baseName ) const;
+    bool isValidDirName( const QString &name ) const;
     void patternChanged();
-    void patternChanged( const QModelIndex& idx );
-    std::pair< bool, QString > transformFile( const QModelIndex& index ) const;
-    [[nodiscard]] QString replaceCapture(const QString& captureName, const QString & returnPattern, const QString& value) const;
+    void patternChanged( const QModelIndex &idx );
+    std::pair< bool, QString > transformItem( const QModelIndex &index ) const;
+    [[nodiscard]] QString replaceCapture( const QString &captureName, const QString &returnPattern, const QString &value ) const;
 
 
     QString fInPattern;
-    QString fOutPattern;
+    QString fOutFilePattern;
+    QString fOutDirPattern;
+    bool fTreatAsMovie{ false };
     QRegularExpression fInPatternRegExp;
     mutable std::map< QString, std::pair< bool, QString > > fFileMapping;
+    mutable std::map< QString, std::pair< bool, QString > > fDirMapping;
 };
 
 class CDirFilterModel : public QSortFilterProxyModel
 {
     Q_OBJECT
 public:
-    CDirFilterModel( QObject * parent = nullptr );
+    CDirFilterModel( QObject *parent = nullptr );
 
-    virtual bool filterAcceptsRow( int sourceRow, const QModelIndex& parent ) const override;
+    virtual bool filterAcceptsRow( int sourceRow, const QModelIndex &parent ) const override;
 };
 
 

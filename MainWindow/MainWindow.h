@@ -42,13 +42,19 @@ public Q_SLOTS:
     void slotTransform();
     void slotSaveM3U();
     void slotInputPatternChanged(const QString& inPattern);
+    void slotToggleTreatAsMovie();
+    void slotAboutToToggle();
 private:
+    QString getDefaultInPattern( bool forTV ) const;
+    QString getDefaultOutDirPattern( bool forTV ) const;
+    QString getDefaultOutFilePattern( bool forTV ) const;
     void loadSettings();
+    void loadPatterns();
     void saveSettings();
     void loadDirectory();
 
-    CDirModel* fDirModel{ nullptr };
-    CDirFilterModel* fDirFilterModel{ nullptr };
+    std::unique_ptr< CDirModel > fDirModel;
+    std::unique_ptr< CDirFilterModel > fDirFilterModel;
     std::unique_ptr< Ui::CMainWindow > fImpl;
 };
 

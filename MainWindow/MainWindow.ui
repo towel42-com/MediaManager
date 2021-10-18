@@ -19,19 +19,15 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="2">
-     <widget class="QToolButton" name="btnSelectDir">
+    <item row="0" column="0">
+     <widget class="QLabel" name="label">
       <property name="text">
-       <string>...</string>
-      </property>
-      <property name="icon">
-       <iconset resource="application.qrc">
-        <normaloff>:/resources/open.png</normaloff>:/resources/open.png</iconset>
+       <string>Directory:</string>
       </property>
      </widget>
     </item>
     <item row="2" column="1">
-     <widget class="QLineEdit" name="inPattern">
+     <widget class="QLineEdit" name="extensions">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
         <horstretch>0</horstretch>
@@ -39,42 +35,44 @@
        </sizepolicy>
       </property>
       <property name="text">
-       <string>%P.S%SE%E</string>
+       <string>*.mkv;*.mp4;*.avi;*.idx;*.sub</string>
       </property>
      </widget>
     </item>
-    <item row="0" column="3">
-     <widget class="QPushButton" name="btnLoad">
-      <property name="text">
-       <string>&amp;Load</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="0">
-     <widget class="QLabel" name="label_5">
-      <property name="text">
-       <string>Extensions:</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="0">
-     <widget class="QLabel" name="label_4">
-      <property name="text">
-       <string>Output:</string>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="0" colspan="6">
+    <item row="8" column="0" colspan="6">
      <widget class="QLabel" name="label_3">
       <property name="text">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Use named capture groups , for the pattern (?&amp;lt;capturename&amp;gt;XXXXX) for the capture group, in the output use &amp;lt;capturename&amp;gt;&lt;/p&gt;&lt;p&gt;&amp;lt;program&amp;gt;: Program Title&lt;br/&gt;&amp;lt;season&amp;gt;: Season Number (Don't include S in captured text)&lt;br/&gt;&amp;lt;episode&amp;gt;: Episode Number (Don't Include E in captured text)&lt;br/&gt;&amp;lt;title&amp;gt;: Episode Title&lt;br/&gt;&lt;br/&gt;(XXXX):&amp;lt;capturename&amp;gt; sets XXX to replace capture group &amp;lt;capturename&amp;gt;&lt;br/&gt;&lt;br/&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Use named capture groups , for the pattern (?&amp;lt;capturename&amp;gt;XXXXX) for the capture group, in the output use &amp;lt;capturename&amp;gt;&lt;/p&gt;&lt;p&gt;&amp;lt;program&amp;gt;: Program/Movie Title&lt;br/&gt;&amp;lt;year&amp;gt;: Release Year&lt;br/&gt;&amp;lt;tmdbid&amp;gt;: The Movie Database ID&lt;br/&gt;&amp;lt;season&amp;gt;: Season Number (Don't include S in captured text)&lt;br/&gt;&amp;lt;episode&amp;gt;: Episode Number (Don't Include E in captured text)&lt;br/&gt;&amp;lt;title&amp;gt;: Episode Title/Name&lt;br/&gt;&lt;br/&gt;(XXXX):&amp;lt;capturename&amp;gt; sets XXX to replace capture group &amp;lt;capturename&amp;gt;&lt;br/&gt;&lt;br/&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
       <property name="wordWrap">
        <bool>true</bool>
       </property>
      </widget>
     </item>
-    <item row="5" column="0" colspan="6">
+    <item row="7" column="1">
+     <widget class="QLineEdit" name="outFilePattern"/>
+    </item>
+    <item row="2" column="0">
+     <widget class="QLabel" name="label_5">
+      <property name="text">
+       <string>Extensions:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="6" column="1">
+     <widget class="QLineEdit" name="outDirPattern">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string>&lt;program&gt; - S&lt;season&gt;E&lt;episode&gt;( - &lt;title&gt;):&lt;title&gt;</string>
+      </property>
+     </widget>
+    </item>
+    <item row="9" column="0" colspan="6">
      <widget class="QTreeView" name="files">
       <property name="editTriggers">
        <set>QAbstractItemView::NoEditTriggers</set>
@@ -87,30 +85,17 @@
       </property>
      </widget>
     </item>
-    <item row="2" column="0">
-     <widget class="QLabel" name="label_2">
+    <item row="4" column="3">
+     <widget class="QPushButton" name="btnTransform">
       <property name="text">
-       <string>Pattern:</string>
+       <string>Transform</string>
       </property>
      </widget>
     </item>
-    <item row="0" column="0">
-     <widget class="QLabel" name="label">
+    <item row="6" column="0">
+     <widget class="QLabel" name="label_4">
       <property name="text">
-       <string>Directory:</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="1">
-     <widget class="QLineEdit" name="outPattern">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="text">
-       <string>%P - S%SE%E</string>
+       <string>Output Directory:</string>
       </property>
      </widget>
     </item>
@@ -124,8 +109,22 @@
       </property>
      </widget>
     </item>
-    <item row="1" column="1">
-     <widget class="QLineEdit" name="extensions">
+    <item row="4" column="0">
+     <widget class="QLabel" name="label_2">
+      <property name="text">
+       <string>Pattern:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="0" colspan="4">
+     <widget class="QCheckBox" name="treatAsMovie">
+      <property name="text">
+       <string>Treat as Movie? (Confirms TMDBID in the directory)</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="1">
+     <widget class="QLineEdit" name="inPattern">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
         <horstretch>0</horstretch>
@@ -133,21 +132,39 @@
        </sizepolicy>
       </property>
       <property name="text">
-       <string>*.mkv;*.mp4;*.avi;*.idx;*.sub</string>
+       <string>(?&lt;program&gt;.+)\\.([Ss](?&lt;season&gt;\\d+))([Ee](?&lt;episode&gt;\\d+))(\\.(?&lt;title&gt;.*))?\\.1080.*</string>
       </property>
      </widget>
     </item>
-    <item row="3" column="3">
-     <widget class="QPushButton" name="btnTransform">
+    <item row="0" column="4">
+     <widget class="QPushButton" name="btnLoad">
       <property name="text">
-       <string>Transform</string>
+       <string>&amp;Load</string>
       </property>
      </widget>
     </item>
-    <item row="3" column="4">
+    <item row="4" column="4">
      <widget class="QPushButton" name="btnSaveM3U">
       <property name="text">
        <string>Save M3U</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="3">
+     <widget class="QToolButton" name="btnSelectDir">
+      <property name="text">
+       <string>...</string>
+      </property>
+      <property name="icon">
+       <iconset resource="application.qrc">
+        <normaloff>:/resources/open.png</normaloff>:/resources/open.png</iconset>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="0">
+     <widget class="QLabel" name="label_6">
+      <property name="text">
+       <string>Output File:</string>
       </property>
      </widget>
     </item>
@@ -186,13 +203,10 @@
  </widget>
  <tabstops>
   <tabstop>directory</tabstop>
-  <tabstop>btnSelectDir</tabstop>
-  <tabstop>btnLoad</tabstop>
   <tabstop>extensions</tabstop>
+  <tabstop>treatAsMovie</tabstop>
   <tabstop>inPattern</tabstop>
-  <tabstop>outPattern</tabstop>
-  <tabstop>btnTransform</tabstop>
-  <tabstop>btnSaveM3U</tabstop>
+  <tabstop>outDirPattern</tabstop>
   <tabstop>files</tabstop>
  </tabstops>
  <resources>

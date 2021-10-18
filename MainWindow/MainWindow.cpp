@@ -38,12 +38,14 @@ CMainWindow::CMainWindow( QWidget* parent )
     fImpl( new Ui::CMainWindow )
 {
     fImpl->setupUi( this );
-    (void)connect( fImpl->directory, &QLineEdit::textChanged, this, &CMainWindow::slotDirectoryChanged );
-    (void)connect( fImpl->btnSelectDir, &QPushButton::clicked, this, &CMainWindow::slotSelectDirectory );
-    (void)connect( fImpl->btnLoad, &QPushButton::clicked, this, &CMainWindow::slotLoad );
-	(void)connect(fImpl->btnSaveM3U, &QPushButton::clicked, this, &CMainWindow::slotSaveM3U );
+    connect( fImpl->directory, &QLineEdit::textChanged, this, &CMainWindow::slotDirectoryChanged );
+    connect( fImpl->btnSelectDir, &QPushButton::clicked, this, &CMainWindow::slotSelectDirectory );
+    connect( fImpl->btnLoad, &QPushButton::clicked, this, &CMainWindow::slotLoad );
+    connect( fImpl->btnSaveM3U, &QPushButton::clicked, this, &CMainWindow::slotSaveM3U );
+    connect( fImpl->treatAsMovie, &QCheckBox::clicked, this, &CMainWindow::slotToggleTreatAsMovie );
+    connect( fImpl->treatAsMovie, &QCheckBox::pressed, this, &CMainWindow::slotAboutToToggle );
 
-    (void)connect(fImpl->inPattern, &QLineEdit::textChanged, this, &CMainWindow::slotInputPatternChanged);
+    connect( fImpl->inPattern, &QLineEdit::textChanged, this, &CMainWindow::slotInputPatternChanged );
 
     auto completer = new QCompleter( this );
     auto fsModel = new QFileSystemModel( completer );
@@ -62,20 +64,42 @@ CMainWindow::~CMainWindow()
     saveSettings();
 }
 
+QString CMainWindow::getDefaultInPattern( bool forMovies ) const
+{
+    if ( forMovies )
+        return "(?<program>.+)\\.(?<year>\\d{2,4})\\..*";
+    else
+        return "(?<program>.+)\\.([Ss](?<season>\\d+))([Ee](?<episode>\\d+))(\\.(?<title>.*))?\\.1080.*";
+}
+    
+
+QString CMainWindow::getDefaultOutDirPattern( bool forMovies ) const
+{
+    if ( forMovies )
+        return "<program> (<year>)( [tmdbid=<tmdbid>]):<tmdbid>";
+    else
+        return "";
+}
+
+QString CMainWindow::getDefaultOutFilePattern( bool forMovies ) const
+{
+    if ( forMovies )
+        return "<program>";
+    else
+        return "<program> - S<season>E<episode>( - <title>):<title>";
+}
+
 void CMainWindow::loadSettings()
 {
     QSettings settings;
 
     fImpl->directory->setText( settings.value( "Directory", QString() ).toString() );
     fImpl->extensions->setText( settings.value( "Extensions", QString( "*.mkv;*.mp4;*.avi;*.idx;*.sub;*.srt" ) ).toString() );
-                                                
-    auto currText = settings.value("InPattern", QString("(?<program>.+)\\.([Ss](?<season>\\d+))([Ee](?<episode>\\d+))(\\.(?<title>.*))?\\.1080.*") ).toString();
-    fImpl->inPattern->setText( currText );
 
-	currText = settings.value("OutPattern", QString("<program> - S<season>E<episode>( - <title>):<title>")).toString();
-    fImpl->outPattern->setText( currText );
+    fImpl->treatAsMovie->setChecked( settings.value( "TreatAsMovie", true ).toBool() );
 
     slotDirectoryChanged();
+    loadPatterns();
 }
 
 void CMainWindow::saveSettings()
@@ -84,8 +108,16 @@ void CMainWindow::saveSettings()
 
     settings.setValue( "Directory", fImpl->directory->text() );
     settings.setValue( "Extensions", fImpl->extensions->text() );
+    settings.setValue( "TreatAsMovie", fImpl->treatAsMovie->isChecked() );
+
+    if ( fImpl->treatAsMovie->isChecked() )
+        settings.beginGroup( "ForMovies" );
+    else
+        settings.beginGroup( "ForTV" );
+
     settings.setValue( "InPattern", fImpl->inPattern->text() );
-    settings.setValue( "OutPattern", fImpl->outPattern->text() );
+    settings.setValue( "OutFilePattern", fImpl->outFilePattern->text() );
+    settings.setValue( "OutDirPattern", fImpl->outDirPattern->text() );
 }
 
 void CMainWindow::slotDirectoryChanged()
@@ -93,7 +125,7 @@ void CMainWindow::slotDirectoryChanged()
     QFileInfo fi( fImpl->directory->text() );
     fImpl->btnLoad->setEnabled( !fImpl->directory->text().isEmpty() && fi.exists() && fi.isDir() );
     fImpl->btnTransform->setEnabled( false );
-	fImpl->btnSaveM3U->setEnabled(false);
+    fImpl->btnSaveM3U->setEnabled( false );
 }
 
 void CMainWindow::slotSelectDirectory()
@@ -103,54 +135,85 @@ void CMainWindow::slotSelectDirectory()
         fImpl->directory->setText( dir );
 }
 
-void CMainWindow::slotSaveM3U()
+void CMainWindow::slotAboutToToggle()
 {
-    fDirModel->saveM3U(this);
+    saveSettings();
 }
 
-void CMainWindow::slotInputPatternChanged(const QString& inPattern)
+void CMainWindow::slotToggleTreatAsMovie()
 {
-    if (fDirModel)
-        fDirModel->slotInputPatternChanged(inPattern);
+    loadPatterns();
+}
+
+void CMainWindow::loadPatterns()
+{
+    QSettings settings;
+    fImpl->outDirPattern->setEnabled( fImpl->treatAsMovie->isChecked() );
+
+    if ( fImpl->treatAsMovie->isChecked() )
+        settings.beginGroup( "ForMovies" );
+    else
+        settings.beginGroup( "ForTV" );
+
+    auto currText = settings.value( "InPattern", getDefaultInPattern( fImpl->treatAsMovie->isChecked() ) ).toString();
+    fImpl->inPattern->setText( currText );
+
+    currText = settings.value( "OutFilePattern", getDefaultOutFilePattern( fImpl->treatAsMovie->isChecked() ) ).toString();
+    fImpl->outFilePattern->setText( currText );
+
+    currText = settings.value( "OutDirPattern", getDefaultOutDirPattern( fImpl->treatAsMovie->isChecked() ) ).toString();
+    fImpl->outDirPattern->setText( currText );
+}
+
+void CMainWindow::slotSaveM3U()
+{
+    fDirModel->saveM3U( this );
+}
+
+void CMainWindow::slotInputPatternChanged( const QString& inPattern )
+{
+    if ( fDirModel )
+        fDirModel->slotInputPatternChanged( inPattern );
 }
 
 void CMainWindow::slotLoad()
 {
-	//QRegularExpression regExp(inPattern);
-	//if (!regExp.isValid())
-	//{
-	//	QMessageBox::critical(dynamic_cast<QWidget*>(parent()), tr("Invalid RegEx"), tr("Invalid regular expression: '%1").arg(inPattern));
-	//	return;
-	//}
+    //QRegularExpression regExp(inPattern);
+    //if (!regExp.isValid())
+    //{
+    //	QMessageBox::critical(dynamic_cast<QWidget*>(parent()), tr("Invalid RegEx"), tr("Invalid regular expression: '%1").arg(inPattern));
+    //	return;
+    //}
     loadDirectory();
 }
 
 void CMainWindow::loadDirectory()
 {
-    if ( !fDirModel )
-    {
-        fDirModel = new CDirModel( this );
-        //fDirFilterModel = new CDirFilterModel( this );
-        //fDirFilterModel->setSourceModel( fDirModel );
-        fImpl->files->setModel( fDirModel );
-        fDirModel->setReadOnly( true );
-        fDirModel->setFilter( QDir::AllDirs | QDir::Files | QDir::NoDotAndDotDot );
-        fDirModel->setNameFilterDisables( false );
-        (void)connect( fDirModel, &QFileSystemModel::directoryLoaded, this, &CMainWindow::slotDirLoaded );
-        (void)connect( fImpl->outPattern, &QLineEdit::textChanged, fDirModel, &CDirModel::slotOutputPatternChanged );
-        (void)connect( fImpl->btnTransform, &QPushButton::clicked, this, &CMainWindow::slotTransform );
-    }
+    fDirModel.reset( new CDirModel );
+    fDirFilterModel.reset( new CDirFilterModel );
+
+    fDirFilterModel->setSourceModel( fDirModel.get() );
+    fImpl->files->setModel( fDirModel.get() );
+    fDirModel->setReadOnly( true );
+    fDirModel->setFilter( QDir::AllDirs | QDir::Files | QDir::NoDotAndDotDot );
+    fDirModel->setNameFilterDisables( false );
+    connect( fDirModel.get(), &QFileSystemModel::directoryLoaded, this, &CMainWindow::slotDirLoaded );
+    connect( fImpl->outFilePattern, &QLineEdit::textChanged, fDirModel.get(), &CDirModel::slotOutputFilePatternChanged );
+    connect( fImpl->outDirPattern, &QLineEdit::textChanged, fDirModel.get(), &CDirModel::slotOutputDirPatternChanged );
+    connect( fImpl->btnTransform, &QPushButton::clicked, this, &CMainWindow::slotTransform );
 
     fDirModel->slotInputPatternChanged( fImpl->inPattern->text() );
-    fDirModel->slotOutputPatternChanged( fImpl->outPattern->text() );
+    fDirModel->slotOutputFilePatternChanged( fImpl->outFilePattern->text() );
+    fDirModel->slotOutputDirPatternChanged( fImpl->outDirPattern->text() );
+    fDirModel->slotTreatAsMovieChanged( fImpl->treatAsMovie->isChecked() );
     fDirModel->setNameFilters( fImpl->extensions->text().split( ";" ) );
     fDirModel->setRootPath( fImpl->directory->text() );
     fImpl->files->setRootIndex( fDirModel->index( fImpl->directory->text() ) );
     fImpl->btnTransform->setEnabled( true );
-    fImpl->btnSaveM3U->setEnabled(true);
+    fImpl->btnSaveM3U->setEnabled( true );
 }
 
-void CMainWindow::slotDirLoaded( const QString & dirName )
+void CMainWindow::slotDirLoaded( const QString& dirName )
 {
     auto idx = fDirModel->index( dirName );
     Q_ASSERT( idx.isValid() );
