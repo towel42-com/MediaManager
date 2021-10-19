@@ -22,6 +22,8 @@
 
 #include "MainWindow.h"
 #include "DirModel.h"
+#include "SelectTMDB.h"
+
 #include "SABUtils/utils.h"
 #include "SABUtils/ScrollMessageBox.h"
 #include "ui_MainWindow.h"
@@ -46,6 +48,7 @@ CMainWindow::CMainWindow( QWidget* parent )
     connect( fImpl->treatAsMovie, &QCheckBox::pressed, this, &CMainWindow::slotAboutToToggle );
 
     connect( fImpl->inPattern, &QLineEdit::textChanged, this, &CMainWindow::slotInputPatternChanged );
+    connect( fImpl->files, &QTreeView::doubleClicked, this, &CMainWindow::slotDoubleClicked );
 
     auto completer = new QCompleter( this );
     auto fsModel = new QFileSystemModel( completer );
@@ -55,6 +58,7 @@ CMainWindow::CMainWindow( QWidget* parent )
     completer->setCaseSensitivity( Qt::CaseInsensitive );
 
     fImpl->directory->setCompleter( completer );
+    fImpl->files->setExpandsOnDoubleClick( false );
 
     loadSettings();
 }
@@ -140,6 +144,40 @@ void CMainWindow::slotAboutToToggle()
     saveSettings();
 }
 
+bool CMainWindow::isDir( const QModelIndex &idx ) const
+{
+    if ( idx.model() == fDirModel.get() )
+        return fDirModel->isDir( idx );
+    else if ( idx.model() == fDirFilterModel.get() )
+    {
+        return isDir( dynamic_cast<const CDirFilterModel *>( idx.model() )->mapToSource( idx ) );
+    }
+    return false;
+    
+}
+void CMainWindow::slotDoubleClicked( const QModelIndex &idx )
+{
+    if ( !isDir( idx ) )
+        return;
+    QModelIndex sourceIdx = idx;
+    auto model = idx.model();
+    if ( sourceIdx.model() == fDirFilterModel.get() )
+    {
+        sourceIdx = dynamic_cast<const CDirFilterModel *>( model )->mapToSource( idx );
+        model = dynamic_cast<const CDirFilterModel *>( model )->sourceModel();
+    }
+
+    auto nm = model->index( sourceIdx.row(), 4, idx.parent() ).data().toString();
+    CSelectTMDB dlg( nm, this );
+    if ( dlg.exec() == QDialog::Accepted )
+    {
+        auto tmdbid = dlg.getSelectedID();
+        if ( tmdbid.isEmpty() )
+            return;
+
+        dynamic_cast< CDirModel * >( const_cast< QAbstractItemModel * >( model ) )->setTMDBID( sourceIdx, tmdbid );
+    }
+}
 void CMainWindow::slotToggleTreatAsMovie()
 {
     loadPatterns();

@@ -36,16 +36,17 @@ find_package(Qt5 COMPONENTS Core Widgets Multimedia REQUIRED)
 find_package(Deploy REQUIRED)
 find_package(AddUnitTest REQUIRED)
 option( gtest_force_shared_crt "Use shared ( DLL ) run-time lib even when Google Test is built as static lib." ON ) 
-add_subdirectory( ${CMAKE_SOURCE_DIR}/googletest ) 
-set_target_properties( gmock PROPERTIES FOLDER 3rdParty/google  )
-set_target_properties( gmock_main PROPERTIES FOLDER 3rdParty/google )
-set_target_properties( gtest PROPERTIES FOLDER 3rdParty/google )
-set_target_properties( gtest_main PROPERTIES FOLDER 3rdParty/google )
+
 set_property( GLOBAL PROPERTY USE_FOLDERS ON )
 
 file( REAL_PATH ~/bin/FileRenamer CMAKE_INSTALL_PREFIX EXPAND_TILDE)
 
 add_subdirectory( SABUtils )
+add_subdirectory( SABUtils/googletest )
+set_target_properties( gmock PROPERTIES FOLDER 3rdParty/google  )
+set_target_properties( gmock_main PROPERTIES FOLDER 3rdParty/google )
+set_target_properties( gtest PROPERTIES FOLDER 3rdParty/google )
+set_target_properties( gtest_main PROPERTIES FOLDER 3rdParty/google )
 add_subdirectory( MainWindow )
 add_subdirectory( main )
 

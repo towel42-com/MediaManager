@@ -167,11 +167,12 @@ std::pair< bool, QString > CDirModel::transformItem( const QModelIndex &idx ) co
 {
     auto fnIdx = this->index( idx.row(), 0, idx.parent() );
     auto fileName = fnIdx.data().toString();
+    auto filePath = fileInfo( fnIdx ).absoluteFilePath();
 
     if ( !fInPatternRegExp.isValid() )
         return std::make_pair( false, tr( "<INVALID INPUT REGEX>" ) );
 
-    auto pos = isDir( idx ) ? fDirMapping.find( fileName ) : fFileMapping.find( fileName );
+    auto pos = isDir( idx ) ? fDirMapping.find( filePath ) : fFileMapping.find( filePath );
     auto retVal = std::make_pair( false, QString() );
 
     if ( pos == ( isDir( idx ) ? fDirMapping.end() : fFileMapping.end() ) )
@@ -198,6 +199,11 @@ std::pair< bool, QString > CDirModel::transformItem( const QModelIndex &idx ) co
             auto program = NStringUtils::transformTitle( match.captured( "program" ) );
             auto year = match.captured( "year" ).trimmed();
             auto tmdbid = match.captured( "tmdbid" ).trimmed();
+            auto pos = fTMDBMapping.find( filePath );
+            if ( pos != fTMDBMapping.end() )
+            {
+                tmdbid = ( *pos ).second;
+            }
             auto season = match.captured( "season" ).trimmed();
             auto episode = match.captured( "episode" ).trimmed();
             auto title = NStringUtils::transformTitle( match.captured( "title" ) );
@@ -216,9 +222,9 @@ std::pair< bool, QString > CDirModel::transformItem( const QModelIndex &idx ) co
         }
 
         if ( isDir( idx ) )
-            fDirMapping[fileName] = retVal;
+            fDirMapping[filePath] = retVal;
         else
-            fFileMapping[fileName] = retVal;
+            fFileMapping[filePath] = retVal;
     }
     else
         retVal = ( *pos ).second;
@@ -313,14 +319,41 @@ QString CDirModel::saveM3U( const QModelIndex &parentIndex, const QString &baseN
     return QString();
 }
 
+void CDirModel::setTMDBID( const QModelIndex &idx, const QString &tmdbid )
+{
+    if ( !idx.isValid() )
+        return;
+    if ( !isDir( idx ) )
+        return;
+
+    auto fi = fileInfo( idx );
+    fTMDBMapping[fi.absoluteFilePath()] = tmdbid;
+    fDirMapping.erase( fi.absoluteFilePath() );
+    emit dataChanged( idx, idx );
+}
+
 std::pair< bool, QStringList > CDirModel::transform( const QModelIndex &idx, bool displayOnly ) const
 {
     if ( !idx.isValid() )
         return std::make_pair( false, QStringList() );
 
     QStringList retVal;
+    auto numRows = rowCount( idx );
+    for ( int ii = 0; ii < numRows; ++ii )
+    {
+        auto childIndex = index( ii, 0, idx );
+        if ( childIndex.isValid() )
+        {
+            auto sub = transform( childIndex, displayOnly );
+            if ( sub.first )
+                retVal << sub.second;
+            else
+                return sub;
+        }
+    }
+
     auto newFile = transformItem( idx );
-    if ( !isDir( idx ) && newFile.first )
+    if ( newFile.first )
     {
         retVal << QString( "'%1' => '%2'" ).arg( idx.data().toString() ).arg( newFile.second );
         if ( !displayOnly )
@@ -346,19 +379,6 @@ std::pair< bool, QStringList > CDirModel::transform( const QModelIndex &idx, boo
         }
     }
 
-    auto numRows = rowCount( idx );
-    for ( int ii = 0; ii < numRows; ++ii )
-    {
-        auto childIndex = index( ii, 0, idx );
-        if ( childIndex.isValid() )
-        {
-            auto sub = transform( childIndex, displayOnly );
-            if ( sub.first )
-                retVal << sub.second;
-            else
-                return sub;
-        }
-    }
     return std::make_pair( true, retVal );
 }
 

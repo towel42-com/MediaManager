@@ -46,7 +46,7 @@ public:
         return transform( rootIndex(), displayOnly );
     }
     void saveM3U( QWidget *parent ) const;
-
+    void setTMDBID( const QModelIndex &idx, const QString & tmdbid );
 Q_SIGNALS:
 public Q_SLOTS:
     void slotInputPatternChanged( const QString &inPattern );
@@ -70,6 +70,7 @@ private:
     QRegularExpression fInPatternRegExp;
     mutable std::map< QString, std::pair< bool, QString > > fFileMapping;
     mutable std::map< QString, std::pair< bool, QString > > fDirMapping;
+    std::map< QString, QString > fTMDBMapping;
 };
 
 class CDirFilterModel : public QSortFilterProxyModel

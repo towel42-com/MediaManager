@@ -44,10 +44,13 @@ public Q_SLOTS:
     void slotInputPatternChanged(const QString& inPattern);
     void slotToggleTreatAsMovie();
     void slotAboutToToggle();
+    void slotDoubleClicked( const QModelIndex &idx );
 private:
     QString getDefaultInPattern( bool forTV ) const;
     QString getDefaultOutDirPattern( bool forTV ) const;
     QString getDefaultOutFilePattern( bool forTV ) const;
+    bool isDir( const QModelIndex &idx ) const;
+    
     void loadSettings();
     void loadPatterns();
     void saveSettings();

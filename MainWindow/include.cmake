@@ -23,11 +23,13 @@
 set(qtproject_SRCS
     MainWindow.cpp
     DirModel.cpp
+    SelectTMDB.cpp
 )
 
 set(qtproject_H
     MainWindow.h
     DirModel.h
+    SelectTMDB.h
 )
 
 set(project_H
@@ -35,6 +37,7 @@ set(project_H
 
 set(qtproject_UIS
     MainWindow.ui
+    SelectTMDB.ui
 )
 
 set(qtproject_QRC
