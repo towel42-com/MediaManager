@@ -29,6 +29,7 @@
 #include <QCollator>
 #include <set>
 #include <list>
+#include "SABUtils/QtUtils.h"
 
 CDirModel::CDirModel( QObject *parent /*= 0*/ ) :
     QFileSystemModel( parent )
@@ -191,30 +192,37 @@ std::pair< bool, QString > CDirModel::transformItem( const QModelIndex &idx ) co
             }
         }
 
+        auto pos = fTitleInfoMapping.find( filePath );
         auto match = fInPatternRegExp.match( fn );
-        if ( !match.hasMatch() )
+        if ( ( pos == fTitleInfoMapping.end() ) && ( !match.hasMatch() ) )
             retVal.second = "<NOMATCH>";
         else
         {
-            auto program = NStringUtils::transformTitle( match.captured( "program" ) );
+            auto title = NStringUtils::transformTitle( match.captured( "title" ) );
             auto year = match.captured( "year" ).trimmed();
             auto tmdbid = match.captured( "tmdbid" ).trimmed();
-            auto pos = fTMDBMapping.find( filePath );
-            if ( pos != fTMDBMapping.end() )
-            {
-                tmdbid = ( *pos ).second;
-            }
             auto season = match.captured( "season" ).trimmed();
             auto episode = match.captured( "episode" ).trimmed();
-            auto title = NStringUtils::transformTitle( match.captured( "title" ) );
+            auto episodeTitle = NStringUtils::transformTitle( match.captured( "episode_title" ) );
+
+            QString extraInfo;
+            if ( pos != fTitleInfoMapping.end() )
+            {
+                title = (*pos).second->getTitle();
+                year = ( *pos ).second->getYear();
+                tmdbid = ( *pos ).second->fTMDBID;
+                season = ( *pos ).second->fSeason;
+                extraInfo = ( *pos ).second->fExtraInfo;
+            }
 
             retVal.second = isDir( idx ) ? fOutDirPattern : fOutFilePattern;
-            retVal.second = replaceCapture( "program", retVal.second, program );
+            retVal.second = replaceCapture( "title", retVal.second, title );
             retVal.second = replaceCapture( "year", retVal.second, year );
             retVal.second = replaceCapture( "tmdbid", retVal.second, tmdbid );
             retVal.second = replaceCapture( "season", retVal.second, season );
             retVal.second = replaceCapture( "episode", retVal.second, episode );
-            retVal.second = replaceCapture( "title", retVal.second, title );
+            retVal.second = replaceCapture( "episode_title", retVal.second, title );
+            retVal.second = replaceCapture( "extra_info", retVal.second, extraInfo );
 
             if ( !isDir( idx ) )
                 retVal.second += "." + ext;
@@ -319,7 +327,7 @@ QString CDirModel::saveM3U( const QModelIndex &parentIndex, const QString &baseN
     return QString();
 }
 
-void CDirModel::setTMDBID( const QModelIndex &idx, const QString &tmdbid )
+void CDirModel::setTitleInfo( const QModelIndex &idx, std::shared_ptr< STitleInfo > titleInfo )
 {
     if ( !idx.isValid() )
         return;
@@ -327,9 +335,23 @@ void CDirModel::setTMDBID( const QModelIndex &idx, const QString &tmdbid )
         return;
 
     auto fi = fileInfo( idx );
-    fTMDBMapping[fi.absoluteFilePath()] = tmdbid;
+    fTitleInfoMapping[fi.absoluteFilePath()] = titleInfo;
     fDirMapping.erase( fi.absoluteFilePath() );
     emit dataChanged( idx, idx );
+}
+
+std::shared_ptr< STitleInfo > CDirModel::getTitleInfo( const QModelIndex &idx ) const
+{
+    if ( !idx.isValid() )
+        return {};
+    if ( !isDir( idx ) )
+        return {};
+
+    auto fi = fileInfo( idx );
+    auto pos = fTitleInfoMapping.find( fi.absoluteFilePath() );
+    if ( pos == fTitleInfoMapping.end() )
+        return {};
+    return ( *pos ).second;
 }
 
 std::pair< bool, QStringList > CDirModel::transform( const QModelIndex &idx, bool displayOnly ) const
@@ -422,5 +444,23 @@ bool CDirFilterModel::filterAcceptsRow( int sourceRow, const QModelIndex &parent
 {
     auto index = sourceModel()->index( sourceRow, 0, parent );
     auto data = index.data().toString();
-    return data != "#recycle";
+    return data != "#recycle" && data != "Subs";
+}
+
+QString STitleInfo::getTitle() const
+{
+    return NStringUtils::transformTitle( fTitle );
+}
+
+QString STitleInfo::getYear() const
+{
+    auto dt = NQtUtils::findDate( fReleaseDate );
+    if ( !dt.isValid() )
+        return QString();
+    return QString::number( dt.year() );
+}
+
+QString STitleInfo::getEpisodeTitle() const
+{
+    return NStringUtils::transformTitle( fEpisodeTitle );
 }

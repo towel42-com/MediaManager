@@ -27,6 +27,8 @@
 #include <QStringList>
 #include <QDate>
 #include <optional>
+#include <memory>
+
 namespace Ui {class CSelectTMDB;};
 
 class QNetworkAccessManager;
@@ -34,18 +36,26 @@ class QNetworkReply;
 class QJsonObject;
 class QTreeWidgetItem;
 class CButtonEnabler;
+struct STitleInfo;
+
 class CSelectTMDB : public QDialog
 {
     Q_OBJECT
 public:
-    CSelectTMDB( const QString & searchText, QWidget* parent = 0);
+    CSelectTMDB( const QString & searchText, std::shared_ptr< STitleInfo > titleInfo, QWidget* parent = 0);
+
+    void reset();
+
     ~CSelectTMDB();
+
+    std::shared_ptr< STitleInfo > getTitleInfo() const;
+
 public Q_SLOTS:
     void slotSearchTextChanged();
     void slotRequestFinished( QNetworkReply *reply );
 
     void slotGetConfig();
-    QString getSelectedID() const;
+    void slotSelectionChanged();
 private:
     bool hasConfiguration() const;
 
@@ -53,14 +63,13 @@ private:
     void loadSearchResult( const QJsonObject &resultItem );
     void loadConfig();
     void loadImageResults( QNetworkReply *reply );
-
-    QDate findDate( const QString & releaseDate ) const;
-    QDate findDate( const QString & string, const QStringList & aFormats, const QStringList & bFormats, const QStringList & cFormats ) const;
+    void loadMovieResult();
 
     std::unique_ptr< Ui::CSelectTMDB > fImpl;
     QNetworkAccessManager *fManager{ nullptr };
     QNetworkReply *fConfigReply{ nullptr };
     QNetworkReply *fSearchReply{ nullptr };
+    QNetworkReply *fGetMovieReply{ nullptr };
     std::optional< QString > fConfiguration;
     std::map< QNetworkReply *, QTreeWidgetItem * > fImageInfoReplies;
     CButtonEnabler *fButtonEnabler{ nullptr };

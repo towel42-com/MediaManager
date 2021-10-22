@@ -26,7 +26,25 @@
 #include <QFileSystemModel>
 #include <QRegularExpression>
 #include <QSortFilterProxyModel>
+#include <memory>
 class QMediaPlaylist;
+struct STitleInfo
+{
+    QString getTitle() const;
+    QString getYear() const;
+    QString getEpisodeTitle() const;
+
+    QString fTitle;
+    QString fReleaseDate;
+    QString fTMDBID;
+    QString fSeason;
+    QString fEpisode;
+    QString fEpisodeTitle;
+    QString fExtraInfo;
+
+    bool fIsMovie{ true };
+};
+
 class CDirModel : public QFileSystemModel
 {
     Q_OBJECT
@@ -46,7 +64,8 @@ public:
         return transform( rootIndex(), displayOnly );
     }
     void saveM3U( QWidget *parent ) const;
-    void setTMDBID( const QModelIndex &idx, const QString & tmdbid );
+    void setTitleInfo( const QModelIndex &idx, std::shared_ptr< STitleInfo > info );
+    std::shared_ptr< STitleInfo > getTitleInfo( const QModelIndex &idx ) const;
 Q_SIGNALS:
 public Q_SLOTS:
     void slotInputPatternChanged( const QString &inPattern );
@@ -70,7 +89,7 @@ private:
     QRegularExpression fInPatternRegExp;
     mutable std::map< QString, std::pair< bool, QString > > fFileMapping;
     mutable std::map< QString, std::pair< bool, QString > > fDirMapping;
-    std::map< QString, QString > fTMDBMapping;
+    std::map< QString, std::shared_ptr< STitleInfo > > fTitleInfoMapping;
 };
 
 class CDirFilterModel : public QSortFilterProxyModel

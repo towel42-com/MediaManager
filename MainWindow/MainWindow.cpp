@@ -71,16 +71,16 @@ CMainWindow::~CMainWindow()
 QString CMainWindow::getDefaultInPattern( bool forMovies ) const
 {
     if ( forMovies )
-        return "(?<program>.+)\\.(?<year>\\d{2,4})\\..*";
+        return "(?<title>.+)\\.(?<year>\\d{2,4})\\..*";
     else
-        return "(?<program>.+)\\.([Ss](?<season>\\d+))([Ee](?<episode>\\d+))(\\.(?<title>.*))?\\.1080.*";
+        return "(?<title>.+)\\.([Ss](?<season>\\d+))([Ee](?<episode>\\d+))(\\.(?<episode_title>.*))?\\.1080.*";
 }
     
 
 QString CMainWindow::getDefaultOutDirPattern( bool forMovies ) const
 {
     if ( forMovies )
-        return "<program> (<year>)( [tmdbid=<tmdbid>]):<tmdbid>";
+        return "<title> (<year>)( [tmdbid=<tmdbid>]):<tmdbid>( - <extra_info>):<extra_info>";
     else
         return "";
 }
@@ -88,9 +88,9 @@ QString CMainWindow::getDefaultOutDirPattern( bool forMovies ) const
 QString CMainWindow::getDefaultOutFilePattern( bool forMovies ) const
 {
     if ( forMovies )
-        return "<program>";
+        return "<title>";
     else
-        return "<program> - S<season>E<episode>( - <title>):<title>";
+        return "<title> - S<season>E<episode>( - <episode_title>):<episode_title>";
 }
 
 void CMainWindow::loadSettings()
@@ -167,15 +167,19 @@ void CMainWindow::slotDoubleClicked( const QModelIndex &idx )
         model = dynamic_cast<const CDirFilterModel *>( model )->sourceModel();
     }
 
-    auto nm = model->index( sourceIdx.row(), 4, idx.parent() ).data().toString();
-    CSelectTMDB dlg( nm, this );
+    auto dirModel = dynamic_cast<CDirModel *>( const_cast<QAbstractItemModel *>( model ) );
+
+    auto titleInfo = dirModel->getTitleInfo( sourceIdx );
+    
+    auto nm = dirModel->index( sourceIdx.row(), 4, idx.parent() ).data().toString();
+    CSelectTMDB dlg( nm, titleInfo, this );
     if ( dlg.exec() == QDialog::Accepted )
     {
-        auto tmdbid = dlg.getSelectedID();
-        if ( tmdbid.isEmpty() )
+        auto titleInfo = dlg.getTitleInfo();
+        if ( titleInfo->getTitle().isEmpty() )
             return;
 
-        dynamic_cast< CDirModel * >( const_cast< QAbstractItemModel * >( model ) )->setTMDBID( sourceIdx, tmdbid );
+        dirModel->setTitleInfo( sourceIdx, titleInfo );
     }
 }
 void CMainWindow::slotToggleTreatAsMovie()

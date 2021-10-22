@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>502</width>
+    <height>533</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,36 +15,83 @@
   </property>
   <layout class="QFormLayout" name="formLayout">
    <item row="0" column="0">
-    <widget class="QLabel" name="label">
+    <widget class="QRadioButton" name="byName">
      <property name="text">
       <string>Search Name:</string>
      </property>
     </widget>
    </item>
    <item row="0" column="1">
-    <widget class="QLineEdit" name="searchText"/>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="CDelayLineEdit" name="searchText"/>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Release Year:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="CDelayLineEdit" name="releaseYear"/>
+     </item>
+    </layout>
    </item>
    <item row="1" column="0">
-    <widget class="QLabel" name="label_2">
+    <widget class="QRadioButton" name="byTMDBID">
      <property name="text">
-      <string>Release Year:</string>
+      <string>TMDB ID:</string>
      </property>
     </widget>
    </item>
    <item row="1" column="1">
-    <widget class="QLineEdit" name="releaseYear"/>
+    <widget class="CDelayLineEdit" name="tmdbid"/>
    </item>
-   <item row="2" column="0">
+   <item row="2" column="0" colspan="2">
+    <widget class="QTreeWidget" name="results">
+     <column>
+      <property name="text">
+       <string notr="true">1</string>
+      </property>
+     </column>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="label_4">
+     <property name="text">
+      <string>Title:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1">
+    <widget class="QLineEdit" name="resultTitle"/>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Release Date:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1">
+    <widget class="QLineEdit" name="resultReleaseDate"/>
+   </item>
+   <item row="5" column="0">
     <widget class="QLabel" name="label_3">
      <property name="text">
       <string>TMDB ID:</string>
      </property>
     </widget>
    </item>
-   <item row="2" column="1">
-    <widget class="QLineEdit" name="tmdbid"/>
+   <item row="6" column="0">
+    <widget class="QLabel" name="label_6">
+     <property name="text">
+      <string>Extra Info</string>
+     </property>
+    </widget>
    </item>
-   <item row="4" column="0" colspan="2">
+   <item row="7" column="0" colspan="2">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -54,17 +101,21 @@
      </property>
     </widget>
    </item>
-   <item row="3" column="0" colspan="2">
-    <widget class="QTreeWidget" name="results">
-     <column>
-      <property name="text">
-       <string notr="true">1</string>
-      </property>
-     </column>
-    </widget>
+   <item row="5" column="1">
+    <widget class="QLineEdit" name="resultTMDBID"/>
+   </item>
+   <item row="6" column="1">
+    <widget class="QLineEdit" name="resultExtraInfo"/>
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>CDelayLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>SABUtils/DelayLineEdit.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections>
   <connection>

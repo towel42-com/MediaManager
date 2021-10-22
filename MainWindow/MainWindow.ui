@@ -42,7 +42,7 @@
     <item row="8" column="0" colspan="6">
      <widget class="QLabel" name="label_3">
       <property name="text">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Use named capture groups , for the pattern (?&amp;lt;capturename&amp;gt;XXXXX) for the capture group, in the output use &amp;lt;capturename&amp;gt;&lt;/p&gt;&lt;p&gt;&amp;lt;program&amp;gt;: Program/Movie Title&lt;br/&gt;&amp;lt;year&amp;gt;: Release Year&lt;br/&gt;&amp;lt;tmdbid&amp;gt;: The Movie Database ID&lt;br/&gt;&amp;lt;season&amp;gt;: Season Number (Don't include S in captured text)&lt;br/&gt;&amp;lt;episode&amp;gt;: Episode Number (Don't Include E in captured text)&lt;br/&gt;&amp;lt;title&amp;gt;: Episode Title/Name&lt;br/&gt;&lt;br/&gt;(XXXX):&amp;lt;capturename&amp;gt; sets XXX to replace capture group &amp;lt;capturename&amp;gt;&lt;br/&gt;&lt;br/&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Use named capture groups , for the pattern (?&amp;lt;capturename&amp;gt;XXXXX) for the capture group, in the output use &amp;lt;capturename&amp;gt;&lt;/p&gt;&lt;p&gt;&amp;lt;title&amp;gt;: Program/Movie Title&lt;br/&gt;&amp;lt;year&amp;gt;: Release Year&lt;br/&gt;&amp;lt;tmdbid&amp;gt;: The Movie Database ID&lt;br/&gt;&amp;lt;season&amp;gt;: Season Number (Don't include S in captured text)&lt;br/&gt;&amp;lt;episode&amp;gt;: Episode Number (Don't Include E in captured text)&lt;br/&gt;&amp;lt;episode_title&amp;gt;: Episode Title/Name&lt;br/&gt;&amp;lt;extra_info&amp;gt;: Extra Information&lt;br/&gt;&lt;br/&gt;(XXXX):&amp;lt;capturename&amp;gt; sets XXX to replace capture group &amp;lt;capturename&amp;gt;&lt;br/&gt;&lt;br/&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
       <property name="wordWrap">
        <bool>true</bool>
@@ -68,7 +68,7 @@
        </sizepolicy>
       </property>
       <property name="text">
-       <string>&lt;program&gt; - S&lt;season&gt;E&lt;episode&gt;( - &lt;title&gt;):&lt;title&gt;</string>
+       <string/>
       </property>
      </widget>
     </item>
@@ -132,7 +132,7 @@
        </sizepolicy>
       </property>
       <property name="text">
-       <string>(?&lt;program&gt;.+)\\.([Ss](?&lt;season&gt;\\d+))([Ee](?&lt;episode&gt;\\d+))(\\.(?&lt;title&gt;.*))?\\.1080.*</string>
+       <string/>
       </property>
      </widget>
     </item>
@@ -176,7 +176,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

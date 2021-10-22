@@ -21,9 +21,12 @@
 // SOFTWARE.
 
 #include "SelectTMDB.h"
+#include "DirModel.h"
 #include "ui_SelectTMDB.h"
 
 #include "SABUtils/ButtonEnabler.h"
+#include "SABUtils/QtUtils.h"
+
 #include <QUrl>
 #include <QUrlQuery>
 #include <QTimer>
@@ -37,7 +40,7 @@
 #include <QJsonArray>
 #include <QPushButton>
 
-CSelectTMDB::CSelectTMDB( const QString & text, QWidget* parent )
+CSelectTMDB::CSelectTMDB( const QString & text, std::shared_ptr< STitleInfo > titleInfo, QWidget* parent )
     : QDialog( parent ),
     fImpl( new Ui::CSelectTMDB )
 {
@@ -59,16 +62,47 @@ CSelectTMDB::CSelectTMDB( const QString & text, QWidget* parent )
     }
     else
         searchName = text;
-    fImpl->searchText->setText( searchName );
-    fImpl->releaseYear->setText( releaseDate );
-    fImpl->tmdbid->setText( tmdbid );
 
-    connect( fImpl->searchText, &QLineEdit::textChanged, this, &CSelectTMDB::slotSearchTextChanged );
-    connect( fImpl->releaseYear, &QLineEdit::textChanged, this, &CSelectTMDB::slotSearchTextChanged );
-    connect( fImpl->tmdbid, &QLineEdit::textChanged, this, &CSelectTMDB::slotSearchTextChanged );
+    if ( titleInfo )
+    {
+        searchName = titleInfo->fTitle;
+        releaseDate = titleInfo->fReleaseDate;
+        tmdbid = titleInfo->fTMDBID;
+        fImpl->resultExtraInfo->setText( titleInfo->fExtraInfo );
+    }
+
+    fImpl->searchText->setText( searchName, false );
+    fImpl->releaseYear->setText( releaseDate, false );
+    fImpl->tmdbid->setText( tmdbid, false );
+
+    fImpl->searchText->setDelay( 1000 );
+    fImpl->releaseYear->setDelay( 1000 );
+    fImpl->tmdbid->setDelay( 1000 );
+
+    fImpl->byName->setChecked( tmdbid.isEmpty() );
+    fImpl->byTMDBID->setChecked( !tmdbid.isEmpty() );
+
+    reset();
+
+    connect( fImpl->searchText, &CDelayLineEdit::sigTextChanged, this, &CSelectTMDB::slotSearchTextChanged );
+    connect( fImpl->releaseYear, &CDelayLineEdit::sigTextChanged, this, &CSelectTMDB::slotSearchTextChanged );
+    connect( fImpl->tmdbid, &CDelayLineEdit::sigTextChanged, this, &CSelectTMDB::slotSearchTextChanged );
     QTimer::singleShot( 0, this, &CSelectTMDB::slotSearchTextChanged );
     fManager = new QNetworkAccessManager( this );
     connect( fManager, &QNetworkAccessManager::finished, this, &CSelectTMDB::slotRequestFinished );
+
+    connect( fImpl->results->selectionModel(), &QItemSelectionModel::selectionChanged, this, &CSelectTMDB::slotSelectionChanged );
+}
+
+void CSelectTMDB::reset()
+{
+    for( auto && ii : fImageInfoReplies )
+    {
+        ii.second = nullptr;
+    }
+    fImageInfoReplies.clear();
+    fImpl->results->clear();
+    fImpl->results->setHeaderLabels( QStringList() << "Title" << "TMDB ID" << "Release Date" << "Desc" );
 }
 
 CSelectTMDB::~CSelectTMDB()
@@ -77,7 +111,6 @@ CSelectTMDB::~CSelectTMDB()
 
 const QString apiKeyV3 = "7c58ff37c9fadd56c51dae3a97339378";
 const QString apiKeyV4 = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI3YzU4ZmYzN2M5ZmFkZDU2YzUxZGFlM2E5NzMzOTM3OCIsInN1YiI6IjVmYTAzMzJiNjM1MDEzMDAzMTViZjg2NyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.MBAzJIxvsRm54kgPKcfixxtfbg2bdNGDHKnEt15Nuac";
-
 
 void CSelectTMDB::slotRequestFinished( QNetworkReply *reply )
 {
@@ -98,6 +131,12 @@ void CSelectTMDB::slotRequestFinished( QNetworkReply *reply )
         return;
     }
 
+    if ( reply == fGetMovieReply )
+    {
+        loadMovieResult();
+        return;
+    }
+    
     loadImageResults( reply );
 }
 
@@ -109,7 +148,6 @@ void CSelectTMDB::slotGetConfig()
     url.setPath( "/3/configuration" );
 
     QUrlQuery query;
-    //query.addQueryItem( "query", fImpl->searchText->text() );
     query.addQueryItem( "api_key", apiKeyV3 );
     url.setQuery( query );
     fConfigReply = fManager->get( QNetworkRequest( url ) );
@@ -130,15 +168,35 @@ void CSelectTMDB::slotSearchTextChanged()
     QUrl url;
     url.setScheme( "https" );
     url.setHost( "api.themoviedb.org" );
-    url.setPath( "/3/search/movie" );
-    
-    QUrlQuery query;
-    query.addQueryItem( "query", fImpl->searchText->text() );
-    query.addQueryItem( "api_key", apiKeyV3 );
-    url.setQuery( query );
+    if ( fImpl->byName->isChecked() )
+    {
+        url.setPath( "/3/search/movie" );
 
-    //qDebug() << url.toString();
-    fSearchReply = fManager->get( QNetworkRequest( url ) );
+        QUrlQuery query;
+        query.addQueryItem( "api_key", apiKeyV3 );
+
+        query.addQueryItem( "include_adult", "true" );
+        if ( !fImpl->releaseYear->text().isEmpty() )
+            query.addQueryItem( "year", fImpl->releaseYear->text() );
+        auto searchStrings =
+            fImpl->searchText->text().split( " ", Qt::SplitBehaviorFlags::SkipEmptyParts );
+
+        query.addQueryItem( "query", searchStrings.join( "+" ) );
+        url.setQuery( query );
+
+        //qDebug() << url.toString();
+        fSearchReply = fManager->get( QNetworkRequest( url ) );
+    }
+    else // by tmdbid
+    {
+        url.setPath( QString( "/3/movie/%1" ).arg( fImpl->tmdbid->text() ) );
+        QUrlQuery query;
+        query.addQueryItem( "api_key", apiKeyV3 );
+
+        url.setQuery( query );
+        qDebug() << url.toString();
+        fGetMovieReply = fManager->get( QNetworkRequest( url ) );
+    }
 }
 
 void CSelectTMDB::loadConfig()
@@ -173,6 +231,46 @@ void CSelectTMDB::loadConfig()
     fConfigReply = nullptr;
 }
 
+
+void CSelectTMDB::loadMovieResult()
+{
+    if ( !fGetMovieReply )
+        return;
+
+    reset();
+
+    auto data = fGetMovieReply->readAll();
+    auto doc = QJsonDocument::fromJson( data );
+    qDebug().nospace().noquote() << doc.toJson( QJsonDocument::Indented );
+    loadSearchResult( doc.object() );
+
+    delete fButtonEnabler;
+    fButtonEnabler = new CButtonEnabler( fImpl->results, fImpl->buttonBox->button( QDialogButtonBox::Ok ) );
+}
+
+void CSelectTMDB::loadSearchResult()
+{
+    if ( !fSearchReply )
+        return;
+
+    reset();
+
+    auto data = fSearchReply->readAll();
+    auto doc = QJsonDocument::fromJson( data );
+    if ( doc.object().contains( "results" ) )
+    {
+        auto results = doc.object()["results"].toArray();
+        for ( int ii = 0; ii < results.size(); ++ii )
+        {
+            loadSearchResult( results[ii].toObject() );
+        }
+    }
+
+    delete fButtonEnabler;
+    fButtonEnabler = new CButtonEnabler( fImpl->results, fImpl->buttonBox->button( QDialogButtonBox::Ok ) );
+}
+
+
 /*
  *{
     "adult": false,
@@ -196,29 +294,6 @@ void CSelectTMDB::loadConfig()
     "vote_count": 1591
 }
 */
-
-void CSelectTMDB::loadSearchResult()
-{
-    if ( !fSearchReply )
-        return;
-
-    fImpl->results->clear();
-    fImpl->results->setHeaderLabels( QStringList() << "Title" << "TMDB ID" << "Release Date" << "Desc" );
-    auto data = fSearchReply->readAll();
-    auto doc = QJsonDocument::fromJson( data );
-    if ( doc.object().contains( "results" ) )
-    {
-        auto results = doc.object()["results"].toArray();
-        for ( int ii = 0; ii < results.size(); ++ii )
-        {
-            loadSearchResult( results[ii].toObject() );
-        }
-    }
-
-    delete fButtonEnabler;
-    fButtonEnabler = new CButtonEnabler( fImpl->results, fImpl->buttonBox->button( QDialogButtonBox::Ok ) );
-}
-
 void CSelectTMDB::loadSearchResult( const QJsonObject &resultItem )
 {
     qDebug().nospace().noquote() << QJsonDocument( resultItem ).toJson( QJsonDocument::Indented );
@@ -233,7 +308,7 @@ void CSelectTMDB::loadSearchResult( const QJsonObject &resultItem )
     int releaseYear = fImpl->releaseYear->text().toInt( &aOK );
     if ( aOK && !fImpl->releaseYear->text().isEmpty() && !releaseDate.isEmpty() )
     {
-        auto dt = findDate( releaseDate );
+        auto dt = NQtUtils::findDate( releaseDate );
 
         if ( dt.isValid() && dt.year() != releaseYear )
         {
@@ -251,6 +326,7 @@ void CSelectTMDB::loadSearchResult( const QJsonObject &resultItem )
     label->setWordWrap( true );
     auto item = new QTreeWidgetItem( fImpl->results, QStringList() << title << QString::number( tmdbid ) << releaseDate << QString() );
     fImpl->results->setItemWidget( item, 3, label );
+    fImpl->results->resizeColumnToContents( 0 );
 
     if ( !posterPath.isEmpty() && hasConfiguration() )
     {
@@ -265,44 +341,6 @@ void CSelectTMDB::loadSearchResult( const QJsonObject &resultItem )
         auto reply = fManager->get( QNetworkRequest( url ) );
         fImageInfoReplies[reply] = item;
     }
-}
-
-QDate CSelectTMDB::findDate( const QString &string, const QStringList &aFormats, const QStringList &bFormats, const QStringList &cFormats ) const
-{
-    for ( auto &&ii : aFormats )
-    {
-        for ( auto &&jj : bFormats )
-        {
-            for ( auto &&kk : cFormats )
-            {
-                auto dt = QDate::fromString( string, QString( "%1-%2-%3" ).arg( ii ).arg( jj ).arg( kk ) );
-                if ( dt.isValid() )
-                {
-                    return dt;
-                }
-            }
-        }
-    }
-    return QDate();
-}
-
-QDate CSelectTMDB::findDate( const QString &releaseDate ) const
-{
-    auto yearFormats = QStringList() << "yyyy" << "yy";
-    auto monthFormats = QStringList() << "M" << "MM";
-    auto dateFormats = QStringList() << "dd" << "d";
-    auto dt = findDate( releaseDate, yearFormats, monthFormats, dateFormats );
-    if ( !dt.isValid() )
-        dt = findDate( releaseDate, yearFormats, dateFormats, monthFormats );
-    if ( !dt.isValid() )
-        dt = findDate( releaseDate, monthFormats, yearFormats, dateFormats );
-    if ( !dt.isValid() )
-        dt = findDate( releaseDate, monthFormats, dateFormats, yearFormats );
-    if ( !dt.isValid() )
-        dt = findDate( releaseDate, dateFormats, yearFormats, monthFormats );
-    if ( !dt.isValid() )
-        dt = findDate( releaseDate, dateFormats, monthFormats, yearFormats );
-    return dt;
 }
 
 void CSelectTMDB::loadImageResults( QNetworkReply * reply )
@@ -322,16 +360,32 @@ void CSelectTMDB::loadImageResults( QNetworkReply * reply )
     QIcon icn( pm );
     item->setIcon( 0, icn );
     fImpl->results->setIconSize( QSize( 128, 128 ) );
+    fImpl->results->resizeColumnToContents( 0 );
 }
 
-QString CSelectTMDB::getSelectedID() const
+std::shared_ptr< STitleInfo > CSelectTMDB::getTitleInfo() const
+{
+    auto retVal = std::make_shared< STitleInfo >();
+    retVal->fTitle = fImpl->resultTitle->text();
+    retVal->fReleaseDate = fImpl->resultReleaseDate->text();
+    retVal->fTMDBID = fImpl->resultTMDBID->text();
+    retVal->fExtraInfo = fImpl->resultExtraInfo->text();
+    retVal->fIsMovie = true;
+
+    return retVal;
+}
+
+void CSelectTMDB::slotSelectionChanged()
 {
     auto selected = fImpl->results->selectedItems();
     if ( selected.empty() )
-        return QString();
+        return;
 
     auto first = selected.front();
     if ( !first )
-        return QString();
-    return first->text( 1 );
+        return;
+    
+    fImpl->resultTitle->setText( first->text( 0 ) );
+    fImpl->resultReleaseDate->setText( first->text( 2 ) );
+    fImpl->resultTMDBID->setText( first->text( 1 ) );
 }
