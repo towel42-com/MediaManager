@@ -71,9 +71,9 @@ CSelectTMDB::CSelectTMDB( const QString & text, std::shared_ptr< STitleInfo > ti
         fImpl->resultExtraInfo->setText( titleInfo->fExtraInfo );
     }
 
-    fImpl->searchText->setText( searchName, false );
-    fImpl->releaseYear->setText( releaseDate, false );
-    fImpl->tmdbid->setText( tmdbid, false );
+    fImpl->searchText->setText( searchName );
+    fImpl->releaseYear->setText( releaseDate );
+    fImpl->tmdbid->setText( tmdbid );
 
     fImpl->searchText->setDelay( 1000 );
     fImpl->releaseYear->setDelay( 1000 );

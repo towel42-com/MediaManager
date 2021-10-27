@@ -40,15 +40,21 @@ CMainWindow::CMainWindow( QWidget* parent )
     fImpl( new Ui::CMainWindow )
 {
     fImpl->setupUi( this );
-    connect( fImpl->directory, &QLineEdit::textChanged, this, &CMainWindow::slotDirectoryChanged );
+    connect( fImpl->directory, &CDelayLineEdit::sigTextChanged, this, &CMainWindow::slotDirectoryChanged );
+
     connect( fImpl->btnSelectDir, &QPushButton::clicked, this, &CMainWindow::slotSelectDirectory );
     connect( fImpl->btnLoad, &QPushButton::clicked, this, &CMainWindow::slotLoad );
     connect( fImpl->btnSaveM3U, &QPushButton::clicked, this, &CMainWindow::slotSaveM3U );
     connect( fImpl->treatAsMovie, &QCheckBox::clicked, this, &CMainWindow::slotToggleTreatAsMovie );
     connect( fImpl->treatAsMovie, &QCheckBox::pressed, this, &CMainWindow::slotAboutToToggle );
 
-    connect( fImpl->inPattern, &QLineEdit::textChanged, this, &CMainWindow::slotInputPatternChanged );
+    connect( fImpl->inPattern, &CDelayLineEdit::sigTextChanged, this, &CMainWindow::slotInputPatternChanged );
     connect( fImpl->files, &QTreeView::doubleClicked, this, &CMainWindow::slotDoubleClicked );
+
+    fImpl->inPattern->setDelay( 1000 );
+    fImpl->directory->setDelay( 1000 );
+    fImpl->outFilePattern->setDelay( 1000 );
+    fImpl->outDirPattern->setDelay( 1000 );
 
     auto completer = new QCompleter( this );
     auto fsModel = new QFileSystemModel( completer );
@@ -61,6 +67,7 @@ CMainWindow::CMainWindow( QWidget* parent )
     fImpl->files->setExpandsOnDoubleClick( false );
 
     loadSettings();
+    slotDirectoryChanged();
 }
 
 CMainWindow::~CMainWindow()
@@ -102,8 +109,27 @@ void CMainWindow::loadSettings()
 
     fImpl->treatAsMovie->setChecked( settings.value( "TreatAsMovie", true ).toBool() );
 
-    slotDirectoryChanged();
     loadPatterns();
+}
+
+void CMainWindow::loadPatterns()
+{
+    QSettings settings;
+    fImpl->outDirPattern->setEnabled( fImpl->treatAsMovie->isChecked() );
+
+    if ( fImpl->treatAsMovie->isChecked() )
+        settings.beginGroup( "ForMovies" );
+    else
+        settings.beginGroup( "ForTV" );
+
+    auto currText = settings.value( "InPattern", getDefaultInPattern( fImpl->treatAsMovie->isChecked() ) ).toString();
+    fImpl->inPattern->setText( currText );
+
+    currText = settings.value( "OutFilePattern", getDefaultOutFilePattern( fImpl->treatAsMovie->isChecked() ) ).toString();
+    fImpl->outFilePattern->setText( currText );
+
+    currText = settings.value( "OutDirPattern", getDefaultOutDirPattern( fImpl->treatAsMovie->isChecked() ) ).toString();
+    fImpl->outDirPattern->setText( currText );
 }
 
 void CMainWindow::saveSettings()
@@ -126,8 +152,9 @@ void CMainWindow::saveSettings()
 
 void CMainWindow::slotDirectoryChanged()
 {
-    QFileInfo fi( fImpl->directory->text() );
-    fImpl->btnLoad->setEnabled( !fImpl->directory->text().isEmpty() && fi.exists() && fi.isDir() );
+    auto dirName = fImpl->directory->text();
+    QFileInfo fi( dirName );
+    fImpl->btnLoad->setEnabled( !dirName.isEmpty() && fi.exists() && fi.isDir() );
     fImpl->btnTransform->setEnabled( false );
     fImpl->btnSaveM3U->setEnabled( false );
 }
@@ -187,26 +214,6 @@ void CMainWindow::slotToggleTreatAsMovie()
     loadPatterns();
 }
 
-void CMainWindow::loadPatterns()
-{
-    QSettings settings;
-    fImpl->outDirPattern->setEnabled( fImpl->treatAsMovie->isChecked() );
-
-    if ( fImpl->treatAsMovie->isChecked() )
-        settings.beginGroup( "ForMovies" );
-    else
-        settings.beginGroup( "ForTV" );
-
-    auto currText = settings.value( "InPattern", getDefaultInPattern( fImpl->treatAsMovie->isChecked() ) ).toString();
-    fImpl->inPattern->setText( currText );
-
-    currText = settings.value( "OutFilePattern", getDefaultOutFilePattern( fImpl->treatAsMovie->isChecked() ) ).toString();
-    fImpl->outFilePattern->setText( currText );
-
-    currText = settings.value( "OutDirPattern", getDefaultOutDirPattern( fImpl->treatAsMovie->isChecked() ) ).toString();
-    fImpl->outDirPattern->setText( currText );
-}
-
 void CMainWindow::slotSaveM3U()
 {
     fDirModel->saveM3U( this );
@@ -240,8 +247,8 @@ void CMainWindow::loadDirectory()
     fDirModel->setFilter( QDir::AllDirs | QDir::Files | QDir::NoDotAndDotDot );
     fDirModel->setNameFilterDisables( false );
     connect( fDirModel.get(), &QFileSystemModel::directoryLoaded, this, &CMainWindow::slotDirLoaded );
-    connect( fImpl->outFilePattern, &QLineEdit::textChanged, fDirModel.get(), &CDirModel::slotOutputFilePatternChanged );
-    connect( fImpl->outDirPattern, &QLineEdit::textChanged, fDirModel.get(), &CDirModel::slotOutputDirPatternChanged );
+    connect( fImpl->outFilePattern, &CDelayLineEdit::sigTextChanged, fDirModel.get(), &CDirModel::slotOutputFilePatternChanged );
+    connect( fImpl->outDirPattern, &CDelayLineEdit::sigTextChanged, fDirModel.get(), &CDirModel::slotOutputDirPatternChanged );
     connect( fImpl->btnTransform, &QPushButton::clicked, this, &CMainWindow::slotTransform );
 
     fDirModel->slotInputPatternChanged( fImpl->inPattern->text() );
