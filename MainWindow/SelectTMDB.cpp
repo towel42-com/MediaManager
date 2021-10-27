@@ -39,6 +39,7 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QPushButton>
+#include <QMessageBox>
 
 CSelectTMDB::CSelectTMDB( const QString & text, std::shared_ptr< STitleInfo > titleInfo, QWidget* parent )
     : QDialog( parent ),
@@ -81,9 +82,10 @@ CSelectTMDB::CSelectTMDB( const QString & text, std::shared_ptr< STitleInfo > ti
 
     fImpl->byName->setChecked( tmdbid.isEmpty() );
     fImpl->byTMDBID->setChecked( !tmdbid.isEmpty() );
-
+    slotByNameChanged();
     reset();
 
+    connect( fImpl->byName, &QRadioButton::toggled, this, &CSelectTMDB::slotByNameChanged );
     connect( fImpl->searchText, &CDelayLineEdit::sigTextChanged, this, &CSelectTMDB::slotSearchTextChanged );
     connect( fImpl->releaseYear, &CDelayLineEdit::sigTextChanged, this, &CSelectTMDB::slotSearchTextChanged );
     connect( fImpl->tmdbid, &CDelayLineEdit::sigTextChanged, this, &CSelectTMDB::slotSearchTextChanged );
@@ -116,7 +118,43 @@ void CSelectTMDB::slotRequestFinished( QNetworkReply *reply )
 {
     if ( reply->error() != QNetworkReply::NoError )
     {
-        auto msg = reply->errorString();
+        QString title = "Unknown Issue";
+        if ( reply == fConfigReply )
+        {
+            fConfigErrorCount++;
+            if ( fConfigErrorCount < 5 )
+            {
+                QTimer::singleShot( 0, this, &CSelectTMDB::slotGetConfig );
+                return;
+            }
+            title = tr( "Could not download configuration" );
+        }
+        else if ( reply == fSearchReply )
+        {
+            title = tr( "Could not search for movie(s)" );
+        }
+        else if ( reply == fGetMovieReply )
+        {
+            auto url = fGetMovieReply->url();
+            auto tmdbid = url.path().mid( url.path().lastIndexOf( '/' ) + 1 );
+            auto msg = tr( "Could not find TMDBID: <b>%1</b>" ).arg( tmdbid );
+            QMessageBox::information( this, tr( "Could not find TMDBID" ), msg );
+            return;
+        }
+        else
+        {
+            title = tr( "Could not get image(s)" );
+        }
+        auto errorMsg = reply->errorString();
+        auto pos = errorMsg.indexOf( " - server replied:" );
+        QString prefix;
+        if ( pos != -1 )
+        {
+            prefix = errorMsg.left( pos ).trimmed();
+            errorMsg = errorMsg.mid( pos + 18 ).trimmed();
+        }
+
+        QMessageBox::warning( this, title, QString( "%1<br>Error: <b>%2</b>" ).arg( prefix ).arg( errorMsg ) );
         return;
     }
     if ( reply == fConfigReply )
@@ -142,6 +180,9 @@ void CSelectTMDB::slotRequestFinished( QNetworkReply *reply )
 
 void CSelectTMDB::slotGetConfig()
 {
+    if ( fConfigErrorCount >= 5 )
+        return;
+
     QUrl url;
     url.setScheme( "https" );
     url.setHost( "api.themoviedb.org" );
@@ -242,7 +283,14 @@ void CSelectTMDB::loadMovieResult()
     auto data = fGetMovieReply->readAll();
     auto doc = QJsonDocument::fromJson( data );
     qDebug().nospace().noquote() << doc.toJson( QJsonDocument::Indented );
-    loadSearchResult( doc.object() );
+    if ( !loadSearchResult( doc.object() ) )
+    {
+        auto url = fGetMovieReply->url();
+        auto tmdbid = url.path().mid( url.path().lastIndexOf( '/' ) + 1 );
+        auto foundTMDBID = doc.object().contains( "id" ) ? doc.object()["id"].toInt() : -1;
+
+        QMessageBox::information( this, tr( "Could not find TMDBID" ), tr( "Found TMDBID <b>%1</b> did not match searched TMDBID of <b>%2</b>" ).arg( foundTMDBID ).arg( tmdbid ) );
+    }
 
     delete fButtonEnabler;
     fButtonEnabler = new CButtonEnabler( fImpl->results, fImpl->buttonBox->button( QDialogButtonBox::Ok ) );
@@ -260,9 +308,14 @@ void CSelectTMDB::loadSearchResult()
     if ( doc.object().contains( "results" ) )
     {
         auto results = doc.object()["results"].toArray();
+        bool found = false;
         for ( int ii = 0; ii < results.size(); ++ii )
         {
-            loadSearchResult( results[ii].toObject() );
+            found = loadSearchResult( results[ii].toObject() ) || found;
+        }
+        if ( !found )
+        {
+            QMessageBox::information( this, tr( "Could not find Movie" ), tr( "No results found that match search criteria" ) );
         }
     }
 
@@ -294,7 +347,7 @@ void CSelectTMDB::loadSearchResult()
     "vote_count": 1591
 }
 */
-void CSelectTMDB::loadSearchResult( const QJsonObject &resultItem )
+bool CSelectTMDB::loadSearchResult( const QJsonObject &resultItem )
 {
     qDebug().nospace().noquote() << QJsonDocument( resultItem ).toJson( QJsonDocument::Indented );
 
@@ -306,21 +359,21 @@ void CSelectTMDB::loadSearchResult( const QJsonObject &resultItem )
 
     bool aOK;
     int releaseYear = fImpl->releaseYear->text().toInt( &aOK );
-    if ( aOK && !fImpl->releaseYear->text().isEmpty() && !releaseDate.isEmpty() )
+    if ( aOK && fImpl->byName->isChecked() && !fImpl->releaseYear->text().isEmpty() && !releaseDate.isEmpty() )
     {
         auto dt = NQtUtils::findDate( releaseDate );
 
         if ( dt.isValid() && dt.year() != releaseYear )
         {
-            return;
+            return false;
         }
     }
 
     int searchTmdbid = fImpl->tmdbid->text().toInt( &aOK );
-    if ( aOK && !fImpl->tmdbid->text().isEmpty() && ( tmdbid != -1 ) )
+    if ( aOK && fImpl->byTMDBID->isChecked() && !fImpl->tmdbid->text().isEmpty() && ( tmdbid != -1 ) )
     {
         if ( tmdbid != searchTmdbid )
-            return;
+            return false;
     }
     auto label = new QLabel( desc, this );
     label->setWordWrap( true );
@@ -341,6 +394,7 @@ void CSelectTMDB::loadSearchResult( const QJsonObject &resultItem )
         auto reply = fManager->get( QNetworkRequest( url ) );
         fImageInfoReplies[reply] = item;
     }
+    return true;
 }
 
 void CSelectTMDB::loadImageResults( QNetworkReply * reply )
@@ -388,4 +442,11 @@ void CSelectTMDB::slotSelectionChanged()
     fImpl->resultTitle->setText( first->text( 0 ) );
     fImpl->resultReleaseDate->setText( first->text( 2 ) );
     fImpl->resultTMDBID->setText( first->text( 1 ) );
+}
+
+void CSelectTMDB::slotByNameChanged()
+{
+    fImpl->searchText->setEnabled( fImpl->byName->isChecked() );
+    fImpl->releaseYear->setEnabled( fImpl->byName->isChecked() );
+    fImpl->tmdbid->setEnabled( !fImpl->byName->isChecked() );
 }

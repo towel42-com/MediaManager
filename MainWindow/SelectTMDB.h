@@ -56,11 +56,12 @@ public Q_SLOTS:
 
     void slotGetConfig();
     void slotSelectionChanged();
+    void slotByNameChanged();
 private:
     bool hasConfiguration() const;
 
     void loadSearchResult();
-    void loadSearchResult( const QJsonObject &resultItem );
+    [[nodiscard]] bool loadSearchResult( const QJsonObject &resultItem );
     void loadConfig();
     void loadImageResults( QNetworkReply *reply );
     void loadMovieResult();
@@ -73,6 +74,7 @@ private:
     std::optional< QString > fConfiguration;
     std::map< QNetworkReply *, QTreeWidgetItem * > fImageInfoReplies;
     CButtonEnabler *fButtonEnabler{ nullptr };
+    int fConfigErrorCount{ 0 };
 };
 
 #endif 
