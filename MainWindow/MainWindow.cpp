@@ -199,6 +199,10 @@ void CMainWindow::slotDoubleClicked( const QModelIndex &idx )
     auto titleInfo = dirModel->getTitleInfo( sourceIdx );
     
     auto nm = dirModel->index( sourceIdx.row(), 4, idx.parent() ).data().toString();
+    if ( nm == "<NOMATCH>" )
+    {
+        nm = dirModel->index( sourceIdx.row(), 0, idx.parent() ).data().toString();
+    }
     CSelectTMDB dlg( nm, titleInfo, this );
     if ( dlg.exec() == QDialog::Accepted )
     {
