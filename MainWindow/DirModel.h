@@ -23,11 +23,16 @@
 #ifndef _DIRMODEL_H
 #define _DIRMODEL_H
 
-#include <QFileSystemModel>
+#include <QStandardItemModel>
 #include <QRegularExpression>
-#include <QSortFilterProxyModel>
+#include <QFileInfo>
 #include <memory>
+#include <unordered_set>
+
+class QTreeView;
 class QMediaPlaylist;
+class QFileIconProvider;
+
 struct STitleInfo
 {
     QString getTitle() const;
@@ -45,42 +50,77 @@ struct STitleInfo
     bool fIsMovie{ true };
 };
 
-class CDirModel : public QFileSystemModel
+class CDirModel : public QStandardItemModel
 {
     Q_OBJECT
 public:
+    enum EColumns
+    {
+        eFSName,
+        eFSSize,
+        eFSType,
+        eFSModDate,
+        eTransformName
+    };
+    enum ECustomRoles
+    {
+        eFullPathRole = Qt::UserRole + 1
+    };
     CDirModel( QObject *parent = nullptr );
     ~CDirModel();
-    virtual QVariant data( const QModelIndex &index, int role = Qt::DisplayRole ) const override;
-    virtual QVariant headerData( int section, Qt::Orientation orientation, int role = Qt::DisplayRole ) const override;
-    virtual Qt::ItemFlags flags( const QModelIndex &idx ) const override;
-    virtual int columnCount( const QModelIndex &parent ) const override;
-    virtual int rowCount( const QModelIndex &parent ) const override;
 
-    QModelIndex rootIndex() const;
+    bool isDir( const QModelIndex &idx ) const;
+    QFileInfo fileInfo( const QModelIndex &idx ) const;
+    QString filePath( const QModelIndex &idx ) const;
 
-    std::pair< bool, QStringList > transform( bool displayOnly ) const
-    {
-        return transform( rootIndex(), displayOnly );
-    }
+    bool isDir( const QStandardItem * item ) const;
+    QFileInfo fileInfo( const QStandardItem *item ) const;
+    QString filePath( const QStandardItem *item ) const;
+
+    std::pair< bool, QStringList > transform( bool displayOnly ) const;
     void saveM3U( QWidget *parent ) const;
     void setTitleInfo( const QModelIndex &idx, std::shared_ptr< STitleInfo > info );
     std::shared_ptr< STitleInfo > getTitleInfo( const QModelIndex &idx ) const;
+
+    void setNameFilters( const QStringList &filters, QTreeView * view = nullptr );
+
+    void reloadModel( QTreeView *view );
+
+    void setRootPath( const QString &path, QTreeView *view = nullptr );
 Q_SIGNALS:
 public Q_SLOTS:
     void slotInputPatternChanged( const QString &inPattern );
     void slotOutputDirPatternChanged( const QString &outPattern );
     void slotOutputFilePatternChanged( const QString &outPattern );
     void slotTreatAsMovieChanged( bool treatAsMovie );
+    void slotLoadRootDirectory();
+    void slotPatternChanged();
 private:
-    std::pair< bool, QStringList > transform( const QModelIndex &idx, bool displayOnly ) const;
-    QString saveM3U( const QModelIndex &parentIndex, const QString &baseName ) const;
-    bool isValidDirName( const QString &name ) const;
-    void patternChanged();
-    void patternChanged( const QModelIndex &idx );
-    std::pair< bool, QString > transformItem( const QModelIndex &index ) const;
-    [[nodiscard]] QString replaceCapture( const QString &captureName, const QString &returnPattern, const QString &value ) const;
+    void loadFileInfo( const QFileInfo & info, QStandardItem *parent );
+    QStandardItem *getItemFromindex( QModelIndex idx ) const;
 
+    bool excludedDirName( const QFileInfo & ii ) const;
+
+    QList< QStandardItem * > getItemRow( const QFileInfo &path ) const;
+
+    std::pair< bool, QStringList > transform( const QStandardItem *parent, bool displayOnly ) const;
+    QString saveM3U( const QStandardItem *parent, const QString &baseName ) const;
+    bool isValidName( const QString &name, bool isDir ) const;
+    bool isValidName( const QFileInfo &fi ) const;
+    void patternChanged();
+    void patternChanged( const QStandardItem *parent );
+
+    void updatePattern( const QStandardItem *item ) const;
+    void updatePattern( const QStandardItem *transformedItem, QStandardItem *item ) const;
+
+    [[nodiscard]] std::pair< bool, QString > transformItem( const QFileInfo &path ) const;
+    [[nodiscard]] QString replaceCapture( const QString &captureName, const QString &returnPattern, const QString &value ) const;
+    [[nodiscard]] QString patternToRegExp( const QString &captureName, const QString &inPattern, const QString &value, bool removeOptional ) const;
+    [[nodiscard]] QString patternToRegExp( const QString &pattern, bool removeOptional ) const;
+    void cleanFileName( QString &inFile ) const;
+
+    QString fRootPath;
+    QStringList fNameFilter;
 
     QString fInPattern;
     QString fOutFilePattern;
@@ -90,17 +130,11 @@ private:
     mutable std::map< QString, std::pair< bool, QString > > fFileMapping;
     mutable std::map< QString, std::pair< bool, QString > > fDirMapping;
     std::map< QString, std::shared_ptr< STitleInfo > > fTitleInfoMapping;
+    std::unordered_set< QString > fExcludedDirNames;
+    QFileIconProvider *fIconProvider{ nullptr };
+    QTimer *fTimer{ nullptr };
+    QTimer *fPatternTimer{ nullptr };
+    QTreeView *fTreeView{ nullptr };
 };
-
-class CDirFilterModel : public QSortFilterProxyModel
-{
-    Q_OBJECT
-public:
-    CDirFilterModel( QObject *parent = nullptr );
-
-    virtual bool filterAcceptsRow( int sourceRow, const QModelIndex &parent ) const override;
-};
-
-
 
 #endif // 

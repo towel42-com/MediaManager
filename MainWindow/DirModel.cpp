@@ -22,71 +22,259 @@
 
 #include "DirModel.h"
 #include "SABUtils/StringUtils.h"
+#include "SABUtils/QtUtils.h"
+#include "SABUtils/AutoWaitCursor.h"
+
 #include <QDebug>
 #include <QUrl>
 #include <QInputDialog>
 #include <QTextStream>
 #include <QCollator>
+#include <QDir>
+#include <QLocale>
+#include <QFileIconProvider>
+#include <QTimer>
+#include <QTreeView>
+
 #include <set>
 #include <list>
-#include "SABUtils/QtUtils.h"
 
 CDirModel::CDirModel( QObject *parent /*= 0*/ ) :
-    QFileSystemModel( parent )
+    QStandardItemModel( parent )
 {
+    fIconProvider = new QFileIconProvider();
+    fTimer = new QTimer( this );
+    fTimer->setInterval( 50 );
+    fTimer->setSingleShot( true );
+    connect( fTimer, &QTimer::timeout, this, &CDirModel::slotLoadRootDirectory );
 
+    fPatternTimer = new QTimer( this );
+    fPatternTimer->setInterval( 50 );
+    fPatternTimer->setSingleShot( true );
+    connect( fPatternTimer, &QTimer::timeout, this, &CDirModel::slotPatternChanged );
+
+    fExcludedDirNames = { "subs", "#recycle", "#recycler", "extras" };
 }
 
 CDirModel::~CDirModel()
 {
-
+    delete fIconProvider;
 }
 
-bool CDirModel::isValidDirName( const QString &name ) const
+void CDirModel::setRootPath( const QString & rootPath, QTreeView * view )
 {
-    QRegularExpression regExp( "(.*)\\s\\(\\d{2,4}\\)\\s\\[(tmdbid=\\d+)|(imdbid=tt.*)\\]" );
-    return regExp.match( name ).hasMatch();
+    fRootPath = rootPath;
+    reloadModel( view );
 }
 
-QVariant CDirModel::data( const QModelIndex &index, int role /*= Qt::DisplayRole */ ) const
+void CDirModel::setNameFilters( const QStringList &filters, QTreeView * view )
 {
-    if ( !index.isValid() )
-        return QVariant();
-    if ( ( role == Qt::DisplayRole ) && ( index.column() == 4 ) )
-        return transformItem( index ).second;
-    else if ( role == Qt::BackgroundRole && ( index.column() == 4 ) && isDir( index ) )
+    fNameFilter = filters;
+    reloadModel( view );
+}
+
+void CDirModel::reloadModel( QTreeView *view )
+{
+    fTreeView = view;
+    fTimer->stop();
+    fTimer->start();
+    fPatternTimer->stop(); // if its runinng when this timer stops its realoaded anyway
+}
+
+void CDirModel::slotLoadRootDirectory()
+{
+    clear();
+    setHorizontalHeaderLabels( QStringList() << "Name" << "Size" << "Type" << "Date Modified" << "Transformed Name" );
+    QFileInfo rootFI( fRootPath );
+    loadFileInfo( rootFI.absoluteFilePath(), nullptr );
+    if ( fTreeView )
     {
-        if ( !isValidDirName( transformItem( index ).second ) )
-            return QColor( Qt::red );
+        fTreeView->resizeColumnToContents( EColumns::eFSName );
+        fTreeView->resizeColumnToContents( EColumns::eTransformName );
     }
-    return QFileSystemModel::data( index, role );
 }
 
-QVariant CDirModel::headerData( int section, Qt::Orientation orientation, int role /*= Qt::DisplayRole */ ) const
+void CDirModel::loadFileInfo( const QFileInfo & fileInfo, QStandardItem * parent )
 {
-    if ( ( section == 4 ) && ( orientation == Qt::Orientation::Horizontal ) && ( role == Qt::DisplayRole ) )
-        return tr( "New File Name" );
-    return QFileSystemModel::headerData( section, orientation, role );
-}
+    if ( !fileInfo.exists() || !fileInfo.isReadable() )
+        return;
 
-Qt::ItemFlags CDirModel::flags( const QModelIndex &idx ) const
-{
-    return QFileSystemModel::flags( idx );
-}
+    //qDebug() << "Loading: " << fileInfo.absoluteFilePath();
+    auto row = getItemRow( fileInfo );
+    if ( parent )
+        parent->appendRow( row );
+    else
+        appendRow( row );
 
-int CDirModel::columnCount( const QModelIndex &parent ) const
-{
-    auto retVal = QFileSystemModel::columnCount( parent );
-    return retVal ? retVal + 1 : 0;
-}
-
-int CDirModel::rowCount( const QModelIndex &parent ) const
-{
-    if ( parent.data() == "#recycle" )
+    if ( fileInfo.isDir() )
     {
-        return 0;
+        QDir dir( fileInfo.absoluteFilePath() );
+        dir.setFilter( QDir::AllDirs | QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Readable );
+        dir.setSorting( QDir::Name | QDir::DirsFirst | QDir::IgnoreCase );
+        dir.setNameFilters( fNameFilter );
+        auto fileInfos = dir.entryInfoList();
+        for ( auto &&ii : fileInfos )
+        {
+            if ( ii.isDir() && excludedDirName( ii ) )
+                continue;
+            loadFileInfo( ii, row.front() );
+        }
     }
-    return QFileSystemModel::rowCount( parent );
+    if ( fTreeView )
+    {
+        fTreeView->setExpanded( row.front()->index(), true );
+    }
+}
+
+
+bool CDirModel::excludedDirName( const QFileInfo &ii ) const
+{
+    auto fn = ii.fileName().toLower();
+    return fExcludedDirNames.find( fn ) != fExcludedDirNames.end();
+}
+
+QList< QStandardItem * > CDirModel::getItemRow( const QFileInfo & fileInfo ) const
+{
+    QLocale locale;
+
+    QList< QStandardItem * > retVal;
+    auto nameItem = new QStandardItem( fileInfo.fileName() );
+    nameItem->setIcon( fIconProvider->icon( fileInfo ) );
+    nameItem->setData( fileInfo.absoluteFilePath(), ECustomRoles::eFullPathRole );
+    retVal.push_back( nameItem );
+    retVal.push_back( new QStandardItem( fileInfo.isFile() ? locale.toString( fileInfo.size() ) : QString() ) );
+    retVal.back()->setTextAlignment( Qt::AlignRight );
+    retVal.push_back( new QStandardItem( fIconProvider->type( fileInfo ) ) );
+    retVal.push_back( new QStandardItem( fileInfo.lastModified().toString( "MM/dd/yyyy hh:mm:ss.zzz") ) );
+    auto transformInfo = transformItem( fileInfo );
+    auto transformedItem = new QStandardItem( transformInfo.second );
+    retVal.push_back( transformedItem );
+
+    updatePattern( nameItem, transformedItem );
+    return retVal;
+}
+
+QString CDirModel::patternToRegExp( const QString & captureName, const QString & inPattern, const QString &value, bool removeOptional ) const
+{
+    if ( captureName.isEmpty() || inPattern.isEmpty() )
+        return inPattern;
+
+    // see if the capture name exists in the return pattern
+    auto capRegEx = QString( "\\\\\\((?<optname>.*)\\\\\\)(\\\\)?\\:\\<%1\\>" ).arg( captureName );
+    auto regExp = QRegularExpression( capRegEx );
+    auto retVal = inPattern;
+    retVal = retVal.replace( regExp, removeOptional ? "\\1" : "(\\1)?" );
+
+    capRegEx = QString( "\\<%1\\>" ).arg( captureName );
+    regExp = QRegularExpression( capRegEx );
+    retVal = retVal.replace( regExp, value );
+
+    return retVal;
+}
+
+QString CDirModel::patternToRegExp( const QString & pattern, bool removeOptional ) const
+{
+    QString retVal = pattern;
+    retVal.replace( "(", "\\(" );
+    retVal.replace( ")", "\\)" );
+    retVal.replace( ":", "\\:" );
+
+    retVal = patternToRegExp( "title", retVal, ".*", removeOptional );
+    retVal = patternToRegExp( "year", retVal, "\\d{2,4}", removeOptional );
+    retVal = patternToRegExp( "tmdbid", retVal, "\\d+", removeOptional );
+    retVal = patternToRegExp( "season", retVal, "\\d+", removeOptional );
+    retVal = patternToRegExp( "episode", retVal, "\\d+", removeOptional );
+    retVal = patternToRegExp( "episode_title", retVal, ".*", removeOptional );
+    retVal = patternToRegExp( "extra_info", retVal, ".*", removeOptional );
+    return retVal;
+}
+
+bool CDirModel::isValidName( const QFileInfo & fi ) const
+{
+    if ( isValidName( fi.fileName(), fi.isDir() ) )
+        return true;
+    if ( fi.isDir() )
+    {
+        if ( fTreatAsMovie )
+        {
+            QDir dir( fi.absoluteFilePath() );
+            auto children = dir.entryList( QDir::AllDirs | QDir::NoDotAndDotDot );
+            return !children.empty();
+        }
+        else
+            return true;
+    }
+    return false;
+}
+
+bool CDirModel::isValidName( const QString &name, bool isDir ) const
+{
+    if ( name.isEmpty() )
+        return false;
+    QStringList patterns = { fInPattern };
+    if ( isDir )
+    {
+        patterns
+            << patternToRegExp( fOutDirPattern, false )
+            << "(.*)\\s\\((\\d{2,4}\\))\\s(-\\s(.*)\\s)?\\[(tmdbid=\\d+)|(imdbid=tt.*)\\]"
+            ;
+    }
+    else
+    {
+        patterns << patternToRegExp( fOutFilePattern, true )
+            ;
+    }
+    for ( auto &&ii : patterns )
+    {
+        QRegularExpression regExp( ii );
+        if ( !ii.isEmpty() && regExp.match( name ).hasMatch() )
+            return true;
+    }
+    return false;
+}
+
+QFileInfo CDirModel::fileInfo( const QStandardItem * item ) const
+{
+    if ( !item )
+        return QFileInfo();
+    return QFileInfo( item->data( ECustomRoles::eFullPathRole ).toString() );
+}
+
+QStandardItem *CDirModel::getItemFromindex( QModelIndex idx ) const
+{
+    if ( idx.column() != EColumns::eFSName )
+    {
+        idx = idx.model()->index( idx.row(), EColumns::eFSName, idx.parent() );
+    }
+    return itemFromIndex( idx );
+}
+
+bool CDirModel::isDir( const QStandardItem *item ) const
+{
+    return fileInfo( item ).isDir();
+}
+
+QString CDirModel::filePath( const QStandardItem *item ) const
+{
+    return fileInfo( item ).absoluteFilePath();
+}
+
+QString CDirModel::filePath( const QModelIndex &idx ) const
+{
+    auto item = getItemFromindex( idx );
+    return filePath( item );
+}
+
+QFileInfo CDirModel::fileInfo( const QModelIndex & idx ) const
+{
+    auto item = getItemFromindex( idx );
+    return fileInfo( item );
+}
+
+bool CDirModel::isDir( const QModelIndex & idx ) const
+{
+    auto item = getItemFromindex( idx );
+    return isDir( item );
 }
 
 void CDirModel::slotInputPatternChanged( const QString &inPattern )
@@ -164,39 +352,47 @@ QString CDirModel::replaceCapture( const QString &captureName, const QString &re
     return retVal;
 }
 
-std::pair< bool, QString > CDirModel::transformItem( const QModelIndex &idx ) const
+void CDirModel::cleanFileName( QString & inFile ) const
 {
-    auto fnIdx = this->index( idx.row(), 0, idx.parent() );
-    auto fileName = fnIdx.data().toString();
-    auto filePath = fileInfo( fnIdx ).absoluteFilePath();
+    QString text = "\\s*\\:\\s*";
+    inFile.replace( QRegularExpression( text ), " - " );
+    text = "[\\<\\>\\\"\\/\\\\\\|\\?\\*]";
+    inFile.replace( QRegularExpression( text ), "" );
+}
+
+std::pair< bool, QString > CDirModel::transformItem( const QFileInfo &fileInfo ) const
+{
+    auto filePath = fileInfo.absoluteFilePath();
 
     if ( !fInPatternRegExp.isValid() )
         return std::make_pair( false, tr( "<INVALID INPUT REGEX>" ) );
 
-    auto pos = isDir( idx ) ? fDirMapping.find( filePath ) : fFileMapping.find( filePath );
+    auto pos = fileInfo.isDir() ? fDirMapping.find( filePath ) : fFileMapping.find( filePath );
     auto retVal = std::make_pair( false, QString() );
 
-    if ( pos == ( isDir( idx ) ? fDirMapping.end() : fFileMapping.end() ) )
+    if ( pos == ( fileInfo.isDir() ? fDirMapping.end() : fFileMapping.end() ) )
     {
-        QString fn = fileName;
+        QString fn = fileInfo.fileName();
         QString ext = QString();
-        if ( isDir( idx ) )
-            fn = fileName;
-        else
+        if ( !fileInfo.isDir() )
         {
-            auto lastDotPos = fileName.lastIndexOf( QLatin1Char( '.' ) );
-            if ( lastDotPos != -1 )
-            {
-                fn = fileName.left( lastDotPos );
-                ext = fileName.right( fileName.length() - lastDotPos - 1 );
-            }
+            fn = fileInfo.fileName();
+            ext = fileInfo.suffix();
         }
 
         auto pos = fTitleInfoMapping.find( filePath );
         auto match = fInPatternRegExp.match( fn );
-        if ( ( pos == fTitleInfoMapping.end() ) && ( !match.hasMatch() ) )
-            retVal.second = "<NOMATCH>";
-        else
+        if ( pos == fTitleInfoMapping.end() )
+        {
+            if ( isValidName( fileInfo ) )
+                retVal.second = QString();
+            else if ( !match.hasMatch() )
+            {
+                retVal.second = "<NOMATCH>";
+                qDebug() << "Poorly formed filename" << filePath;
+            }
+        }
+        else 
         {
             auto title = NStringUtils::transformTitle( match.captured( "title" ) );
             auto year = match.captured( "year" ).trimmed();
@@ -212,24 +408,27 @@ std::pair< bool, QString > CDirModel::transformItem( const QModelIndex &idx ) co
                 year = ( *pos ).second->getYear();
                 tmdbid = ( *pos ).second->fTMDBID;
                 season = ( *pos ).second->fSeason;
+                episode = ( *pos ).second->fEpisode;
                 extraInfo = ( *pos ).second->fExtraInfo;
+                episodeTitle = ( *pos ).second->fEpisodeTitle;
             }
 
-            retVal.second = isDir( idx ) ? fOutDirPattern : fOutFilePattern;
+            retVal.second = fileInfo.isDir() ? fOutDirPattern : fOutFilePattern;
             retVal.second = replaceCapture( "title", retVal.second, title );
             retVal.second = replaceCapture( "year", retVal.second, year );
             retVal.second = replaceCapture( "tmdbid", retVal.second, tmdbid );
-            retVal.second = replaceCapture( "season", retVal.second, season );
-            retVal.second = replaceCapture( "episode", retVal.second, episode );
-            retVal.second = replaceCapture( "episode_title", retVal.second, title );
+            retVal.second = replaceCapture( "season", retVal.second, QString( "%1" ).arg( season, 2, QChar( '0' ) ) );
+            retVal.second = replaceCapture( "episode", retVal.second, QString( "%1" ).arg( episode, 2, QChar( '0' ) ) );
+            retVal.second = replaceCapture( "episode_title", retVal.second, episodeTitle );
             retVal.second = replaceCapture( "extra_info", retVal.second, extraInfo );
 
-            if ( !isDir( idx ) )
+            if ( !fileInfo.isDir() )
                 retVal.second += "." + ext;
+            cleanFileName( retVal.second );
             retVal.first = true;
         }
 
-        if ( isDir( idx ) )
+        if ( fileInfo.isDir() )
             fDirMapping[filePath] = retVal;
         else
             fFileMapping[filePath] = retVal;
@@ -242,7 +441,7 @@ std::pair< bool, QString > CDirModel::transformItem( const QModelIndex &idx ) co
 
 void CDirModel::saveM3U( QWidget *parent ) const
 {
-    auto rootIndex = this->rootIndex();
+    auto rootIndex = invisibleRootItem();
 
     auto baseName = QInputDialog::getText( parent, tr( "Series Name" ), tr( "Name:" ) );
     if ( baseName.isEmpty() )
@@ -251,33 +450,33 @@ void CDirModel::saveM3U( QWidget *parent ) const
     saveM3U( rootIndex, baseName );
 }
 
-QString CDirModel::saveM3U( const QModelIndex &parentIndex, const QString &baseName ) const
+QString CDirModel::saveM3U( const QStandardItem  * parent, const QString &baseName ) const
 {
-    if ( isDir( parentIndex ) )
+    if ( isDir( parent ) )
     {
-        auto parentDir = fileInfo( parentIndex ).absoluteDir();
+        auto parentDir = fileInfo( parent ).absoluteDir();
         std::list< QFileInfo > myMedia;
-        auto numRows = rowCount( parentIndex );
+        auto numRows = parent->rowCount();
         for ( int ii = 0; ii < numRows; ++ii )
         {
-            auto childIndex = index( ii, 0, parentIndex );
-            if ( !childIndex.isValid() )
+            auto child = parent->child( ii );
+            if ( !child )
                 continue;
 
-            if ( isDir( childIndex ) )
+            if ( isDir( child ) )
             {
-                auto childPlayList = saveM3U( childIndex, baseName );
+                auto childPlayList = saveM3U( child, baseName );
                 if ( childPlayList.isEmpty() ) // no media files found
                     continue;
                 myMedia.push_back( QFileInfo( childPlayList ) );;
             }
             else
             {
-                auto suffix = fileInfo( childIndex ).suffix();
+                auto suffix = fileInfo( child ).suffix();
                 std::set< QString > media = { "mkv", "mp4", "avi" };
                 if ( media.find( suffix ) == media.end() )
                     continue;
-                myMedia.push_back( fileInfo( childIndex ) );
+                myMedia.push_back( fileInfo( child ) );
             }
         }
         if ( !myMedia.empty() )
@@ -303,7 +502,7 @@ QString CDirModel::saveM3U( const QModelIndex &parentIndex, const QString &baseN
                               return true;
                           } );
             qDebug() << myMedia;
-            auto fi = fileInfo( parentIndex );
+            auto fi = fileInfo( parent );
             auto fn = QString( "%1 - %2.m3u" ).arg( baseName ).arg( fi.baseName() );
             if ( baseName == fi.baseName() )
                 fn = QString( "%1.m3u" ).arg( baseName );
@@ -331,20 +530,19 @@ void CDirModel::setTitleInfo( const QModelIndex &idx, std::shared_ptr< STitleInf
 {
     if ( !idx.isValid() )
         return;
-    if ( !isDir( idx ) )
-        return;
 
     auto fi = fileInfo( idx );
     fTitleInfoMapping[fi.absoluteFilePath()] = titleInfo;
-    fDirMapping.erase( fi.absoluteFilePath() );
-    emit dataChanged( idx, idx );
+    if ( isDir( idx ) )
+        fDirMapping.erase( fi.absoluteFilePath() );
+    else 
+        fFileMapping.erase( fi.absoluteFilePath() );
+    updatePattern( getItemFromindex( idx ) );
 }
 
 std::shared_ptr< STitleInfo > CDirModel::getTitleInfo( const QModelIndex &idx ) const
 {
     if ( !idx.isValid() )
-        return {};
-    if ( !isDir( idx ) )
         return {};
 
     auto fi = fileInfo( idx );
@@ -354,47 +552,58 @@ std::shared_ptr< STitleInfo > CDirModel::getTitleInfo( const QModelIndex &idx ) 
     return ( *pos ).second;
 }
 
-std::pair< bool, QStringList > CDirModel::transform( const QModelIndex &idx, bool displayOnly ) const
+std::pair< bool, QStringList > CDirModel::transform( const QStandardItem * parent, bool displayOnly ) const
 {
-    if ( !idx.isValid() )
+    if ( !parent)
         return std::make_pair( false, QStringList() );
 
     QStringList retVal;
-    auto numRows = rowCount( idx );
+    auto numRows = parent->rowCount();
     for ( int ii = 0; ii < numRows; ++ii )
     {
-        auto childIndex = index( ii, 0, idx );
-        if ( childIndex.isValid() )
-        {
-            auto sub = transform( childIndex, displayOnly );
-            if ( sub.first )
-                retVal << sub.second;
-            else
-                return sub;
-        }
+        auto child = parent->child( ii );
+        if ( !child )
+            continue;
+
+        auto sub = transform( child, displayOnly );
+        //if ( sub.first )
+            retVal << sub.second;
+        //else
+        //    return sub;
     }
 
-    auto newFile = transformItem( idx );
-    if ( newFile.first )
+    auto idx = indexFromItem( parent );
+    auto transformItem = itemFromIndex( index( idx.row(), CDirModel::EColumns::eTransformName, idx.parent() ) );
+    auto transformName = transformItem ? transformItem->text() : QString();
+    
+    if ( !transformName.isEmpty() && ( transformName != "<NOMATCH>" ) )
     {
-        retVal << QString( "'%1' => '%2'" ).arg( idx.data().toString() ).arg( newFile.second );
+    //if ( !parent->text( EColumns::eTransformName ).isEmpty() && parent->text( EColumns::eTransformName ) != "<NOMATCH>" )
+    //{
+    //auto newFile = transformItem( fileInfo( parent ) );
+    //if ( newFile.first )
+    //{
+        retVal << QString( "'%1' => '%2'" ).arg( parent->text() ).arg( transformName );
         if ( !displayOnly )
         {
-            auto oldName = this->filePath( idx );
+            auto oldName = this->filePath( parent );
             QFileInfo fi( oldName );
             bool aOK = false;
             if ( !fi.exists() )
             {
                 retVal[retVal.length() - 1] = QString( "ERROR: '%1' - No Longer Exists" ).arg( oldName );;
             }
-            else
+            else 
             {
                 auto dir = fi.absoluteDir();
-                auto newName = dir.absoluteFilePath( newFile.second );
-                aOK = QFile::rename( oldName, newName );
-                if ( !aOK )
+                auto newName = dir.absoluteFilePath( transformName );
+                if ( oldName != newName )
                 {
-                    retVal[retVal.length() - 1] = "ERROR: " + retVal[retVal.length() - 1] + ": FAILED TO RENAME";
+                    aOK = QFile::rename( oldName, newName );
+                    if ( !aOK )
+                    {
+                        retVal[retVal.length() - 1] = "ERROR: " + retVal[retVal.length() - 1] + ": FAILED TO RENAME";
+                    }
                 }
             }
             return std::make_pair( aOK, retVal );
@@ -404,47 +613,71 @@ std::pair< bool, QStringList > CDirModel::transform( const QModelIndex &idx, boo
     return std::make_pair( true, retVal );
 }
 
-QModelIndex CDirModel::rootIndex() const
+std::pair< bool, QStringList > CDirModel::transform( bool displayOnly ) const
 {
-    auto rootPath = this->rootPath();
-    auto root = this->index( rootPath );
-    return root;
+    CAutoWaitCursor awc;
+    return transform( invisibleRootItem(), displayOnly );
 }
 
 void CDirModel::patternChanged()
 {
-    fFileMapping.clear();
-    patternChanged( rootIndex() );
+    fPatternTimer->stop();
+    fPatternTimer->start();
 }
 
-void CDirModel::patternChanged( const QModelIndex &idx )
+void CDirModel::slotPatternChanged()
 {
-    if ( !idx.isValid() )
+    fFileMapping.clear();
+    fDirMapping.clear();
+    patternChanged( invisibleRootItem() );
+}
+
+void CDirModel::patternChanged( const QStandardItem * item )
+{
+    if ( !item )
         return;
 
-    auto numRows = rowCount( idx );
+    updatePattern( item );
+
+    auto numRows = item->rowCount();
     for ( int ii = 0; ii < numRows; ++ii )
     {
-        auto childIndex = index( ii, 4, idx );
-        if ( childIndex.isValid() )
+        auto child = item->child( ii );
+        if ( child )
         {
-            emit dataChanged( childIndex, childIndex );
-            patternChanged( childIndex );
+            //emit dataChanged( child, child );
+            patternChanged( child );
         }
     }
 }
 
-CDirFilterModel::CDirFilterModel( QObject *parent /*= nullptr */ ) :
-    QSortFilterProxyModel( parent )
+void CDirModel::updatePattern( const QStandardItem *item )const
 {
-
+    if ( item != invisibleRootItem() )
+    {
+        auto idx = item->index();
+        auto transformedIndex = idx.model()->index( idx.row(), EColumns::eTransformName, idx.parent() );
+        auto transformedItem = this->itemFromIndex( transformedIndex );
+        updatePattern( item, transformedItem );
+    }
 }
 
-bool CDirFilterModel::filterAcceptsRow( int sourceRow, const QModelIndex &parent ) const
+void CDirModel::updatePattern( const QStandardItem * item, QStandardItem * transformedItem ) const
 {
-    auto index = sourceModel()->index( sourceRow, 0, parent );
-    auto data = index.data().toString();
-    return data != "#recycle" && data != "Subs";
+    if ( !item || !transformedItem )
+        return;
+
+    auto path = item->data( ECustomRoles::eFullPathRole ).toString();
+    auto fileInfo = QFileInfo( path );
+    auto transformInfo = transformItem( fileInfo );
+    if ( transformInfo.second == "<NOMATCH>" || !isValidName( transformInfo.second, fileInfo.isDir() ) && !isValidName( fileInfo ) )
+        transformedItem->setBackground( Qt::red );
+    else
+    {
+        if ( transformedItem->text() != transformInfo.second )
+            transformedItem->setText( transformInfo.second );
+        transformedItem->setBackground( item->background() );
+    }
 }
 
 QString STitleInfo::getTitle() const

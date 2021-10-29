@@ -42,7 +42,14 @@ class CSelectTMDB : public QDialog
 {
     Q_OBJECT
 public:
-    CSelectTMDB( const QString & searchText, std::shared_ptr< STitleInfo > titleInfo, QWidget* parent = 0);
+    enum EItemType
+    {
+        eMovie = Qt::UserRole + 1,
+        eTVShow,
+        eSeason,
+        eEpisode
+    };
+    CSelectTMDB( const QString & searchText, std::shared_ptr< STitleInfo > titleInfo, bool isMovie, QWidget* parent = 0);
 
     void reset();
 
@@ -58,23 +65,40 @@ public Q_SLOTS:
     void slotSelectionChanged();
     void slotByNameChanged();
 private:
+    [[nodiscard]] QString getText( QTreeWidgetItem *item, int column, bool forceTop=false ) const;
     bool hasConfiguration() const;
 
     void loadSearchResult();
-    [[nodiscard]] bool loadSearchResult( const QJsonObject &resultItem );
     void loadConfig();
     void loadImageResults( QNetworkReply *reply );
+    void getTVDetails( QTreeWidgetItem *item, int tmdbid, int seasonNum );
+    void loadTVDetails( QNetworkReply *reply );
+    void loadSeasonDetails( QNetworkReply *reply );
+    [[nodiscard]] bool loadEpisodeDetails( const QJsonObject &episodeInfo, QTreeWidgetItem *seasonItem );
     void loadMovieResult();
+    [[nodiscard]] bool loadSearchResult( const QJsonObject &resultItem, bool multipleResults );
+
+    void deleteParent( QTreeWidgetItem *item );
+    void removeFromMap( std::map< QNetworkReply *, QTreeWidgetItem * > &map, QTreeWidgetItem *item );
+    void removeFromMaps( QTreeWidgetItem *item );
+
+    void autoAcceptOnFinished();
 
     std::unique_ptr< Ui::CSelectTMDB > fImpl;
     QNetworkAccessManager *fManager{ nullptr };
     QNetworkReply *fConfigReply{ nullptr };
     QNetworkReply *fSearchReply{ nullptr };
     QNetworkReply *fGetMovieReply{ nullptr };
+    QNetworkReply *fGetTVReply{ nullptr };
     std::optional< QString > fConfiguration;
+
     std::map< QNetworkReply *, QTreeWidgetItem * > fImageInfoReplies;
+    std::map< QNetworkReply *, QTreeWidgetItem * > fTVInfoReplies;
+    std::map< QNetworkReply *, QTreeWidgetItem * > fSeasonInfoReplies;
+
     CButtonEnabler *fButtonEnabler{ nullptr };
     int fConfigErrorCount{ 0 };
+    bool fIsMovie{ false };
 };
 
 #endif 

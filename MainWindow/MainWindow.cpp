@@ -34,6 +34,7 @@
 #include <QCompleter>
 #include <QMediaPlaylist>
 #include <QMessageBox>
+#include <QFileSystemModel>
 
 CMainWindow::CMainWindow( QWidget* parent )
     : QMainWindow( parent ),
@@ -41,6 +42,7 @@ CMainWindow::CMainWindow( QWidget* parent )
 {
     fImpl->setupUi( this );
     connect( fImpl->directory, &CDelayLineEdit::sigTextChanged, this, &CMainWindow::slotDirectoryChanged );
+    connect( fImpl->btnTransform, &QPushButton::clicked, this, &CMainWindow::slotTransform );
 
     connect( fImpl->btnSelectDir, &QPushButton::clicked, this, &CMainWindow::slotSelectDirectory );
     connect( fImpl->btnLoad, &QPushButton::clicked, this, &CMainWindow::slotLoad );
@@ -58,10 +60,10 @@ CMainWindow::CMainWindow( QWidget* parent )
 
     auto completer = new QCompleter( this );
     auto fsModel = new QFileSystemModel( completer );
-    fsModel->setRootPath( "" );
+    fsModel->setRootPath( "/" );
     completer->setModel( fsModel );
     completer->setCompletionMode( QCompleter::PopupCompletion );
-    completer->setCaseSensitivity( Qt::CaseInsensitive );
+    //completer->setCaseSensitivity( Qt::CaseInsensitive );
 
     fImpl->directory->setCompleter( completer );
     fImpl->files->setExpandsOnDoubleClick( false );
@@ -173,46 +175,35 @@ void CMainWindow::slotAboutToToggle()
 
 bool CMainWindow::isDir( const QModelIndex &idx ) const
 {
-    if ( idx.model() == fDirModel.get() )
-        return fDirModel->isDir( idx );
-    else if ( idx.model() == fDirFilterModel.get() )
-    {
-        return isDir( dynamic_cast<const CDirFilterModel *>( idx.model() )->mapToSource( idx ) );
-    }
-    return false;
-    
+    return fDirModel->isDir( idx );
 }
+
 void CMainWindow::slotDoubleClicked( const QModelIndex &idx )
 {
-    if ( !isDir( idx ) )
+    if ( !isDir( idx ) && fImpl->treatAsMovie->isChecked() )
         return;
-    QModelIndex sourceIdx = idx;
-    auto model = idx.model();
-    if ( sourceIdx.model() == fDirFilterModel.get() )
-    {
-        sourceIdx = dynamic_cast<const CDirFilterModel *>( model )->mapToSource( idx );
-        model = dynamic_cast<const CDirFilterModel *>( model )->sourceModel();
-    }
 
-    auto dirModel = dynamic_cast<CDirModel *>( const_cast<QAbstractItemModel *>( model ) );
+    auto dirModel = dynamic_cast<CDirModel *>( const_cast<QAbstractItemModel *>( idx.model() ) );
 
-    auto titleInfo = dirModel->getTitleInfo( sourceIdx );
+    auto titleInfo = dirModel->getTitleInfo( idx );
     
-    auto nm = dirModel->index( sourceIdx.row(), 4, idx.parent() ).data().toString();
-    if ( nm == "<NOMATCH>" )
+    auto nm = dirModel->index( idx.row(), CDirModel::EColumns::eTransformName, idx.parent() ).data().toString();
+    if ( nm == "<NOMATCH>" || nm.isEmpty() )
     {
-        nm = dirModel->index( sourceIdx.row(), 0, idx.parent() ).data().toString();
+        nm = dirModel->index( idx.row(), CDirModel::EColumns::eFSName, idx.parent() ).data().toString();
     }
-    CSelectTMDB dlg( nm, titleInfo, this );
+    nm = QFileInfo( nm ).baseName();
+    CSelectTMDB dlg( nm, titleInfo, fImpl->treatAsMovie->isChecked(), this );
     if ( dlg.exec() == QDialog::Accepted )
     {
         auto titleInfo = dlg.getTitleInfo();
         if ( titleInfo->getTitle().isEmpty() )
             return;
 
-        dirModel->setTitleInfo( sourceIdx, titleInfo );
+        dirModel->setTitleInfo( idx, titleInfo );
     }
 }
+
 void CMainWindow::slotToggleTreatAsMovie()
 {
     loadPatterns();
@@ -231,59 +222,34 @@ void CMainWindow::slotInputPatternChanged( const QString& inPattern )
 
 void CMainWindow::slotLoad()
 {
-    //QRegularExpression regExp(inPattern);
-    //if (!regExp.isValid())
-    //{
-    //	QMessageBox::critical(dynamic_cast<QWidget*>(parent()), tr("Invalid RegEx"), tr("Invalid regular expression: '%1").arg(inPattern));
-    //	return;
-    //}
     loadDirectory();
 }
 
 void CMainWindow::loadDirectory()
 {
     fDirModel.reset( new CDirModel );
-    fDirFilterModel.reset( new CDirFilterModel );
-
-    fDirFilterModel->setSourceModel( fDirModel.get() );
     fImpl->files->setModel( fDirModel.get() );
-    fDirModel->setReadOnly( true );
-    fDirModel->setFilter( QDir::AllDirs | QDir::Files | QDir::NoDotAndDotDot );
-    fDirModel->setNameFilterDisables( false );
-    connect( fDirModel.get(), &QFileSystemModel::directoryLoaded, this, &CMainWindow::slotDirLoaded );
     connect( fImpl->outFilePattern, &CDelayLineEdit::sigTextChanged, fDirModel.get(), &CDirModel::slotOutputFilePatternChanged );
     connect( fImpl->outDirPattern, &CDelayLineEdit::sigTextChanged, fDirModel.get(), &CDirModel::slotOutputDirPatternChanged );
-    connect( fImpl->btnTransform, &QPushButton::clicked, this, &CMainWindow::slotTransform );
 
     fDirModel->slotInputPatternChanged( fImpl->inPattern->text() );
     fDirModel->slotOutputFilePatternChanged( fImpl->outFilePattern->text() );
     fDirModel->slotOutputDirPatternChanged( fImpl->outDirPattern->text() );
     fDirModel->slotTreatAsMovieChanged( fImpl->treatAsMovie->isChecked() );
-    fDirModel->setNameFilters( fImpl->extensions->text().split( ";" ) );
-    fDirModel->setRootPath( fImpl->directory->text() );
-    fImpl->files->setRootIndex( fDirModel->index( fImpl->directory->text() ) );
+    fDirModel->setNameFilters( fImpl->extensions->text().split( ";" ), fImpl->files  );
+    fDirModel->setRootPath( fImpl->directory->text(), fImpl->files );
     fImpl->btnTransform->setEnabled( true );
     fImpl->btnSaveM3U->setEnabled( true );
-}
-
-void CMainWindow::slotDirLoaded( const QString& dirName )
-{
-    auto idx = fDirModel->index( dirName );
-    Q_ASSERT( idx.isValid() );
-    auto numRows = fDirModel->rowCount( idx );
-    for ( int ii = 0; ii < numRows; ++ii )
-    {
-        auto childIndex = fDirModel->index( ii, 0, idx );
-        if ( childIndex.isValid() && fDirModel->isDir( childIndex ) )
-        {
-            fImpl->files->setExpanded( childIndex, true );
-        }
-    }
 }
 
 void CMainWindow::slotTransform()
 {
     auto transformations = fDirModel->transform( true );
+    if ( transformations.second.isEmpty() )
+    {
+        QMessageBox::information( this, tr( "Nothing to change" ), tr( "No files or directories could be transformed" ) );
+        return;
+    }
     CScrollMessageBox dlg( tr( "Transformations:" ), tr( "Proceed?" ), this );
     dlg.setPlainText( transformations.second.join( "\n" ) );
     dlg.setIconLabel( QMessageBox::Information );
@@ -299,8 +265,9 @@ void CMainWindow::slotTransform()
             dlg.setButtons( QDialogButtonBox::Ok );
             dlg.exec();
         }
+        else
+            loadDirectory();
     }
-    loadDirectory();
 }
 
 

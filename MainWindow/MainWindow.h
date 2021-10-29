@@ -38,7 +38,6 @@ public Q_SLOTS:
     void slotSelectDirectory();
     void slotDirectoryChanged();
     void slotLoad();
-    void slotDirLoaded(const QString& dirName);
     void slotTransform();
     void slotSaveM3U();
     void slotInputPatternChanged(const QString& inPattern);
@@ -57,7 +56,6 @@ private:
     void loadDirectory();
 
     std::unique_ptr< CDirModel > fDirModel;
-    std::unique_ptr< CDirFilterModel > fDirFilterModel;
     std::unique_ptr< Ui::CMainWindow > fImpl;
 };
 
