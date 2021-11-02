@@ -32,23 +32,7 @@
 class QTreeView;
 class QMediaPlaylist;
 class QFileIconProvider;
-
-struct STitleInfo
-{
-    QString getTitle() const;
-    QString getYear() const;
-    QString getEpisodeTitle() const;
-
-    QString fTitle;
-    QString fReleaseDate;
-    QString fTMDBID;
-    QString fSeason;
-    QString fEpisode;
-    QString fEpisodeTitle;
-    QString fExtraInfo;
-
-    bool fIsMovie{ true };
-};
+struct STitleInfo;
 
 class CDirModel : public QStandardItemModel
 {

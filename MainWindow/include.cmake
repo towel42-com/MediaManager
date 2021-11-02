@@ -23,16 +23,20 @@
 set(qtproject_SRCS
     MainWindow.cpp
     DirModel.cpp
+    TitleInfo.cpp
+    SearchTMDB.cpp
     SelectTMDB.cpp
 )
 
 set(qtproject_H
     MainWindow.h
     DirModel.h
+    SearchTMDB.h
     SelectTMDB.h
 )
 
 set(project_H
+    TitleInfo.h
 )
 
 set(qtproject_UIS

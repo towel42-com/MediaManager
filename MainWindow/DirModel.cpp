@@ -21,6 +21,7 @@
 // SOFTWARE.
 
 #include "DirModel.h"
+#include "TitleInfo.h"
 #include "SABUtils/StringUtils.h"
 #include "SABUtils/QtUtils.h"
 #include "SABUtils/AutoWaitCursor.h"
@@ -680,20 +681,3 @@ void CDirModel::updatePattern( const QStandardItem * item, QStandardItem * trans
     }
 }
 
-QString STitleInfo::getTitle() const
-{
-    return NStringUtils::transformTitle( fTitle );
-}
-
-QString STitleInfo::getYear() const
-{
-    auto dt = NQtUtils::findDate( fReleaseDate );
-    if ( !dt.isValid() )
-        return QString();
-    return QString::number( dt.year() );
-}
-
-QString STitleInfo::getEpisodeTitle() const
-{
-    return NStringUtils::transformTitle( fEpisodeTitle );
-}

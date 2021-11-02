@@ -23,6 +23,7 @@
 #include "MainWindow.h"
 #include "DirModel.h"
 #include "SelectTMDB.h"
+#include "TitleInfo.h"
 
 #include "SABUtils/utils.h"
 #include "SABUtils/ScrollMessageBox.h"
@@ -110,6 +111,7 @@ void CMainWindow::loadSettings()
     fImpl->extensions->setText( settings.value( "Extensions", QString( "*.mkv;*.mp4;*.avi;*.idx;*.sub;*.srt" ) ).toString() );
 
     fImpl->treatAsMovie->setChecked( settings.value( "TreatAsMovie", true ).toBool() );
+    fImpl->exactMatchesOnly->setChecked( settings.value( "ExactMatchesOnly", true ).toBool() );
 
     loadPatterns();
 }
@@ -141,7 +143,8 @@ void CMainWindow::saveSettings()
     settings.setValue( "Directory", fImpl->directory->text() );
     settings.setValue( "Extensions", fImpl->extensions->text() );
     settings.setValue( "TreatAsMovie", fImpl->treatAsMovie->isChecked() );
-
+    settings.setValue( "ExactMatchesOnly", fImpl->exactMatchesOnly->isChecked() );
+    
     if ( fImpl->treatAsMovie->isChecked() )
         settings.beginGroup( "ForMovies" );
     else
@@ -180,8 +183,8 @@ bool CMainWindow::isDir( const QModelIndex &idx ) const
 
 void CMainWindow::slotDoubleClicked( const QModelIndex &idx )
 {
-    if ( !isDir( idx ) && fImpl->treatAsMovie->isChecked() )
-        return;
+    //if ( !isDir( idx ) && fImpl->treatAsMovie->isChecked() )
+    //    return;
 
     auto dirModel = dynamic_cast<CDirModel *>( const_cast<QAbstractItemModel *>( idx.model() ) );
 
@@ -192,8 +195,11 @@ void CMainWindow::slotDoubleClicked( const QModelIndex &idx )
     {
         nm = dirModel->index( idx.row(), CDirModel::EColumns::eFSName, idx.parent() ).data().toString();
     }
-    nm = QFileInfo( nm ).baseName();
-    CSelectTMDB dlg( nm, titleInfo, fImpl->treatAsMovie->isChecked(), this );
+    nm = QFileInfo( nm ).completeBaseName();
+    CSelectTMDB dlg( nm, titleInfo, this );
+    dlg.setSearchForMovies( fImpl->treatAsMovie->isChecked(), true );
+    dlg.setExactMatchOnly( fImpl->exactMatchesOnly->isChecked(), true );
+
     if ( dlg.exec() == QDialog::Accepted )
     {
         auto titleInfo = dlg.getTitleInfo();
@@ -202,6 +208,12 @@ void CMainWindow::slotDoubleClicked( const QModelIndex &idx )
 
         dirModel->setTitleInfo( idx, titleInfo );
     }
+    //else
+    //{
+    //    auto item = dirModel->itemFromIndex( idx );
+    //    if ( item )
+    //        item->setBackground( Qt::red );
+    //}
 }
 
 void CMainWindow::slotToggleTreatAsMovie()

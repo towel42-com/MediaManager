@@ -31,6 +31,8 @@
 
 namespace Ui {class CSelectTMDB;};
 
+struct SSearchTMDBInfo;
+class CSearchTMDB;
 class QNetworkAccessManager;
 class QNetworkReply;
 class QJsonObject;
@@ -49,56 +51,51 @@ public:
         eSeason,
         eEpisode
     };
-    CSelectTMDB( const QString & searchText, std::shared_ptr< STitleInfo > titleInfo, bool isMovie, QWidget* parent = 0);
 
-    void reset();
+    CSelectTMDB( const QString & searchText, std::shared_ptr< STitleInfo > titleInfo, QWidget* parent = 0);
 
     ~CSelectTMDB();
 
     std::shared_ptr< STitleInfo > getTitleInfo() const;
 
+    void setSearchForMovies( bool value, bool init );
+    void setExactMatchOnly( bool value, bool init );
+
 public Q_SLOTS:
     void slotSearchTextChanged();
-    void slotRequestFinished( QNetworkReply *reply );
 
-    void slotGetConfig();
     void slotSelectionChanged();
     void slotByNameChanged();
+    void slotExactOrForMovieChanged();
+
+    void slotSearchFinished();
+    void slotLoadNextResult();
+    void slotReset();
+Q_SIGNALS:
+    void sigStartSearch();
 private:
-    [[nodiscard]] QString getText( QTreeWidgetItem *item, int column, bool forceTop=false ) const;
-    bool hasConfiguration() const;
+    void updateByName( bool init );
+    void updateFromSearchInfo( std::shared_ptr< SSearchTMDBInfo > searchInfo );
 
-    void loadSearchResult();
-    void loadConfig();
-    void loadImageResults( QNetworkReply *reply );
-    void getTVDetails( QTreeWidgetItem *item, int tmdbid, int seasonNum );
-    void loadTVDetails( QNetworkReply *reply );
-    void loadSeasonDetails( QNetworkReply *reply );
-    [[nodiscard]] bool loadEpisodeDetails( const QJsonObject &episodeInfo, QTreeWidgetItem *seasonItem );
-    void loadMovieResult();
-    [[nodiscard]] bool loadSearchResult( const QJsonObject &resultItem, bool multipleResults );
+    std::shared_ptr< SSearchTMDBInfo > getSearchInfo();
+    void resetHeader();
 
+    void loadResults( std::shared_ptr< STitleInfo > item, QTreeWidgetItem *parent );
     void deleteParent( QTreeWidgetItem *item );
-    void removeFromMap( std::map< QNetworkReply *, QTreeWidgetItem * > &map, QTreeWidgetItem *item );
-    void removeFromMaps( QTreeWidgetItem *item );
-
-    void autoAcceptOnFinished();
 
     std::unique_ptr< Ui::CSelectTMDB > fImpl;
-    QNetworkAccessManager *fManager{ nullptr };
-    QNetworkReply *fConfigReply{ nullptr };
-    QNetworkReply *fSearchReply{ nullptr };
-    QNetworkReply *fGetMovieReply{ nullptr };
-    QNetworkReply *fGetTVReply{ nullptr };
-    std::optional< QString > fConfiguration;
-
-    std::map< QNetworkReply *, QTreeWidgetItem * > fImageInfoReplies;
-    std::map< QNetworkReply *, QTreeWidgetItem * > fTVInfoReplies;
-    std::map< QNetworkReply *, QTreeWidgetItem * > fSeasonInfoReplies;
 
     CButtonEnabler *fButtonEnabler{ nullptr };
-    int fConfigErrorCount{ 0 };
-    bool fIsMovie{ false };
+    CSearchTMDB * fSearchTMDB{ nullptr };
+    std::shared_ptr< SSearchTMDBInfo > fSearchInfo;
+
+    bool fLoading{ false };
+    bool fStopLoading{ false };
+    bool fSearchPending{ false };
+    std::shared_ptr< SSearchTMDBInfo > fQueuedSearchInfo;
+
+    std::shared_ptr< STitleInfo > fBestMatch;
+    std::list< std::shared_ptr< STitleInfo > > fCurrentResults;
 };
 
 #endif 
