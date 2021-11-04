@@ -23,7 +23,7 @@
 #include "SearchTMDB.h"
 #include "TitleInfo.h"
 
-
+#include "SABUtils/StringUtils.h"
 #include "SABUtils/QtUtils.h"
 
 #include <QUrl>
@@ -47,7 +47,19 @@ SSearchTMDBInfo::SSearchTMDBInfo( const QString & text, std::shared_ptr< STitleI
     updateSearchCriteria( true );
 }
 
-QString smartTrim( const QString & string )
+QString stripKnownData( const QString & string )
+{
+    QString retVal = string;
+    auto separators = QStringList() << "1080p" << "720p" << "AMZN" << "WebRip" << "WEB" << "-RUMOUR" << "-PECULATE" << "h264" << "h265" << "rarbg" << "-";
+    for ( auto &&separator : separators )
+    {
+        retVal.replace( "[" + separator + "]", "", Qt::CaseSensitivity::CaseInsensitive );
+        retVal.replace( separator, "", Qt::CaseSensitivity::CaseInsensitive );
+    }
+    return retVal;
+}
+
+QString smartTrim( const QString & string, bool stripInnerPeriods =false )
 {
     auto retVal = string;
     auto pos = retVal.indexOf( QRegularExpression( "[^\\.\\s\\-]" ) );
@@ -57,6 +69,8 @@ QString smartTrim( const QString & string )
     pos = retVal.lastIndexOf( QRegularExpression( "[^\\.\\s\\-]" ) );
     if ( pos != -1 )
         retVal = retVal.left( pos + 1 );
+    if ( stripInnerPeriods )
+        retVal.replace( ".", " " );
     return retVal;
 }
 
@@ -65,6 +79,8 @@ void SSearchTMDBInfo::updateSearchCriteria( bool updateSearchBy )
     fSearchName = fInitSearchString;
     QString seasonStr;
     QString episodeStr;
+
+    fSearchName = smartTrim( stripKnownData( fSearchName ) );
 
     if ( fIsMovie )
     {
@@ -75,7 +91,26 @@ void SSearchTMDBInfo::updateSearchCriteria( bool updateSearchBy )
             fReleaseDate = smartTrim( match.captured( "releaseDate" ) );
             fSearchName.replace( regExp, "" );
         }
-
+        else
+        {
+            auto regExp = QRegularExpression( "\\.(?<releaseDate>\\d{2,4})\\." );
+            match = regExp.match( fSearchName );
+            if ( match.hasMatch() )
+            {
+                fReleaseDate = smartTrim( match.captured( "releaseDate" ) );
+                fSearchName.replace( regExp, "" );
+            }
+            else
+            {
+                auto regExp = QRegularExpression( "\\.(?<releaseDate>\\d{2,4})$" );
+                match = regExp.match( fSearchName );
+                if ( match.hasMatch() )
+                {
+                    fReleaseDate = smartTrim( match.captured( "releaseDate" ) );
+                    fSearchName.replace( regExp, "" );
+                }
+            }
+        }
         regExp = QRegularExpression( "\\[tmdbid=(?<tmdbid>\\d+)\\]" );
         match = regExp.match( fSearchName );
         if ( match.hasMatch() )
@@ -84,7 +119,7 @@ void SSearchTMDBInfo::updateSearchCriteria( bool updateSearchBy )
             fSearchName.replace( regExp, "" );
         }
 
-        fSearchName = smartTrim( fSearchName );
+        fSearchName = smartTrim( fSearchName, true );
     }
     else
     {
@@ -107,24 +142,10 @@ void SSearchTMDBInfo::updateSearchCriteria( bool updateSearchBy )
             fSearchName.replace( regExp, "" );
         }
 
-        auto separators = QStringList() << "-" << "1080p" << "720p" << "AMZN" << "WebRip";
-        for ( auto &&separator : separators )
-        {
-            fEpisodeTitle.replace( separator, "" );
-            auto pos = fSearchName.indexOf( separator );
-            if ( pos != -1 )
-            {
-                if ( fEpisodeTitle.isEmpty() )
-                    fEpisodeTitle = smartTrim( fSearchName.left( pos ) );
-                fSearchName = smartTrim( fSearchName.mid( pos + separator.length() ) );
-            }
-            fSearchName.replace( separator, "" );
-        }
-
         if ( !dataBeforeSeason.isEmpty() )
             fSearchName = dataBeforeSeason;
 
-        fSearchName = smartTrim( fSearchName );
+        fSearchName = smartTrim( fSearchName, true );
     }
 
     if ( fTitleInfo )
@@ -408,7 +429,7 @@ std::optional< std::pair< QUrl, ESearchType > > SSearchTMDBInfo::getSearchURL() 
         query.addQueryItem( "include_adult", "true" );
         if ( !fReleaseDate.isEmpty() )
             query.addQueryItem( "year", fReleaseDate );
-        auto searchStrings = fSearchName.split( QRegularExpression( "[\\s\\.]" ), Qt::SplitBehaviorFlags::SkipEmptyParts );
+        auto searchStrings = fSearchName.split( QRegularExpression( "[\\s\\.]" ), TSkipEmptyParts );
 
         if ( searchStrings.isEmpty() )
             return {};
