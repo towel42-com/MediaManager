@@ -28,6 +28,7 @@
 #include <QFileInfo>
 #include <memory>
 #include <unordered_set>
+#include "SABUtils/QtHash.h"
 
 class QTreeView;
 class QMediaPlaylist;

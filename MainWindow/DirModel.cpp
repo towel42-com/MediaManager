@@ -22,6 +22,7 @@
 
 #include "DirModel.h"
 #include "TitleInfo.h"
+
 #include "SABUtils/StringUtils.h"
 #include "SABUtils/QtUtils.h"
 #include "SABUtils/AutoWaitCursor.h"
@@ -36,6 +37,7 @@
 #include <QFileIconProvider>
 #include <QTimer>
 #include <QTreeView>
+#include <QApplication>
 
 #include <set>
 #include <list>
@@ -120,6 +122,7 @@ void CDirModel::loadFileInfo( const QFileInfo & fileInfo, QStandardItem * parent
                 continue;
             loadFileInfo( ii, row.front() );
         }
+        qApp->processEvents();
     }
     if ( fTreeView )
     {
