@@ -27,6 +27,7 @@
 
 #include "SABUtils/utils.h"
 #include "SABUtils/ScrollMessageBox.h"
+#include "SABUtils/AutoWaitCursor.h"
 #include "ui_MainWindow.h"
 
 #include <QSettings>
@@ -158,6 +159,8 @@ void CMainWindow::saveSettings()
 void CMainWindow::slotDirectoryChanged()
 {
     auto dirName = fImpl->directory->text();
+    CAutoWaitCursor awc;
+
     QFileInfo fi( dirName );
     fImpl->btnLoad->setEnabled( !dirName.isEmpty() && fi.exists() && fi.isDir() );
     fImpl->btnTransform->setEnabled( false );
@@ -195,7 +198,8 @@ void CMainWindow::slotDoubleClicked( const QModelIndex &idx )
     {
         nm = dirModel->index( idx.row(), CDirModel::EColumns::eFSName, idx.parent() ).data().toString();
     }
-    nm = QFileInfo( nm ).completeBaseName();
+    if ( QFileInfo( nm ).isFile() )
+        nm = QFileInfo( nm ).completeBaseName();
     CSelectTMDB dlg( nm, titleInfo, this );
     dlg.setSearchForMovies( fImpl->treatAsMovie->isChecked(), true );
     dlg.setExactMatchOnly( fImpl->exactMatchesOnly->isChecked(), true );
@@ -239,6 +243,8 @@ void CMainWindow::slotLoad()
 
 void CMainWindow::loadDirectory()
 {
+    CAutoWaitCursor awc;
+
     fDirModel.reset( new CDirModel );
     fImpl->files->setModel( fDirModel.get() );
     connect( fImpl->outFilePattern, &CDelayLineEdit::sigTextChanged, fDirModel.get(), &CDirModel::slotOutputFilePatternChanged );
