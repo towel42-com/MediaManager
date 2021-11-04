@@ -76,6 +76,7 @@ CSelectTMDB::CSelectTMDB( const QString & text, std::shared_ptr< STitleInfo > ti
     fImpl->results->setIconSize( QSize( 128, 128 ) );
 
     updateByName( true );
+    updateEnabled();
 
     QTimer::singleShot( 0, this, &CSelectTMDB::slotSearchTextChanged );
 }
@@ -101,6 +102,7 @@ void CSelectTMDB::updateFromSearchInfo( std::shared_ptr< SSearchTMDBInfo > searc
     fImpl->byTMDBID->setChecked( !fSearchTMDB->searchByName() );
     fImpl->exactMatchesOnly->setChecked( searchInfo->fExactMatchOnly );
     fImpl->searchForMovies->setChecked( searchInfo->fIsMovie );
+    updateEnabled();
 
     connect( fImpl->byName, &QRadioButton::toggled, this, &CSelectTMDB::slotByNameChanged );
     connect( fImpl->exactMatchesOnly, &QCheckBox::clicked, this, &CSelectTMDB::slotExactOrForMovieChanged );
@@ -369,14 +371,20 @@ void CSelectTMDB::slotExactOrForMovieChanged()
 
     searchInfo->fExactMatchOnly = fImpl->exactMatchesOnly->isChecked();
     searchInfo->fIsMovie = fImpl->searchForMovies->isChecked();
+    updateEnabled();
+    searchInfo->updateSearchCriteria( false );
+    updateFromSearchInfo( fSearchInfo );
+    slotSearchTextChanged();
+}
+
+
+void CSelectTMDB::updateEnabled()
+{
     fImpl->searchSeason->setEnabled( !fImpl->searchForMovies->isChecked() && !fImpl->byTMDBID->isChecked() );
     fImpl->searchEpisode->setEnabled( !fImpl->searchForMovies->isChecked() && !fImpl->byTMDBID->isChecked() );
     fImpl->resultSeason->setEnabled( !fImpl->searchForMovies->isChecked() );
     fImpl->resultEpisode->setEnabled( !fImpl->searchForMovies->isChecked() );
     fImpl->resultEpisodeTitle->setEnabled( !fImpl->searchForMovies->isChecked() );
-    searchInfo->updateSearchCriteria( false );
-    updateFromSearchInfo( fSearchInfo );
-    slotSearchTextChanged();
 }
 
 void CSelectTMDB::slotSearchTextChanged()

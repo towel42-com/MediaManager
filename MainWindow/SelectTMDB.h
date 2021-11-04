@@ -74,6 +74,7 @@ public Q_SLOTS:
 Q_SIGNALS:
     void sigStartSearch();
 private:
+    void updateEnabled();
     void updateByName( bool init );
     void updateFromSearchInfo( std::shared_ptr< SSearchTMDBInfo > searchInfo );
 
