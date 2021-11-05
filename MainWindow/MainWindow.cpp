@@ -37,23 +37,13 @@
 #include <QMediaPlaylist>
 #include <QMessageBox>
 #include <QFileSystemModel>
+#include <QTimer>
 
 CMainWindow::CMainWindow( QWidget* parent )
     : QMainWindow( parent ),
     fImpl( new Ui::CMainWindow )
 {
     fImpl->setupUi( this );
-    connect( fImpl->directory, &CDelayLineEdit::sigTextChanged, this, &CMainWindow::slotDirectoryChanged );
-    connect( fImpl->btnTransform, &QPushButton::clicked, this, &CMainWindow::slotTransform );
-
-    connect( fImpl->btnSelectDir, &QPushButton::clicked, this, &CMainWindow::slotSelectDirectory );
-    connect( fImpl->btnLoad, &QPushButton::clicked, this, &CMainWindow::slotLoad );
-    connect( fImpl->btnSaveM3U, &QPushButton::clicked, this, &CMainWindow::slotSaveM3U );
-    connect( fImpl->treatAsMovie, &QCheckBox::clicked, this, &CMainWindow::slotToggleTreatAsMovie );
-    connect( fImpl->treatAsMovie, &QCheckBox::pressed, this, &CMainWindow::slotAboutToToggle );
-
-    connect( fImpl->inPattern, &CDelayLineEdit::sigTextChanged, this, &CMainWindow::slotInputPatternChanged );
-    connect( fImpl->files, &QTreeView::doubleClicked, this, &CMainWindow::slotDoubleClicked );
 
     fImpl->inPattern->setDelay( 1000 );
     fImpl->directory->setDelay( 1000 );
@@ -71,7 +61,20 @@ CMainWindow::CMainWindow( QWidget* parent )
     fImpl->files->setExpandsOnDoubleClick( false );
 
     loadSettings();
-    slotDirectoryChanged();
+
+    connect( fImpl->directory, &CDelayLineEdit::sigTextChanged, this, &CMainWindow::slotDirectoryChanged );
+    connect( fImpl->btnTransform, &QPushButton::clicked, this, &CMainWindow::slotTransform );
+
+    connect( fImpl->btnSelectDir, &QPushButton::clicked, this, &CMainWindow::slotSelectDirectory );
+    connect( fImpl->btnLoad, &QPushButton::clicked, this, &CMainWindow::slotLoad );
+    connect( fImpl->btnSaveM3U, &QPushButton::clicked, this, &CMainWindow::slotSaveM3U );
+    connect( fImpl->treatAsMovie, &QCheckBox::clicked, this, &CMainWindow::slotToggleTreatAsMovie );
+    connect( fImpl->treatAsMovie, &QCheckBox::pressed, this, &CMainWindow::slotAboutToToggle );
+
+    connect( fImpl->inPattern, &CDelayLineEdit::sigTextChanged, this, &CMainWindow::slotInputPatternChanged );
+    connect( fImpl->files, &QTreeView::doubleClicked, this, &CMainWindow::slotDoubleClicked );
+
+    QTimer::singleShot( 0, this, &CMainWindow::slotDirectoryChanged );
 }
 
 CMainWindow::~CMainWindow()
@@ -158,13 +161,15 @@ void CMainWindow::saveSettings()
 
 void CMainWindow::slotDirectoryChanged()
 {
-    auto dirName = fImpl->directory->text();
+    fImpl->btnLoad->setEnabled( false );
+    fImpl->btnTransform->setEnabled( false );
+    fImpl->btnSaveM3U->setEnabled( false );
     CAutoWaitCursor awc;
+
+    auto dirName = fImpl->directory->text();
 
     QFileInfo fi( dirName );
     fImpl->btnLoad->setEnabled( !dirName.isEmpty() && fi.exists() && fi.isDir() );
-    fImpl->btnTransform->setEnabled( false );
-    fImpl->btnSaveM3U->setEnabled( false );
 }
 
 void CMainWindow::slotSelectDirectory()
