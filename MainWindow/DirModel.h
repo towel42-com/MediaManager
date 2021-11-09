@@ -49,7 +49,9 @@ public:
     };
     enum ECustomRoles
     {
-        eFullPathRole = Qt::UserRole + 1
+        eFullPathRole = Qt::UserRole + 1,
+        eIsDir,
+        eIsRoot
     };
     CDirModel( QObject *parent = nullptr );
     ~CDirModel();
@@ -81,7 +83,7 @@ public Q_SLOTS:
     void slotLoadRootDirectory();
     void slotPatternChanged();
 private:
-    void loadFileInfo( const QFileInfo & info, QStandardItem *parent );
+    QStandardItem * loadFileInfo( const QFileInfo & info, QStandardItem *parent );
     QStandardItem *getItemFromindex( QModelIndex idx ) const;
 
     bool excludedDirName( const QFileInfo & ii ) const;
@@ -89,6 +91,9 @@ private:
     QList< QStandardItem * > getItemRow( const QFileInfo &path ) const;
 
     std::pair< bool, QStringList > transform( const QStandardItem *parent, bool displayOnly ) const;
+
+    QStandardItem * getTransformItem( const QStandardItem * parent ) const;
+
     QString saveM3U( const QStandardItem *parent, const QString &baseName ) const;
     bool isValidName( const QString &name, bool isDir ) const;
     bool isValidName( const QFileInfo &fi ) const;
@@ -103,6 +108,7 @@ private:
     [[nodiscard]] QString patternToRegExp( const QString &captureName, const QString &inPattern, const QString &value, bool removeOptional ) const;
     [[nodiscard]] QString patternToRegExp( const QString &pattern, bool removeOptional ) const;
     void cleanFileName( QString &inFile ) const;
+    [[nodiscard]] QString computeTransformPath( const QStandardItem * item ) const;
 
     QString fRootPath;
     QStringList fNameFilter;

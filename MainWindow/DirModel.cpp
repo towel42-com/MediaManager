@@ -88,8 +88,11 @@ void CDirModel::slotLoadRootDirectory()
 {
     clear();
     setHorizontalHeaderLabels( QStringList() << "Name" << "Size" << "Type" << "Date Modified" << "Transformed Name" );
+
     QFileInfo rootFI( fRootPath );
-    loadFileInfo( rootFI.absoluteFilePath(), nullptr );
+    auto rootItem = loadFileInfo( rootFI.absoluteFilePath(), nullptr );
+    if ( rootItem )
+        rootItem->setData( true, ECustomRoles::eIsRoot );
     if ( fTreeView )
     {
         fTreeView->resizeColumnToContents( EColumns::eFSName );
@@ -97,10 +100,10 @@ void CDirModel::slotLoadRootDirectory()
     }
 }
 
-void CDirModel::loadFileInfo( const QFileInfo & fileInfo, QStandardItem * parent )
+QStandardItem * CDirModel::loadFileInfo( const QFileInfo & fileInfo, QStandardItem * parent )
 {
-    if ( !fileInfo.exists() || !fileInfo.isReadable() )
-        return;
+    if ( !fileInfo.exists() )
+        return nullptr;
 
     //qDebug() << "Loading: " << fileInfo.absoluteFilePath();
     auto row = getItemRow( fileInfo );
@@ -128,6 +131,7 @@ void CDirModel::loadFileInfo( const QFileInfo & fileInfo, QStandardItem * parent
     {
         fTreeView->setExpanded( row.front()->index(), true );
     }
+    return row.front();
 }
 
 
@@ -145,9 +149,13 @@ QList< QStandardItem * > CDirModel::getItemRow( const QFileInfo & fileInfo ) con
     auto nameItem = new QStandardItem( fileInfo.fileName() );
     nameItem->setIcon( fIconProvider->icon( fileInfo ) );
     nameItem->setData( fileInfo.absoluteFilePath(), ECustomRoles::eFullPathRole );
+    nameItem->setData( fileInfo.isDir(), ECustomRoles::eIsDir );
     retVal.push_back( nameItem );
     retVal.push_back( new QStandardItem( fileInfo.isFile() ? locale.toString( fileInfo.size() ) : QString() ) );
-    retVal.back()->setTextAlignment( Qt::AlignRight );
+    if ( fileInfo.isFile() )
+    {
+        retVal.back()->setTextAlignment( Qt::AlignRight | Qt::AlignVCenter );
+    }
     retVal.push_back( new QStandardItem( fIconProvider->type( fileInfo ) ) );
     retVal.push_back( new QStandardItem( fileInfo.lastModified().toString( "MM/dd/yyyy hh:mm:ss.zzz") ) );
     auto transformInfo = transformItem( fileInfo );
@@ -535,6 +543,9 @@ void CDirModel::setTitleInfo( const QModelIndex &idx, std::shared_ptr< STitleInf
     if ( !idx.isValid() )
         return;
 
+    if ( titleInfo && titleInfo->getTitle().isEmpty() )
+        titleInfo.reset();
+
     auto fi = fileInfo( idx );
     fTitleInfoMapping[fi.absoluteFilePath()] = titleInfo;
     if ( isDir( idx ) )
@@ -556,52 +567,55 @@ std::shared_ptr< STitleInfo > CDirModel::getTitleInfo( const QModelIndex &idx ) 
     return ( *pos ).second;
 }
 
-std::pair< bool, QStringList > CDirModel::transform( const QStandardItem * parent, bool displayOnly ) const
+QString CDirModel::computeTransformPath( const QStandardItem * item ) const
 {
-    if ( !parent)
+    if ( !item || ( item == invisibleRootItem() ) )
+        return QString();
+    if ( item->data( ECustomRoles::eIsRoot ).toBool() )
+        return item->data( ECustomRoles::eFullPathRole ).toString();
+    
+    auto parentDir = computeTransformPath( item->parent() );
+
+    auto transformItem = getTransformItem( item );
+    auto myName = transformItem ? transformItem->text() : QString();
+    if ( myName.isEmpty() || ( myName == "<NOMATCH>" ) )
+    {
+        myName = item->text();
+    }
+
+    if ( myName.isEmpty() || parentDir.isEmpty() )
+        return QString();
+
+    auto retVal = QDir( parentDir ).absoluteFilePath( myName );
+    return retVal;
+}
+
+std::pair< bool, QStringList > CDirModel::transform( const QStandardItem * item, bool displayOnly ) const
+{
+    if ( !item)
         return std::make_pair( false, QStringList() );
 
     QStringList retVal;
-    auto numRows = parent->rowCount();
-    for ( int ii = 0; ii < numRows; ++ii )
+    bool aOK = true;
+    if ( item != invisibleRootItem() )
     {
-        auto child = parent->child( ii );
-        if ( !child )
-            continue;
+        auto oldName = filePath( item );
+        auto newName = computeTransformPath( item );
 
-        auto sub = transform( child, displayOnly );
-        //if ( sub.first )
-            retVal << sub.second;
-        //else
-        //    return sub;
-    }
-
-    auto idx = indexFromItem( parent );
-    auto transformItem = itemFromIndex( index( idx.row(), CDirModel::EColumns::eTransformName, idx.parent() ) );
-    auto transformName = transformItem ? transformItem->text() : QString();
-    
-    if ( !transformName.isEmpty() && ( transformName != "<NOMATCH>" ) )
-    {
-    //if ( !parent->text( EColumns::eTransformName ).isEmpty() && parent->text( EColumns::eTransformName ) != "<NOMATCH>" )
-    //{
-    //auto newFile = transformItem( fileInfo( parent ) );
-    //if ( newFile.first )
-    //{
-        retVal << QString( "'%1' => '%2'" ).arg( parent->text() ).arg( transformName );
-        if ( !displayOnly )
+        if ( oldName != newName )
         {
-            auto oldName = this->filePath( parent );
-            QFileInfo fi( oldName );
-            bool aOK = false;
-            if ( !fi.exists() )
+            //auto transformItem = getTransformItem( item );
+            //auto transformName = transformItem ? transformItem->text() : QString();
+
+            retVal << QString( "'%1' => '%2'" ).arg( oldName ).arg( newName );
+            if ( !displayOnly )
             {
-                retVal[retVal.length() - 1] = QString( "ERROR: '%1' - No Longer Exists" ).arg( oldName );;
-            }
-            else 
-            {
-                auto dir = fi.absoluteDir();
-                auto newName = dir.absoluteFilePath( transformName );
-                if ( oldName != newName )
+                QFileInfo fi( oldName );
+                if ( !fi.exists() )
+                {
+                    retVal[retVal.length() - 1] = QString( "ERROR: '%1' - No Longer Exists" ).arg( oldName );;
+                }
+                else
                 {
                     aOK = QFile::rename( oldName, newName );
                     if ( !aOK )
@@ -610,17 +624,35 @@ std::pair< bool, QStringList > CDirModel::transform( const QStandardItem * paren
                     }
                 }
             }
-            return std::make_pair( aOK, retVal );
         }
     }
 
-    return std::make_pair( true, retVal );
+    auto numRows = item->rowCount();
+    for ( int ii = 0; ii < numRows; ++ii )
+    {
+        auto child = item->child( ii );
+        if ( !child )
+            continue;
+
+        auto sub = transform( child, displayOnly );
+        retVal << sub.second;
+        aOK = aOK && sub.first;
+    }
+    return std::make_pair( aOK, retVal );
 }
 
 std::pair< bool, QStringList > CDirModel::transform( bool displayOnly ) const
 {
     CAutoWaitCursor awc;
     return transform( invisibleRootItem(), displayOnly );
+}
+
+
+QStandardItem * CDirModel::getTransformItem( const QStandardItem * parent ) const
+{
+    auto idx = indexFromItem( parent );
+    auto transformItem = itemFromIndex( index( idx.row(), CDirModel::EColumns::eTransformName, idx.parent() ) );
+    return transformItem;
 }
 
 void CDirModel::patternChanged()
