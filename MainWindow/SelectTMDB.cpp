@@ -291,7 +291,6 @@ std::shared_ptr< STitleInfo > CSelectTMDB::getTitleInfo() const
     return retVal;
 }
 
-
 void CSelectTMDB::slotSelectionChanged()
 {
     auto selected = fImpl->results->selectedItems();

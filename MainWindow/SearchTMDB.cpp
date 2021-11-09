@@ -50,7 +50,7 @@ SSearchTMDBInfo::SSearchTMDBInfo( const QString & text, std::shared_ptr< STitleI
 QString stripKnownData( const QString & string )
 {
     QString retVal = string;
-    auto separators = QStringList() << "1080p" << "720p" << "AMZN" << "WebRip" << "WEB" << "-RUMOUR" << "-PECULATE" << "h264" << "h265" << "rarbg" << "-";
+    auto separators = QStringList() << "1080p" << "720p" << "AMZN" << "WebRip" << "WEB" << "-RUMOUR" << "-PECULATE" << "x264" << "x265" << "h264" << "h265" << "rarbg" << "-";
     for ( auto &&separator : separators )
     {
         retVal.replace( "[" + separator + "]", "", Qt::CaseSensitivity::CaseInsensitive );

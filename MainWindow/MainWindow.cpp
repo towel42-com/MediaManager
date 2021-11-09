@@ -196,15 +196,20 @@ void CMainWindow::slotDoubleClicked( const QModelIndex &idx )
 
     auto dirModel = dynamic_cast<CDirModel *>( const_cast<QAbstractItemModel *>( idx.model() ) );
 
+    auto baseIdx = dirModel->index( idx.row(), CDirModel::EColumns::eFSName, idx.parent() );
     auto titleInfo = dirModel->getTitleInfo( idx );
     
     auto nm = dirModel->index( idx.row(), CDirModel::EColumns::eTransformName, idx.parent() ).data().toString();
+    auto isDir = baseIdx.data( CDirModel::ECustomRoles::eIsDir ).toBool();
     if ( nm == "<NOMATCH>" || nm.isEmpty() )
     {
-        nm = dirModel->index( idx.row(), CDirModel::EColumns::eFSName, idx.parent() ).data().toString();
+        nm = dirModel->index( idx.row(), CDirModel::EColumns::eFSName, idx.parent() ).data( CDirModel::ECustomRoles::eFullPathRole ).toString();
+        if ( isDir )
+            nm = QFileInfo( nm ).completeBaseName();
+        else
+            nm = QFileInfo( nm ).fileName();
     }
-    if ( QFileInfo( nm ).isFile() )
-        nm = QFileInfo( nm ).completeBaseName();
+
     CSelectTMDB dlg( nm, titleInfo, this );
     dlg.setSearchForMovies( fImpl->treatAsMovie->isChecked(), true );
     dlg.setExactMatchOnly( fImpl->exactMatchesOnly->isChecked(), true );
@@ -212,17 +217,19 @@ void CMainWindow::slotDoubleClicked( const QModelIndex &idx )
     if ( dlg.exec() == QDialog::Accepted )
     {
         auto titleInfo = dlg.getTitleInfo();
-        if ( titleInfo->getTitle().isEmpty() )
-            return;
-
         dirModel->setTitleInfo( idx, titleInfo );
+
+        if ( isDir && ( fDirModel->rowCount( baseIdx ) == 1 ) )
+        {
+            auto childIdx = fDirModel->index( 0, CDirModel::EColumns::eFSName, baseIdx );
+            auto txt = childIdx.data( CDirModel::ECustomRoles::eFullPathRole ).toString();
+            auto childInfo = dirModel->getTitleInfo( childIdx );
+            if ( !childInfo )
+            {
+                dirModel->setTitleInfo( childIdx, titleInfo );
+            }
+        }
     }
-    //else
-    //{
-    //    auto item = dirModel->itemFromIndex( idx );
-    //    if ( item )
-    //        item->setBackground( Qt::red );
-    //}
 }
 
 void CMainWindow::slotToggleTreatAsMovie()
@@ -288,8 +295,7 @@ void CMainWindow::slotTransform()
             dlg.setButtons( QDialogButtonBox::Ok );
             dlg.exec();
         }
-        else
-            loadDirectory();
+        loadDirectory();
     }
 }
 
