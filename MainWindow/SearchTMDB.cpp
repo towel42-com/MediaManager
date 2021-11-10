@@ -50,7 +50,7 @@ SSearchTMDBInfo::SSearchTMDBInfo( const QString & text, std::shared_ptr< STitleI
 QString stripKnownData( const QString & string )
 {
     QString retVal = string;
-    auto separators = QStringList() << "1080p" << "720p" << "AMZN" << "WebRip" << "WEB" << "-RUMOUR" << "-PECULATE" << "x264" << "x265" << "h264" << "h265" << "rarbg" << "-";
+    auto separators = QStringList() << "1080p" << "720p" << "AMZN" << "WebRip" << "WEB" << "-RUMOUR" << "-PECULATE" << "x264" << "x265" << "h264" << "h265" << "rarbg" << "BluRay" << "-";
     for ( auto &&separator : separators )
     {
         retVal.replace( "[" + separator + "]", "", Qt::CaseSensitivity::CaseInsensitive );
@@ -651,13 +651,15 @@ bool CSearchTMDB::loadSearchResult( const QJsonObject &resultItem, bool multiple
             auto reply = fManager->get( QNetworkRequest( url ) );
             fImageInfoReplies[reply] = searchResults;
         }
-        else
-            int xyx = 0;
     }
 
     if ( !fSearchInfo->fIsMovie && ( tmdbid != -1 ) )
     {
         searchTVDetails( searchResults, tmdbid, -1 );
+    }
+    else if ( fSearchInfo->fIsMovie )
+    {
+        fBestMatch = searchResults;
     }
 
     fTopLevelResults.push_back( searchResults );
@@ -699,8 +701,6 @@ void CSearchTMDB::searchTVDetails( std::shared_ptr< STitleInfo > info, int tmdbi
         else
             fTVInfoReplies[reply] = info;
     }
-    else
-        int xyz = 0;
 }
 
 // from a /tv/tv_id request

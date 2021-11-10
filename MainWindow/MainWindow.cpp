@@ -24,6 +24,7 @@
 #include "DirModel.h"
 #include "SelectTMDB.h"
 #include "TitleInfo.h"
+#include "TransformConfirm.h"
 
 #include "SABUtils/utils.h"
 #include "SABUtils/ScrollMessageBox.h"
@@ -112,7 +113,7 @@ void CMainWindow::loadSettings()
     QSettings settings;
 
     fImpl->directory->setText( settings.value( "Directory", QString() ).toString() );
-    fImpl->extensions->setText( settings.value( "Extensions", QString( "*.mkv;*.mp4;*.avi;*.idx;*.sub;*.srt" ) ).toString() );
+    fImpl->extensions->setText( settings.value( "Extensions", QString( "*.mkv;*.mp4;*.avi;*.mov;*.wmv;*.mpg;*.mpg2;*.idx;*.sub;*.srt" ) ).toString() );
 
     fImpl->treatAsMovie->setChecked( settings.value( "TreatAsMovie", true ).toBool() );
     fImpl->exactMatchesOnly->setChecked( settings.value( "ExactMatchesOnly", true ).toBool() );
@@ -191,9 +192,6 @@ bool CMainWindow::isDir( const QModelIndex &idx ) const
 
 void CMainWindow::slotDoubleClicked( const QModelIndex &idx )
 {
-    //if ( !isDir( idx ) && fImpl->treatAsMovie->isChecked() )
-    //    return;
-
     auto dirModel = dynamic_cast<CDirModel *>( const_cast<QAbstractItemModel *>( idx.model() ) );
 
     auto baseIdx = dirModel->index( idx.row(), CDirModel::EColumns::eFSName, idx.parent() );
@@ -204,10 +202,7 @@ void CMainWindow::slotDoubleClicked( const QModelIndex &idx )
     if ( nm == "<NOMATCH>" || nm.isEmpty() )
     {
         nm = dirModel->index( idx.row(), CDirModel::EColumns::eFSName, idx.parent() ).data( CDirModel::ECustomRoles::eFullPathRole ).toString();
-        if ( isDir )
-            nm = QFileInfo( nm ).completeBaseName();
-        else
-            nm = QFileInfo( nm ).fileName();
+        nm = nm.isEmpty() ? QString() : ( QFileInfo( nm ).isDir() ? QFileInfo( nm ).fileName() : QFileInfo( nm ).completeBaseName() );
     }
 
     CSelectTMDB dlg( nm, titleInfo, this );
@@ -217,18 +212,7 @@ void CMainWindow::slotDoubleClicked( const QModelIndex &idx )
     if ( dlg.exec() == QDialog::Accepted )
     {
         auto titleInfo = dlg.getTitleInfo();
-        dirModel->setTitleInfo( idx, titleInfo );
-
-        if ( isDir && ( fDirModel->rowCount( baseIdx ) == 1 ) )
-        {
-            auto childIdx = fDirModel->index( 0, CDirModel::EColumns::eFSName, baseIdx );
-            auto txt = childIdx.data( CDirModel::ECustomRoles::eFullPathRole ).toString();
-            auto childInfo = dirModel->getTitleInfo( childIdx );
-            if ( !childInfo )
-            {
-                dirModel->setTitleInfo( childIdx, titleInfo );
-            }
-        }
+        dirModel->setTitleInfo( idx, titleInfo, isDir );
     }
 }
 
@@ -275,13 +259,13 @@ void CMainWindow::loadDirectory()
 void CMainWindow::slotTransform()
 {
     auto transformations = fDirModel->transform( true );
-    if ( transformations.second.isEmpty() )
+    if ( transformations.second->rowCount() == 0 )
     {
         QMessageBox::information( this, tr( "Nothing to change" ), tr( "No files or directories could be transformed" ) );
         return;
     }
-    CScrollMessageBox dlg( tr( "Transformations:" ), tr( "Proceed?" ), this );
-    dlg.setPlainText( transformations.second.join( "\n" ) );
+    CTransformConfirm dlg( tr( "Transformations:" ), tr( "Proceed?" ), this );
+    dlg.setModel( transformations.second );
     dlg.setIconLabel( QMessageBox::Information );
     dlg.setButtons( QDialogButtonBox::Yes | QDialogButtonBox::No );
     if ( dlg.exec() == QDialog::Accepted )
@@ -289,8 +273,8 @@ void CMainWindow::slotTransform()
         transformations = fDirModel->transform( false );
         if ( !transformations.first )
         {
-            CScrollMessageBox dlg( tr( "Error While Transforming:" ), tr( "Issues:" ), this );
-            dlg.setPlainText( transformations.second.join( "\n" ) );
+            CTransformConfirm dlg( tr( "Error While Transforming:" ), tr( "Issues:" ), this );
+            dlg.setModel( transformations.second );
             dlg.setIconLabel( QMessageBox::Critical );
             dlg.setButtons( QDialogButtonBox::Ok );
             dlg.exec();

@@ -71,7 +71,8 @@ CSelectTMDB::CSelectTMDB( const QString & text, std::shared_ptr< STitleInfo > ti
     connect( fImpl->searchEpisode, &CDelaySpinBox::sigValueChanged, this, &CSelectTMDB::slotSearchTextChanged );
     connect( fImpl->searchReleaseYear, &CDelayLineEdit::sigTextChanged, this, &CSelectTMDB::slotSearchTextChanged );
     connect( fImpl->searchTMDBID, &CDelayLineEdit::sigTextChanged, this, &CSelectTMDB::slotSearchTextChanged );
-    connect( fImpl->results->selectionModel(), &QItemSelectionModel::selectionChanged, this, &CSelectTMDB::slotSelectionChanged );
+    connect( fImpl->results->selectionModel(), &QItemSelectionModel::selectionChanged, this, &CSelectTMDB::slotItemChanged );
+    connect( fImpl->results, &QTreeWidget::itemDoubleClicked, this, &CSelectTMDB::slotItemSelected );
 
     fImpl->results->setIconSize( QSize( 128, 128 ) );
 
@@ -291,7 +292,13 @@ std::shared_ptr< STitleInfo > CSelectTMDB::getTitleInfo() const
     return retVal;
 }
 
-void CSelectTMDB::slotSelectionChanged()
+void CSelectTMDB::slotItemSelected()
+{
+    slotItemChanged();
+    accept();
+}
+
+void CSelectTMDB::slotItemChanged()
 {
     auto selected = fImpl->results->selectedItems();
     if ( selected.empty() )

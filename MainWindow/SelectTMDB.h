@@ -64,7 +64,8 @@ public:
 public Q_SLOTS:
     void slotSearchTextChanged();
 
-    void slotSelectionChanged();
+    void slotItemChanged();
+    void slotItemSelected();
     void slotByNameChanged();
     void slotExactOrForMovieChanged();
 

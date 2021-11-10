@@ -24,6 +24,7 @@ set(qtproject_SRCS
     MainWindow.cpp
     DirModel.cpp
     TitleInfo.cpp
+	TransformConfirm.cpp
     SearchTMDB.cpp
     SelectTMDB.cpp
 )
@@ -33,6 +34,7 @@ set(qtproject_H
     DirModel.h
     SearchTMDB.h
     SelectTMDB.h
+	TransformConfirm.h
 )
 
 set(project_H
@@ -42,6 +44,7 @@ set(project_H
 set(qtproject_UIS
     MainWindow.ui
     SelectTMDB.ui
+	TransformConfirm.ui
 )
 
 set(qtproject_QRC

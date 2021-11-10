@@ -2,5 +2,7 @@
     <qresource prefix="/">
         <file>resources/rename.png</file>
         <file>resources/open.png</file>
+        <file>resources/error.png</file>
+        <file>resources/ok.png</file>
     </qresource>
 </RCC>
