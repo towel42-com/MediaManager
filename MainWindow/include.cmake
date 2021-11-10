@@ -24,7 +24,8 @@ set(qtproject_SRCS
     MainWindow.cpp
     DirModel.cpp
     TitleInfo.cpp
-	TransformConfirm.cpp
+    TransformConfirm.cpp
+    SearchTMDBInfo.cpp
     SearchTMDB.cpp
     SelectTMDB.cpp
 )
@@ -34,10 +35,11 @@ set(qtproject_H
     DirModel.h
     SearchTMDB.h
     SelectTMDB.h
-	TransformConfirm.h
+    TransformConfirm.h
 )
 
 set(project_H
+    SearchTMDBInfo.h
     TitleInfo.h
 )
 
