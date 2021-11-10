@@ -77,7 +77,10 @@ public:
     void reloadModel( QTreeView *view );
 
     void setRootPath( const QString &path, QTreeView *view = nullptr );
+
+    QString getSearchName( const QModelIndex &idx ) const;
 Q_SIGNALS:
+    void sigDirReloaded();
 public Q_SLOTS:
     void slotInputPatternChanged( const QString &inPattern );
     void slotOutputDirPatternChanged( const QString &outPattern );

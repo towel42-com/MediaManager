@@ -72,6 +72,17 @@ void CDirModel::setRootPath( const QString & rootPath, QTreeView * view )
     reloadModel( view );
 }
 
+QString CDirModel::getSearchName( const QModelIndex &idx ) const
+{
+    auto nm = index( idx.row(), CDirModel::EColumns::eTransformName, idx.parent() ).data().toString();
+    if ( nm == "<NOMATCH>" || nm.isEmpty() )
+    {
+        nm = index( idx.row(), CDirModel::EColumns::eFSName, idx.parent() ).data( CDirModel::ECustomRoles::eFullPathRole ).toString();
+        nm = nm.isEmpty() ? QString() : ( QFileInfo( nm ).isDir() ? QFileInfo( nm ).fileName() : QFileInfo( nm ).completeBaseName() );
+    }
+    return nm;
+}
+
 void CDirModel::setNameFilters( const QStringList &filters, QTreeView * view )
 {
     fNameFilter = filters;
@@ -99,8 +110,13 @@ void CDirModel::slotLoadRootDirectory()
     if ( fTreeView )
     {
         fTreeView->resizeColumnToContents( EColumns::eFSName );
+        fTreeView->resizeColumnToContents( EColumns::eFSSize );
+        fTreeView->resizeColumnToContents( EColumns::eFSType );
+        fTreeView->resizeColumnToContents( EColumns::eFSModDate );
         fTreeView->resizeColumnToContents( EColumns::eTransformName );
     }
+
+    emit sigDirReloaded();
 }
 
 void CDirModel::loadFileInfo( const QFileInfo & fileInfo, TParentTree &parentTree )
