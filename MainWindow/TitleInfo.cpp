@@ -42,6 +42,16 @@ QString STitleInfo::getEpisodeTitle() const
     return NStringUtils::transformTitle( fEpisodeTitle );
 }
 
+QString STitleInfo::getTMDBID() const
+{
+    auto retVal = fTMDBID;
+    if ( !fSeasonTMDBID.isEmpty() )
+        retVal = fSeasonTMDBID;
+    if ( !fEpisodeTMDBID.isEmpty() )
+        retVal = fEpisodeTMDBID;
+    return retVal;
+}
+
 QString STitleInfo::getText( ETitleInfo which, bool forceTop /*= false */ ) const
 {
     auto parentPtr = fParent.lock();

@@ -54,6 +54,7 @@ struct STitleInfo
     QString getTitle() const;
     QString getYear() const;
     QString getEpisodeTitle() const;
+    QString getTMDBID() const;
 
     [[nodiscard]] QString getMyText( ETitleInfo which ) const;
 
@@ -62,6 +63,8 @@ struct STitleInfo
     QString fTitle;
     QString fReleaseDate;
     QString fTMDBID;
+    QString fSeasonTMDBID;
+    QString fEpisodeTMDBID;
     QString fSeason;
     QString fEpisode;
     QString fEpisodeTitle;
