@@ -26,6 +26,9 @@
 #include <QMainWindow>
 class CDirModel;
 class CDirFilterModel;
+class CSearchTMDB;
+struct SSearchTMDBInfo;
+struct STitleInfo;
 namespace Ui {class CMainWindow;};
 
 class CMainWindow : public QMainWindow
@@ -40,13 +43,16 @@ public Q_SLOTS:
     void slotLoad();
     void slotTransform();
     void slotSaveM3U();
-    void slotInputPatternChanged(const QString& inPattern);
+    void slotTVInputPatternChanged(const QString& inPattern);
+    void slotMovieInputPatternChanged( const QString &inPattern );
     void slotToggleTreatAsMovie();
     void slotAboutToToggle();
     void slotDoubleClicked( const QModelIndex &idx );
+    void slotAutoSearch();
+    void slotSearchFinished();
 private:
     QString getDefaultInPattern( bool forTV ) const;
-    QString getDefaultOutDirPattern( bool forTV ) const;
+    QString getDefaultOutDirPattern() const; // movies only
     QString getDefaultOutFilePattern( bool forTV ) const;
     bool isDir( const QModelIndex &idx ) const;
     
@@ -57,6 +63,10 @@ private:
 
     std::unique_ptr< CDirModel > fDirModel;
     std::unique_ptr< Ui::CMainWindow > fImpl;
+    CSearchTMDB *fSearchTMDB{ nullptr };
+
+    using TSearchResultsMap = std::map< std::shared_ptr< SSearchTMDBInfo >, std::pair< QPersistentModelIndex, std::list< std::shared_ptr< STitleInfo > > > >;
+    TSearchResultsMap fSearchResults;
 };
 
 #endif 
