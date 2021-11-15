@@ -64,27 +64,23 @@ void SSearchTMDBInfo::updateSearchCriteria( bool updateSearchBy )
     QString seasonStr;
     QString episodeStr;
 
-    if ( fIsMovie )
+    auto regExp = QRegularExpression( "[\\.\\(](?<releaseDate>\\d{2,4})(?:[\\.\\)]?|$)" );
+    auto match = regExp.match( fSearchName );
+    if ( match.hasMatch() )
     {
-        auto regExp = QRegularExpression( "[\\.\\(](?<releaseDate>\\d{2,4})[\\.\\)]?$" );
-        auto match = regExp.match( fSearchName );
-        if ( match.hasMatch() )
-        {
-            fReleaseDate = smartTrim( match.captured( "releaseDate" ) );
-            fSearchName.replace( regExp, "" );
-        }
-
-        regExp = QRegularExpression( "\\[tmdbid=(?<tmdbid>\\d+)\\]" );
-        match = regExp.match( fSearchName );
-        if ( match.hasMatch() )
-        {
-            fTMDBID = smartTrim( match.captured( "tmdbid" ) );
-            fSearchName.replace( regExp, "" );
-        }
-
-        fSearchName = smartTrim( fSearchName, true );
+        fReleaseDate = smartTrim( match.captured( "releaseDate" ) );
+        fSearchName.replace( match.capturedStart( "releaseDate" ), match.capturedLength( "releaseDate" ), "" );
     }
-    else
+
+    regExp = QRegularExpression( "\\[tmdbid=(?<tmdbid>\\d+)\\]" );
+    match = regExp.match( fSearchName );
+    if ( match.hasMatch() )
+    {
+        fTMDBID = smartTrim( match.captured( "tmdbid" ) );
+        fSearchName.replace( match.capturedStart( "tmdbid" ), match.capturedLength( "tmdbid" ), "" );
+    }
+
+    if ( !fIsMovie )
     {
         QString dataBeforeSeason;
         auto regExp = QRegularExpression( "S(?<season>\\d+)" );
@@ -94,22 +90,27 @@ void SSearchTMDBInfo::updateSearchCriteria( bool updateSearchBy )
             seasonStr = smartTrim( match.captured( "season" ) );
             dataBeforeSeason = smartTrim( fSearchName.left( match.capturedStart( "season" ) - 1 ) );
             fSearchName = fSearchName.mid( match.capturedStart( "season" ) - 1 );
-            fSearchName.replace( regExp, "" );
+            fSearchName.replace( match.capturedStart( "season" ), match.capturedLength( "season" ), "" );
         }
 
+        QString dataAfterEpisode;
         regExp = QRegularExpression( "E(?<episode>\\d+)" );
         match = regExp.match( fSearchName );
         if ( match.hasMatch() )
         {
             episodeStr = smartTrim( match.captured( "episode" ) );
-            fSearchName.replace( regExp, "" );
+            dataAfterEpisode = smartTrim( fSearchName.mid( match.capturedEnd( "episode" ) ) );
+            fSearchName.replace( match.capturedStart( "episode" ), match.capturedLength( "episode" ), "" );
         }
 
         if ( !dataBeforeSeason.isEmpty() )
             fSearchName = dataBeforeSeason;
+        if ( !dataAfterEpisode.isEmpty() )
+            fSearchName += " " + dataAfterEpisode;
 
-        fSearchName = smartTrim( fSearchName, true );
     }
+
+    fSearchName = smartTrim( fSearchName, true );
 
     if ( fTitleInfo )
     {
@@ -117,7 +118,7 @@ void SSearchTMDBInfo::updateSearchCriteria( bool updateSearchBy )
         episodeStr = fTitleInfo->fEpisode;
         seasonStr = fTitleInfo->fSeason;
         fReleaseDate = fTitleInfo->fReleaseDate;
-        fTMDBID = fTitleInfo->fTMDBID;
+        fTMDBID = fTitleInfo->fTMDBID;// always get the main one
         fEpisodeTitle = fTitleInfo->fEpisodeTitle;
     }
 

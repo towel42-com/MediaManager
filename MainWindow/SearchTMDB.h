@@ -35,38 +35,7 @@ class QJsonObject;
 class QTreeWidgetItem;
 class CButtonEnabler;
 struct STitleInfo;
-
-enum class ESearchType
-{
-    eSearchTV,
-    eSearchMovie,
-    eGetMovie,
-    eGetTVShow
-};
-
-struct SSearchTMDBInfo
-{
-    SSearchTMDBInfo() {};
-    SSearchTMDBInfo( const QString &searchString, std::shared_ptr< STitleInfo > titleInfo );
-
-    void updateSearchCriteria( bool updateSearchBy );
-
-    std::optional< std::pair< QUrl, ESearchType > > getSearchURL() const;
-
-    QString fSearchName;
-    QString fReleaseDate;
-    QString fEpisodeTitle;
-    QString fDescription;
-    int fSeason{ -1 };
-    int fEpisode{ -1 };
-    QString fTMDBID;
-    bool fIsMovie{ false };
-    bool fExactMatchOnly{ false };
-    bool fSearchByName{ false };
-
-    QString fInitSearchString;
-    std::shared_ptr< STitleInfo > fTitleInfo;
-};
+struct SSearchTMDBInfo;
 
 class CSearchTMDB : public QObject
 {
@@ -80,27 +49,28 @@ public:
     std::list< std::shared_ptr< STitleInfo > > getResults() const { return fTopLevelResults; }
     std::shared_ptr< STitleInfo > bestMatch() const { return fBestMatch; }
 
-    bool searchByName() { return fSearchInfo->fSearchByName; }
-
+    bool searchByName();
+    
     void resetResults();
 
     bool hasError() const { return fErrorMessage.has_value(); }
     QString errorString() const { return fErrorMessage.value(); }
+
 public Q_SLOTS:
     void slotRequestFinished( QNetworkReply *reply );
 
     void slotGetConfig();
     void slotSearch();
 
-
 Q_SIGNALS:
     void sigSearchFinished();
     void sigMessage( const QString &msg );
 private:
+    bool isBetterEpisodeMatch( std::shared_ptr< STitleInfo > lhs, std::shared_ptr< STitleInfo > rhs ) const;
     bool hasConfiguration() const;
 
-    void loadSearchResult();
     void loadConfig();
+    void loadSearchResult();
     void loadMovieResult();
     void loadTVResult();
 

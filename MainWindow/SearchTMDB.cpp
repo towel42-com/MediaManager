@@ -22,6 +22,7 @@
 
 #include "SearchTMDB.h"
 #include "TitleInfo.h"
+#include "SearchTMDBInfo.h"
 
 #include "SABUtils/StringUtils.h"
 #include "SABUtils/QtUtils.h"
@@ -29,10 +30,8 @@
 #include <QUrl>
 #include <QUrlQuery>
 #include <QTimer>
-//#include <QDebug>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
-//#include <QNetworkRequest>
 #include <QRegularExpression>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -40,143 +39,6 @@
 #include <QImage>
 #include <QPixmap>
 
-SSearchTMDBInfo::SSearchTMDBInfo( const QString & text, std::shared_ptr< STitleInfo > titleInfo )
-{
-    fTitleInfo = titleInfo;
-    fInitSearchString = text;
-    updateSearchCriteria( true );
-}
-
-QString stripKnownData( const QString & string )
-{
-    QString retVal = string;
-    auto separators = QStringList() << "1080p" << "720p" << "AMZN" << "WebRip" << "WEB" << "-RUMOUR" << "-PECULATE" << "x264" << "x265" << "h264" << "h265" << "rarbg" << "BluRay" << "-";
-    for ( auto &&separator : separators )
-    {
-        retVal.replace( "[" + separator + "]", "", Qt::CaseSensitivity::CaseInsensitive );
-        retVal.replace( separator, "", Qt::CaseSensitivity::CaseInsensitive );
-    }
-    return retVal;
-}
-
-QString smartTrim( const QString & string, bool stripInnerPeriods =false )
-{
-    auto retVal = string;
-    auto pos = retVal.indexOf( QRegularExpression( "[^\\.\\s\\-]" ) );
-    if ( pos != -1 )
-        retVal = retVal.mid( pos );
-
-    pos = retVal.lastIndexOf( QRegularExpression( "[^\\.\\s\\-]" ) );
-    if ( pos != -1 )
-        retVal = retVal.left( pos + 1 );
-    if ( stripInnerPeriods )
-        retVal.replace( ".", " " );
-    return retVal;
-}
-
-void SSearchTMDBInfo::updateSearchCriteria( bool updateSearchBy )
-{
-    fSearchName = fInitSearchString;
-    QString seasonStr;
-    QString episodeStr;
-
-    fSearchName = smartTrim( stripKnownData( fSearchName ) );
-
-    if ( fIsMovie )
-    {
-        auto regExp = QRegularExpression( "\\((?<releaseDate>\\d{2,4})\\)" );
-        auto match = regExp.match( fSearchName );
-        if ( match.hasMatch() )
-        {
-            fReleaseDate = smartTrim( match.captured( "releaseDate" ) );
-            fSearchName.replace( regExp, "" );
-        }
-        else
-        {
-            auto regExp = QRegularExpression( "\\.(?<releaseDate>\\d{2,4})\\." );
-            match = regExp.match( fSearchName );
-            if ( match.hasMatch() )
-            {
-                fReleaseDate = smartTrim( match.captured( "releaseDate" ) );
-                fSearchName.replace( regExp, "" );
-            }
-            else
-            {
-                auto regExp = QRegularExpression( "\\.(?<releaseDate>\\d{2,4})$" );
-                match = regExp.match( fSearchName );
-                if ( match.hasMatch() )
-                {
-                    fReleaseDate = smartTrim( match.captured( "releaseDate" ) );
-                    fSearchName.replace( regExp, "" );
-                }
-            }
-        }
-        regExp = QRegularExpression( "\\[tmdbid=(?<tmdbid>\\d+)\\]" );
-        match = regExp.match( fSearchName );
-        if ( match.hasMatch() )
-        {
-            fTMDBID = smartTrim( match.captured( "tmdbid" ) );
-            fSearchName.replace( regExp, "" );
-        }
-
-        fSearchName = smartTrim( fSearchName, true );
-    }
-    else
-    {
-        QString dataBeforeSeason;
-        auto regExp = QRegularExpression( "S(?<season>\\d+)" );
-        auto match = regExp.match( fSearchName );
-        if ( match.hasMatch() )
-        {
-            seasonStr = smartTrim( match.captured( "season" ) );
-            dataBeforeSeason = smartTrim( fSearchName.left( match.capturedStart( "season" ) - 1 ) );
-            fSearchName = fSearchName.mid( match.capturedStart( "season" ) - 1 );
-            fSearchName.replace( regExp, "" );
-        }
-
-        regExp = QRegularExpression( "E(?<episode>\\d+)" );
-        match = regExp.match( fSearchName );
-        if ( match.hasMatch() )
-        {
-            episodeStr = smartTrim( match.captured( "episode" ) );
-            fSearchName.replace( regExp, "" );
-        }
-
-        if ( !dataBeforeSeason.isEmpty() )
-            fSearchName = dataBeforeSeason;
-
-        fSearchName = smartTrim( fSearchName, true );
-    }
-
-    if ( fTitleInfo )
-    {
-        fSearchName = fTitleInfo->fTitle;
-        episodeStr = fTitleInfo->fEpisode;
-        seasonStr = fTitleInfo->fSeason;
-        fReleaseDate = fTitleInfo->fReleaseDate;
-        fTMDBID = fTitleInfo->fTMDBID;
-        fEpisodeTitle = fTitleInfo->fEpisodeTitle;
-    }
-
-    if ( !episodeStr.isEmpty() )
-    {
-        bool aOK;
-        fEpisode = episodeStr.toInt( &aOK );
-        if ( !aOK )
-            fEpisode = -1;
-    }
-
-    if ( !seasonStr.isEmpty() )
-    {
-        bool aOK;
-        fSeason = seasonStr.toInt( &aOK );
-        if ( !aOK )
-            fSeason = -1;
-    }
-
-    if ( updateSearchBy )
-        fSearchByName = fTMDBID.isEmpty();
-}
 
 CSearchTMDB::CSearchTMDB( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::optional< QString > &configuration, QObject* parent )
     : QObject( parent ),
@@ -236,10 +98,10 @@ void CSearchTMDB::slotRequestFinished( QNetworkReply *reply )
         else if ( reply == fSearchReply )
         {
             fSearchReply = nullptr;
-            title = tr( "Could not search for %1(s)" ).arg( fSearchInfo->fIsMovie ? tr( "Movie" ) : tr( "TV Show" ) );
+            title = tr( "Could not search for %1(s)" ).arg( fSearchInfo->isMovie() ? tr( "Movie" ) : tr( "TV Show" ) );
             if ( errorMsg == "Not Found" )
             {
-                fErrorMessage = tr( "Could not find %1" ).arg( fSearchInfo->fIsMovie ? tr( "Movie" ) : tr( "TV Show" ) );
+                fErrorMessage = tr( "Could not find %1" ).arg( fSearchInfo->isMovie() ? tr( "Movie" ) : tr( "TV Show" ) );
                 emit sigSearchFinished();
                 return;
             }
@@ -284,13 +146,13 @@ void CSearchTMDB::slotRequestFinished( QNetworkReply *reply )
             }
             if ( errorMsg == "Not Found" )
             {
-                fErrorMessage = title;
+                //fErrorMessage = title;
                 return;
             }
         }
 
-        fErrorMessage = prefix + "-" + errorMsg;
-        emit sigSearchFinished();
+        //fErrorMessage = prefix + "-" + errorMsg;
+        //emit sigSearchFinished();
         return;
     }
     if ( reply == fConfigReply )
@@ -358,6 +220,11 @@ bool CSearchTMDB::isActive() const
     if ( !fSeasonInfoReplies.empty() )
         return true;
     return false;
+}
+
+bool CSearchTMDB::searchByName()
+{
+    return fSearchInfo->searchByName();
 }
 
 void CSearchTMDB::slotGetConfig()
@@ -510,6 +377,7 @@ void CSearchTMDB::loadSearchResult()
 
     auto data = fSearchReply->readAll();
     auto doc = QJsonDocument::fromJson( data );
+    qDebug().noquote() << doc.toJson( QJsonDocument::Indented );
     if ( doc.object().contains( "results" ) )
     {
         auto results = doc.object()["results"].toArray();
@@ -520,7 +388,7 @@ void CSearchTMDB::loadSearchResult()
         }
         if ( !found )
         {
-            fErrorMessage = tr( "Could not find %1 - No results found that match search criteria" ).arg( fSearchInfo->fIsMovie ? tr( "Movie" ) : tr( "TV Show" ) );
+            fErrorMessage = tr( "Could not find %1 - No results found that match search criteria" ).arg( fSearchInfo->isMovie() ? tr( "Movie" ) : tr( "TV Show" ) );
             return;
         }
     }
@@ -593,7 +461,7 @@ bool CSearchTMDB::loadSearchResult( const QJsonObject &resultItem, bool multiple
     auto tmdbid = resultItem.contains( "id" ) ? resultItem["id"].toInt() : -1;
     auto desc = resultItem.contains( "overview" ) ? resultItem["overview"].toString() : QString();
     QString title;
-    if ( fSearchInfo->fIsMovie )
+    if ( fSearchInfo->isMovie() )
         title = resultItem.contains( "title" ) ? resultItem["title"].toString() : QString();
     else
         title = resultItem.contains( "name" ) ? resultItem["name"].toString() : QString();
@@ -601,8 +469,8 @@ bool CSearchTMDB::loadSearchResult( const QJsonObject &resultItem, bool multiple
     auto posterPath = resultItem.contains( "poster_path" ) ? resultItem["poster_path"].toString() : QString();
 
     bool aOK;
-    int releaseYear = fSearchInfo->fReleaseDate.toInt( &aOK );
-    if ( aOK && fSearchInfo->fSearchByName && !fSearchInfo->fReleaseDate.isEmpty() && !releaseDate.isEmpty() )
+    int releaseYear = fSearchInfo->releaseDate( &aOK );
+    if ( aOK && fSearchInfo->searchByName() && fSearchInfo->releaseDateSet() && !releaseDate.isEmpty() )
     {
         auto dt = NQtUtils::findDate( releaseDate );
 
@@ -612,14 +480,14 @@ bool CSearchTMDB::loadSearchResult( const QJsonObject &resultItem, bool multiple
         }
     }
 
-    int searchTmdbid = fSearchInfo->fTMDBID.toInt( &aOK );
-    bool canCheckTMDB = !fSearchInfo->fTMDBID.isEmpty() && ( tmdbid != -1 );
-    if ( aOK && canCheckTMDB && fSearchInfo->fIsMovie ) // dont check for TV shows, as the TMDB could be the episode ID
+    int searchTmdbid = fSearchInfo->tmdbID( &aOK );
+    bool canCheckTMDB = fSearchInfo->tmdbIDSet() && ( tmdbid != -1 );
+    if ( aOK && canCheckTMDB && fSearchInfo->isMovie() ) // dont check for TV shows, as the TMDB could be the episode ID
     {
         if ( tmdbid != searchTmdbid )
             return false;
     }
-    if ( multipleResults && !canCheckTMDB && fSearchInfo->fExactMatchOnly && ( fSearchInfo->fSearchName != title ) )
+    if ( multipleResults && !canCheckTMDB && fSearchInfo->exactMatchOnly() && ( fSearchInfo->searchName() != title ) )
         return false;
 
     auto searchResults = std::make_shared< STitleInfo >();
@@ -627,6 +495,7 @@ bool CSearchTMDB::loadSearchResult( const QJsonObject &resultItem, bool multiple
     searchResults->fReleaseDate = releaseDate;
     searchResults->fTitle = title;
     searchResults->fTMDBID = QString::number( tmdbid );
+    searchResults->fIsMovie = fSearchInfo->isMovie();
 
     if ( resultItem.contains( "number_of_seasons" ) )
     {
@@ -653,11 +522,11 @@ bool CSearchTMDB::loadSearchResult( const QJsonObject &resultItem, bool multiple
         }
     }
 
-    if ( !fSearchInfo->fIsMovie && ( tmdbid != -1 ) )
+    if ( !fSearchInfo->isMovie() && ( tmdbid != -1 ) )
     {
         searchTVDetails( searchResults, tmdbid, -1 );
     }
-    else if ( fSearchInfo->fIsMovie )
+    else if ( fSearchInfo->isMovie() && !multipleResults )
     {
         fBestMatch = searchResults;
     }
@@ -674,7 +543,7 @@ void CSearchTMDB::searchTVDetails( std::shared_ptr< STitleInfo > info, int tmdbi
 
     auto path = QString( "/3/tv/%1" ).arg( tmdbid );
     if ( seasonNum == -1 )
-        seasonNum = fSearchInfo->fSeason;
+        seasonNum = fSearchInfo->season();
     std::shared_ptr< STitleInfo > seasonInfo;
     if ( seasonNum != -1 )
     {
@@ -750,12 +619,14 @@ bool CSearchTMDB::loadSeasonDetails( QNetworkReply *reply )
 
     auto episodes = doc.object()["episodes"].toArray();
     seasonInfo->fEpisode = QString( "%1 Episode%2" ).arg( episodes.count() ).arg( episodes.count() == 1 ? "" : "s" );
-    seasonInfo->fTMDBID = doc.object().contains( "id" ) ? QString::number( doc.object()["id"].toInt() ) : QString();
+    seasonInfo->fSeasonTMDBID = doc.object().contains( "id" ) ? QString::number( doc.object()["id"].toInt() ) : QString();
 
     bool episodeFound = false;
     for ( auto && ii : episodes )
     {
         episodeFound = loadEpisodeDetails( ii.toObject(), seasonInfo ) || episodeFound;
+        if ( episodeFound )
+            break;
     }
     //(void)episodeFound;
     return true;
@@ -764,9 +635,9 @@ bool CSearchTMDB::loadSeasonDetails( QNetworkReply *reply )
 bool CSearchTMDB::loadEpisodeDetails( const QJsonObject & episodeObj, std::shared_ptr< STitleInfo > seasonInfo )
 {
     auto episodeNumber = episodeObj.contains( "episode_number" ) ? episodeObj["episode_number"].toInt() : -1;
-    if ( fSearchInfo->fEpisode != -1 )
+    if ( fSearchInfo->episode() != -1 )
     {
-        if ( fSearchInfo->fEpisode != episodeNumber )
+        if ( fSearchInfo->episode() != episodeNumber )
             return false;
     }
     auto episodeName = episodeObj.contains( "name" ) ? episodeObj["name"].toString() : QString();
@@ -777,14 +648,24 @@ bool CSearchTMDB::loadEpisodeDetails( const QJsonObject & episodeObj, std::share
     episodeInfo->fSeason = episodeObj.contains( "season_number" ) ? QString::number( episodeObj["season_number"].toInt() ) : QString();
     episodeInfo->fEpisodeTitle = episodeName;
     episodeInfo->fDescription = overview;
-    episodeInfo->fTMDBID = episodeObj.contains( "id" ) ? QString::number( episodeObj["id"].toInt() ) : QString();
+    episodeInfo->fTMDBID = seasonInfo->fTMDBID;
+    episodeInfo->fSeasonTMDBID = seasonInfo->fSeasonTMDBID;
+    episodeInfo->fEpisodeTMDBID = episodeObj.contains( "id" ) ? QString::number( episodeObj["id"].toInt() ) : QString();
     episodeInfo->fTitle = seasonInfo->fTitle;
     episodeInfo->fReleaseDate = episodeObj.contains( "air_date" ) ? episodeObj["air_date"].toString() : QString();;
+    episodeInfo->fIsMovie = false;
 
     seasonInfo->fChildren.push_back( episodeInfo );
-    if ( fSearchInfo->fEpisode != -1 )
+    if ( ( fSearchInfo->episode() != -1 ) && ( !fBestMatch || ( fBestMatch && isBetterEpisodeMatch( episodeInfo, fBestMatch ) ) ) )
         fBestMatch = episodeInfo;
     return true;
+}
+
+// returns true if lhs > rhs
+bool CSearchTMDB::isBetterEpisodeMatch( std::shared_ptr< STitleInfo > lhs, std::shared_ptr< STitleInfo > rhs ) const
+{
+    // if episode and season matches both, check for exact tv show name 
+    return false;
 }
 
 bool CSearchTMDB::loadImageResults( QNetworkReply * reply )
