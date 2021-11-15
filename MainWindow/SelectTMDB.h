@@ -65,6 +65,9 @@ public Q_SLOTS:
     void slotSearchTextChanged();
 
     void slotItemChanged();
+
+    QTreeWidgetItem * getFirstSelected() const;
+
     void slotItemSelected();
     void slotByNameChanged();
     void slotExactOrForMovieChanged();
@@ -98,6 +101,7 @@ private:
 
     std::shared_ptr< STitleInfo > fBestMatch;
     std::list< std::shared_ptr< STitleInfo > > fCurrentResults;
+    std::unordered_map< QTreeWidgetItem *, std::shared_ptr< STitleInfo > > fResultTitleInfo;
 };
 
 #endif 

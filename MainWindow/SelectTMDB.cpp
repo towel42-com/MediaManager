@@ -25,6 +25,7 @@
 #include "ui_SelectTMDB.h"
 #include "TitleInfo.h"
 #include "SearchTMDB.h"
+#include "SearchTMDBInfo.h"
 
 #include "SABUtils/ButtonEnabler.h"
 #include "SABUtils/QtUtils.h"
@@ -51,7 +52,7 @@ CSelectTMDB::CSelectTMDB( const QString & text, std::shared_ptr< STitleInfo > ti
 
     fImpl->resultExtraInfo->setText( titleInfo ? titleInfo->fExtraInfo : QString() );
 
-    fImpl->resultEpisodeTitle->setText( fSearchInfo->fEpisodeTitle );
+    fImpl->resultEpisodeTitle->setText( fSearchInfo->episodeTitle() );
 
     fImpl->searchName->setDelay( 1000 );
     //fImpl->searchSeason->setDelay( 1000 );
@@ -94,15 +95,15 @@ void CSelectTMDB::updateFromSearchInfo( std::shared_ptr< SSearchTMDBInfo > searc
     disconnect( fImpl->searchReleaseYear, &CDelayLineEdit::sigTextChanged, this, &CSelectTMDB::slotSearchTextChanged );
     disconnect( fImpl->searchTMDBID, &CDelayLineEdit::sigTextChanged, this, &CSelectTMDB::slotSearchTextChanged );
 
-    fImpl->searchName->setText( searchInfo->fSearchName );
-    fImpl->searchSeason->setValue( searchInfo->fSeason );
-    fImpl->searchEpisode->setValue( searchInfo->fEpisode );
-    fImpl->searchReleaseYear->setText( searchInfo->fReleaseDate );
-    fImpl->searchTMDBID->setText( searchInfo->fTMDBID );
+    fImpl->searchName->setText( searchInfo->searchName() );
+    fImpl->searchSeason->setValue( searchInfo->season() );
+    fImpl->searchEpisode->setValue( searchInfo->episode() );
+    fImpl->searchReleaseYear->setText( searchInfo->releaseDateString() );
+    fImpl->searchTMDBID->setText( searchInfo->tmdbIDString() );
     fImpl->byName->setChecked( fSearchTMDB->searchByName() );
     fImpl->byTMDBID->setChecked( !fSearchTMDB->searchByName() );
-    fImpl->exactMatchesOnly->setChecked( searchInfo->fExactMatchOnly );
-    fImpl->searchForMovies->setChecked( searchInfo->fIsMovie );
+    fImpl->exactMatchesOnly->setChecked( searchInfo->exactMatchOnly() );
+    fImpl->searchForMovies->setChecked( searchInfo->isMovie() );
     updateEnabled();
 
     connect( fImpl->byName, &QRadioButton::toggled, this, &CSelectTMDB::slotByNameChanged );
@@ -128,6 +129,7 @@ void CSelectTMDB::slotReset()
     fStopLoading = false;
     fSearchTMDB->resetResults();
     fImpl->results->clear();
+    fResultTitleInfo.clear();
     resetHeader();
 }
 
@@ -183,8 +185,7 @@ void CSelectTMDB::slotSearchFinished()
     }
 
     auto currResults = fSearchTMDB->getResults();
-    for ( auto &&ii : currResults )
-        fCurrentResults.push_back( ii );
+    fCurrentResults.insert( fCurrentResults.end(), currResults.begin(), currResults.end() );
     fBestMatch = fSearchTMDB->bestMatch();
 
     fLoading = true;
@@ -234,13 +235,13 @@ void CSelectTMDB::loadResults( std::shared_ptr< STitleInfo > info, QTreeWidgetIt
     int labelPos = -1;
     if ( fImpl->searchForMovies->isChecked() )
     {
-        data = QStringList() << info->fTitle << info->fTMDBID << info->fReleaseDate << QString();
+        data = QStringList() << info->fTitle << info->getTMDBID() << info->fReleaseDate << QString();
         itemType = EItemType::eMovie;
         labelPos = 3;
     }
     else
     {
-        data = QStringList() << info->fTitle << info->fTMDBID << info->fSeason << info->fEpisode << info->fReleaseDate << info->fEpisodeTitle << QString();
+        data = QStringList() << info->fTitle << info->getTMDBID() << info->fSeason << info->fEpisode << info->fReleaseDate << info->fEpisodeTitle << QString();
         itemType = EItemType::eTVShow;
         labelPos = 6;
     }
@@ -250,6 +251,8 @@ void CSelectTMDB::loadResults( std::shared_ptr< STitleInfo > info, QTreeWidgetIt
         item = new QTreeWidgetItem( parent, data, EItemType::eMovie );
     else
         item = new QTreeWidgetItem( fImpl->results, data, itemType );
+
+    fResultTitleInfo[item] = info;
 
     auto label = new QLabel( info->fDescription, this );
     label->setWordWrap( true );
@@ -263,7 +266,10 @@ void CSelectTMDB::loadResults( std::shared_ptr< STitleInfo > info, QTreeWidgetIt
 
     fImpl->results->resizeColumnToContents( 0 );
     if ( fBestMatch && ( info.get() == fBestMatch.get() ) )
+    {
         item->setSelected( true );
+        fImpl->results->scrollToItem( item );
+    }
     qApp->processEvents();
 
     for( auto && ii : info->fChildren )
@@ -278,16 +284,15 @@ void CSelectTMDB::loadResults( std::shared_ptr< STitleInfo > info, QTreeWidgetIt
 std::shared_ptr< STitleInfo > CSelectTMDB::getTitleInfo() const
 {
     auto retVal = std::make_shared< STitleInfo >();
-    retVal->fTitle = fImpl->resultTitle->text();
-    retVal->fTMDBID = fImpl->resultTMDBID->text();
-    retVal->fReleaseDate = fImpl->resultReleaseDate->text();
 
-    retVal->fSeason = fImpl->resultSeason->text();
-    retVal->fEpisode = fImpl->resultEpisode->text();
-    retVal->fEpisodeTitle = fImpl->resultEpisodeTitle->text();
-    retVal->fExtraInfo = fImpl->resultExtraInfo->text();
+    auto first = getFirstSelected();
+    if ( !first )
+        return retVal;
+    auto pos = fResultTitleInfo.find( first );
+    if ( pos == fResultTitleInfo.end() )
+        return retVal;
 
-    retVal->fIsMovie = fImpl->searchForMovies->isChecked();
+    retVal = ( *pos ).second;
 
     return retVal;
 }
@@ -300,11 +305,7 @@ void CSelectTMDB::slotItemSelected()
 
 void CSelectTMDB::slotItemChanged()
 {
-    auto selected = fImpl->results->selectedItems();
-    if ( selected.empty() )
-        return;
-
-    auto first = selected.front();
+    auto first = getFirstSelected();
     if ( !first )
         return;
 
@@ -321,6 +322,18 @@ void CSelectTMDB::slotItemChanged()
         fImpl->resultReleaseDate->setText( first->text( 4 ) );
         fImpl->resultEpisodeTitle->setText( first->text( 5 ) );
     }
+}
+
+QTreeWidgetItem *CSelectTMDB::getFirstSelected() const
+{
+    auto selected = fImpl->results->selectedItems();
+    if ( selected.empty() )
+        return nullptr;
+
+    auto first = selected.front();
+    if ( !first )
+        return nullptr;
+    return first;
 }
 
 std::shared_ptr< SSearchTMDBInfo > CSelectTMDB::getSearchInfo()
@@ -341,7 +354,7 @@ void CSelectTMDB::setSearchForMovies( bool value, bool init )
 {
     auto searchInfo = getSearchInfo();
 
-    searchInfo->fIsMovie = value;
+    searchInfo->setIsMovie( value );
     searchInfo->updateSearchCriteria( init );
     if ( init && !fSearchPending )
     {
@@ -352,7 +365,7 @@ void CSelectTMDB::setSearchForMovies( bool value, bool init )
 void CSelectTMDB::setExactMatchOnly( bool value, bool /*init*/ )
 {
     auto searchInfo = getSearchInfo();
-    searchInfo->fExactMatchOnly = value;
+    searchInfo->setExactMatchOnly( value );
 }
 
 void CSelectTMDB::slotByNameChanged()
@@ -375,8 +388,8 @@ void CSelectTMDB::slotExactOrForMovieChanged()
 {
     auto searchInfo = getSearchInfo();
 
-    searchInfo->fExactMatchOnly = fImpl->exactMatchesOnly->isChecked();
-    searchInfo->fIsMovie = fImpl->searchForMovies->isChecked();
+    searchInfo->setExactMatchOnly( fImpl->exactMatchesOnly->isChecked() );
+    searchInfo->setIsMovie( fImpl->searchForMovies->isChecked() );
     updateEnabled();
     searchInfo->updateSearchCriteria( false );
     updateFromSearchInfo( fSearchInfo );
@@ -408,10 +421,10 @@ void CSelectTMDB::slotSearchTextChanged()
         fImpl->byName->setChecked( true );
         connect( fImpl->byName, &QRadioButton::toggled, this, &CSelectTMDB::slotByNameChanged );
     }
-    searchInfo->fSearchByName = fImpl->byName->isChecked();
-    searchInfo->fReleaseDate = fImpl->searchReleaseYear->text();
-    searchInfo->fSearchName = fImpl->searchName->text();
-    searchInfo->fTMDBID = fImpl->searchTMDBID->text();
+    searchInfo->setSearchByName( fImpl->byName->isChecked() );
+    searchInfo->setReleaseDate( fImpl->searchReleaseYear->text() );
+    searchInfo->setSearchName( fImpl->searchName->text() );
+    searchInfo->setTMDBID( fImpl->searchTMDBID->text() );
 
     slotReset();
 
