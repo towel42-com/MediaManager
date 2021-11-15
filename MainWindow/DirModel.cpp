@@ -222,7 +222,7 @@ TTreeNode CDirModel::getItemRow( const QFileInfo & fileInfo ) const
     return std::make_pair( retVal, false );
 }
 
-QString CDirModel::patternToRegExp( const QString & captureName, const QString & inPattern, const QString &value, bool removeOptional ) const
+QString patternToRegExp( const QString & captureName, const QString & inPattern, const QString &value, bool removeOptional )
 {
     if ( captureName.isEmpty() || inPattern.isEmpty() )
         return inPattern;
@@ -240,7 +240,7 @@ QString CDirModel::patternToRegExp( const QString & captureName, const QString &
     return retVal;
 }
 
-QString CDirModel::patternToRegExp( const QString & pattern, bool removeOptional ) const
+QString patternToRegExp( const QString & pattern, bool removeOptional )
 {
     QString retVal = pattern;
     retVal.replace( "(", "\\(" );
@@ -257,15 +257,24 @@ QString CDirModel::patternToRegExp( const QString & pattern, bool removeOptional
     return retVal;
 }
 
-bool CDirModel::isValidName( const QFileInfo & fi ) const
+bool CDirModel::isValidName( const QFileInfo &fi ) const
 {
-    if ( isValidName( fi.fileName(), fi.isDir() ) )
+    return isValidName( fi.absoluteFilePath(), fi.isDir() );
+}
+
+bool CDirModel::isValidName( const QString & path, bool isDir ) const
+{
+    bool asMovie = treatAsMovie( path );
+    auto fn = QFileInfo( path ).fileName();
+    if (   ( asMovie && fMoviePatterns.isValidName( fn, isDir ) ) 
+         || (!asMovie && fTVPatterns.isValidName( fn, isDir ) ) )
         return true;
-    if ( fi.isDir() )
+
+    if ( isDir )
     {
-        if ( fTreatAsMovie )
+        if ( fTreatAsMovieByDefault )
         {
-            QDir dir( fi.absoluteFilePath() );
+            QDir dir( path );
             auto children = dir.entryList( QDir::AllDirs | QDir::NoDotAndDotDot );
             return !children.empty();
         }
@@ -273,9 +282,15 @@ bool CDirModel::isValidName( const QFileInfo & fi ) const
             return true;
     }
     return false;
+
 }
 
-bool CDirModel::isValidName( const QString &name, bool isDir ) const
+bool SPatternInfo::isValidName( const QFileInfo & fi ) const
+{
+    return isValidName( fi.fileName(), fi.isDir() );
+}
+
+bool SPatternInfo::isValidName( const QString &name, bool isDir ) const
 {
     if ( name.isEmpty() )
         return false;
@@ -345,37 +360,48 @@ bool CDirModel::isDir( const QModelIndex & idx ) const
     return isDir( item );
 }
 
-void CDirModel::slotInputPatternChanged( const QString &inPattern )
+void CDirModel::slotTVInputPatternChanged( const QString &inPattern )
 {
-    fInPattern = inPattern;
-    fInPatternRegExp.setPattern( fInPattern );
-    //Q_ASSERT( fInPatternRegExp.isValid() );
+    fTVPatterns.setInPattern( inPattern );
     patternChanged();
 }
 
-void CDirModel::slotOutputFilePatternChanged( const QString &outPattern )
+void CDirModel::slotTVOutputFilePatternChanged( const QString &outPattern )
 {
-    fOutFilePattern = outPattern;
+    fTVPatterns.fOutFilePattern = outPattern;
     // need to emit datachanged on column 4 for all known indexes
     patternChanged();
 }
 
-void CDirModel::slotOutputDirPatternChanged( const QString &outPattern )
+void CDirModel::slotMovieInputPatternChanged( const QString &inPattern )
 {
-    fOutDirPattern = outPattern;
+    fMoviePatterns.setInPattern( inPattern );
+    patternChanged();
+}
+
+void CDirModel::slotMovieOutputFilePatternChanged( const QString &outPattern )
+{
+    fMoviePatterns.fOutFilePattern = outPattern;
+    // need to emit datachanged on column 4 for all known indexes
+    patternChanged();
+}
+
+void CDirModel::slotMovieOutputDirPatternChanged( const QString &outPattern )
+{
+    fMoviePatterns.fOutDirPattern = outPattern;
     // need to emit datachanged on column 4 for all known indexes
     patternChanged();
 }
 
 void CDirModel::slotTreatAsMovieChanged( bool treatAsMovie )
 {
-    fTreatAsMovie = treatAsMovie;
+    fTreatAsMovieByDefault = treatAsMovie;
     // need to emit datachanged on column 4 for all known indexes
     patternChanged();
 }
 
 // do not include <> in the capture name
-QString CDirModel::replaceCapture( const QString &captureName, const QString &returnPattern, const QString &value ) const
+QString replaceCapture( const QString &captureName, const QString &returnPattern, const QString &value )
 {
     if ( captureName.isEmpty() )
         return returnPattern;
@@ -420,7 +446,7 @@ QString CDirModel::replaceCapture( const QString &captureName, const QString &re
     return retVal;
 }
 
-void CDirModel::cleanFileName( QString & inFile ) const
+void cleanFileName( QString & inFile )
 {
     QString text = "\\s*\\:\\s*";
     inFile.replace( QRegularExpression( text ), " - " );
@@ -430,10 +456,18 @@ void CDirModel::cleanFileName( QString & inFile ) const
 
 std::pair< bool, QString > CDirModel::transformItem( const QFileInfo &fileInfo ) const
 {
+    if ( treatAsMovie( fileInfo ) )
+        return transformItem( fileInfo, fMoviePatterns );
+    else
+        return transformItem( fileInfo, fTVPatterns );
+}
+
+std::pair< bool, QString > CDirModel::transformItem( const QFileInfo &fileInfo, const SPatternInfo & info ) const
+{
     auto filePath = fileInfo.absoluteFilePath();
 
-    if ( !fInPatternRegExp.isValid() )
-        return std::make_pair( false, tr( "<INVALID INPUT REGEX>" ) );
+    if ( !info.fInPatternRegExp.isValid() )
+        return std::make_pair( false, QObject::tr( "<INVALID INPUT REGEX>" ) );
 
     auto pos = fileInfo.isDir() ? fDirMapping.find( filePath ) : fFileMapping.find( filePath );
     auto retVal = std::make_pair( false, QString() );
@@ -449,7 +483,7 @@ std::pair< bool, QString > CDirModel::transformItem( const QFileInfo &fileInfo )
         }
 
         auto pos = fTitleInfoMapping.find( filePath );
-        auto match = fInPatternRegExp.match( fn );
+        auto match = info.fInPatternRegExp.match( fn );
         if ( pos == fTitleInfoMapping.end() )
         {
             if ( isValidName( fileInfo ) || isIgnoredPathName( fileInfo ) )
@@ -481,7 +515,7 @@ std::pair< bool, QString > CDirModel::transformItem( const QFileInfo &fileInfo )
                 episodeTitle = ( *pos ).second->fEpisodeTitle;
             }
 
-            retVal.second = fileInfo.isDir() ? fOutDirPattern : fOutFilePattern;
+            retVal.second = fileInfo.isDir() ? info.fOutDirPattern : info.fOutFilePattern;
             retVal.second = replaceCapture( "title", retVal.second, title );
             retVal.second = replaceCapture( "year", retVal.second, year );
             retVal.second = replaceCapture( "tmdbid", retVal.second, tmdbid );
@@ -505,6 +539,15 @@ std::pair< bool, QString > CDirModel::transformItem( const QFileInfo &fileInfo )
         retVal = ( *pos ).second;
 
     return retVal;
+}
+
+bool CDirModel::treatAsMovie( const QFileInfo &fileInfo ) const
+{
+    bool asMovie = fTreatAsMovieByDefault;
+    auto pos = fTitleInfoMapping.find( fileInfo.absoluteFilePath() );
+    if ( pos != fTitleInfoMapping.end() )
+        asMovie = ( *pos ).second->fIsMovie;
+    return asMovie;
 }
 
 void CDirModel::saveM3U( QWidget *parent ) const
@@ -611,6 +654,7 @@ void CDirModel::setTitleInfo( const QModelIndex &idx, std::shared_ptr< STitleInf
         fDirMapping.erase( fi.absoluteFilePath() );
     else 
         fFileMapping.erase( fi.absoluteFilePath() );
+
     updatePattern( getItemFromindex( idx ) );
 
     if ( applyToChildren )
@@ -842,13 +886,17 @@ void CDirModel::updatePattern( const QStandardItem * item, QStandardItem * trans
     auto path = item->data( ECustomRoles::eFullPathRole ).toString();
     auto fileInfo = QFileInfo( path );
     auto transformInfo = transformItem( fileInfo );
+    transformedItem->setBackground( Qt::white );
+    if ( transformedItem->text() != transformInfo.second )
+        transformedItem->setText( transformInfo.second );
+
     if ( transformInfo.second == "<NOMATCH>" || !isValidName( transformInfo.second, fileInfo.isDir() ) && !isValidName( fileInfo ) && !isIgnoredPathName( fileInfo ) )
         transformedItem->setBackground( Qt::red );
-    else
-    {
-        if ( transformedItem->text() != transformInfo.second )
-            transformedItem->setText( transformInfo.second );
-        transformedItem->setBackground( item->background() );
-    }
 }
 
+void SPatternInfo::setInPattern( const QString &pattern )
+{
+    fInPattern = pattern;
+    fInPatternRegExp.setPattern( fInPattern );
+    //Q_ASSERT( fInPatternRegExp.isValid() );
+}

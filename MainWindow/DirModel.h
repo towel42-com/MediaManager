@@ -38,6 +38,21 @@ struct STitleInfo;
 using TTreeNode = std::pair< QList< QStandardItem * >, bool >;
 using TParentTree = std::list< TTreeNode >;
 
+struct SPatternInfo
+{
+    friend class CDirModel;
+    void setInPattern( const QString & pattern );
+
+    bool isValidName( const QString &name, bool isDir ) const;
+    bool isValidName( const QFileInfo &fi ) const;
+
+private:
+    QString fInPattern;
+    QRegularExpression fInPatternRegExp;
+    QString fOutFilePattern;
+    QString fOutDirPattern;
+};
+
 class CDirModel : public QStandardItemModel
 {
     Q_OBJECT
@@ -79,15 +94,18 @@ public:
     void setRootPath( const QString &path, QTreeView *view = nullptr );
 
     QString getSearchName( const QModelIndex &idx ) const;
+    bool treatAsMovie( const QFileInfo &fileInfo ) const;
 Q_SIGNALS:
     void sigDirReloaded();
 public Q_SLOTS:
-    void slotInputPatternChanged( const QString &inPattern );
-    void slotOutputDirPatternChanged( const QString &outPattern );
-    void slotOutputFilePatternChanged( const QString &outPattern );
-    void slotTreatAsMovieChanged( bool treatAsMovie );
+    void slotTVInputPatternChanged( const QString &inPattern );
+    void slotTVOutputFilePatternChanged( const QString &outPattern );
+    void slotMovieInputPatternChanged( const QString &inPattern );
+    void slotMovieOutputDirPatternChanged( const QString &outPattern );
+    void slotMovieOutputFilePatternChanged( const QString &outPattern );
     void slotLoadRootDirectory();
     void slotPatternChanged();
+    void slotTreatAsMovieChanged( bool treatAsMovie );
 private:
     void loadFileInfo( const QFileInfo & info, TParentTree &parentTree );
     void attachParentTree( TParentTree & parentTree );
@@ -104,8 +122,8 @@ private:
     QStandardItem * getTransformItem( const QStandardItem * parent ) const;
 
     QString saveM3U( const QStandardItem *parent, const QString &baseName ) const;
-    bool isValidName( const QString &name, bool isDir ) const;
     bool isValidName( const QFileInfo &fi ) const;
+    bool isValidName( const QString & absPath, bool isDir ) const;
     void patternChanged();
     void patternChanged( const QStandardItem *parent );
 
@@ -113,28 +131,28 @@ private:
     void updatePattern( const QStandardItem *transformedItem, QStandardItem *item ) const;
 
     [[nodiscard]] std::pair< bool, QString > transformItem( const QFileInfo &path ) const;
-    [[nodiscard]] QString replaceCapture( const QString &captureName, const QString &returnPattern, const QString &value ) const;
-    [[nodiscard]] QString patternToRegExp( const QString &captureName, const QString &inPattern, const QString &value, bool removeOptional ) const;
-    [[nodiscard]] QString patternToRegExp( const QString &pattern, bool removeOptional ) const;
-    void cleanFileName( QString &inFile ) const;
-    [[nodiscard]] QString computeTransformPath( const QStandardItem * item, bool parentsOnly ) const;
+    [[nodiscard]] std::pair< bool, QString > transformItem( const QFileInfo &fileInfo, const SPatternInfo & patternInfo ) const;
+
+    [[nodiscard]] QString computeTransformPath( const QStandardItem *item, bool parentsOnly ) const;
     
     bool isLanguageFile( const QModelIndex &idx ) const;
 
     QString fRootPath;
     QStringList fNameFilter;
 
-    QString fInPattern;
-    QString fOutFilePattern;
-    QString fOutDirPattern;
-    bool fTreatAsMovie{ false };
-    QRegularExpression fInPatternRegExp;
-    mutable std::map< QString, std::pair< bool, QString > > fFileMapping;
-    mutable std::map< QString, std::pair< bool, QString > > fDirMapping;
-    std::map< QString, std::shared_ptr< STitleInfo > > fTitleInfoMapping;
+    bool fTreatAsMovieByDefault{ false };
+
+    SPatternInfo fTVPatterns;
+    SPatternInfo fMoviePatterns;
+
     std::unordered_set< QString > fExcludedDirNames;
     std::unordered_set< QString > fIgnoredNames;
     QFileIconProvider *fIconProvider{ nullptr };
+
+    mutable std::map< QString, std::pair< bool, QString > > fFileMapping;
+    mutable std::map< QString, std::pair< bool, QString > > fDirMapping;
+    std::map< QString, std::shared_ptr< STitleInfo > > fTitleInfoMapping;
+
     QTimer *fTimer{ nullptr };
     QTimer *fPatternTimer{ nullptr };
     QTreeView *fTreeView{ nullptr };
