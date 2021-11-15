@@ -42,6 +42,7 @@
 
 #include <set>
 #include <list>
+#include "SearchTMDBInfo.h"
 
 CDirModel::CDirModel( QObject *parent /*= 0*/ ) :
     QStandardItemModel( parent )
@@ -100,7 +101,7 @@ void CDirModel::reloadModel( QTreeView *view )
 void CDirModel::slotLoadRootDirectory()
 {
     clear();
-    setHorizontalHeaderLabels( QStringList() << "Name" << "Size" << "Type" << "Date Modified" << "Transformed Name" );
+    setHorizontalHeaderLabels( QStringList() << "Name" << "Size" << "Type" << "Date Modified" << "Is TV Show?" <<"Transformed Name" );
 
     QFileInfo rootFI( fRootPath );
 
@@ -113,13 +114,28 @@ void CDirModel::slotLoadRootDirectory()
         fTreeView->resizeColumnToContents( EColumns::eFSSize );
         fTreeView->resizeColumnToContents( EColumns::eFSType );
         fTreeView->resizeColumnToContents( EColumns::eFSModDate );
+        fTreeView->resizeColumnToContents( EColumns::eIsTVShow );
         fTreeView->resizeColumnToContents( EColumns::eTransformName );
     }
 
     emit sigDirReloaded();
 }
 
-void CDirModel::loadFileInfo( const QFileInfo & fileInfo, TParentTree &parentTree )
+bool CDirModel::setData( const QModelIndex & idx, const QVariant & value, int role )
+{
+    if ( role == Qt::CheckStateRole && idx.column() == EColumns::eIsTVShow )
+    {
+        auto isTVShow = value.toInt() == Qt::Checked;
+        auto baseItem = getItemFromindex( idx );
+        if ( baseItem )
+            baseItem->setData( isTVShow, eIsTVShowRole );
+        auto item = itemFromIndex( idx );
+        item->setText( isTVShow ? "Yes" : "No" );
+    }
+    return QStandardItemModel::setData( idx, value, role );
+}
+
+void CDirModel::loadFileInfo( const QFileInfo & fileInfo, TParentTree & siblings )
 {
     if ( !fileInfo.exists() )
         return;
@@ -130,7 +146,7 @@ void CDirModel::loadFileInfo( const QFileInfo & fileInfo, TParentTree &parentTre
     //}
     //qDebug() << "Loading: " << fileInfo.absoluteFilePath();
     auto row = getItemRow( fileInfo );
-    parentTree.push_back( row );
+    siblings.push_back( row );
 
     if ( fileInfo.isDir() )
     {
@@ -144,43 +160,55 @@ void CDirModel::loadFileInfo( const QFileInfo & fileInfo, TParentTree &parentTre
             if ( ii.isDir() && isExcludedDirName( ii ) )
                 continue;
             
-            loadFileInfo( ii, parentTree );
+            loadFileInfo( ii, siblings );
         }
         qApp->processEvents();
     }
     else
     {
-        attachParentTree( parentTree );
+        attachTreeNodes( siblings );
     }
 
-    if ( !parentTree.back().second )
+    if ( !siblings.back().second )
     {
-        for ( auto &&ii : parentTree.back().first )
+        for ( auto &&ii : siblings.back().first )
             delete ii;
     }
-    parentTree.pop_back();
+    siblings.pop_back();
 }
 
-void CDirModel::attachParentTree( TParentTree &parentTree )
+void CDirModel::attachTreeNodes( TParentTree &parentTree )
 {
-    bool first = true;
     QStandardItem *prevParent = nullptr;
     for( auto ii = parentTree.begin(); ii != parentTree.end(); ++ii )
     {
-        if ( !(*ii).second )
+        auto nextParent = ( *ii ).first.front();
+        if ( !(*ii).second ) // already been laoded
         {
-            if ( first )
+            if ( prevParent )
             {
-                appendRow( (*ii).first );
-                (*ii).first.front()->setData( true, ECustomRoles::eIsRoot );
+                bool isTVShow = nextParent->data( eIsTVShowRole ).toBool();
+                bool isParentTVShow = prevParent->data( eIsTVShowRole ).toBool();
+
+                if ( !isTVShow && ( isTVShow != isParentTVShow ) )
+                {
+                    setIsTVShow( ( *ii ).first[EColumns::eIsTVShow], isParentTVShow );
+                    nextParent->setData( isParentTVShow, eIsTVShowRole );
+                }
+
+                prevParent->appendRow( ( *ii ).first );
             }
             else
-                prevParent->appendRow( ( *ii ).first );
+            {
+                appendRow( (*ii).first );
+                nextParent->setData( true, ECustomRoles::eIsRoot );
+            }
             ( *ii ).second = true;
         }
-        first = false;
-        prevParent = ( *ii ).first.front();
-        if ( fTreeView )
+        prevParent = nextParent;
+        fPathMapping[nextParent->data( ECustomRoles::eFullPathRole ).toString()] = nextParent;
+
+        if ( fTreeView && prevParent )
             fTreeView->setExpanded( prevParent->index(), true );
     }
 }
@@ -214,12 +242,25 @@ TTreeNode CDirModel::getItemRow( const QFileInfo & fileInfo ) const
     }
     retVal.push_back( new QStandardItem( fIconProvider->type( fileInfo ) ) );
     retVal.push_back( new QStandardItem( fileInfo.lastModified().toString( "MM/dd/yyyy hh:mm:ss.zzz") ) );
+    bool isTVShow = SSearchTMDBInfo::looksLikeTVShow( fileInfo.fileName(), nullptr, nullptr ).first;
+    auto isTVShowItem = new QStandardItem( QString() );
+    isTVShowItem->setCheckable( true );
+    setIsTVShow( isTVShowItem, isTVShow );
+
+    nameItem->setData( isTVShow, ECustomRoles::eIsTVShowRole );
+    retVal.push_back( isTVShowItem );
     auto transformInfo = transformItem( fileInfo );
     auto transformedItem = new QStandardItem( transformInfo.second );
     retVal.push_back( transformedItem );
 
     updatePattern( nameItem, transformedItem );
     return std::make_pair( retVal, false );
+}
+
+void CDirModel::setIsTVShow( QStandardItem * item, bool isTVShow ) const
+{
+    item->setText( isTVShow ? "Yes" : "No" );
+    item->setCheckState( isTVShow ? Qt::Checked : Qt::Unchecked );
 }
 
 QString patternToRegExp( const QString & captureName, const QString & inPattern, const QString &value, bool removeOptional )
@@ -257,6 +298,15 @@ QString patternToRegExp( const QString & pattern, bool removeOptional )
     return retVal;
 }
 
+QStandardItem * CDirModel::getItemFromPath( const QFileInfo & fi ) const
+{
+    auto path = fi.absoluteFilePath();
+    auto pos = fPathMapping.find( path );
+    if ( pos != fPathMapping.end() )
+        return ( *pos ).second;
+    return nullptr;
+}
+
 bool CDirModel::isValidName( const QFileInfo &fi ) const
 {
     return isValidName( fi.absoluteFilePath(), fi.isDir() );
@@ -264,22 +314,22 @@ bool CDirModel::isValidName( const QFileInfo &fi ) const
 
 bool CDirModel::isValidName( const QString & path, bool isDir ) const
 {
-    bool asMovie = treatAsMovie( path );
+    bool asTVShow = treatAsTVShow( path, !isTVShow( path ) );
     auto fn = QFileInfo( path ).fileName();
-    if (   ( asMovie && fMoviePatterns.isValidName( fn, isDir ) ) 
-         || (!asMovie && fTVPatterns.isValidName( fn, isDir ) ) )
+    if (   (!asTVShow && fMoviePatterns.isValidName( fn, isDir ) )
+         || (asTVShow && fTVPatterns.isValidName( fn, isDir ) ) )
         return true;
 
     if ( isDir )
     {
-        if ( fTreatAsMovieByDefault )
+        if ( fTreatAsTVShowByDefault )
+            return true;
+        else
         {
             QDir dir( path );
             auto children = dir.entryList( QDir::AllDirs | QDir::NoDotAndDotDot );
             return !children.empty();
         }
-        else
-            return true;
     }
     return false;
 
@@ -294,7 +344,7 @@ bool SPatternInfo::isValidName( const QString &name, bool isDir ) const
 {
     if ( name.isEmpty() )
         return false;
-    QStringList patterns = { fInPattern };
+    QStringList patterns;
     if ( isDir )
     {
         patterns
@@ -360,22 +410,10 @@ bool CDirModel::isDir( const QModelIndex & idx ) const
     return isDir( item );
 }
 
-void CDirModel::slotTVInputPatternChanged( const QString &inPattern )
-{
-    fTVPatterns.setInPattern( inPattern );
-    patternChanged();
-}
-
 void CDirModel::slotTVOutputFilePatternChanged( const QString &outPattern )
 {
     fTVPatterns.fOutFilePattern = outPattern;
     // need to emit datachanged on column 4 for all known indexes
-    patternChanged();
-}
-
-void CDirModel::slotMovieInputPatternChanged( const QString &inPattern )
-{
-    fMoviePatterns.setInPattern( inPattern );
     patternChanged();
 }
 
@@ -393,9 +431,9 @@ void CDirModel::slotMovieOutputDirPatternChanged( const QString &outPattern )
     patternChanged();
 }
 
-void CDirModel::slotTreatAsMovieChanged( bool treatAsMovie )
+void CDirModel::slotTreatAsTVByDefaultChanged( bool treatAsTVShowByDefault )
 {
-    fTreatAsMovieByDefault = treatAsMovie;
+    fTreatAsTVShowByDefault = treatAsTVShowByDefault;
     // need to emit datachanged on column 4 for all known indexes
     patternChanged();
 }
@@ -456,18 +494,18 @@ void cleanFileName( QString & inFile )
 
 std::pair< bool, QString > CDirModel::transformItem( const QFileInfo &fileInfo ) const
 {
-    if ( treatAsMovie( fileInfo ) )
-        return transformItem( fileInfo, fMoviePatterns );
-    else
+    if ( treatAsTVShow( fileInfo, !isTVShow( fileInfo ) ) )
         return transformItem( fileInfo, fTVPatterns );
+    else
+        return transformItem( fileInfo, fMoviePatterns );
 }
 
 std::pair< bool, QString > CDirModel::transformItem( const QFileInfo &fileInfo, const SPatternInfo & info ) const
 {
     auto filePath = fileInfo.absoluteFilePath();
 
-    if ( !info.fInPatternRegExp.isValid() )
-        return std::make_pair( false, QObject::tr( "<INVALID INPUT REGEX>" ) );
+    //if ( !info.fInPatternRegExp.isValid() )
+    //    return std::make_pair( false, QObject::tr( "<INVALID INPUT REGEX>" ) );
 
     auto pos = fileInfo.isDir() ? fDirMapping.find( filePath ) : fFileMapping.find( filePath );
     auto retVal = std::make_pair( false, QString() );
@@ -483,37 +521,20 @@ std::pair< bool, QString > CDirModel::transformItem( const QFileInfo &fileInfo, 
         }
 
         auto pos = fTitleInfoMapping.find( filePath );
-        auto match = info.fInPatternRegExp.match( fn );
         if ( pos == fTitleInfoMapping.end() )
         {
             if ( isValidName( fileInfo ) || isIgnoredPathName( fileInfo ) )
                 retVal.second = QString();
-            else if ( !match.hasMatch() )
-            {
-                retVal.second = "<NOMATCH>";
-                qDebug() << "Poorly formed filename" << filePath;
-            }
         }
         else 
         {
-            auto title = NStringUtils::transformTitle( match.captured( "title" ) );
-            auto year = match.captured( "year" ).trimmed();
-            auto tmdbid = match.captured( "tmdbid" ).trimmed();
-            auto season = match.captured( "season" ).trimmed();
-            auto episode = match.captured( "episode" ).trimmed();
-            auto episodeTitle = NStringUtils::transformTitle( match.captured( "episode_title" ) );
-
-            QString extraInfo;
-            if ( pos != fTitleInfoMapping.end() )
-            {
-                title = (*pos).second->getTitle();
-                year = ( *pos ).second->getYear();
-                tmdbid = ( *pos ).second->fTMDBID;
-                season = ( *pos ).second->fSeason;
-                episode = ( *pos ).second->fEpisode;
-                extraInfo = ( *pos ).second->fExtraInfo;
-                episodeTitle = ( *pos ).second->fEpisodeTitle;
-            }
+            auto title = (*pos).second->getTitle();
+            auto year = ( *pos ).second->getYear();
+            auto tmdbid = ( *pos ).second->fTMDBID;
+            auto season = ( *pos ).second->fSeason;
+            auto episode = ( *pos ).second->fEpisode;
+            auto extraInfo = ( *pos ).second->fExtraInfo;
+            auto episodeTitle = ( *pos ).second->fEpisodeTitle;
 
             retVal.second = fileInfo.isDir() ? info.fOutDirPattern : info.fOutFilePattern;
             retVal.second = replaceCapture( "title", retVal.second, title );
@@ -541,13 +562,13 @@ std::pair< bool, QString > CDirModel::transformItem( const QFileInfo &fileInfo, 
     return retVal;
 }
 
-bool CDirModel::treatAsMovie( const QFileInfo &fileInfo ) const
+bool CDirModel::treatAsTVShow( const QFileInfo & fileInfo, bool defaultValue ) const
 {
-    bool asMovie = fTreatAsMovieByDefault;
+    bool asTVShow = defaultValue;
     auto pos = fTitleInfoMapping.find( fileInfo.absoluteFilePath() );
     if ( pos != fTitleInfoMapping.end() )
-        asMovie = ( *pos ).second->fIsMovie;
-    return asMovie;
+        asTVShow = ( *pos ).second->isTVShow();
+    return asTVShow;
 }
 
 void CDirModel::saveM3U( QWidget *parent ) const
@@ -835,6 +856,18 @@ QStandardItem * CDirModel::getTransformItem( const QStandardItem * parent ) cons
     return transformItem;
 }
 
+bool CDirModel::isTVShow( const QFileInfo &fileInfo ) const
+{
+    return isTVShow( fileInfo.absoluteFilePath() );
+}
+
+bool CDirModel::isTVShow( const QString &path ) const
+{
+    auto item = getItemFromPath( path );
+    bool isTVShow = item ? item->data( eIsTVShowRole ).toBool() : false;
+    return isTVShow;
+}
+
 void CDirModel::patternChanged()
 {
     fPatternTimer->stop();
@@ -894,9 +927,3 @@ void CDirModel::updatePattern( const QStandardItem * item, QStandardItem * trans
         transformedItem->setBackground( Qt::red );
 }
 
-void SPatternInfo::setInPattern( const QString &pattern )
-{
-    fInPattern = pattern;
-    fInPatternRegExp.setPattern( fInPattern );
-    //Q_ASSERT( fInPatternRegExp.isValid() );
-}

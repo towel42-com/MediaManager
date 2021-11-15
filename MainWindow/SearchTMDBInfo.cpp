@@ -31,7 +31,7 @@ SSearchTMDBInfo::SSearchTMDBInfo( const QString & text, std::shared_ptr< STitleI
     updateSearchCriteria( true );
 }
 
-QString SSearchTMDBInfo::stripKnownData( const QString & string ) const
+QString SSearchTMDBInfo::stripKnownData( const QString & string )
 {
     QString retVal = string;
     auto separators = QStringList() << "1080p" << "720p" << "AMZN" << "WebRip" << "WEB" << "-RUMOUR" << "-PECULATE" << "x264" << "x265" << "h264" << "h265" << "rarbg" << "BluRay" << "ion10" << "-";
@@ -43,7 +43,7 @@ QString SSearchTMDBInfo::stripKnownData( const QString & string ) const
     return retVal;
 }
 
-QString SSearchTMDBInfo::smartTrim( const QString & string, bool stripInnerPeriods ) const
+QString SSearchTMDBInfo::smartTrim( const QString & string, bool stripInnerPeriods )
 {
     auto retVal = string;
     auto pos = retVal.indexOf( QRegularExpression( "[^\\.\\s\\-]" ) );
@@ -56,6 +56,44 @@ QString SSearchTMDBInfo::smartTrim( const QString & string, bool stripInnerPerio
     if ( stripInnerPeriods )
         retVal.replace( ".", " " );
     return retVal;
+}
+
+std::pair< bool, QString > SSearchTMDBInfo::looksLikeTVShow( const QString & searchString, QString * seasonStr, QString * episodeStr )
+{
+    QString retVal = searchString;
+
+    bool isTV = false;
+    QString dataBeforeSeason;
+    auto regExp = QRegularExpression( "S(?<season>\\d+)" );
+    auto match = regExp.match( retVal );
+    if ( match.hasMatch() )
+    {
+        if ( seasonStr )
+            *seasonStr = smartTrim( match.captured( "season" ) );
+        dataBeforeSeason = smartTrim( retVal.left( match.capturedStart( "season" ) - 1 ) );
+        retVal = retVal.mid( match.capturedStart( "season" ) - 1 );
+        retVal.replace( match.capturedStart( "season" ), match.capturedLength( "season" ), "" );
+        isTV = true;
+    }
+
+    QString dataAfterEpisode;
+    regExp = QRegularExpression( "E(?<episode>\\d+)" );
+    match = regExp.match( retVal );
+    if ( match.hasMatch() )
+    {
+        if ( episodeStr )
+            *episodeStr = smartTrim( match.captured( "episode" ) );
+        dataAfterEpisode = smartTrim( retVal.mid( match.capturedEnd( "episode" ) ) );
+        retVal.replace( match.capturedStart( "episode" ), match.capturedLength( "episode" ), "" );
+        isTV = true;
+    }
+
+    if ( !dataBeforeSeason.isEmpty() )
+        retVal = dataBeforeSeason;
+    if ( !dataAfterEpisode.isEmpty() )
+        retVal += " " + dataAfterEpisode;
+
+    return std::make_pair( isTV, retVal );
 }
 
 void SSearchTMDBInfo::updateSearchCriteria( bool updateSearchBy )
@@ -80,35 +118,8 @@ void SSearchTMDBInfo::updateSearchCriteria( bool updateSearchBy )
         fSearchName.replace( match.capturedStart( "tmdbid" ), match.capturedLength( "tmdbid" ), "" );
     }
 
-    if ( !fIsMovie )
-    {
-        QString dataBeforeSeason;
-        auto regExp = QRegularExpression( "S(?<season>\\d+)" );
-        auto match = regExp.match( fSearchName );
-        if ( match.hasMatch() )
-        {
-            seasonStr = smartTrim( match.captured( "season" ) );
-            dataBeforeSeason = smartTrim( fSearchName.left( match.capturedStart( "season" ) - 1 ) );
-            fSearchName = fSearchName.mid( match.capturedStart( "season" ) - 1 );
-            fSearchName.replace( match.capturedStart( "season" ), match.capturedLength( "season" ), "" );
-        }
-
-        QString dataAfterEpisode;
-        regExp = QRegularExpression( "E(?<episode>\\d+)" );
-        match = regExp.match( fSearchName );
-        if ( match.hasMatch() )
-        {
-            episodeStr = smartTrim( match.captured( "episode" ) );
-            dataAfterEpisode = smartTrim( fSearchName.mid( match.capturedEnd( "episode" ) ) );
-            fSearchName.replace( match.capturedStart( "episode" ), match.capturedLength( "episode" ), "" );
-        }
-
-        if ( !dataBeforeSeason.isEmpty() )
-            fSearchName = dataBeforeSeason;
-        if ( !dataAfterEpisode.isEmpty() )
-            fSearchName += " " + dataAfterEpisode;
-
-    }
+    if ( fIsTVShow )
+        fSearchName = looksLikeTVShow( fSearchName, &seasonStr, &episodeStr ).second;
 
     fSearchName = smartTrim( fSearchName, true );
 

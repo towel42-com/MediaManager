@@ -46,7 +46,7 @@ public:
 
     bool isActive() const;
 
-    std::list< std::shared_ptr< STitleInfo > > getResults() const { return fTopLevelResults; }
+    std::list< std::shared_ptr< STitleInfo > > getResults() const;
     std::shared_ptr< STitleInfo > bestMatch() const { return fBestMatch; }
 
     bool searchByName();
@@ -66,6 +66,7 @@ Q_SIGNALS:
     void sigSearchFinished();
     void sigMessage( const QString &msg );
 private:
+    QString getSearchName() const;
     bool isBetterEpisodeMatch( std::shared_ptr< STitleInfo > lhs, std::shared_ptr< STitleInfo > rhs ) const;
     bool hasConfiguration() const;
 
@@ -91,9 +92,9 @@ private:
     QNetworkReply *fGetMovieReply{ nullptr };
     QNetworkReply *fGetTVReply{ nullptr };
 
-    std::unordered_map< QNetworkReply *, std::shared_ptr< STitleInfo >  > fImageInfoReplies;
-    std::unordered_map< QNetworkReply *, std::shared_ptr< STitleInfo >  > fTVInfoReplies;
-    std::unordered_map< QNetworkReply *, std::shared_ptr< STitleInfo >  > fSeasonInfoReplies;
+    std::unordered_map< QNetworkReply *, std::shared_ptr< STitleInfo > > fImageInfoReplies;
+    std::unordered_map< QNetworkReply *, std::shared_ptr< STitleInfo > > fTVInfoReplies;
+    std::pair< std::unordered_map< QNetworkReply *, std::shared_ptr< STitleInfo > >, std::optional< bool > > fSeasonInfoReplies; // bool means episode found for this round of seasons searchess
 
     std::shared_ptr< SSearchTMDBInfo > fSearchInfo;
 

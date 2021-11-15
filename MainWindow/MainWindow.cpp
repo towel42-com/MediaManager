@@ -48,9 +48,7 @@ CMainWindow::CMainWindow( QWidget* parent )
 {
     fImpl->setupUi( this );
 
-    fImpl->tvInPattern->setDelay( 1000 );
     fImpl->tvOutFilePattern->setDelay( 1000 );
-    fImpl->movieInPattern->setDelay( 1000 );
     fImpl->movieOutFilePattern->setDelay( 1000 );
     fImpl->movieOutDirPattern->setDelay( 1000 );
     fImpl->directory->setDelay( 1000 );
@@ -73,11 +71,8 @@ CMainWindow::CMainWindow( QWidget* parent )
     connect( fImpl->btnSelectDir, &QPushButton::clicked, this, &CMainWindow::slotSelectDirectory );
     connect( fImpl->btnLoad, &QPushButton::clicked, this, &CMainWindow::slotLoad );
     connect( fImpl->btnSaveM3U, &QPushButton::clicked, this, &CMainWindow::slotSaveM3U );
-    connect( fImpl->treatAsMovie, &QCheckBox::clicked, this, &CMainWindow::slotToggleTreatAsMovie );
-    connect( fImpl->treatAsMovie, &QCheckBox::pressed, this, &CMainWindow::slotAboutToToggle );
+    connect( fImpl->treatAsTVShowByDefault, &QCheckBox::clicked, this, &CMainWindow::slotToggleTreatAsTVShowByDefault );
 
-    connect( fImpl->tvInPattern, &CDelayLineEdit::sigTextChanged, this, &CMainWindow::slotTVInputPatternChanged );
-    connect( fImpl->movieInPattern, &CDelayLineEdit::sigTextChanged, this, &CMainWindow::slotMovieInputPatternChanged );
     connect( fImpl->files, &QTreeView::doubleClicked, this, &CMainWindow::slotDoubleClicked );
 
     QTimer::singleShot( 0, this, &CMainWindow::slotDirectoryChanged );
@@ -105,7 +100,7 @@ QString CMainWindow::getDefaultOutDirPattern() const
 QString CMainWindow::getDefaultOutFilePattern( bool forTV ) const
 {
     if ( forTV )
-        return "<title> - S<season>E<episode>( - <episode_title>):<episode_title>";
+        return "<title> - S<season>E<episode>( - <episode_title>):<episode_title>( - <extra_info>):<extra_info>";
     else
         return "<title>";
 }
@@ -117,11 +112,11 @@ void CMainWindow::loadSettings()
     fImpl->directory->setText( settings.value( "Directory", QString() ).toString() );
     fImpl->extensions->setText( settings.value( "Extensions", QString( "*.mkv;*.mp4;*.avi;*.mov;*.wmv;*.mpg;*.mpg2;*.idx;*.sub;*.srt" ) ).toString() );
 
-    fImpl->treatAsMovie->setChecked( settings.value( "TreatAsMovie", true ).toBool() );
+    fImpl->treatAsTVShowByDefault->setChecked( settings.value( "TreatAsTVShowByDefault", false ).toBool() );
     fImpl->exactMatchesOnly->setChecked( settings.value( "ExactMatchesOnly", true ).toBool() );
 
     loadPatterns();
-    slotToggleTreatAsMovie();
+    slotToggleTreatAsTVShowByDefault();
 }
 
 void CMainWindow::loadPatterns()
@@ -130,17 +125,12 @@ void CMainWindow::loadPatterns()
 
     settings.beginGroup( "ForTV" );
 
-    auto currText = settings.value( "InPattern", getDefaultInPattern( true ) ).toString();
-    fImpl->tvInPattern->setText( currText );
-
-    currText = settings.value( "OutFilePattern", getDefaultOutFilePattern( true ) ).toString();
+    auto currText = settings.value( "OutFilePattern", getDefaultOutFilePattern( true ) ).toString();
     fImpl->tvOutFilePattern->setText( currText );
 
     settings.endGroup();
 
     settings.beginGroup( "ForMovies" );
-    currText = settings.value( "InPattern", getDefaultInPattern( false ) ).toString();
-    fImpl->movieInPattern->setText( currText );
 
     currText = settings.value( "OutFilePattern", getDefaultOutFilePattern( false ) ).toString();
     fImpl->movieOutFilePattern->setText( currText );
@@ -156,20 +146,18 @@ void CMainWindow::saveSettings()
 
     settings.setValue( "Directory", fImpl->directory->text() );
     settings.setValue( "Extensions", fImpl->extensions->text() );
-    settings.setValue( "TreatAsMovie", fImpl->treatAsMovie->isChecked() );
+    settings.setValue( "TreatAsTVShowByDefault", fImpl->treatAsTVShowByDefault->isChecked() );
     settings.setValue( "ExactMatchesOnly", fImpl->exactMatchesOnly->isChecked() );
     
 
     settings.beginGroup( "ForMovies" );
 
-    settings.setValue( "InPattern", fImpl->movieInPattern->text() );
     settings.setValue( "OutFilePattern", fImpl->movieOutFilePattern->text() );
     settings.setValue( "OutDirPattern", fImpl->movieOutDirPattern->text() );
 
     settings.endGroup();
 
     settings.beginGroup( "ForTV" );
-    settings.setValue( "InPattern", fImpl->tvInPattern->text() );
     settings.setValue( "OutFilePattern", fImpl->tvOutFilePattern->text() );
 }
 
@@ -191,11 +179,6 @@ void CMainWindow::slotSelectDirectory()
     auto dir = QFileDialog::getExistingDirectory( this, tr( "Select Directory:" ), fImpl->directory->text() );
     if ( !dir.isEmpty() )
         fImpl->directory->setText( dir );
-}
-
-void CMainWindow::slotAboutToToggle()
-{
-    saveSettings();
 }
 
 bool CMainWindow::isDir( const QModelIndex &idx ) const
@@ -253,10 +236,11 @@ void CMainWindow::slotDoubleClicked( const QModelIndex &idx )
     
     auto isDir = baseIdx.data( CDirModel::ECustomRoles::eIsDir ).toBool();
     auto fullPath = baseIdx.data( CDirModel::ECustomRoles::eFullPathRole ).toString();
+    bool isTVShow = baseIdx.data( CDirModel::ECustomRoles::eIsTVShowRole ).toBool();
     auto nm = fDirModel->getSearchName( idx );
 
     CSelectTMDB dlg( nm, titleInfo, this );
-    dlg.setSearchForMovies( fDirModel->treatAsMovie( QFileInfo( fullPath ) ), true );
+    dlg.setSearchForTVShows( fDirModel->treatAsTVShow( QFileInfo( fullPath ), isTVShow ), true );
     dlg.setExactMatchOnly( fImpl->exactMatchesOnly->isChecked(), true );
 
     if ( dlg.exec() == QDialog::Accepted )
@@ -266,32 +250,16 @@ void CMainWindow::slotDoubleClicked( const QModelIndex &idx )
     }
 }
 
-void CMainWindow::slotToggleTreatAsMovie()
+void CMainWindow::slotToggleTreatAsTVShowByDefault()
 {
     if ( fDirModel )
-        fDirModel->slotTreatAsMovieChanged( fImpl->treatAsMovie->isChecked() );
-    fImpl->tabWidget->setCurrentWidget( fImpl->treatAsMovie->isChecked() ? fImpl->moviePatternsPage : fImpl->tvPatternsPage );
+        fDirModel->slotTreatAsTVByDefaultChanged( fImpl->treatAsTVShowByDefault->isChecked() );
+    fImpl->tabWidget->setCurrentWidget( fImpl->treatAsTVShowByDefault->isChecked() ? fImpl->tvPatternsPage : fImpl->moviePatternsPage );
 }
 
 void CMainWindow::slotSaveM3U()
 {
     fDirModel->saveM3U( this );
-}
-
-void CMainWindow::slotTVInputPatternChanged( const QString& inPattern )
-{
-    if ( fDirModel )
-    {
-        fDirModel->slotTVInputPatternChanged( inPattern );
-    }
-}
-
-void CMainWindow::slotMovieInputPatternChanged( const QString &inPattern )
-{
-    if ( fDirModel )
-    {
-        fDirModel->slotMovieInputPatternChanged( inPattern );
-    }
 }
 
 void CMainWindow::slotLoad()
@@ -309,10 +277,8 @@ void CMainWindow::loadDirectory()
     connect( fImpl->movieOutFilePattern, &CDelayLineEdit::sigTextChanged, fDirModel.get(), &CDirModel::slotMovieOutputFilePatternChanged );
     connect( fImpl->movieOutDirPattern, &CDelayLineEdit::sigTextChanged, fDirModel.get(), &CDirModel::slotMovieOutputDirPatternChanged );
     connect( fDirModel.get(), &CDirModel::sigDirReloaded, this, &CMainWindow::slotAutoSearch );
-    fDirModel->slotTreatAsMovieChanged( fImpl->treatAsMovie->isChecked() );
-    fDirModel->slotTVInputPatternChanged( fImpl->tvInPattern->text() );
+    fDirModel->slotTreatAsTVByDefaultChanged( fImpl->treatAsTVShowByDefault->isChecked() );
     fDirModel->slotTVOutputFilePatternChanged( fImpl->tvOutFilePattern->text() );
-    fDirModel->slotMovieInputPatternChanged( fImpl->movieInPattern->text() );
     fDirModel->slotMovieOutputFilePatternChanged( fImpl->movieOutFilePattern->text() );
     fDirModel->slotMovieOutputDirPatternChanged( fImpl->movieOutDirPattern->text() );
     fDirModel->setNameFilters( fImpl->extensions->text().split( ";" ), fImpl->files  );

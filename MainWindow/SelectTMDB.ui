@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>502</width>
-    <height>643</height>
+    <width>451</width>
+    <height>652</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -166,9 +166,9 @@
     <widget class="QLineEdit" name="resultReleaseDate"/>
    </item>
    <item row="3" column="0" colspan="2">
-    <widget class="QCheckBox" name="searchForMovies">
+    <widget class="QCheckBox" name="searchForTVShows">
      <property name="text">
-      <string>Search for Movies?</string>
+      <string>Search TV Shows?</string>
      </property>
     </widget>
    </item>

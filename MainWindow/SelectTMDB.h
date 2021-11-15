@@ -58,7 +58,7 @@ public:
 
     std::shared_ptr< STitleInfo > getTitleInfo() const;
 
-    void setSearchForMovies( bool value, bool init );
+    void setSearchForTVShows( bool value, bool init );
     void setExactMatchOnly( bool value, bool init );
 
 public Q_SLOTS:
@@ -70,7 +70,7 @@ public Q_SLOTS:
 
     void slotItemSelected();
     void slotByNameChanged();
-    void slotExactOrForMovieChanged();
+    void slotExactOrForTVShowsChanged();
 
     void slotSearchFinished();
     void slotLoadNextResult();

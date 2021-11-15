@@ -41,14 +41,10 @@ using TParentTree = std::list< TTreeNode >;
 struct SPatternInfo
 {
     friend class CDirModel;
-    void setInPattern( const QString & pattern );
-
     bool isValidName( const QString &name, bool isDir ) const;
     bool isValidName( const QFileInfo &fi ) const;
 
 private:
-    QString fInPattern;
-    QRegularExpression fInPatternRegExp;
     QString fOutFilePattern;
     QString fOutDirPattern;
 };
@@ -63,13 +59,15 @@ public:
         eFSSize,
         eFSType,
         eFSModDate,
+        eIsTVShow,
         eTransformName
     };
     enum ECustomRoles
     {
         eFullPathRole = Qt::UserRole + 1,
         eIsDir,
-        eIsRoot
+        eIsRoot,
+        eIsTVShowRole
     };
     CDirModel( QObject *parent = nullptr );
     ~CDirModel();
@@ -94,22 +92,22 @@ public:
     void setRootPath( const QString &path, QTreeView *view = nullptr );
 
     QString getSearchName( const QModelIndex &idx ) const;
-    bool treatAsMovie( const QFileInfo &fileInfo ) const;
+    bool treatAsTVShow( const QFileInfo & fileInfo, bool defaultValue ) const;
+    virtual bool setData( const QModelIndex &idx, const QVariant &value, int role ) override;
 Q_SIGNALS:
     void sigDirReloaded();
 public Q_SLOTS:
-    void slotTVInputPatternChanged( const QString &inPattern );
     void slotTVOutputFilePatternChanged( const QString &outPattern );
-    void slotMovieInputPatternChanged( const QString &inPattern );
     void slotMovieOutputDirPatternChanged( const QString &outPattern );
     void slotMovieOutputFilePatternChanged( const QString &outPattern );
     void slotLoadRootDirectory();
     void slotPatternChanged();
-    void slotTreatAsMovieChanged( bool treatAsMovie );
+    void slotTreatAsTVByDefaultChanged( bool treatAsTVShowByDefault );
 private:
     void loadFileInfo( const QFileInfo & info, TParentTree &parentTree );
-    void attachParentTree( TParentTree & parentTree );
+    void attachTreeNodes( TParentTree & parentTree );
     QStandardItem *getItemFromindex( QModelIndex idx ) const;
+    QStandardItem *getItemFromPath( const QFileInfo &fi ) const;
 
     bool isIgnoredPathName( const QFileInfo &ii ) const;
     bool isExcludedDirName( const QFileInfo &ii ) const;
@@ -124,6 +122,10 @@ private:
     QString saveM3U( const QStandardItem *parent, const QString &baseName ) const;
     bool isValidName( const QFileInfo &fi ) const;
     bool isValidName( const QString & absPath, bool isDir ) const;
+
+    bool isTVShow( const QFileInfo & fileInfo ) const;
+    bool isTVShow( const QString &path ) const;
+
     void patternChanged();
     void patternChanged( const QStandardItem *parent );
 
@@ -136,11 +138,10 @@ private:
     [[nodiscard]] QString computeTransformPath( const QStandardItem *item, bool parentsOnly ) const;
     
     bool isLanguageFile( const QModelIndex &idx ) const;
+    void setIsTVShow( QStandardItem *item, bool isTVShow ) const;
 
     QString fRootPath;
     QStringList fNameFilter;
-
-    bool fTreatAsMovieByDefault{ false };
 
     SPatternInfo fTVPatterns;
     SPatternInfo fMoviePatterns;
@@ -152,7 +153,9 @@ private:
     mutable std::map< QString, std::pair< bool, QString > > fFileMapping;
     mutable std::map< QString, std::pair< bool, QString > > fDirMapping;
     std::map< QString, std::shared_ptr< STitleInfo > > fTitleInfoMapping;
+    std::map< QString, QStandardItem * > fPathMapping;
 
+    bool fTreatAsTVShowByDefault{ false };
     QTimer *fTimer{ nullptr };
     QTimer *fPatternTimer{ nullptr };
     QTreeView *fTreeView{ nullptr };

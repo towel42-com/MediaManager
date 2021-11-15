@@ -24,6 +24,12 @@
 #include "SABUtils/StringUtils.h"
 #include "SABUtils/QtUtils.h"
 
+STitleInfo::STitleInfo( ETitleInfoType type ) :
+    fInfoType( type )
+{
+
+}
+
 QString STitleInfo::getTitle() const
 {
     return NStringUtils::transformTitle( fTitle );
@@ -50,6 +56,18 @@ QString STitleInfo::getTMDBID() const
     if ( !fEpisodeTMDBID.isEmpty() )
         retVal = fEpisodeTMDBID;
     return retVal;
+}
+
+void STitleInfo::removeChild( std::shared_ptr< STitleInfo > info )
+{
+    for ( auto &&ii = fChildren.begin(); ii != fChildren.end(); ++ii )
+    {
+        if ( ( *ii ).get() == info.get() )
+        {
+            fChildren.erase( ii );
+            return;
+        }
+    }
 }
 
 QString STitleInfo::getText( ETitleInfo which, bool forceTop /*= false */ ) const

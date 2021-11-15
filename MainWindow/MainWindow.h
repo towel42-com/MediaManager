@@ -43,10 +43,7 @@ public Q_SLOTS:
     void slotLoad();
     void slotTransform();
     void slotSaveM3U();
-    void slotTVInputPatternChanged(const QString& inPattern);
-    void slotMovieInputPatternChanged( const QString &inPattern );
-    void slotToggleTreatAsMovie();
-    void slotAboutToToggle();
+    void slotToggleTreatAsTVShowByDefault();
     void slotDoubleClicked( const QModelIndex &idx );
     void slotAutoSearch();
     void slotSearchFinished();

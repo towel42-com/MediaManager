@@ -40,21 +40,26 @@ enum class ETitleInfo
     eDescription
 };
 
-enum ETitleInfoType
+enum class ETitleInfoType
 {
     eMovie,
     eTVShow,
-    eSeason,
-    eEpisode
+    eTVSeason,
+    eTVEpisode
 };
 
 
 struct STitleInfo
 {
+    STitleInfo( ETitleInfoType type );
+
+    bool isTVShow() const { return fInfoType != ETitleInfoType::eMovie; } // tvshow, season or episode are all not movie
     QString getTitle() const;
     QString getYear() const;
     QString getEpisodeTitle() const;
     QString getTMDBID() const;
+
+    void removeChild( std::shared_ptr< STitleInfo > info );
 
     [[nodiscard]] QString getMyText( ETitleInfo which ) const;
 
@@ -72,8 +77,6 @@ struct STitleInfo
 
     QString fDescription;
     QPixmap fPixmap;
-
-    bool fIsMovie{ true };
 
     std::weak_ptr < STitleInfo > fParent;
     std::list< std::shared_ptr< STitleInfo > > fChildren;

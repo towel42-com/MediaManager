@@ -42,6 +42,8 @@ struct SSearchTMDBInfo
     SSearchTMDBInfo() {};
     SSearchTMDBInfo( const QString &searchString, std::shared_ptr< STitleInfo > titleInfo );
 
+    static std::pair< bool, QString > looksLikeTVShow( const QString &searchString, QString *seasonStr, QString *episodeStr );
+
     void updateSearchCriteria( bool updateSearchBy );
 
     std::optional< std::pair< QUrl, ESearchType > > getSearchURL() const;
@@ -50,8 +52,8 @@ struct SSearchTMDBInfo
     QString searchName() const { return fSearchName; }
     QString episodeTitle() const { return fEpisodeTitle; }
 
-    void setIsMovie( bool isMovie ) { fIsMovie = isMovie;  }
-    bool isMovie() const { return fIsMovie; }
+    void setIsTVShow( bool isTVShow ) { fIsTVShow = isTVShow;  }
+    bool isTVShow() const { return fIsTVShow; }
 
     void setExactMatchOnly( bool exactMatchOnly ) { fExactMatchOnly = exactMatchOnly; }
     bool exactMatchOnly() const { return fExactMatchOnly; }
@@ -70,21 +72,25 @@ struct SSearchTMDBInfo
     bool tmdbIDSet()  const { return !fTMDBID.isEmpty(); }
 
     int season() const { return fSeason; }
+    void setSeason( int value ) { fSeason = value; }
     int episode() const { return fEpisode; }
+    void setEpisode( int value ) { fEpisode = value; }
 private:
-    QString stripKnownData( const QString &string ) const;
-    QString smartTrim( const QString &string, bool stripInnerPeriods = false ) const;
+    static QString stripKnownData( const QString &string );
+    static QString smartTrim( const QString &string, bool stripInnerPeriods = false );
 
     QString fSearchName;
     QString fReleaseDate;
-    QString fEpisodeTitle;
-    QString fDescription;
     int fSeason{ -1 };
     int fEpisode{ -1 };
     QString fTMDBID;
-    bool fIsMovie{ false };
+    bool fIsTVShow{ false };
     bool fExactMatchOnly{ false };
     bool fSearchByName{ false };
+
+    // not search criteria
+    QString fEpisodeTitle; 
+    QString fDescription;
 
     QString fInitSearchString;
     std::shared_ptr< STitleInfo > fTitleInfo;
