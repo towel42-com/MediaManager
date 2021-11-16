@@ -42,7 +42,7 @@ struct SSearchTMDBInfo
     SSearchTMDBInfo() {};
     SSearchTMDBInfo( const QString &searchString, std::shared_ptr< STitleInfo > titleInfo );
 
-    static std::pair< bool, QString > looksLikeTVShow( const QString &searchString, QString *seasonStr, QString *episodeStr );
+    static std::pair< bool, QString > looksLikeTVShow( const QString &searchString, QString *seasonStr = nullptr, QString *episodeStr=nullptr );
 
     void updateSearchCriteria( bool updateSearchBy );
 
@@ -75,6 +75,8 @@ struct SSearchTMDBInfo
     void setSeason( int value ) { fSeason = value; }
     int episode() const { return fEpisode; }
     void setEpisode( int value ) { fEpisode = value; }
+
+    QString toString() const;
 private:
     static QString stripKnownData( const QString &string );
     static QString smartTrim( const QString &string, bool stripInnerPeriods = false );
@@ -95,5 +97,7 @@ private:
     QString fInitSearchString;
     std::shared_ptr< STitleInfo > fTitleInfo;
 };
+
+QDebug operator<<( QDebug debug, const SSearchTMDBInfo & info );
 
 #endif 

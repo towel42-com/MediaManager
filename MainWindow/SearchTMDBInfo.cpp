@@ -23,18 +23,20 @@
 #include "SearchTMDBInfo.h"
 #include "TitleInfo.h"
 #include <QRegularExpression>
+#include <QDebug>
 
-SSearchTMDBInfo::SSearchTMDBInfo( const QString & text, std::shared_ptr< STitleInfo > titleInfo )
+SSearchTMDBInfo::SSearchTMDBInfo( const QString &text, std::shared_ptr< STitleInfo > titleInfo )
 {
     fTitleInfo = titleInfo;
     fInitSearchString = text;
+    fIsTVShow = looksLikeTVShow( text ).first;
     updateSearchCriteria( true );
 }
 
 QString SSearchTMDBInfo::stripKnownData( const QString & string )
 {
     QString retVal = string;
-    auto separators = QStringList() << "1080p" << "720p" << "AMZN" << "WebRip" << "WEB" << "-RUMOUR" << "-PECULATE" << "x264" << "x265" << "h264" << "h265" << "rarbg" << "BluRay" << "ion10" << "-";
+    auto separators = QStringList() << "1080p" << "720p" << "AMZN" << "WebRip" << "WEB" << "-RUMOUR" << "-PECULATE" << "x264" << "x265" << "h264" << "h265" << "rarbg" << "BluRay" << "ion10" << "LiMiTED" << "DVDRip" <<  "XviDTLF";
     for ( auto &&separator : separators )
     {
         retVal.replace( "[" + separator + "]", "", Qt::CaseSensitivity::CaseInsensitive );
@@ -54,7 +56,10 @@ QString SSearchTMDBInfo::smartTrim( const QString & string, bool stripInnerPerio
     if ( pos != -1 )
         retVal = retVal.left( pos + 1 );
     if ( stripInnerPeriods )
-        retVal.replace( ".", " " );
+    {
+        retVal.replace( QRegularExpression( "\\.|(\\s{2,})|-|\\:"), " " );
+        retVal = retVal.trimmed();
+    }
     return retVal;
 }
 
@@ -102,20 +107,20 @@ void SSearchTMDBInfo::updateSearchCriteria( bool updateSearchBy )
     QString seasonStr;
     QString episodeStr;
 
-    auto regExp = QRegularExpression( "[\\.\\(](?<releaseDate>\\d{2,4})(?:[\\.\\)]?|$)" );
+    auto regExp = QRegularExpression( "(?<fulltext>[\\.\\(](?<releaseDate>\\d{2,4})(?:[\\.\\)]?|$))" );
     auto match = regExp.match( fSearchName );
     if ( match.hasMatch() )
     {
         fReleaseDate = smartTrim( match.captured( "releaseDate" ) );
-        fSearchName.replace( match.capturedStart( "releaseDate" ), match.capturedLength( "releaseDate" ), "" );
+        fSearchName.replace( match.capturedStart( "fulltext" ), match.capturedLength( "fulltext" ), "" );
     }
 
-    regExp = QRegularExpression( "\\[tmdbid=(?<tmdbid>\\d+)\\]" );
+    regExp = QRegularExpression( "(?<fulltext>\\[tmdbid=(?<tmdbid>\\d+)\\])" );
     match = regExp.match( fSearchName );
     if ( match.hasMatch() )
     {
         fTMDBID = smartTrim( match.captured( "tmdbid" ) );
-        fSearchName.replace( match.capturedStart( "tmdbid" ), match.capturedLength( "tmdbid" ), "" );
+        fSearchName.replace( match.capturedStart( "fulltext" ), match.capturedLength( "fulltext" ), "" );
     }
 
     if ( fIsTVShow )
@@ -160,6 +165,17 @@ int SSearchTMDBInfo::releaseDate( bool * aOK ) const
 
 int SSearchTMDBInfo::tmdbID( bool *aOK ) const
 {
-    return fReleaseDate.toInt( aOK );
+    return fTMDBID.toInt( aOK );
 }
 
+QDebug operator<<( QDebug debug, const SSearchTMDBInfo &info )
+{
+    debug << info.toString();
+    return debug;
+}
+
+QString SSearchTMDBInfo::toString() const
+{
+    QString retVal = QString( "SSearchTMDBInfo(%1 (%2)-S%3E%4-%5-%6-%7-%8)" ).arg( searchName() ).arg( releaseDateString() ).arg( season() ).arg( episode() ).arg( tmdbIDString() ).arg( isTVShow() ).arg( exactMatchOnly() ).arg( searchName() );
+    return retVal;
+}
