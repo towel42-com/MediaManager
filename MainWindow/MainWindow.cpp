@@ -186,6 +186,25 @@ bool CMainWindow::isDir( const QModelIndex &idx ) const
     return fDirModel->isDir( idx );
 }
 
+void CMainWindow::autoSearch( QModelIndex parentIdx )
+{
+    auto rowCount = fDirModel->rowCount( parentIdx );
+    for ( int ii = 0; ii < rowCount; ++ii )
+    {
+        auto childIndex = fDirModel->index( ii, 0, parentIdx );
+        auto name = fDirModel->getSearchName( childIndex );
+        auto path = fDirModel->filePath( childIndex );
+        auto titleInfo = fDirModel->getTitleInfo( childIndex );
+        auto searchInfo = std::make_shared< SSearchTMDBInfo >( name, titleInfo );
+
+        if ( !fDirModel->isLanguageFile( childIndex ) )
+            fSearchTMDB->addSearch( path, searchInfo );
+
+        autoSearch( childIndex );
+    }
+}
+
+
 void CMainWindow::slotAutoSearch()
 {
     if ( !fDirModel )
@@ -194,37 +213,26 @@ void CMainWindow::slotAutoSearch()
     if ( fDirModel->rowCount() != 1 )
         return;
 
-    //if ( !fSearchTMDB )
-    //{
-    //    fSearchTMDB = new CSearchTMDB( nullptr, std::optional<QString>(), this );
-    //    connect( fSearchTMDB, &CSearchTMDB::sigSearchFinished, this, &CMainWindow::slotSearchFinished );
-    //}
+    if ( !fSearchTMDB )
+    {
+        fSearchTMDB = new CSearchTMDB( nullptr, std::optional<QString>(), this );
+        fSearchTMDB->setSkipImages( true );
+        connect( fSearchTMDB, &CSearchTMDB::sigAutoSearchFinished, this, &CMainWindow::slotSearchFinished );
+    }
 
     auto rootIdx = fDirModel->index( 0, 0 );
-    for ( int ii = 0; ii < fDirModel->rowCount( rootIdx ); ++ii )
-    {
-        auto childIndex = fDirModel->index( ii, 0, rootIdx );
-        auto name = fDirModel->getSearchName( childIndex );
-        auto titleInfo = fDirModel->getTitleInfo( childIndex );
-        auto searchInfo = std::make_shared< SSearchTMDBInfo >( name, titleInfo );
-
-        auto persistentModelIndex = QPersistentModelIndex( childIndex );
-        //fSearchTMDB->addSearch( searchInfo );
-        //fSearchResults[searchInfo] = { persistentModelIndex, {} };
-    }
+    autoSearch( rootIdx );
 }
 
-void CMainWindow::slotSearchFinished()
+void CMainWindow::slotSearchFinished( const QString & path )
 {
-    //for( auto && ii : fSearchResults )
-    //{
-    //    auto result = fSearchTMDB->getResult( ii.first, true );
-    //    if ( result.has_value() )
-    //    {
-    //        ii.second.second.insert( ii.second.second.end(), result.value().begin(), result.value().end() );
-    //        qDebug() << QDateTime::currentDateTime().toString() << "Found results for" << ii.second.first.data();
-    //    }
-    //}
+    qDebug().noquote().nospace() << "Search results for path " << path;
+    auto result = fSearchTMDB->getResult( path );
+    auto item = fDirModel->getItemFromPath( path );
+    if ( item && result )
+    {
+        fDirModel->setTitleInfo( item, result, false );
+    }
 }
 
 void CMainWindow::slotDoubleClicked( const QModelIndex &idx )

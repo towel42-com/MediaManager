@@ -46,8 +46,9 @@ public Q_SLOTS:
     void slotToggleTreatAsTVShowByDefault();
     void slotDoubleClicked( const QModelIndex &idx );
     void slotAutoSearch();
-    void slotSearchFinished();
+    void slotSearchFinished( const QString &path );
 private:
+    void autoSearch( QModelIndex rootIdx );
     QString getDefaultInPattern( bool forTV ) const;
     QString getDefaultOutDirPattern() const; // movies only
     QString getDefaultOutFilePattern( bool forTV ) const;
@@ -61,9 +62,6 @@ private:
     std::unique_ptr< CDirModel > fDirModel;
     std::unique_ptr< Ui::CMainWindow > fImpl;
     CSearchTMDB *fSearchTMDB{ nullptr };
-
-    using TSearchResultsMap = std::map< std::shared_ptr< SSearchTMDBInfo >, std::pair< QPersistentModelIndex, std::list< std::shared_ptr< STitleInfo > > > >;
-    TSearchResultsMap fSearchResults;
 };
 
 #endif 
