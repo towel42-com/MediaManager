@@ -80,9 +80,13 @@ public:
     QFileInfo fileInfo( const QStandardItem *item ) const;
     QString filePath( const QStandardItem *item ) const;
 
+    QStandardItem *getItemFromindex( QModelIndex idx ) const;
+    QStandardItem *getItemFromPath( const QFileInfo &fi ) const;
+
     std::pair< bool, QStandardItemModel * > transform( bool displayOnly ) const;
     void saveM3U( QWidget *parent ) const;
     void setTitleInfo( const QModelIndex &idx, std::shared_ptr< STitleInfo > info, bool applyToChilren );
+    void setTitleInfo( QStandardItem *item, std::shared_ptr< STitleInfo > info, bool applyToChilren );
     std::shared_ptr< STitleInfo > getTitleInfo( const QModelIndex &idx ) const;
 
     void setNameFilters( const QStringList &filters, QTreeView * view = nullptr );
@@ -94,6 +98,7 @@ public:
     QString getSearchName( const QModelIndex &idx ) const;
     bool treatAsTVShow( const QFileInfo & fileInfo, bool defaultValue ) const;
     virtual bool setData( const QModelIndex &idx, const QVariant &value, int role ) override;
+    bool isLanguageFile( const QModelIndex &idx ) const;
 Q_SIGNALS:
     void sigDirReloaded();
 public Q_SLOTS:
@@ -106,8 +111,6 @@ public Q_SLOTS:
 private:
     void loadFileInfo( const QFileInfo & info, TParentTree &parentTree );
     void attachTreeNodes( TParentTree & parentTree );
-    QStandardItem *getItemFromindex( QModelIndex idx ) const;
-    QStandardItem *getItemFromPath( const QFileInfo &fi ) const;
 
     bool isIgnoredPathName( const QFileInfo &ii ) const;
     bool isExcludedDirName( const QFileInfo &ii ) const;
@@ -137,7 +140,6 @@ private:
 
     [[nodiscard]] QString computeTransformPath( const QStandardItem *item, bool parentsOnly ) const;
     
-    bool isLanguageFile( const QModelIndex &idx ) const;
     void setIsTVShow( QStandardItem *item, bool isTVShow ) const;
 
     QString fRootPath;

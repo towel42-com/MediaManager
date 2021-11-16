@@ -242,7 +242,7 @@ TTreeNode CDirModel::getItemRow( const QFileInfo & fileInfo ) const
     }
     retVal.push_back( new QStandardItem( fIconProvider->type( fileInfo ) ) );
     retVal.push_back( new QStandardItem( fileInfo.lastModified().toString( "MM/dd/yyyy hh:mm:ss.zzz") ) );
-    bool isTVShow = SSearchTMDBInfo::looksLikeTVShow( fileInfo.fileName(), nullptr, nullptr ).first;
+    bool isTVShow = SSearchTMDBInfo::looksLikeTVShow( fileInfo.fileName() ).first;
     auto isTVShowItem = new QStandardItem( QString() );
     isTVShowItem->setCheckable( true );
     setIsTVShow( isTVShowItem, isTVShow );
@@ -494,7 +494,7 @@ void cleanFileName( QString & inFile )
 
 std::pair< bool, QString > CDirModel::transformItem( const QFileInfo &fileInfo ) const
 {
-    if ( treatAsTVShow( fileInfo, !isTVShow( fileInfo ) ) )
+    if ( treatAsTVShow( fileInfo, isTVShow( fileInfo ) ) )
         return transformItem( fileInfo, fTVPatterns );
     else
         return transformItem( fileInfo, fMoviePatterns );
@@ -656,6 +656,12 @@ QString CDirModel::saveM3U( const QStandardItem  * parent, const QString &baseNa
     }
 
     return QString();
+}
+
+void CDirModel::setTitleInfo( QStandardItem * item, std::shared_ptr< STitleInfo > titleInfo, bool applyToChildren )
+{
+    auto idx = indexFromItem( item );
+    setTitleInfo( idx, titleInfo, applyToChildren );
 }
 
 void CDirModel::setTitleInfo( const QModelIndex &idx, std::shared_ptr< STitleInfo > titleInfo, bool applyToChildren )
