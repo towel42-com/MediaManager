@@ -70,6 +70,32 @@ void STitleInfo::removeChild( std::shared_ptr< STitleInfo > info )
     }
 }
 
+QString STitleInfo::toString() const
+{
+    QString retVal = "STitleInfo( ";
+    QStringList tmp;
+    tmp << fTitle
+        << fReleaseDate
+        << fTMDBID
+        << fSeasonTMDBID
+        << fEpisodeTMDBID
+        << fSeason
+        << fEpisode
+        << fEpisodeTitle
+        << fExtraInfo
+        << fDescription
+        << QString( "%1" ).arg( fPixmap.isNull() )
+        ;
+    QStringList children = { "Children(" };
+    for ( auto &&ii : fChildren )
+    {
+        children << ii->toString();
+    }
+    retVal += tmp.join( " " ) + ")";
+    retVal += ::toEnumString( fInfoType );
+    return retVal;
+}
+
 QString STitleInfo::getText( ETitleInfo which, bool forceTop /*= false */ ) const
 {
     auto parentPtr = fParent.lock();
@@ -101,6 +127,18 @@ QString STitleInfo::getMyText( ETitleInfo which ) const
         case ETitleInfo::eEpisodeTitle: return fEpisodeTitle;
         case ETitleInfo::eExtraInfo: return fExtraInfo;
         case ETitleInfo::eDescription: return fDescription;
+    }
+    return QString();
+}
+
+QString toEnumString( ETitleInfoType infoType )
+{
+    switch ( infoType )
+    {
+        case ETitleInfoType::eMovie: return "Movie";
+        case ETitleInfoType::eTVShow: return "TV Show";
+        case ETitleInfoType::eTVSeason: return "TV Season";
+        case ETitleInfoType::eTVEpisode: return "TV Episode";
     }
     return QString();
 }

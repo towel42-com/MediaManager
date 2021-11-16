@@ -47,6 +47,7 @@ enum class ETitleInfoType
     eTVSeason,
     eTVEpisode
 };
+QString toEnumString( ETitleInfoType infoType );
 
 
 struct STitleInfo
@@ -61,8 +62,9 @@ struct STitleInfo
 
     void removeChild( std::shared_ptr< STitleInfo > info );
 
-    [[nodiscard]] QString getMyText( ETitleInfo which ) const;
+    QString toString() const;
 
+    [[nodiscard]] QString getMyText( ETitleInfo which ) const;
     [[nodiscard]] QString getText( ETitleInfo which, bool forceTop = false ) const;
 
     QString fTitle;
