@@ -39,6 +39,29 @@
 #include <QImage>
 #include <QPixmap>
 
+QString toString( ERequestType requestType )
+{
+    switch ( requestType )
+    {
+        case ERequestType::eConfig: return "Config";
+        case ERequestType::eTVSearch: return "TV Search";
+        case ERequestType::eMovieSearch: return "Movie Search";
+        case ERequestType::eGetImage: return "Get Image";
+        case ERequestType::eGetMovie: return "Get Movie";
+        case ERequestType::eGetTVShow: return "Get TV Show";
+        case ERequestType::eSeasonInfo: return "Get Season Info";
+        case ERequestType::eTVInfo: return "Get TV Info";
+    }
+    return QString();
+};
+
+QDebug operator<<( QDebug debug, const CSearchTMDB &searchTMDB )
+{
+    debug.nospace().noquote() << "(" << searchTMDB.toString() << ")";
+    return debug;
+}
+
+
 
 CSearchTMDB::CSearchTMDB( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::optional< QString > &configuration, QObject* parent )
     : QObject( parent ),
@@ -46,7 +69,12 @@ CSearchTMDB::CSearchTMDB( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::op
     fConfiguration( configuration )
 {
     fManager = new QNetworkAccessManager( this );
+    connect( fManager, &QNetworkAccessManager::authenticationRequired, this, &CSearchTMDB::slotAuthenticationRequired );
+    connect( fManager, &QNetworkAccessManager::encrypted, this, &CSearchTMDB::slotEncrypted );
     connect( fManager, &QNetworkAccessManager::finished, this, &CSearchTMDB::slotRequestFinished );
+    connect( fManager, &QNetworkAccessManager::preSharedKeyAuthenticationRequired, this, &CSearchTMDB::slotPreSharedKeyAuthenticationRequired );
+    connect( fManager, &QNetworkAccessManager::proxyAuthenticationRequired, this, &CSearchTMDB::slotProxyAuthenticationRequired );
+    connect( fManager, &QNetworkAccessManager::sslErrors, this, &CSearchTMDB::slotSSlErrors );
 
     QTimer::singleShot( 0, this, &CSearchTMDB::slotGetConfig );
 }
@@ -65,13 +93,124 @@ void CSearchTMDB::resetResults()
     fSeasonInfoReplies.first.clear();
     fSeasonInfoReplies.second.reset();
     fTopLevelResults.clear();
+    fCurrentQueuedSearch = {};
+    fSearchQueue.clear();
+    fQueuedResults.clear();
+}
+
+void CSearchTMDB::addSearch( const QString &filePath, std::shared_ptr< SSearchTMDBInfo > searchInfo )
+{
+    //qDebug() << "AddSearch Before: SearchTMBD" << *this;
+
+    fSearchQueue.push_back( std::make_pair( filePath, searchInfo ) );
+    startAutoSearchTimer();
+
+    //qDebug() << "AddSearch After: SearchTMBD" << *this;
+}
+
+QString CSearchTMDB::toString() const
+{
+    QString retVal =
+        QString( "CSearchTMDB(Manager: 0x%1 " ).arg( reinterpret_cast<uintptr_t>( fManager ), 0, 16 )
+        + QString( "ConfigReply: 0x%1 " ).arg( reinterpret_cast<uintptr_t>( fConfigReply ), 0, 16 )
+        + QString( "SearchReply: 0x%1 " ).arg( reinterpret_cast<uintptr_t>( fSearchReply ), 0, 16 )
+        + QString( "GetMovieReply: 0x%1 " ).arg( reinterpret_cast<uintptr_t>( fGetMovieReply ), 0, 16 )
+        + QString( "GetTVReply: 0x%1 " ).arg( reinterpret_cast<uintptr_t>( fGetTVReply ), 0, 16 )
+        ;
+
+    retVal += QString( "ImageInfoReplies( %1 -" ).arg( fImageInfoReplies.size() );
+    for ( auto &&ii : fImageInfoReplies )
+        retVal += QString( "Reply: 0x%1 - Title Info: %2" ).arg( reinterpret_cast<uintptr_t>( ii.first ), 0, 16 ).arg( ii.second->toString() );
+    retVal += ") ";
+
+    retVal += QString( "TVInfoReplies( %1 -" ).arg( fTVInfoReplies.size() );
+    for ( auto &&ii : fTVInfoReplies )
+        retVal += QString( "Reply: 0x%1 - Title Info: %2" ).arg( reinterpret_cast<uintptr_t>( ii.first ), 0, 16 ).arg( ii.second->toString() );
+    retVal += ") ";
+
+    retVal += QString( "SeasonInfoReplies( %1 -" ).arg( fSeasonInfoReplies.first.size() );
+    for ( auto &&ii : fSeasonInfoReplies.first )
+        retVal += QString( "Reply: 0x%1 - Title Info: %2" ).arg( reinterpret_cast<uintptr_t>( ii.first ), 0, 16 ).arg( ii.second->toString() );
+    retVal += ") Episode Found: " + QString( "%1" ).arg( fSeasonInfoReplies.second.has_value() ? fSeasonInfoReplies.second.value() : "No Value" ) + " ";
+
+    retVal += ( fSearchInfo ? fSearchInfo->toString() : "nullptr" ) + " ";
+    retVal += "CurrentQueuedSearch(";
+    if ( fCurrentQueuedSearch.has_value() )
+    {
+        retVal += fCurrentQueuedSearch.value().first + " " + fCurrentQueuedSearch.value().second->toString();
+    }
+    else
+        retVal += "nullptr";
+    retVal += ") ";
+
+    retVal += QString( "QueuedResults( %1 -" ).arg( fQueuedResults.size() );
+    for( auto && ii : fQueuedResults )
+    {
+        retVal += QString( "(%1 - %2)" ).arg( ii.first ).arg( ii.second->toString() );
+    }
+    retVal += ") ";
+
+    retVal += QString( "SearchQueue( %1 -" ).arg( fSearchQueue.size() );
+    for ( auto &&ii : fSearchQueue )
+    {
+        retVal += QString( "(%1 - %2)" ).arg( ii.first ).arg( ii.second->toString() );
+    }
+    retVal += ") ";
+    retVal += QString( "AutoSearchTimer isActive? %1 " ).arg( fAutoSearchTimer && fAutoSearchTimer->isActive() );
+
+    retVal += QString( "Error Message: %1 " ).arg( fErrorMessage.has_value() ? fErrorMessage.value() : QString() );
+    retVal += QString( "Configuration: %1 ErrorCount: %2 " ).arg( fConfiguration.has_value() ? fConfiguration.value() : QString( "<notset>") ).arg( fConfigErrorCount );;
+
+    retVal += QString( "StopSearching: %1 SkipImages: %2 " ).arg( fStopSearching ).arg( fSkipImages );;
+    retVal += QString( "BestMatch: %1" ).arg( fBestMatch ? fBestMatch->toString() : QString() );
+    retVal += QString( "TopLevelResults( %1 -" ).arg( fTopLevelResults.size() );
+    for ( auto &&ii : fTopLevelResults )
+    {
+        retVal += QString( "(%1) " ).arg( ii->toString() );
+    }
+    retVal += ") ";
+    retVal += ")";
+    return retVal;
+}
+
+void CSearchTMDB::startAutoSearchTimer()
+{
+    if ( !fAutoSearchTimer )
+    {
+        fAutoSearchTimer = new QTimer( this );
+        fAutoSearchTimer->setInterval( 100 );
+        fAutoSearchTimer->setSingleShot( true );
+        connect( fAutoSearchTimer, &QTimer::timeout, this, &CSearchTMDB::slotAutoSearch );
+    }
+    fAutoSearchTimer->stop();
+    fAutoSearchTimer->start();
 }
 
 const QString apiKeyV3 = "7c58ff37c9fadd56c51dae3a97339378";
 const QString apiKeyV4 = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI3YzU4ZmYzN2M5ZmFkZDU2YzUxZGFlM2E5NzMzOTM3OCIsInN1YiI6IjVmYTAzMzJiNjM1MDEzMDAzMTViZjg2NyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.MBAzJIxvsRm54kgPKcfixxtfbg2bdNGDHKnEt15Nuac";
 
-void CSearchTMDB::slotRequestFinished( QNetworkReply *reply )
+void CSearchTMDB::slotAuthenticationRequired( QNetworkReply * /*reply*/, QAuthenticator * /*authenticator*/ )
 {
+    //qDebug() << "slotAuthenticationRequired:" << reply << reply->url().toString() << authenticator;
+}
+
+void CSearchTMDB::slotEncrypted( QNetworkReply * /*reply*/ )
+{
+    //qDebug() << "slotEncrypted:" << reply << reply->url().toString();
+}
+
+QNetworkReply *CSearchTMDB::sendRequest( const QNetworkRequest & request, ERequestType /*requestType*/ )
+{
+    auto retVal = fManager->get( request );
+    //qDebug().noquote() << "Sending " << ::toString( requestType ) << "request:" << request.url() << "Reply: 0x" << Qt::hex << reinterpret_cast< uint64_t >( retVal );
+    //qDebug() << *this;
+    return retVal;
+}
+
+void CSearchTMDB::slotRequestFinished( QNetworkReply * reply )
+{
+    //qDebug() << "Reply Finished:" << Qt::hex << reply << reply->url().toString();
+    //qDebug() << "Before" << *this;
     if ( reply->error() != QNetworkReply::NoError )
     {
         bool careAboutError = true;
@@ -104,7 +243,7 @@ void CSearchTMDB::slotRequestFinished( QNetworkReply *reply )
             if ( errorMsg == "Not Found" )
             {
                 fErrorMessage = tr( "Could not find %1" ).arg( getSearchName() );
-                emit sigSearchFinished();
+                emitSigFinished();
                 return;
             }
         }
@@ -114,7 +253,7 @@ void CSearchTMDB::slotRequestFinished( QNetworkReply *reply )
             auto tmdbid = url.path().mid( url.path().lastIndexOf( '/' ) + 1 );
             fErrorMessage = tr( "Could not find Movie with TMDBID: <b>%1</b>" ).arg( tmdbid );
             fGetMovieReply = nullptr;
-            emit sigSearchFinished();
+            emitSigFinished();
             return;
         }
         else if ( reply == fGetTVReply )
@@ -123,7 +262,7 @@ void CSearchTMDB::slotRequestFinished( QNetworkReply *reply )
             auto tmdbid = url.path().mid( url.path().lastIndexOf( '/' ) + 1 );
             fErrorMessage = tr( "Could not find TV Show with TMDBID: <b>%1</b>" ).arg( tmdbid );
             fGetTVReply = nullptr;
-            emit sigSearchFinished();
+            emitSigFinished();
             return;
         }
         else
@@ -161,7 +300,7 @@ void CSearchTMDB::slotRequestFinished( QNetworkReply *reply )
         if ( careAboutError )
         {
             fErrorMessage = prefix + "-" + errorMsg;
-            emit sigSearchFinished();
+            emitSigFinished();
             return;
         }
     }
@@ -202,8 +341,23 @@ void CSearchTMDB::slotRequestFinished( QNetworkReply *reply )
     handled = loadSeasonDetails( reply ) || handled;
 
     if ( !handled )
-        qDebug() << "Reply not handled:" << reply->url().toString();
+        qDebug() << "Reply not handled: 0x" << Qt::hex << reply << reply->url().toString();
     checkIfStillSearching();
+}
+
+void CSearchTMDB::slotPreSharedKeyAuthenticationRequired( QNetworkReply * /*reply*/, QSslPreSharedKeyAuthenticator * /*authenticator*/ )
+{
+    //qDebug() << "slotPreSharedKeyAuthenticationRequired: 0x" << Qt::hex << reply << reply->url().toString() << authenticator;
+}
+
+void CSearchTMDB::slotProxyAuthenticationRequired( const QNetworkProxy & /*proxy*/, QAuthenticator * /*authenticator*/ )
+{
+    //qDebug() << "slotProxyAuthenticationRequired: 0x" << Qt::hex << &proxy << authenticator;
+}
+
+void CSearchTMDB::slotSSlErrors( QNetworkReply * /*reply*/, const QList<QSslError> & /*errors*/ )
+{
+    //qDebug() << "slotSSlErrors: 0x" << Qt::hex << reply << errors;
 }
 
 QString CSearchTMDB::getSearchName() const
@@ -219,7 +373,23 @@ void CSearchTMDB::checkIfStillSearching()
     {
         fErrorMessage = QString( "Could not find episode '%1' for TV show '%2'" ).arg( fSearchInfo->episode() ).arg( fSearchInfo->searchName() );
     }
-    emit sigSearchFinished();
+    //qDebug() << "After" << *this;
+    emitSigFinished();
+}
+
+void CSearchTMDB::emitSigFinished()
+{
+    if ( fCurrentQueuedSearch.has_value() )
+    {
+        auto path = fCurrentQueuedSearch.value().first;
+        //qDebug() << "Sending autoSearchFinished " << path;
+        emit sigAutoSearchFinished( path );
+        fCurrentQueuedSearch.reset();
+        fSearchInfo.reset();
+        startAutoSearchTimer();
+    }
+    else
+        emit sigSearchFinished();
 }
 
 bool CSearchTMDB::isActive() const
@@ -239,6 +409,14 @@ bool CSearchTMDB::isActive() const
     if ( !fSeasonInfoReplies.first.empty() )
         return true;
     return false;
+}
+
+std::shared_ptr< STitleInfo > CSearchTMDB::getResult( const QString &path ) const
+{
+    auto pos = fQueuedResults.find( path );
+    if ( pos == fQueuedResults.end() )
+        return {};
+    return ( *pos ).second;
 }
 
 std::list< std::shared_ptr< STitleInfo > > CSearchTMDB::getResults() const
@@ -267,7 +445,7 @@ void CSearchTMDB::slotGetConfig()
     QUrlQuery query;
     query.addQueryItem( "api_key", apiKeyV3 );
     url.setQuery( query );
-    fConfigReply = fManager->get( QNetworkRequest( url ) );
+    fConfigReply = sendRequest( QNetworkRequest( url ), ERequestType::eConfig );
 }
 
 bool CSearchTMDB::hasConfiguration() const
@@ -283,7 +461,7 @@ void CSearchTMDB::loadConfig()
 
     auto data = fConfigReply->readAll();
     auto doc = QJsonDocument::fromJson( data );
-    qDebug().nospace().noquote() << doc.toJson( QJsonDocument::Indented );
+    //qDebug().nospace().noquote() << doc.toJson( QJsonDocument::Indented );
     if ( !doc.object().contains( "images" ) )
         return;
     auto images = doc.object()["images"].toObject();
@@ -342,7 +520,7 @@ std::optional< std::pair< QUrl, ESearchType > > SSearchTMDBInfo::getSearchURL() 
         query.addQueryItem( "api_key", apiKeyV3 );
 
         url.setQuery( query );
-        qDebug() << url.toString();
+        //qDebug() << url.toString();
         return std::make_pair( url, ESearchType::eGetTVShow );
     }
     else
@@ -361,8 +539,15 @@ std::optional< std::pair< QUrl, ESearchType > > SSearchTMDBInfo::getSearchURL() 
     }
 }
 
+void CSearchTMDB::slotAutoSearch()
+{
+    //qDebug() << "slotAutoSearch";
+    slotSearch();
+}
+
 void CSearchTMDB::slotSearch()
 {
+    //qDebug() << "slotSearch";
     if ( !hasConfiguration() )
     {
         QTimer::singleShot( 100, this, &CSearchTMDB::slotSearch );
@@ -370,6 +555,16 @@ void CSearchTMDB::slotSearch()
     }
 
     fStopSearching = false;
+    if ( !fSearchInfo && fSearchQueue.empty() )
+        return;
+
+    if ( !fSearchInfo )
+    {
+        fCurrentQueuedSearch = fSearchQueue.front();
+        fSearchQueue.pop_front();
+        fSearchInfo = fCurrentQueuedSearch.value().second;
+    }
+
     auto searchInfo = fSearchInfo->getSearchURL();
     if ( !searchInfo.has_value() )
         return;
@@ -377,22 +572,21 @@ void CSearchTMDB::slotSearch()
     if ( fStopSearching )
         return;
 
-    qDebug() << searchInfo.value().first.toString();
+    //qDebug() << searchInfo.value().first.toString();
     switch ( searchInfo.value().second )
     {
         case ESearchType::eSearchTV:
         case ESearchType::eSearchMovie:
-            fSearchReply = fManager->get( QNetworkRequest( searchInfo.value().first ) );
+            fSearchReply = sendRequest( QNetworkRequest( searchInfo.value().first ), ( searchInfo.value().second == ESearchType::eSearchMovie ) ? ERequestType::eMovieSearch : ERequestType::eTVSearch );
             break;
         case ESearchType::eGetMovie:
-            fGetMovieReply = fManager->get( QNetworkRequest( searchInfo.value().first ) );
+            fGetMovieReply = sendRequest( QNetworkRequest( searchInfo.value().first ), ERequestType::eGetMovie );
             break;
         case ESearchType::eGetTVShow:
-            fGetTVReply = fManager->get( QNetworkRequest( searchInfo.value().first ) );
+            fGetTVReply = sendRequest( QNetworkRequest( searchInfo.value().first ), ERequestType::eGetTVShow );
             break;
     }
 }
-
 
 void CSearchTMDB::loadSearchResult()
 {
@@ -401,7 +595,7 @@ void CSearchTMDB::loadSearchResult()
 
     auto data = fSearchReply->readAll();
     auto doc = QJsonDocument::fromJson( data );
-    qDebug().noquote() << doc.toJson( QJsonDocument::Indented );
+    //qDebug().noquote() << doc.toJson( QJsonDocument::Indented );
     if ( doc.object().contains( "results" ) )
     {
         auto results = doc.object()["results"].toArray();
@@ -425,7 +619,7 @@ void CSearchTMDB::loadMovieResult()
 
     auto data = fGetMovieReply->readAll();
     auto doc = QJsonDocument::fromJson( data );
-    qDebug().nospace().noquote() << doc.toJson( QJsonDocument::Indented );
+    //qDebug().nospace().noquote() << doc.toJson( QJsonDocument::Indented );
     if ( !loadSearchResult( doc.object(), false ) )
     {
         auto url = fGetMovieReply->url();
@@ -443,7 +637,7 @@ void CSearchTMDB::loadTVResult()
 
     auto data = fGetTVReply->readAll();
     auto doc = QJsonDocument::fromJson( data );
-    qDebug().nospace().noquote() << doc.toJson( QJsonDocument::Indented );
+    //qDebug().nospace().noquote() << doc.toJson( QJsonDocument::Indented );
 
     if ( !loadSearchResult( doc.object(), false ) )
     {
@@ -480,7 +674,7 @@ void CSearchTMDB::loadTVResult()
 */
 bool CSearchTMDB::loadSearchResult( const QJsonObject &resultItem, bool multipleResults )
 {
-    qDebug().nospace().noquote() << QJsonDocument( resultItem ).toJson( QJsonDocument::Indented );
+    //qDebug().nospace().noquote() << QJsonDocument( resultItem ).toJson( QJsonDocument::Indented );
 
     auto tmdbid = resultItem.contains( "id" ) ? resultItem["id"].toInt() : -1;
     auto desc = resultItem.contains( "overview" ) ? resultItem["overview"].toString() : QString();
@@ -528,7 +722,7 @@ bool CSearchTMDB::loadSearchResult( const QJsonObject &resultItem, bool multiple
     {
         searchResults->fEpisode = QString( "%1 Episode%2" ).arg( resultItem["number_of_episodes"].toInt() ).arg( resultItem["number_of_episodes"].toInt() == 1 ? "" : "s" );
     }
-    if ( !posterPath.isEmpty() && hasConfiguration() )
+    if ( !posterPath.isEmpty() && hasConfiguration() && !fSkipImages )
     {
         auto path = fConfiguration.value() + posterPath;
         QUrl url( path );
@@ -540,7 +734,7 @@ bool CSearchTMDB::loadSearchResult( const QJsonObject &resultItem, bool multiple
 
         if ( !fStopSearching )
         {
-            auto reply = fManager->get( QNetworkRequest( url ) );
+            auto reply = sendRequest( QNetworkRequest( url ), ERequestType::eGetImage );
             fImageInfoReplies[reply] = searchResults;
         }
     }
@@ -555,7 +749,9 @@ bool CSearchTMDB::loadSearchResult( const QJsonObject &resultItem, bool multiple
     else
     {
         if ( !multipleResults )
-            fBestMatch = searchResults;
+        {
+            setBestMatch( searchResults );
+        }
     }
 
     fTopLevelResults.push_back( searchResults );
@@ -590,7 +786,7 @@ void CSearchTMDB::searchTVDetails( std::shared_ptr< STitleInfo > showInfo, int t
 
     if ( !fStopSearching )
     {
-        auto reply = fManager->get( QNetworkRequest( url ) );
+        auto reply = sendRequest( QNetworkRequest( url ), seasonInfo ? ERequestType::eSeasonInfo : ERequestType::eTVInfo );
         if ( seasonInfo )
             fSeasonInfoReplies.first[reply] = seasonInfo;
         else
@@ -611,7 +807,7 @@ bool CSearchTMDB::loadTVDetails( QNetworkReply *reply )
 
     auto data = reply->readAll();
     auto doc = QJsonDocument::fromJson( data );
-    qDebug().nospace().noquote() << doc.toJson( QJsonDocument::Indented );
+    //qDebug().nospace().noquote() << doc.toJson( QJsonDocument::Indented );
 
     auto numSeasons = doc.object().contains( "number_of_seasons" ) ? doc.object()["number_of_seasons"].toInt() : -1;
     //showInfo->fEpisodeTitle = QString( "%1 Season%2" ).arg( numSeasons ).arg( numSeasons != 1 ? "s" : "" );
@@ -620,7 +816,7 @@ bool CSearchTMDB::loadTVDetails( QNetworkReply *reply )
     
     for ( auto &&ii : seasons )// int ii = 0; ii < seasons.count(); ++ii )
     {
-        qDebug().nospace().noquote() << QJsonDocument( ii.toObject() ).toJson( QJsonDocument::Indented );
+        //qDebug().nospace().noquote() << QJsonDocument( ii.toObject() ).toJson( QJsonDocument::Indented );
         searchTVDetails( showInfo, showInfo->fTMDBID.toInt(), ii.toObject()["season_number"].toInt() );
     }
     return true;
@@ -638,7 +834,7 @@ bool CSearchTMDB::loadSeasonDetails( QNetworkReply *reply )
 
     auto data = reply->readAll();
     auto doc = QJsonDocument::fromJson( data );
-    qDebug().nospace().noquote() << doc.toJson( QJsonDocument::Indented );
+    //qDebug().nospace().noquote() << doc.toJson( QJsonDocument::Indented );
 
     seasonInfo->fEpisodeTitle = doc.object().contains( "name" ) ? doc.object()["name"].toString() : QString();;
     seasonInfo->fSeason = doc.object().contains( "season_number" ) ? QString::number( doc.object()["season_number"].toInt() ) : QString();
@@ -686,8 +882,19 @@ bool CSearchTMDB::loadEpisodeDetails( const QJsonObject & episodeObj, std::share
 
     seasonInfo->fChildren.push_back( episodeInfo );
     if ( ( fSearchInfo->episode() != -1 ) && ( !fBestMatch || ( fBestMatch && isBetterEpisodeMatch( episodeInfo, fBestMatch ) ) ) )
-        fBestMatch = episodeInfo;
+    {
+        setBestMatch( episodeInfo );
+    }
     return true;
+}
+
+void CSearchTMDB::setBestMatch( std::shared_ptr<STitleInfo> info )
+{
+    fBestMatch = info;
+    if ( fCurrentQueuedSearch.has_value() )
+    {
+        fQueuedResults[fCurrentQueuedSearch.value().first] = info;
+    }
 }
 
 // returns true if lhs > rhs
@@ -734,7 +941,7 @@ bool CSearchTMDB::loadImageResults( QNetworkReply * reply )
     QImage img;
     img.loadFromData( reply->readAll() );
     QPixmap pm = QPixmap::fromImage( img );
-    qDebug() << pm.size();
+    //qDebug() << pm.size();
 
     info->fPixmap = pm;
     return true;
