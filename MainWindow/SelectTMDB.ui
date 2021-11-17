@@ -233,13 +233,21 @@
  <tabstops>
   <tabstop>byName</tabstop>
   <tabstop>byTMDBID</tabstop>
+  <tabstop>exactMatchesOnly</tabstop>
+  <tabstop>searchForTVShows</tabstop>
   <tabstop>searchTMDBID</tabstop>
   <tabstop>searchName</tabstop>
   <tabstop>searchReleaseYear</tabstop>
+  <tabstop>searchSeason</tabstop>
+  <tabstop>searchEpisode</tabstop>
   <tabstop>results</tabstop>
   <tabstop>resultTitle</tabstop>
+  <tabstop>resultTMDBID</tabstop>
   <tabstop>resultReleaseDate</tabstop>
+  <tabstop>resultSeason</tabstop>
+  <tabstop>resultEpisode</tabstop>
   <tabstop>resultEpisodeTitle</tabstop>
+  <tabstop>resultExtraInfo</tabstop>
  </tabstops>
  <resources/>
  <connections>
