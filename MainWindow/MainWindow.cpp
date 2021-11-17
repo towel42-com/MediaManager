@@ -49,6 +49,7 @@ CMainWindow::CMainWindow( QWidget* parent )
     fImpl->setupUi( this );
 
     fImpl->tvOutFilePattern->setDelay( 1000 );
+    fImpl->tvOutDirPattern->setDelay( 1000 );
     fImpl->movieOutFilePattern->setDelay( 1000 );
     fImpl->movieOutDirPattern->setDelay( 1000 );
     fImpl->directory->setDelay( 1000 );
@@ -92,9 +93,12 @@ QString CMainWindow::getDefaultInPattern( bool forTV ) const
 }
     
 
-QString CMainWindow::getDefaultOutDirPattern() const
+QString CMainWindow::getDefaultOutDirPattern( bool forTV ) const
 {
-    return "<title> (<year>)( [tmdbid=<tmdbid>]):<tmdbid>( - <extra_info>):<extra_info>";
+    if ( forTV )
+        return "<title> - Season <season>";
+    else
+        return "<title> (<year>)( [tmdbid=<tmdbid>]):<tmdbid>( - <extra_info>):<extra_info>";
 }
 
 QString CMainWindow::getDefaultOutFilePattern( bool forTV ) const
@@ -127,6 +131,8 @@ void CMainWindow::loadPatterns()
 
     auto currText = settings.value( "OutFilePattern", getDefaultOutFilePattern( true ) ).toString();
     fImpl->tvOutFilePattern->setText( currText );
+    currText = settings.value( "OutDirPattern", getDefaultOutDirPattern( true ) ).toString();
+    fImpl->tvOutDirPattern->setText( currText );
 
     settings.endGroup();
 
@@ -135,7 +141,7 @@ void CMainWindow::loadPatterns()
     currText = settings.value( "OutFilePattern", getDefaultOutFilePattern( false ) ).toString();
     fImpl->movieOutFilePattern->setText( currText );
 
-    currText = settings.value( "OutDirPattern", getDefaultOutDirPattern() ).toString();
+    currText = settings.value( "OutDirPattern", getDefaultOutDirPattern( false ) ).toString();
     fImpl->movieOutDirPattern->setText( currText );
     settings.endGroup();
 }
@@ -159,6 +165,7 @@ void CMainWindow::saveSettings()
 
     settings.beginGroup( "ForTV" );
     settings.setValue( "OutFilePattern", fImpl->tvOutFilePattern->text() );
+    settings.setValue( "OutDirPattern", fImpl->tvOutDirPattern->text() );
 }
 
 void CMainWindow::slotDirectoryChanged()
@@ -254,7 +261,7 @@ void CMainWindow::slotDoubleClicked( const QModelIndex &idx )
     if ( dlg.exec() == QDialog::Accepted )
     {
         auto titleInfo = dlg.getTitleInfo();
-        dirModel->setTitleInfo( idx, titleInfo, isDir );
+        dirModel->setTitleInfo( idx, titleInfo, true );
     }
 }
 
@@ -282,11 +289,13 @@ void CMainWindow::loadDirectory()
     fDirModel.reset( new CDirModel );
     fImpl->files->setModel( fDirModel.get() );
     connect( fImpl->tvOutFilePattern, &CDelayLineEdit::sigTextChanged, fDirModel.get(), &CDirModel::slotTVOutputFilePatternChanged );
+    connect( fImpl->tvOutDirPattern, &CDelayLineEdit::sigTextChanged, fDirModel.get(), &CDirModel::slotTVOutputDirPatternChanged );
     connect( fImpl->movieOutFilePattern, &CDelayLineEdit::sigTextChanged, fDirModel.get(), &CDirModel::slotMovieOutputFilePatternChanged );
     connect( fImpl->movieOutDirPattern, &CDelayLineEdit::sigTextChanged, fDirModel.get(), &CDirModel::slotMovieOutputDirPatternChanged );
     connect( fDirModel.get(), &CDirModel::sigDirReloaded, this, &CMainWindow::slotAutoSearch );
     fDirModel->slotTreatAsTVByDefaultChanged( fImpl->treatAsTVShowByDefault->isChecked() );
     fDirModel->slotTVOutputFilePatternChanged( fImpl->tvOutFilePattern->text() );
+    fDirModel->slotTVOutputDirPatternChanged( fImpl->tvOutDirPattern->text() );
     fDirModel->slotMovieOutputFilePatternChanged( fImpl->movieOutFilePattern->text() );
     fDirModel->slotMovieOutputDirPatternChanged( fImpl->movieOutDirPattern->text() );
     fDirModel->setNameFilters( fImpl->extensions->text().split( ";" ), fImpl->files  );

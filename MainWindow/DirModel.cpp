@@ -131,6 +131,7 @@ bool CDirModel::setData( const QModelIndex & idx, const QVariant & value, int ro
             baseItem->setData( isTVShow, eIsTVShowRole );
         auto item = itemFromIndex( idx );
         item->setText( isTVShow ? "Yes" : "No" );
+        updatePattern( item );
     }
     return QStandardItemModel::setData( idx, value, role );
 }
@@ -322,14 +323,9 @@ bool CDirModel::isValidName( const QString & path, bool isDir ) const
 
     if ( isDir )
     {
-        if ( fTreatAsTVShowByDefault )
-            return true;
-        else
-        {
-            QDir dir( path );
-            auto children = dir.entryList( QDir::AllDirs | QDir::NoDotAndDotDot );
-            return !children.empty();
-        }
+        QDir dir( path );
+        auto children = dir.entryList( QDir::AllDirs | QDir::NoDotAndDotDot );
+        return !children.empty();
     }
     return false;
 
@@ -354,7 +350,7 @@ bool SPatternInfo::isValidName( const QString &name, bool isDir ) const
     }
     else
     {
-        patterns << patternToRegExp( fOutFilePattern, true )
+        patterns << patternToRegExp( fOutFilePattern, false )
             ;
     }
     for ( auto &&ii : patterns )
@@ -413,6 +409,13 @@ bool CDirModel::isDir( const QModelIndex & idx ) const
 void CDirModel::slotTVOutputFilePatternChanged( const QString &outPattern )
 {
     fTVPatterns.fOutFilePattern = outPattern;
+    // need to emit datachanged on column 4 for all known indexes
+    patternChanged();
+}
+
+void CDirModel::slotTVOutputDirPatternChanged( const QString &outPattern )
+{
+    fTVPatterns.fOutDirPattern = outPattern;
     // need to emit datachanged on column 4 for all known indexes
     patternChanged();
 }
@@ -705,16 +708,31 @@ void CDirModel::setTitleInfo( const QModelIndex &idx, std::shared_ptr< STitleInf
     }
 }
 
+bool CDirModel::isLanguageFile( const QFileInfo & fi ) const
+{
+    auto suffix = fi.suffix();
+    static std::unordered_set< QString > extensions = { "srt", "sub", "idx" };
+    if ( extensions.find( suffix ) != extensions.end() )
+        return true;
+
+    auto fn = fi.completeBaseName();
+    auto regExp = QRegularExpression( "\\d+_\\S+" );
+    if ( regExp.match( fn ).hasMatch() )
+        return true;
+
+    auto parentDir = fi.absoluteDir().dirName();
+    if ( parentDir.toLower() == "subs" )
+        return true;
+    return false;
+}
+
 bool CDirModel::isLanguageFile( const QModelIndex &idx ) const
 {
     auto path = idx.data( CDirModel::ECustomRoles::eFullPathRole ).toString();
     if ( path.isEmpty() )
         return false;
 
-    auto fi = QFileInfo( path );
-    auto fn = fi.completeBaseName();
-    auto regExp = QRegularExpression( "\\d+_\\S+" );
-    return regExp.match( fn ).hasMatch();
+    return isLanguageFile( QFileInfo( path ) );
 }
 
 std::shared_ptr< STitleInfo > CDirModel::getTitleInfo( const QModelIndex &idx ) const
@@ -911,9 +929,13 @@ void CDirModel::updatePattern( const QStandardItem *item )const
     if ( item != invisibleRootItem() )
     {
         auto idx = item->index();
+
+        auto baseIdx = ( idx.column() == EColumns::eFSName ) ? idx : idx.model()->index( idx.row(), EColumns::eFSName, idx.parent() );
+        auto baseItem = this->itemFromIndex( baseIdx );
+
         auto transformedIndex = idx.model()->index( idx.row(), EColumns::eTransformName, idx.parent() );
         auto transformedItem = this->itemFromIndex( transformedIndex );
-        updatePattern( item, transformedItem );
+        updatePattern( baseItem, transformedItem );
     }
 }
 
@@ -929,7 +951,7 @@ void CDirModel::updatePattern( const QStandardItem * item, QStandardItem * trans
     if ( transformedItem->text() != transformInfo.second )
         transformedItem->setText( transformInfo.second );
 
-    if ( transformInfo.second == "<NOMATCH>" || !isValidName( transformInfo.second, fileInfo.isDir() ) && !isValidName( fileInfo ) && !isIgnoredPathName( fileInfo ) )
+    if ( transformInfo.second == "<NOMATCH>" || !isValidName( transformInfo.second, fileInfo.isDir() ) && !isValidName( fileInfo ) && !isIgnoredPathName( fileInfo ) && !isLanguageFile( fileInfo ) )
         transformedItem->setBackground( Qt::red );
 }
 

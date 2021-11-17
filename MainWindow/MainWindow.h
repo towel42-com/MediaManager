@@ -50,7 +50,7 @@ public Q_SLOTS:
 private:
     void autoSearch( QModelIndex rootIdx );
     QString getDefaultInPattern( bool forTV ) const;
-    QString getDefaultOutDirPattern() const; // movies only
+    QString getDefaultOutDirPattern( bool forTV ) const; 
     QString getDefaultOutFilePattern( bool forTV ) const;
     bool isDir( const QModelIndex &idx ) const;
     

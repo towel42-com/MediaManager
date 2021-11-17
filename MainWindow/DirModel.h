@@ -99,10 +99,12 @@ public:
     bool treatAsTVShow( const QFileInfo & fileInfo, bool defaultValue ) const;
     virtual bool setData( const QModelIndex &idx, const QVariant &value, int role ) override;
     bool isLanguageFile( const QModelIndex &idx ) const;
+    bool isLanguageFile( const QFileInfo & info ) const;
 Q_SIGNALS:
     void sigDirReloaded();
 public Q_SLOTS:
     void slotTVOutputFilePatternChanged( const QString &outPattern );
+    void slotTVOutputDirPatternChanged( const QString &outPattern );
     void slotMovieOutputDirPatternChanged( const QString &outPattern );
     void slotMovieOutputFilePatternChanged( const QString &outPattern );
     void slotLoadRootDirectory();

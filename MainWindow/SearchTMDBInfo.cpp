@@ -69,7 +69,8 @@ std::pair< bool, QString > SSearchTMDBInfo::looksLikeTVShow( const QString & sea
 
     bool isTV = false;
     QString dataBeforeSeason;
-    auto regExp = QRegularExpression( "S(?<season>\\d+)" );
+    auto regExpStr = QString( "S(?<season>\\d+)" );
+    auto regExp = QRegularExpression( regExpStr );
     auto match = regExp.match( retVal );
     if ( match.hasMatch() )
     {
@@ -82,7 +83,8 @@ std::pair< bool, QString > SSearchTMDBInfo::looksLikeTVShow( const QString & sea
     }
 
     QString dataAfterEpisode;
-    regExp = QRegularExpression( "E(?<episode>\\d+)" );
+    regExpStr = "E(?<episode>\\d+)";
+    regExp = QRegularExpression( regExpStr );
     match = regExp.match( retVal );
     if ( match.hasMatch() )
     {
@@ -97,6 +99,17 @@ std::pair< bool, QString > SSearchTMDBInfo::looksLikeTVShow( const QString & sea
         retVal = dataBeforeSeason;
     if ( !dataAfterEpisode.isEmpty() )
         retVal += " " + dataAfterEpisode;
+
+    regExpStr = ".*\\s??(?<seasonsuffix>-\\s??Season\\s?(?<season>\\d+))";
+    regExp = QRegularExpression( regExpStr );
+    match = regExp.match( retVal );
+    if ( match.hasMatch() )
+    {
+        if ( seasonStr )
+            *seasonStr = smartTrim( match.captured( ( "season" ) ) );
+        retVal.replace( match.capturedStart( "seasonsuffix" ), match.capturedEnd( "seasonsuffix" ), "" );
+        isTV = true;
+    }
 
     return std::make_pair( isTV, retVal );
 }

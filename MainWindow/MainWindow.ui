@@ -26,24 +26,6 @@
       </property>
       <widget class="QWidget" name="layoutWidget">
        <layout class="QGridLayout" name="gridLayout">
-        <item row="2" column="0" colspan="3">
-         <widget class="QCheckBox" name="exactMatchesOnly">
-          <property name="text">
-           <string>Exact Matches Only?</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="2">
-         <widget class="QToolButton" name="btnSelectDir">
-          <property name="text">
-           <string>...</string>
-          </property>
-          <property name="icon">
-           <iconset resource="application.qrc">
-            <normaloff>:/resources/open.png</normaloff>:/resources/open.png</iconset>
-          </property>
-         </widget>
-        </item>
         <item row="1" column="1" colspan="2">
          <widget class="CDelayLineEdit" name="extensions">
           <property name="sizePolicy">
@@ -70,10 +52,27 @@
           </property>
          </spacer>
         </item>
-        <item row="0" column="3">
-         <widget class="QPushButton" name="btnLoad">
+        <item row="3" column="0" colspan="3">
+         <widget class="QCheckBox" name="treatAsTVShowByDefault">
           <property name="text">
-           <string>&amp;Load</string>
+           <string>Treat as TV Show by default? (when auto determine fails)</string>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="0" colspan="4">
+         <widget class="QLabel" name="label_3">
+          <property name="text">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In the output names, use the following tags:&lt;/p&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&amp;lt;title&amp;gt;: Program/Movie Title&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&amp;lt;year&amp;gt;: Release Year&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&amp;lt;tmdbid&amp;gt;: The Movie Database ID&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&amp;lt;season&amp;gt;: Season Number&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&amp;lt;episode&amp;gt;: Episode Number&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&amp;lt;episode_title&amp;gt;: Episode Title/Name&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&amp;lt;extra_info&amp;gt;: Extra Information (Such as Unrated/Work Copy)&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0" colspan="3">
+         <widget class="QCheckBox" name="exactMatchesOnly">
+          <property name="text">
+           <string>Exact Matches Only?</string>
           </property>
          </widget>
         </item>
@@ -84,27 +83,6 @@
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="0">
-         <widget class="QLabel" name="label">
-          <property name="text">
-           <string>Directory:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="0" colspan="3">
-         <widget class="QCheckBox" name="treatAsTVShowByDefault">
-          <property name="text">
-           <string>Treat as TV Show by default?</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="label_5">
-          <property name="text">
-           <string>Extensions:</string>
           </property>
          </widget>
         </item>
@@ -124,7 +102,34 @@
                <string>TV</string>
               </attribute>
               <layout class="QGridLayout" name="gridLayout_2">
+               <item row="0" column="0" colspan="2">
+                <widget class="QLabel" name="label_10">
+                 <property name="text">
+                  <string>Output Directory:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="2">
+                <widget class="CDelayLineEdit" name="tvOutDirPattern">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
                <item row="1" column="0">
+                <widget class="QLabel" name="label_6">
+                 <property name="text">
+                  <string>Output File:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0">
                 <spacer name="verticalSpacer">
                  <property name="orientation">
                   <enum>Qt::Vertical</enum>
@@ -137,14 +142,7 @@
                  </property>
                 </spacer>
                </item>
-               <item row="0" column="0">
-                <widget class="QLabel" name="label_6">
-                 <property name="text">
-                  <string>Output File:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="1">
+               <item row="1" column="2">
                 <widget class="CDelayLineEdit" name="tvOutFilePattern"/>
                </item>
               </layout>
@@ -204,13 +202,35 @@
           </layout>
          </widget>
         </item>
-        <item row="6" column="0" colspan="4">
-         <widget class="QLabel" name="label_3">
+        <item row="0" column="2">
+         <widget class="QToolButton" name="btnSelectDir">
           <property name="text">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In the output names, use the following tags:&lt;/p&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&amp;lt;title&amp;gt;: Program/Movie Title&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&amp;lt;year&amp;gt;: Release Year&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&amp;lt;tmdbid&amp;gt;: The Movie Database ID&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&amp;lt;season&amp;gt;: Season Number&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&amp;lt;episode&amp;gt;: Episode Number&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&amp;lt;episode_title&amp;gt;: Episode Title/Name&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&amp;lt;extra_info&amp;gt;: Extra Information (Such as Unrated/Work Copy)&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>...</string>
           </property>
-          <property name="wordWrap">
-           <bool>true</bool>
+          <property name="icon">
+           <iconset resource="application.qrc">
+            <normaloff>:/resources/open.png</normaloff>:/resources/open.png</iconset>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_5">
+          <property name="text">
+           <string>Extensions:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="3">
+         <widget class="QPushButton" name="btnLoad">
+          <property name="text">
+           <string>&amp;Load</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="label">
+          <property name="text">
+           <string>Directory:</string>
           </property>
          </widget>
         </item>
@@ -308,10 +328,19 @@
  </customwidgets>
  <tabstops>
   <tabstop>directory</tabstop>
+  <tabstop>btnSelectDir</tabstop>
+  <tabstop>btnLoad</tabstop>
   <tabstop>extensions</tabstop>
   <tabstop>exactMatchesOnly</tabstop>
   <tabstop>treatAsTVShowByDefault</tabstop>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>tvOutDirPattern</tabstop>
+  <tabstop>tvOutFilePattern</tabstop>
+  <tabstop>movieOutDirPattern</tabstop>
+  <tabstop>movieOutFilePattern</tabstop>
   <tabstop>files</tabstop>
+  <tabstop>btnTransform</tabstop>
+  <tabstop>btnSaveM3U</tabstop>
  </tabstops>
  <resources>
   <include location="application.qrc"/>

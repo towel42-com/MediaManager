@@ -303,6 +303,8 @@ void CSearchTMDB::slotRequestFinished( QNetworkReply * reply )
             emitSigFinished();
             return;
         }
+        else
+            return;
     }
     if ( reply == fConfigReply )
     {
@@ -843,6 +845,10 @@ bool CSearchTMDB::loadSeasonDetails( QNetworkReply *reply )
     seasonInfo->fEpisode = QString( "%1 Episode%2" ).arg( episodes.count() ).arg( episodes.count() == 1 ? "" : "s" );
     seasonInfo->fSeasonTMDBID = doc.object().contains( "id" ) ? QString::number( doc.object()["id"].toInt() ) : QString();
 
+    if ( ( fSearchInfo->episode() == -1 ) && ( fSearchInfo->season() != -1 ) && ( !fBestMatch || ( fBestMatch && isBetterSeasonMatch( seasonInfo, fBestMatch ) ) ) )
+    {
+        setBestMatch( seasonInfo );
+    }
     bool episodeFound = false;
     for ( auto && ii : episodes )
     {
@@ -850,7 +856,7 @@ bool CSearchTMDB::loadSeasonDetails( QNetworkReply *reply )
         if ( episodeFound )
             break;
     }
-    if ( episodeFound )
+    if ( episodeFound || ( fSearchInfo->episode() == -1 ) )
         fSeasonInfoReplies.second = true;
     else if ( !fSeasonInfoReplies.second.has_value() )
         fSeasonInfoReplies.second = false;
@@ -885,7 +891,7 @@ bool CSearchTMDB::loadEpisodeDetails( const QJsonObject & episodeObj, std::share
     {
         setBestMatch( episodeInfo );
     }
-    return true;
+    return fSearchInfo->episode() != -1;
 }
 
 void CSearchTMDB::setBestMatch( std::shared_ptr<STitleInfo> info )
@@ -897,8 +903,7 @@ void CSearchTMDB::setBestMatch( std::shared_ptr<STitleInfo> info )
     }
 }
 
-// returns true if lhs > rhs
-bool CSearchTMDB::isBetterEpisodeMatch( std::shared_ptr< STitleInfo > lhs, std::shared_ptr< STitleInfo > rhs ) const
+bool CSearchTMDB::isBetterSeasonMatch( std::shared_ptr< STitleInfo > lhs, std::shared_ptr< STitleInfo > rhs ) const
 {
     if ( fSearchInfo->season() != -1 )
     {
@@ -911,6 +916,22 @@ bool CSearchTMDB::isBetterEpisodeMatch( std::shared_ptr< STitleInfo > lhs, std::
         }
     }
 
+    return isBetterTitleMatch( lhs, rhs );
+}
+
+bool CSearchTMDB::isBetterTitleMatch( std::shared_ptr<STitleInfo> lhs, std::shared_ptr<STitleInfo> rhs ) const
+{
+    if ( fSearchInfo->searchName() == lhs->fTitle && ( fSearchInfo->searchName() != rhs->fTitle ) )
+        return true;
+    return false;
+}
+
+// returns true if lhs > rhs
+bool CSearchTMDB::isBetterEpisodeMatch( std::shared_ptr< STitleInfo > lhs, std::shared_ptr< STitleInfo > rhs ) const
+{
+    if ( isBetterSeasonMatch( lhs, rhs ) )
+        return true;
+
     if ( fSearchInfo->episode() != -1 )
     {
         if ( lhs->fEpisode != rhs->fEpisode )
@@ -922,10 +943,7 @@ bool CSearchTMDB::isBetterEpisodeMatch( std::shared_ptr< STitleInfo > lhs, std::
         }
     }
 
-    if ( fSearchInfo->searchName() == lhs->fTitle )
-        return true;
-
-    return false;
+    return isBetterTitleMatch( lhs, rhs );
 }
 
 bool CSearchTMDB::loadImageResults( QNetworkReply * reply )

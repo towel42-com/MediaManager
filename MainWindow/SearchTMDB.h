@@ -102,6 +102,10 @@ private:
     QNetworkReply * sendRequest( const QNetworkRequest &request, ERequestType requestType );
     void emitSigFinished();
     QString getSearchName() const;
+    bool isBetterSeasonMatch( std::shared_ptr< STitleInfo > lhs, std::shared_ptr< STitleInfo > rhs ) const;
+
+    bool isBetterTitleMatch( std::shared_ptr<STitleInfo> lhs, std::shared_ptr<STitleInfo> rhs ) const;
+
     bool isBetterEpisodeMatch( std::shared_ptr< STitleInfo > lhs, std::shared_ptr< STitleInfo > rhs ) const;
     bool hasConfiguration() const;
 
