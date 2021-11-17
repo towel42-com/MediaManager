@@ -55,8 +55,8 @@ CSelectTMDB::CSelectTMDB( const QString & text, std::shared_ptr< STitleInfo > ti
     fImpl->resultEpisodeTitle->setText( fSearchInfo->episodeTitle() );
 
     fImpl->searchName->setDelay( 1000 );
-    //fImpl->searchSeason->setDelay( 1000 );
-    //fImpl->searchEpisode->setDelay( 1000 );
+    fImpl->searchSeason->setDelay( 1000 );
+    fImpl->searchEpisode->setDelay( 1000 );
     fImpl->searchReleaseYear->setDelay( 1000 );
     fImpl->searchTMDBID->setDelay( 1000 );
 
