@@ -321,14 +321,8 @@ bool CDirModel::isValidName( const QString & path, bool isDir ) const
          || (asTVShow && fTVPatterns.isValidName( fn, isDir ) ) )
         return true;
 
-    if ( isDir )
-    {
-        QDir dir( path );
-        auto children = dir.entryList( QDir::AllDirs | QDir::NoDotAndDotDot );
-        return !children.empty();
-    }
-    return false;
 
+    return false;
 }
 
 bool SPatternInfo::isValidName( const QFileInfo & fi ) const
@@ -543,8 +537,8 @@ std::pair< bool, QString > CDirModel::transformItem( const QFileInfo &fileInfo, 
             retVal.second = replaceCapture( "title", retVal.second, title );
             retVal.second = replaceCapture( "year", retVal.second, year );
             retVal.second = replaceCapture( "tmdbid", retVal.second, tmdbid );
-            retVal.second = replaceCapture( "season", retVal.second, QString( "%1" ).arg( season, 2, QChar( '0' ) ) );
-            retVal.second = replaceCapture( "episode", retVal.second, QString( "%1" ).arg( episode, 2, QChar( '0' ) ) );
+            retVal.second = replaceCapture( "season", retVal.second, QString( "%1" ).arg( season, fileInfo.isDir() ? 1 : 2, QChar( '0' ) ) );
+            retVal.second = replaceCapture( "episode", retVal.second, QString( "%1" ).arg( episode, fileInfo.isDir() ? 1 : 2, QChar( '0' ) ) );
             retVal.second = replaceCapture( "episode_title", retVal.second, episodeTitle );
             retVal.second = replaceCapture( "extra_info", retVal.second, extraInfo );
 
