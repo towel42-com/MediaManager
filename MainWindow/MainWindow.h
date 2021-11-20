@@ -42,17 +42,16 @@ public Q_SLOTS:
     void slotDirectoryChanged();
     void slotLoad();
     void slotTransform();
-    void slotSaveM3U();
     void slotToggleTreatAsTVShowByDefault();
     void slotDoubleClicked( const QModelIndex &idx );
     void slotAutoSearch();
-    void slotSearchFinished( const QString &path );
+    void slotAutoSearchFinished( const QString &path );
 private:
     void autoSearch( QModelIndex rootIdx );
+
     QString getDefaultInPattern( bool forTV ) const;
     QString getDefaultOutDirPattern( bool forTV ) const; 
     QString getDefaultOutFilePattern( bool forTV ) const;
-    bool isDir( const QModelIndex &idx ) const;
     
     void loadSettings();
     void loadPatterns();

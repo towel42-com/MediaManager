@@ -217,13 +217,14 @@ void CDirModel::attachTreeNodes( TParentTree &parentTree )
 bool CDirModel::isExcludedDirName( const QFileInfo &ii ) const
 {
     auto fn = ii.fileName().toLower();
-    return fExcludedDirNames.find( fn ) != fExcludedDirNames.end();
+    
+    return fn.endsWith( "-ignore" ) || ( fExcludedDirNames.find( fn ) != fExcludedDirNames.end() );
 }
 
 bool CDirModel::isIgnoredPathName( const QFileInfo &ii ) const
 {
     auto fn = ii.fileName().toLower();
-    return fIgnoredNames.find( fn ) != fIgnoredNames.end();
+    return fn.contains( "-ignore" ) || ( fIgnoredNames.find( fn ) != fIgnoredNames.end() );
 }
 
 TTreeNode CDirModel::getItemRow( const QFileInfo & fileInfo ) const
@@ -568,93 +569,6 @@ bool CDirModel::treatAsTVShow( const QFileInfo & fileInfo, bool defaultValue ) c
     return asTVShow;
 }
 
-void CDirModel::saveM3U( QWidget *parent ) const
-{
-    auto rootIndex = invisibleRootItem();
-
-    auto baseName = QInputDialog::getText( parent, tr( "Series Name" ), tr( "Name:" ) );
-    if ( baseName.isEmpty() )
-        return;
-
-    saveM3U( rootIndex, baseName );
-}
-
-QString CDirModel::saveM3U( const QStandardItem  * parent, const QString &baseName ) const
-{
-    if ( isDir( parent ) )
-    {
-        auto parentDir = fileInfo( parent ).absoluteDir();
-        std::list< QFileInfo > myMedia;
-        auto numRows = parent->rowCount();
-        for ( int ii = 0; ii < numRows; ++ii )
-        {
-            auto child = parent->child( ii );
-            if ( !child )
-                continue;
-
-            if ( isDir( child ) )
-            {
-                auto childPlayList = saveM3U( child, baseName );
-                if ( childPlayList.isEmpty() ) // no media files found
-                    continue;
-                myMedia.push_back( QFileInfo( childPlayList ) );;
-            }
-            else
-            {
-                auto suffix = fileInfo( child ).suffix();
-                std::set< QString > media = { "mkv", "mp4", "avi" };
-                if ( media.find( suffix ) == media.end() )
-                    continue;
-                myMedia.push_back( fileInfo( child ) );
-            }
-        }
-        if ( !myMedia.empty() )
-        {
-            qDebug() << myMedia;
-            myMedia.sort( []( const QFileInfo &lhs, const QFileInfo &rhs )
-                          {
-                              qDebug() << lhs << "vs" << rhs;
-                              if ( lhs.isDir() == rhs.isDir() )
-                              {
-                                  QCollator coll;
-                                  coll.setNumericMode( true );
-                                  coll.setIgnorePunctuation( true );
-                                  coll.setCaseSensitivity( Qt::CaseSensitivity::CaseInsensitive );
-                                  if ( lhs.absoluteDir() == rhs.absoluteDir() )
-                                      return coll.compare( lhs.absoluteFilePath(), rhs.absoluteFilePath() ) < 0;
-                                  else
-                                      return coll.compare( lhs.absolutePath(), rhs.absolutePath() ) < 0;
-
-                              }
-                              if ( lhs.isDir() )
-                                  return false;
-                              return true;
-                          } );
-            qDebug() << myMedia;
-            auto fi = fileInfo( parent );
-            auto fn = QString( "%1 - %2.m3u" ).arg( baseName ).arg( fi.baseName() );
-            if ( baseName == fi.baseName() )
-                fn = QString( "%1.m3u" ).arg( baseName );
-            auto m3uPath = QDir( fi.absoluteFilePath() ).absoluteFilePath( fn );
-            QFile file( m3uPath );
-            if ( !file.open( QFile::WriteOnly | QFile::Text ) )
-                return QString();
-
-            QTextStream ts( &file );
-
-            for ( auto &&ii : myMedia )
-            {
-                auto myPath = ii.absoluteFilePath();
-                auto myRelPath = QDir( fi.absoluteFilePath() ).relativeFilePath( myPath );
-                ts << myRelPath << "\n";
-            }
-            return m3uPath;
-        }
-    }
-
-    return QString();
-}
-
 void CDirModel::setTitleInfo( QStandardItem * item, std::shared_ptr< STitleInfo > titleInfo, bool applyToChildren )
 {
     auto idx = indexFromItem( item );
@@ -702,12 +616,13 @@ void CDirModel::setTitleInfo( const QModelIndex &idx, std::shared_ptr< STitleInf
     }
 }
 
+// only return true for X_Lang.srt files or subs directories
 bool CDirModel::isLanguageFile( const QFileInfo & fi ) const
 {
     auto suffix = fi.suffix();
     static std::unordered_set< QString > extensions = { "srt", "sub", "idx" };
-    if ( extensions.find( suffix ) != extensions.end() )
-        return true;
+    if ( extensions.find( suffix ) == extensions.end() )
+        return false;
 
     auto fn = fi.completeBaseName();
     auto regExp = QRegularExpression( "\\d+_\\S+" );
@@ -727,6 +642,36 @@ bool CDirModel::isLanguageFile( const QModelIndex &idx ) const
         return false;
 
     return isLanguageFile( QFileInfo( path ) );
+}
+
+
+bool CDirModel::shouldAutoSearch( const QModelIndex & index ) const
+{
+    auto path = index.data( CDirModel::ECustomRoles::eFullPathRole ).toString();
+    if ( path.isEmpty() )
+        return false;
+    return shouldAutoSearch( QFileInfo( path ) );
+}
+
+bool CDirModel::shouldAutoSearch( const QFileInfo & fileInfo ) const
+{
+    if ( isLanguageFile( fileInfo ) )
+        return false;
+    if ( !fileInfo.isDir() )
+        return true;
+
+    auto files = QDir( fileInfo.absoluteFilePath() ).entryInfoList( QDir::Files );
+    bool hasFiles = false;
+    for ( auto && ii : files )
+    {
+        if ( shouldAutoSearch( ii ) )
+        {
+            hasFiles = true;
+            break;
+        }
+    }
+
+    return hasFiles;
 }
 
 std::shared_ptr< STitleInfo > CDirModel::getTitleInfo( const QModelIndex &idx ) const
@@ -945,7 +890,7 @@ void CDirModel::updatePattern( const QStandardItem * item, QStandardItem * trans
     if ( transformedItem->text() != transformInfo.second )
         transformedItem->setText( transformInfo.second );
 
-    if ( transformInfo.second == "<NOMATCH>" || !isValidName( transformInfo.second, fileInfo.isDir() ) && !isValidName( fileInfo ) && !isIgnoredPathName( fileInfo ) && !isLanguageFile( fileInfo ) )
+    if ( shouldAutoSearch( path ) && ( transformInfo.second == "<NOMATCH>" || !isValidName( transformInfo.second, fileInfo.isDir() ) && !isValidName( fileInfo ) && !isIgnoredPathName( fileInfo ) && !isLanguageFile( fileInfo ) ) )
         transformedItem->setBackground( Qt::red );
 }
 

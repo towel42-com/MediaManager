@@ -28,7 +28,7 @@
 #include <QFileInfo>
 #include <memory>
 #include <unordered_set>
-#include "SABUtils/QtHash.h"
+#include "SABUtils/HashUtils.h"
 
 class QTreeView;
 class QMediaPlaylist;
@@ -84,7 +84,6 @@ public:
     QStandardItem *getItemFromPath( const QFileInfo &fi ) const;
 
     std::pair< bool, QStandardItemModel * > transform( bool displayOnly ) const;
-    void saveM3U( QWidget *parent ) const;
     void setTitleInfo( const QModelIndex &idx, std::shared_ptr< STitleInfo > info, bool applyToChilren );
     void setTitleInfo( QStandardItem *item, std::shared_ptr< STitleInfo > info, bool applyToChilren );
     std::shared_ptr< STitleInfo > getTitleInfo( const QModelIndex &idx ) const;
@@ -98,8 +97,12 @@ public:
     QString getSearchName( const QModelIndex &idx ) const;
     bool treatAsTVShow( const QFileInfo & fileInfo, bool defaultValue ) const;
     virtual bool setData( const QModelIndex &idx, const QVariant &value, int role ) override;
+
     bool isLanguageFile( const QModelIndex &idx ) const;
     bool isLanguageFile( const QFileInfo & info ) const;
+
+    bool shouldAutoSearch( const QModelIndex & index ) const;
+    bool shouldAutoSearch( const QFileInfo & info ) const;
 Q_SIGNALS:
     void sigDirReloaded();
 public Q_SLOTS:
@@ -124,7 +127,6 @@ private:
 
     QStandardItem * getTransformItem( const QStandardItem * parent ) const;
 
-    QString saveM3U( const QStandardItem *parent, const QString &baseName ) const;
     bool isValidName( const QFileInfo &fi ) const;
     bool isValidName( const QString & absPath, bool isDir ) const;
 

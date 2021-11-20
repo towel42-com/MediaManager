@@ -372,10 +372,12 @@ void CSelectTMDB::setSearchForTVShows( bool value, bool init )
     }
 }
 
-void CSelectTMDB::setExactMatchOnly( bool value, bool /*init*/ )
+void CSelectTMDB::setExactMatchOnly( bool value, bool init )
 {
     auto searchInfo = getSearchInfo();
     searchInfo->setExactMatchOnly( value );
+    if ( init && !fSearchPending )
+        updateFromSearchInfo( searchInfo );
 }
 
 void CSelectTMDB::slotByNameChanged()

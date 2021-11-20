@@ -71,10 +71,13 @@ CMainWindow::CMainWindow( QWidget* parent )
 
     connect( fImpl->btnSelectDir, &QPushButton::clicked, this, &CMainWindow::slotSelectDirectory );
     connect( fImpl->btnLoad, &QPushButton::clicked, this, &CMainWindow::slotLoad );
-    connect( fImpl->btnSaveM3U, &QPushButton::clicked, this, &CMainWindow::slotSaveM3U );
     connect( fImpl->treatAsTVShowByDefault, &QCheckBox::clicked, this, &CMainWindow::slotToggleTreatAsTVShowByDefault );
 
     connect( fImpl->files, &QTreeView::doubleClicked, this, &CMainWindow::slotDoubleClicked );
+
+    fSearchTMDB = new CSearchTMDB( nullptr, std::optional<QString>(), this );
+    fSearchTMDB->setSkipImages( true );
+    connect( fSearchTMDB, &CSearchTMDB::sigAutoSearchFinished, this, &CMainWindow::slotAutoSearchFinished );
 
     QTimer::singleShot( 0, this, &CMainWindow::slotDirectoryChanged );
 }
@@ -172,7 +175,6 @@ void CMainWindow::slotDirectoryChanged()
 {
     fImpl->btnLoad->setEnabled( false );
     fImpl->btnTransform->setEnabled( false );
-    fImpl->btnSaveM3U->setEnabled( false );
     CAutoWaitCursor awc;
 
     auto dirName = fImpl->directory->text();
@@ -188,11 +190,6 @@ void CMainWindow::slotSelectDirectory()
         fImpl->directory->setText( dir );
 }
 
-bool CMainWindow::isDir( const QModelIndex &idx ) const
-{
-    return fDirModel->isDir( idx );
-}
-
 void CMainWindow::autoSearch( QModelIndex parentIdx )
 {
     auto rowCount = fDirModel->rowCount( parentIdx );
@@ -203,14 +200,14 @@ void CMainWindow::autoSearch( QModelIndex parentIdx )
         auto path = fDirModel->filePath( childIndex );
         auto titleInfo = fDirModel->getTitleInfo( childIndex );
         auto searchInfo = std::make_shared< SSearchTMDBInfo >( name, titleInfo );
+        searchInfo->setExactMatchOnly( true );
 
-        if ( !fDirModel->isLanguageFile( childIndex ) )
+        if ( fDirModel->shouldAutoSearch( childIndex ) )
             fSearchTMDB->addSearch( path, searchInfo );
 
         autoSearch( childIndex );
     }
 }
-
 
 void CMainWindow::slotAutoSearch()
 {
@@ -219,23 +216,17 @@ void CMainWindow::slotAutoSearch()
 
     if ( fDirModel->rowCount() != 1 )
         return;
-
-    if ( !fSearchTMDB )
-    {
-        fSearchTMDB = new CSearchTMDB( nullptr, std::optional<QString>(), this );
-        fSearchTMDB->setSkipImages( true );
-        connect( fSearchTMDB, &CSearchTMDB::sigAutoSearchFinished, this, &CMainWindow::slotSearchFinished );
-    }
-
     auto rootIdx = fDirModel->index( 0, 0 );
     autoSearch( rootIdx );
 }
 
-void CMainWindow::slotSearchFinished( const QString & path )
+void CMainWindow::slotAutoSearchFinished( const QString & path )
 {
     qDebug().noquote().nospace() << "Search results for path " << path;
     auto result = fSearchTMDB->getResult( path );
     auto item = fDirModel->getItemFromPath( path );
+    if ( result )
+        qDebug() << result->toString();
     if ( item && result )
     {
         fDirModel->setTitleInfo( item, result, false );
@@ -244,10 +235,8 @@ void CMainWindow::slotSearchFinished( const QString & path )
 
 void CMainWindow::slotDoubleClicked( const QModelIndex &idx )
 {
-    auto dirModel = dynamic_cast<CDirModel *>( const_cast<QAbstractItemModel *>( idx.model() ) );
-
-    auto baseIdx = dirModel->index( idx.row(), CDirModel::EColumns::eFSName, idx.parent() );
-    auto titleInfo = dirModel->getTitleInfo( idx );
+    auto baseIdx = fDirModel->index( idx.row(), CDirModel::EColumns::eFSName, idx.parent() );
+    auto titleInfo = fDirModel->getTitleInfo( idx );
     
     auto isDir = baseIdx.data( CDirModel::ECustomRoles::eIsDir ).toBool();
     auto fullPath = baseIdx.data( CDirModel::ECustomRoles::eFullPathRole ).toString();
@@ -261,7 +250,7 @@ void CMainWindow::slotDoubleClicked( const QModelIndex &idx )
     if ( dlg.exec() == QDialog::Accepted )
     {
         auto titleInfo = dlg.getTitleInfo();
-        dirModel->setTitleInfo( idx, titleInfo, true );
+        fDirModel->setTitleInfo( idx, titleInfo, true );
     }
 }
 
@@ -270,11 +259,6 @@ void CMainWindow::slotToggleTreatAsTVShowByDefault()
     if ( fDirModel )
         fDirModel->slotTreatAsTVByDefaultChanged( fImpl->treatAsTVShowByDefault->isChecked() );
     fImpl->tabWidget->setCurrentWidget( fImpl->treatAsTVShowByDefault->isChecked() ? fImpl->tvPatternsPage : fImpl->moviePatternsPage );
-}
-
-void CMainWindow::slotSaveM3U()
-{
-    fDirModel->saveM3U( this );
 }
 
 void CMainWindow::slotLoad()
@@ -301,7 +285,6 @@ void CMainWindow::loadDirectory()
     fDirModel->setNameFilters( fImpl->extensions->text().split( ";" ), fImpl->files  );
     fDirModel->setRootPath( fImpl->directory->text(), fImpl->files );
     fImpl->btnTransform->setEnabled( true );
-    fImpl->btnSaveM3U->setEnabled( true );
 }
 
 void CMainWindow::slotTransform()
