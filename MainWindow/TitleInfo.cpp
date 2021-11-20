@@ -74,25 +74,26 @@ QString STitleInfo::toString() const
 {
     QString retVal = "STitleInfo( ";
     QStringList tmp;
-    tmp << fTitle
-        << fReleaseDate
-        << fTMDBID
-        << fSeasonTMDBID
-        << fEpisodeTMDBID
-        << fSeason
-        << fEpisode
-        << fEpisodeTitle
-        << fExtraInfo
-        << fDescription
-        << QString( "%1" ).arg( fPixmap.isNull() )
+    tmp << "InfoType: '" + ::toEnumString( fInfoType ) + "'"
+        << "Title: '" + fTitle + "'"
+        << "ReleaseDate: '" + fReleaseDate + "'"
+        << "TMDBID: '" + fTMDBID + "'"
+        << "SeasonTMBDID: '" + fSeasonTMDBID + "'"
+        << "EpisodeTMDBID: '" + fEpisodeTMDBID + "'"
+        << "Season: '" + fSeason + "'"
+        << "Episode: '" + fEpisode + "'"
+        << "EpisodeTitle: '" + fEpisodeTitle + "'"
+        << "ExtraInfo: '" + fExtraInfo + "'"
+        << "Description: '" + fDescription + "'"
+        << QString( "Has Pixmap? %1" ).arg( fPixmap.isNull() ? "No" : "Yes" )
         ;
-    QStringList children = { "Children(" };
+    QStringList children = { " - Children(" };
     for ( auto &&ii : fChildren )
     {
         children << ii->toString();
     }
-    retVal += tmp.join( " " ) + ")";
-    retVal += ::toEnumString( fInfoType );
+    tmp << children;
+    retVal += tmp.join( " " ) +  ")";
     return retVal;
 }
 
