@@ -22,6 +22,7 @@
 
 set(qtproject_SRCS
     MainWindow.cpp
+    NetworkReply.cpp
     DirModel.cpp
     TitleInfo.cpp
     TransformConfirm.cpp
@@ -39,6 +40,7 @@ set(qtproject_H
 )
 
 set(project_H
+    NetworkReply.h
     SearchTMDBInfo.h
     TitleInfo.h
 )
