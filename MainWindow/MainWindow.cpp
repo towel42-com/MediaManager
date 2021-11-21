@@ -42,6 +42,8 @@
 #include <QFileSystemModel>
 #include <QTimer>
 
+#include <QProgressDialog>
+
 CMainWindow::CMainWindow( QWidget* parent )
     : QMainWindow( parent ),
     fImpl( new Ui::CMainWindow )
@@ -299,12 +301,16 @@ void CMainWindow::slotTransform()
         return;
     }
     CTransformConfirm dlg( tr( "Transformations:" ), tr( "Proceed?" ), this );
+    auto progress = QProgressDialog( "Renaming Files...", "Abort Copy", 0, transformations.second->rowCount(), this );
+    progress.setWindowModality( Qt::WindowModal );
+    progress.setMinimumDuration( 0 );
+
     dlg.setModel( transformations.second );
     dlg.setIconLabel( QMessageBox::Information );
     dlg.setButtons( QDialogButtonBox::Yes | QDialogButtonBox::No );
     if ( dlg.exec() == QDialog::Accepted )
     {
-        transformations = fDirModel->transform( false );
+        transformations = fDirModel->transform( false, &progress );
         if ( !transformations.first )
         {
             CTransformConfirm dlg( tr( "Error While Transforming:" ), tr( "Issues:" ), this );
