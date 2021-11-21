@@ -21,7 +21,7 @@
 // SOFTWARE.
 
 #include "DirModel.h"
-#include "TitleInfo.h"
+#include "SearchResult.h"
 
 #include "SABUtils/StringUtils.h"
 #include "SABUtils/QtUtils.h"
@@ -519,8 +519,8 @@ std::pair< bool, QString > CDirModel::transformItem( const QFileInfo &fileInfo, 
             ext = fileInfo.suffix();
         }
 
-        auto pos = fTitleInfoMapping.find( filePath );
-        if ( pos == fTitleInfoMapping.end() )
+        auto pos = fSearchResultMap.find( filePath );
+        if ( pos == fSearchResultMap.end() )
         {
             if ( isValidName( fileInfo ) || isIgnoredPathName( fileInfo ) )
                 retVal.second = QString();
@@ -564,33 +564,33 @@ std::pair< bool, QString > CDirModel::transformItem( const QFileInfo &fileInfo, 
 bool CDirModel::treatAsTVShow( const QFileInfo & fileInfo, bool defaultValue ) const
 {
     bool asTVShow = defaultValue;
-    auto pos = fTitleInfoMapping.find( fileInfo.absoluteFilePath() );
-    if ( pos != fTitleInfoMapping.end() )
+    auto pos = fSearchResultMap.find( fileInfo.absoluteFilePath() );
+    if ( pos != fSearchResultMap.end() )
         asTVShow = ( *pos ).second->isTVShow();
     return asTVShow;
 }
 
-void CDirModel::setTitleInfo( QStandardItem * item, std::shared_ptr< STitleInfo > titleInfo, bool applyToChildren )
+void CDirModel::setSearchResult( QStandardItem * item, std::shared_ptr< SSearchResult > searchResult, bool applyToChildren )
 {
     auto idx = indexFromItem( item );
-    setTitleInfo( idx, titleInfo, applyToChildren );
+    setSearchResult( idx, searchResult, applyToChildren );
 }
 
-void CDirModel::setTitleInfo( const QModelIndex &idx, std::shared_ptr< STitleInfo > titleInfo, bool applyToChildren )
+void CDirModel::setSearchResult( const QModelIndex &idx, std::shared_ptr< SSearchResult > searchResult, bool applyToChildren )
 {
     if ( !idx.isValid() )
         return;
 
-    if ( titleInfo && titleInfo->getTitle().isEmpty() )
-        titleInfo.reset();
+    if ( searchResult && searchResult->getTitle().isEmpty() )
+        searchResult.reset();
 
     auto fi = fileInfo( idx );
     if ( !isIgnoredPathName( fi ) )
     {
-        if ( !titleInfo )
-            fTitleInfoMapping.erase( fi.absoluteFilePath() );
+        if ( !searchResult )
+            fSearchResultMap.erase( fi.absoluteFilePath() );
         else
-            fTitleInfoMapping[fi.absoluteFilePath()] = titleInfo;
+            fSearchResultMap[fi.absoluteFilePath()] = searchResult;
         if ( isDir( idx ) )
             fDirMapping.erase( fi.absoluteFilePath() );
         else
@@ -609,10 +609,10 @@ void CDirModel::setTitleInfo( const QModelIndex &idx, std::shared_ptr< STitleInf
             //auto txt = childIdx.data( CDirModel::ECustomRoles::eFullPathRole ).toString();
             if ( !isLanguageFile( childIdx ) )
             {
-                auto childInfo = getTitleInfo( childIdx );
+                auto childInfo = getSearchResultInfo( childIdx );
                 if ( !childInfo )
                 {
-                    setTitleInfo( childIdx, titleInfo, applyToChildren );
+                    setSearchResult( childIdx, searchResult, applyToChildren );
                 }
             }
         }
@@ -677,14 +677,14 @@ bool CDirModel::shouldAutoSearch( const QFileInfo & fileInfo ) const
     return hasFiles;
 }
 
-std::shared_ptr< STitleInfo > CDirModel::getTitleInfo( const QModelIndex &idx ) const
+std::shared_ptr< SSearchResult > CDirModel::getSearchResultInfo( const QModelIndex &idx ) const
 {
     if ( !idx.isValid() )
         return {};
 
     auto fi = fileInfo( idx );
-    auto pos = fTitleInfoMapping.find( fi.absoluteFilePath() );
-    if ( pos == fTitleInfoMapping.end() )
+    auto pos = fSearchResultMap.find( fi.absoluteFilePath() );
+    if ( pos == fSearchResultMap.end() )
         return {};
     return ( *pos ).second;
 }
@@ -806,6 +806,9 @@ bool CDirModel::transform( const QStandardItem * item, bool displayOnly, QStanda
         auto child = item->child( ii );
         if ( !child )
             continue;
+
+        if ( progressDlg && progressDlg->wasCanceled() )
+            break;
 
         aOK = transform( child, displayOnly, resultModel, returnItem, progressDlg ) && aOK;
     }

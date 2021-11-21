@@ -34,7 +34,7 @@ class QProgressDialog;
 class QTreeView;
 class QMediaPlaylist;
 class QFileIconProvider;
-struct STitleInfo;
+struct SSearchResult;
 
 using TTreeNode = std::pair< QList< QStandardItem * >, bool >;
 using TParentTree = std::list< TTreeNode >;
@@ -85,9 +85,9 @@ public:
     QStandardItem *getItemFromPath( const QFileInfo &fi ) const;
 
     std::pair< bool, QStandardItemModel * > transform( bool displayOnly, QProgressDialog * progress=nullptr ) const;
-    void setTitleInfo( const QModelIndex &idx, std::shared_ptr< STitleInfo > info, bool applyToChilren );
-    void setTitleInfo( QStandardItem *item, std::shared_ptr< STitleInfo > info, bool applyToChilren );
-    std::shared_ptr< STitleInfo > getTitleInfo( const QModelIndex &idx ) const;
+    void setSearchResult( const QModelIndex &idx, std::shared_ptr< SSearchResult > info, bool applyToChilren );
+    void setSearchResult( QStandardItem *item, std::shared_ptr< SSearchResult > info, bool applyToChilren );
+    std::shared_ptr< SSearchResult > getSearchResultInfo( const QModelIndex &idx ) const;
 
     void setNameFilters( const QStringList &filters, QTreeView * view = nullptr );
 
@@ -159,7 +159,7 @@ private:
 
     mutable std::map< QString, std::pair< bool, QString > > fFileMapping;
     mutable std::map< QString, std::pair< bool, QString > > fDirMapping;
-    std::map< QString, std::shared_ptr< STitleInfo > > fTitleInfoMapping;
+    std::map< QString, std::shared_ptr< SSearchResult > > fSearchResultMap;
     std::map< QString, QStandardItem * > fPathMapping;
 
     bool fTreatAsTVShowByDefault{ false };
