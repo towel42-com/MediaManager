@@ -29,12 +29,6 @@ project(root-FileRenamer)
 
 SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/SABUtils/Modules ${CMAKE_MODULE_PATH})
 
-SET(OPENSSL_ROOT_DIR "C:/Program Files/OpenSSL-Win64" CACHE PATH "Root Directory of the OpenSSL Libraries" )
-if( NOT EXISTS ${OPENSSL_ROOT_DIR} )
-    message( FATAL_ERROR "Could not find OpenSSL root directory 'OPENSSL_ROOT_DIR=${OPENSSL_ROOT_DIR}'" )
-endif()
-
-
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED true)
 find_package(Threads)
@@ -42,6 +36,7 @@ find_package(Qt5 COMPONENTS Core Widgets Multimedia REQUIRED)
 find_package(Deploy REQUIRED)
 find_package(AddUnitTest REQUIRED)
 
+CheckOpenSSL()
 
 option( gtest_force_shared_crt "Use shared ( DLL ) run-time lib even when Google Test is built as static lib." ON ) 
 
