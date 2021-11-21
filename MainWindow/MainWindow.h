@@ -28,7 +28,7 @@ class CDirModel;
 class CDirFilterModel;
 class CSearchTMDB;
 struct SSearchTMDBInfo;
-struct STitleInfo;
+struct SSearchResult;
 namespace Ui {class CMainWindow;};
 
 class CMainWindow : public QMainWindow

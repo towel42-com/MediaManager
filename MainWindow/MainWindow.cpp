@@ -23,7 +23,7 @@
 #include "MainWindow.h"
 #include "DirModel.h"
 #include "SelectTMDB.h"
-#include "TitleInfo.h"
+#include "SearchResult.h"
 #include "TransformConfirm.h"
 #include "SearchTMDB.h"
 #include "SearchTMDBInfo.h"
@@ -200,7 +200,7 @@ void CMainWindow::autoSearch( QModelIndex parentIdx )
         auto childIndex = fDirModel->index( ii, 0, parentIdx );
         auto name = fDirModel->getSearchName( childIndex );
         auto path = fDirModel->filePath( childIndex );
-        auto titleInfo = fDirModel->getTitleInfo( childIndex );
+        auto titleInfo = fDirModel->getSearchResultInfo( childIndex );
         auto searchInfo = std::make_shared< SSearchTMDBInfo >( name, titleInfo );
         searchInfo->setExactMatchOnly( true );
 
@@ -226,19 +226,21 @@ void CMainWindow::slotAutoSearchFinished( const QString & path )
 {
     qDebug().noquote().nospace() << "Search results for path " << path;
     auto result = fSearchTMDB->getResult( path );
+    if ( !result )
+        return;
+    qDebug() << result->toString();
+
     auto item = fDirModel->getItemFromPath( path );
-    if ( result )
-        qDebug() << result->toString();
     if ( item && result )
     {
-        fDirModel->setTitleInfo( item, result, false );
+        fDirModel->setSearchResult( item, result, false );
     }
 }
 
 void CMainWindow::slotDoubleClicked( const QModelIndex &idx )
 {
     auto baseIdx = fDirModel->index( idx.row(), CDirModel::EColumns::eFSName, idx.parent() );
-    auto titleInfo = fDirModel->getTitleInfo( idx );
+    auto titleInfo = fDirModel->getSearchResultInfo( idx );
     
     auto isDir = baseIdx.data( CDirModel::ECustomRoles::eIsDir ).toBool();
     auto fullPath = baseIdx.data( CDirModel::ECustomRoles::eFullPathRole ).toString();
@@ -251,11 +253,11 @@ void CMainWindow::slotDoubleClicked( const QModelIndex &idx )
 
     if ( dlg.exec() == QDialog::Accepted )
     {
-        auto titleInfo = dlg.getTitleInfo();
+        auto titleInfo = dlg.getSearchResult();
         bool setChildren = true;
         if ( titleInfo->isTVShow() && titleInfo->isSeasonOnly() )
             setChildren = false;
-        fDirModel->setTitleInfo( idx, titleInfo, setChildren );
+        fDirModel->setSearchResult( idx, titleInfo, setChildren );
     }
 }
 
@@ -301,15 +303,17 @@ void CMainWindow::slotTransform()
         return;
     }
     CTransformConfirm dlg( tr( "Transformations:" ), tr( "Proceed?" ), this );
-    auto progress = QProgressDialog( "Renaming Files...", "Abort Copy", 0, transformations.second->rowCount(), this );
-    progress.setWindowModality( Qt::WindowModal );
-    progress.setMinimumDuration( 0 );
-
+    auto count = transformations.second->rowCount();
     dlg.setModel( transformations.second );
     dlg.setIconLabel( QMessageBox::Information );
     dlg.setButtons( QDialogButtonBox::Yes | QDialogButtonBox::No );
     if ( dlg.exec() == QDialog::Accepted )
     {
+        auto progress = QProgressDialog( "Renaming Files...", "Abort Copy", 0, transformations.second->rowCount(), this );
+        progress.setWindowModality( Qt::WindowModal );
+        progress.setMinimumDuration( 0 );
+        progress.setAutoClose( false );
+        progress.setAutoReset( false );
         transformations = fDirModel->transform( false, &progress );
         if ( !transformations.first )
         {
