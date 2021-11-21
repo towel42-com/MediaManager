@@ -28,6 +28,7 @@
 #include "SearchTMDB.h"
 #include "SearchTMDBInfo.h"
 
+#include "SABUtils/QtUtils.h"
 #include "SABUtils/utils.h"
 #include "SABUtils/ScrollMessageBox.h"
 #include "SABUtils/AutoWaitCursor.h"
@@ -303,13 +304,13 @@ void CMainWindow::slotTransform()
         return;
     }
     CTransformConfirm dlg( tr( "Transformations:" ), tr( "Proceed?" ), this );
-    auto count = transformations.second->rowCount();
+    auto count = NQtUtils::itemCount( transformations.second, true );
     dlg.setModel( transformations.second );
     dlg.setIconLabel( QMessageBox::Information );
     dlg.setButtons( QDialogButtonBox::Yes | QDialogButtonBox::No );
     if ( dlg.exec() == QDialog::Accepted )
     {
-        auto progress = QProgressDialog( "Renaming Files...", "Abort Copy", 0, transformations.second->rowCount(), this );
+        auto progress = QProgressDialog( "Renaming Files...", "Abort Copy", 0, count*4, this ); // 4 events, get timestamp, create parent paths, rename, settimestamp
         progress.setWindowModality( Qt::WindowModal );
         progress.setMinimumDuration( 0 );
         progress.setAutoClose( false );

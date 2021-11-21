@@ -770,8 +770,52 @@ bool CDirModel::transform( const QStandardItem * item, bool displayOnly, QStanda
                 else
                 {
                     auto timeStamps = NFileUtils::timeStamps( oldName );
-                    aOK = QFile::rename( oldName, newName );
-                    if ( !aOK )
+                    if ( progressDlg )
+                    {
+                        progressDlg->setValue( progressDlg->value() + 1 );
+                        qApp->processEvents();
+                    }
+
+                    auto transFormItem = getTransformItem( item );
+                    bool parentPathOK = true;
+                    if ( transFormItem )
+                    {
+                        auto mySubPath = transFormItem->text();
+                        if ( ( mySubPath.indexOf( "/" ) != -1 ) || ( mySubPath.indexOf( "\\" ) != -1 ) )
+                        {
+                            auto pos = mySubPath.lastIndexOf( QRegularExpression( "[\\/\\\\]" ) );
+                            auto myParentPath = mySubPath.left( pos );
+
+                            auto parentPath = computeTransformPath( item->parent(), false );
+                            parentPathOK = QDir( parentPath ).mkpath( myParentPath );
+                            if ( !parentPathOK )
+                            {
+                                auto errorItem = new QStandardItem( QString( "ERROR: '%1' => '%2' : FAILED TO MAKE PARENT DIRECTORY PATH" ).arg( oldName ).arg( newName ) );
+                                returnItem->appendRow( errorItem );
+
+                                QIcon icon;
+                                icon.addFile( QString::fromUtf8( ":/resources/error.png" ), QSize(), QIcon::Normal, QIcon::Off );
+                                errorItem->setIcon( icon );
+                            }
+                        }
+                    }
+                    if ( progressDlg )
+                    {
+                        progressDlg->setValue( progressDlg->value() + 1 );
+                        qApp->processEvents();
+                    }
+
+                    if ( parentPathOK )
+                        aOK = QFile::rename( oldName, newName );
+                    else
+                        aOK = false;
+                    if ( progressDlg )
+                    {
+                        progressDlg->setValue( progressDlg->value() + 1 );
+                        qApp->processEvents();
+                    }
+
+                    if ( parentPathOK && !aOK )
                     {
                         auto errorItem = new QStandardItem( QString( "ERROR: '%1' => '%2' : FAILED TO RENAME" ).arg( oldName ).arg( newName ) );
                         returnItem->appendRow( errorItem );
@@ -780,7 +824,7 @@ bool CDirModel::transform( const QStandardItem * item, bool displayOnly, QStanda
                         icon.addFile( QString::fromUtf8( ":/resources/error.png" ), QSize(), QIcon::Normal, QIcon::Off );
                         errorItem->setIcon( icon );
                     }
-                    else
+                    else if ( parentPathOK )
                     {
                         QString msg;
                         auto aOK = NFileUtils::setTimeStamps( newName, timeStamps );
@@ -794,16 +838,18 @@ bool CDirModel::transform( const QStandardItem * item, bool displayOnly, QStanda
                             errorItem->setIcon( icon );
                         }
                     }
+                    else
+                        aOK = parentPathOK;
 
                     QIcon icon;
                     icon.addFile( aOK ? QString::fromUtf8( ":/resources/ok.png" ) : QString::fromUtf8( ":/resources/error.png" ), QSize(), QIcon::Normal, QIcon::Off );
                     returnItem->setIcon( icon );
+                    if ( progressDlg )
+                    {
+                        progressDlg->setValue( progressDlg->value() + 1 );
+                        qApp->processEvents();
+                    }
                 }
-            }
-            if ( progressDlg )
-            {
-                progressDlg->setValue( progressDlg->value() + 1 );
-                qApp->processEvents();
             }
         }
     }
