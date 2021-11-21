@@ -24,8 +24,8 @@ set(qtproject_SRCS
     MainWindow.cpp
     NetworkReply.cpp
     DirModel.cpp
-    TitleInfo.cpp
     TransformConfirm.cpp
+    SearchResult.cpp
     SearchTMDBInfo.cpp
     SearchTMDB.cpp
     SelectTMDB.cpp
@@ -41,8 +41,8 @@ set(qtproject_H
 
 set(project_H
     NetworkReply.h
+    SearchResult.h
     SearchTMDBInfo.h
-    TitleInfo.h
 )
 
 set(qtproject_UIS
