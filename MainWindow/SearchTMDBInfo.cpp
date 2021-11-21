@@ -21,13 +21,14 @@
 // SOFTWARE.
 
 #include "SearchTMDBInfo.h"
-#include "TitleInfo.h"
+#include "SearchResult.h"
 #include <QRegularExpression>
 #include <QDebug>
+#include "SABUtils/QtUtils.h"
 
-SSearchTMDBInfo::SSearchTMDBInfo( const QString &text, std::shared_ptr< STitleInfo > titleInfo )
+SSearchTMDBInfo::SSearchTMDBInfo( const QString &text, std::shared_ptr< SSearchResult > searchResult )
 {
-    fTitleInfo = titleInfo;
+    fSearchResultInfo = searchResult;
     fInitSearchString = text;
     fIsTVShow = looksLikeTVShow( text ).first;
     updateSearchCriteria( true );
@@ -43,6 +44,10 @@ QString SSearchTMDBInfo::stripKnownData( const QString & string )
         << "Amazon"
         << "DL.DD+"
         << "DL.DD"
+        << "DL.AAC2.0.AVC"
+        << "AAC2.0.AVC"
+        << "AAC2.0"
+        << "AVC"
         << "AMZN"
         << "WebRip" 
         << "WEB" 
@@ -169,14 +174,14 @@ void SSearchTMDBInfo::updateSearchCriteria( bool updateSearchBy )
 
     fSearchName = smartTrim( fSearchName, true );
 
-    if ( fTitleInfo )
+    if ( fSearchResultInfo )
     {
-        fSearchName = fTitleInfo->fTitle;
-        episodeStr = fTitleInfo->fEpisode;
-        seasonStr = fTitleInfo->fSeason;
-        fReleaseDate = fTitleInfo->fReleaseDate;
-        fTMDBID = fTitleInfo->fTMDBID;// always get the main one
-        fEpisodeTitle = fTitleInfo->fEpisodeTitle;
+        fSearchName = fSearchResultInfo->fTitle;
+        episodeStr = fSearchResultInfo->fEpisode;
+        seasonStr = fSearchResultInfo->fSeason;
+        fReleaseDate = fSearchResultInfo->fReleaseDate;
+        fTMDBID = fSearchResultInfo->fTMDBID;// always get the main one
+        fEpisodeTitle = fSearchResultInfo->fEpisodeTitle;
     }
 
     if ( !episodeStr.isEmpty() )
@@ -219,4 +224,106 @@ QString SSearchTMDBInfo::toString() const
 {
     QString retVal = QString( "SSearchTMDBInfo(%1 (%2)-S%3E%4-%5-%6-%7-%8)" ).arg( searchName() ).arg( releaseDateString() ).arg( season() ).arg( episode() ).arg( tmdbIDString() ).arg( isTVShow() ).arg( exactMatchOnly() ).arg( searchName() );
     return retVal;
+}
+
+bool SSearchTMDBInfo::isMatch( std::shared_ptr< SSearchResult > searchResult ) const
+{
+    return isMatch( searchResult->fReleaseDate, searchResult->fTMDBID, searchResult->getTitle(), searchResult->isTVShow(), searchResult->getSeason(), searchResult->getEpisode() );
+}
+
+bool SSearchTMDBInfo::isSeasonMatch( int seasonMatch ) const
+{
+    if ( seasonMatch == -1 )
+        return ( fSeason == -1 );
+    if ( fSeason == -1 )
+        return false;
+    return seasonMatch == fSeason;
+}
+
+
+bool SSearchTMDBInfo::isSeasonMatch( const QString & seasonMatch ) const
+{
+    if ( seasonMatch.isEmpty() )
+        return ( fSeason == -1 );
+    bool aOK;
+    auto season = seasonMatch.toInt( &aOK );
+    if ( !aOK )
+        return false;
+    return isSeasonMatch( season );
+}
+
+bool SSearchTMDBInfo::isEpisodeMatch( int episodeMatch ) const
+{
+    if ( episodeMatch == -1 )
+        return ( fEpisode == -1 );
+    if ( fEpisode == -1 )
+        return false;
+    return episodeMatch == fSeason;
+}
+
+
+bool SSearchTMDBInfo::isEpisodeMatch( const QString & episodeMatch ) const
+{
+    if ( episodeMatch.isEmpty() )
+        return ( fEpisode == -1 );
+    bool aOK;
+    auto season = episodeMatch.toInt( &aOK );
+    if ( !aOK )
+        return false;
+    return isEpisodeMatch( season );
+}
+
+bool SSearchTMDBInfo::isMatchingTMDBID( const QString & inTMDBID ) const
+{
+    if ( inTMDBID.isEmpty() )
+        return false;
+
+    bool aOK;
+    int tmdbid = inTMDBID.toInt( &aOK );
+    if ( !aOK )
+        tmdbid = -1;
+    
+    return isMatchingTMDBID( tmdbid );
+}
+
+bool SSearchTMDBInfo::isMatchingTMDBID( int tmdbid ) const
+{
+    bool aOK;
+    int myTmdbID = tmdbID( &aOK );
+    bool canCheckTMDB = tmdbIDSet() && ( tmdbid != -1 );
+
+    if ( aOK && canCheckTMDB && !isTVShow() ) // dont check for TV shows, as the TMDB could be the episode ID
+    {
+        if ( tmdbid != myTmdbID )
+            return false;
+    }
+    return true;
+}
+
+
+bool SSearchTMDBInfo::isMatchingName( const QString & name ) const
+{
+    if ( !fSearchByName )
+        return true;
+    if ( fExactMatchOnly )
+    {
+        return name == fSearchName;
+    }
+    return fSearchName.contains( name, Qt::CaseSensitivity::CaseInsensitive );
+}
+
+bool SSearchTMDBInfo::isMatchingDate( const QString & releaseDate ) const
+{
+    bool aOK;
+    int releaseYear = this->releaseDate( &aOK );
+    if ( aOK && searchByName() && releaseDateSet() && !releaseDate.isEmpty() )
+    {
+        auto dt = NQtUtils::findDate( releaseDate );
+
+        if ( dt.isValid() && dt.year() != releaseYear )
+        {
+            return false;
+        }
+    }
+    return true;
 }

@@ -27,7 +27,7 @@
 #include <QString>
 #include <optional>
 #include <memory>
-struct STitleInfo;
+struct SSearchResult;
 
 enum class ESearchType
 {
@@ -40,7 +40,7 @@ enum class ESearchType
 struct SSearchTMDBInfo
 {
     SSearchTMDBInfo() {};
-    SSearchTMDBInfo( const QString &searchString, std::shared_ptr< STitleInfo > titleInfo );
+    SSearchTMDBInfo( const QString &searchString, std::shared_ptr< SSearchResult > titleInfo );
 
     static std::pair< bool, QString > looksLikeTVShow( const QString &searchString, QString *seasonStr = nullptr, QString *episodeStr=nullptr );
 
@@ -77,7 +77,40 @@ struct SSearchTMDBInfo
     void setEpisode( int value ) { fEpisode = value; }
 
     QString toString() const;
+
+    bool isMatch( std::shared_ptr< SSearchResult > searchResult ) const;
+
+
+    template< typename T >
+    bool isMatch( const QString & releaseDate, const T & tmdbid, const QString & name ) const
+    {
+        bool retVal = isMatchingDate( releaseDate )
+            && isMatchingTMDBID( tmdbid )
+            && isMatchingName( name )
+            ;
+        return retVal;
+    }
+
+    template< typename T >
+    bool isMatch( const QString & releaseDate, const T & tmdbid, const QString & name, bool isTVShow, const T & season, const T & episode ) const
+    {
+        bool retVal = isMatch( releaseDate, tmdbid, name ) && ( fIsTVShow && isTVShow );
+
+        if ( fIsTVShow && retVal )
+            retVal = retVal && isSeasonMatch( season ) && isEpisodeMatch( episode );
+        return retVal;
+    }
+
+    bool isSeasonMatch( int seasonToMatch ) const;
+    bool isSeasonMatch( const QString & seasonToMatch ) const;
+    bool isEpisodeMatch( int episodeToMatch ) const;
+    bool isEpisodeMatch( const QString & episodeToMatch ) const;
 private:
+    bool isMatchingDate( const QString & releaseDate ) const;
+    bool isMatchingTMDBID( int tmdbid ) const;
+    bool isMatchingTMDBID( const QString & tmdbd ) const;
+    bool isMatchingName( const QString & name ) const;
+
     static QString stripKnownData( const QString &string );
     static QString smartTrim( const QString &string, bool stripInnerPeriods = false );
 
@@ -95,7 +128,7 @@ private:
     QString fDescription;
 
     QString fInitSearchString;
-    std::shared_ptr< STitleInfo > fTitleInfo;
+    std::shared_ptr< SSearchResult > fSearchResultInfo;
 };
 
 QDebug operator<<( QDebug debug, const SSearchTMDBInfo & info );
