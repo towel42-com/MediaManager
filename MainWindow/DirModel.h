@@ -28,6 +28,7 @@
 #include <QFileInfo>
 #include <memory>
 #include <unordered_set>
+#include <optional>
 #include "SABUtils/HashUtils.h"
 
 class QProgressDialog;
@@ -129,7 +130,7 @@ private:
     QStandardItem * getTransformItem( const QStandardItem * parent ) const;
 
     bool isValidName( const QFileInfo &fi ) const;
-    bool isValidName( const QString & absPath, bool isDir ) const;
+    bool isValidName( const QString & absPath, bool isDir, std::optional< bool > isTVShow ) const;
 
     bool isTVShow( const QFileInfo & fileInfo ) const;
     bool isTVShow( const QString &path ) const;

@@ -312,15 +312,15 @@ QStandardItem * CDirModel::getItemFromPath( const QFileInfo & fi ) const
 
 bool CDirModel::isValidName( const QFileInfo &fi ) const
 {
-    return isValidName( fi.absoluteFilePath(), fi.isDir() );
+    return isValidName( fi.fileName(), fi.isDir(), {} );
 }
 
-bool CDirModel::isValidName( const QString & path, bool isDir ) const
+bool CDirModel::isValidName( const QString & path, bool isDir, std::optional< bool > isTVShow ) const
 {
-    bool asTVShow = treatAsTVShow( path, !isTVShow( path ) );
-    auto fn = QFileInfo( path ).fileName();
-    if (   (!asTVShow && fMoviePatterns.isValidName( fn, isDir ) )
-         || (asTVShow && fTVPatterns.isValidName( fn, isDir ) ) )
+    bool defaultAsTVShow = isTVShow.has_value() ? isTVShow.value() : this->isTVShow( path );
+    bool asTVShow = treatAsTVShow( path, defaultAsTVShow );
+    if (   (!asTVShow && fMoviePatterns.isValidName( path, isDir ) )
+         || (asTVShow && fTVPatterns.isValidName( path, isDir ) ) )
         return true;
 
 
@@ -483,11 +483,19 @@ QString replaceCapture( const QString &captureName, const QString &returnPattern
     return retVal;
 }
 
-void cleanFileName( QString & inFile )
+void cleanFileName( QString & inFile, bool isDir )
 {
+    if ( inFile.isEmpty() )
+        return;
+
+    inFile.replace( QRegularExpression( "^(([A-Za-z]\\:)|(\\/)|(\\\\))+" ), "" );
+
     QString text = "\\s*\\:\\s*";
     inFile.replace( QRegularExpression( text ), " - " );
-    text = "[\\<\\>\\\"\\/\\\\\\|\\?\\*]";
+    text = "[\\:\\<\\>\\\"\\|\\?\\*";
+    if ( !isDir )
+        text += "\\/\\\\";
+    text += "]";
     inFile.replace( QRegularExpression( text ), "" );
 }
 
@@ -544,9 +552,9 @@ std::pair< bool, QString > CDirModel::transformItem( const QFileInfo &fileInfo, 
             retVal.second = replaceCapture( "episode_title", retVal.second, episodeTitle );
             retVal.second = replaceCapture( "extra_info", retVal.second, extraInfo );
 
+            cleanFileName( retVal.second, fileInfo.isDir() );
             if ( !fileInfo.isDir() )
                 retVal.second += "." + ext;
-            cleanFileName( retVal.second );
             retVal.first = true;
         }
 
@@ -904,7 +912,8 @@ void CDirModel::updatePattern( const QStandardItem * item, QStandardItem * trans
     if ( transformedItem->text() != transformInfo.second )
         transformedItem->setText( transformInfo.second );
 
-    if ( shouldAutoSearch( path ) && ( transformInfo.second == "<NOMATCH>" || !isValidName( transformInfo.second, fileInfo.isDir() ) && !isValidName( fileInfo ) && !isIgnoredPathName( fileInfo ) && !isLanguageFile( fileInfo ) ) )
+    auto isTVShow = treatAsTVShow( fileInfo, this->isTVShow( path ) );
+    if ( shouldAutoSearch( path ) && ( transformInfo.second == "<NOMATCH>" || !isValidName( transformInfo.second, fileInfo.isDir(), isTVShow ) && !isValidName( fileInfo ) && !isIgnoredPathName( fileInfo ) && !isLanguageFile( fileInfo ) ) )
         transformedItem->setBackground( Qt::red );
 }
 
