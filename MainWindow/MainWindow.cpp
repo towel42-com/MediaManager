@@ -250,7 +250,10 @@ void CMainWindow::slotDoubleClicked( const QModelIndex &idx )
     if ( dlg.exec() == QDialog::Accepted )
     {
         auto titleInfo = dlg.getTitleInfo();
-        fDirModel->setTitleInfo( idx, titleInfo, true );
+        bool setChildren = true;
+        if ( titleInfo->isTVShow() && titleInfo->isSeasonOnly() )
+            setChildren = false;
+        fDirModel->setTitleInfo( idx, titleInfo, setChildren );
     }
 }
 
