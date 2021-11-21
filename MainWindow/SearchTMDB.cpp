@@ -190,7 +190,7 @@ std::shared_ptr< CNetworkReply > CSearchTMDB::sendRequest( const QNetworkRequest
     if ( pos != fURLResultsCache.end() )
     {
         qDebug().noquote().nospace() << "Cached Result " << ::toString( requestType ) << " request:" << ( *pos ).first;
-        emit sigFakeRequestFinished( requestType, (*pos).first, (*pos).second );
+        QTimer::singleShot( 0, [ this, requestType, pos ]() { emit sigFakeRequestFinished( requestType, ( *pos ).first, ( *pos ).second ); } );
         return std::make_shared< CNetworkReply >(requestType, (*pos).first, (*pos).second );
     }
     auto retVal = fManager->get( request );
@@ -798,6 +798,7 @@ void CSearchTMDB::searchTVDetails( std::shared_ptr< STitleInfo > showInfo, int t
         seasonInfo->fTitle = showInfo->fTitle;
         seasonInfo->fTMDBID = showInfo->fTMDBID;
         seasonInfo->fSeason = QString::number( seasonNum );
+        seasonInfo->setSeasonOnly( true );
         showInfo->fChildren.push_back( seasonInfo );
         seasonInfo->fParent = showInfo;
     }
@@ -862,6 +863,7 @@ bool CSearchTMDB::loadSeasonDetails( std::shared_ptr< CNetworkReply > reply )
 
     seasonInfo->fEpisodeTitle = doc.object().contains( "name" ) ? doc.object()["name"].toString() : QString();;
     seasonInfo->fSeason = doc.object().contains( "season_number" ) ? QString::number( doc.object()["season_number"].toInt() ) : QString();
+    seasonInfo->setSeasonOnly( true );
 
     auto episodes = doc.object()["episodes"].toArray();
     seasonInfo->fEpisode = QString( "%1 Episode%2" ).arg( episodes.count() ).arg( episodes.count() == 1 ? "" : "s" );
