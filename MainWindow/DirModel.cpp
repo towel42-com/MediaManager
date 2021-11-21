@@ -39,6 +39,7 @@
 #include <QTimer>
 #include <QTreeView>
 #include <QApplication>
+#include <QProgressDialog>
 
 #include <set>
 #include <list>
@@ -724,7 +725,7 @@ QString CDirModel::getDispName( const QString & absPath ) const
     return rootDir.relativeFilePath( absPath );
 }
 
-bool CDirModel::transform( const QStandardItem * item, bool displayOnly, QStandardItemModel * resultModel, QStandardItem * parentItem  ) const
+bool CDirModel::transform( const QStandardItem * item, bool displayOnly, QStandardItemModel * resultModel, QStandardItem * parentItem, QProgressDialog * progressDlg ) const
 {
     if ( !item )
         return false;
@@ -791,6 +792,11 @@ bool CDirModel::transform( const QStandardItem * item, bool displayOnly, QStanda
                     returnItem->setIcon( icon );
                 }
             }
+            if ( progressDlg )
+            {
+                progressDlg->setValue( progressDlg->value() + 1 );
+                qApp->processEvents();
+            }
         }
     }
 
@@ -801,16 +807,19 @@ bool CDirModel::transform( const QStandardItem * item, bool displayOnly, QStanda
         if ( !child )
             continue;
 
-        aOK = transform( child, displayOnly, resultModel, returnItem ) && aOK;
+        aOK = transform( child, displayOnly, resultModel, returnItem, progressDlg ) && aOK;
     }
     return aOK;
 }
 
-std::pair< bool, QStandardItemModel * > CDirModel::transform( bool displayOnly ) const
+std::pair< bool, QStandardItemModel * > CDirModel::transform( bool displayOnly, QProgressDialog * progressDlg ) const
 {
     CAutoWaitCursor awc;
     auto model = new QStandardItemModel;
-    return std::make_pair( transform( invisibleRootItem(), displayOnly, model, nullptr ), model );
+    auto retVal = std::make_pair( transform( invisibleRootItem(), displayOnly, model, nullptr, progressDlg ), model );
+    if ( progressDlg )
+        progressDlg->setValue( retVal.second->rowCount() );
+    return retVal;
 }
 
 

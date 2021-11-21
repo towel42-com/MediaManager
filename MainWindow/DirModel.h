@@ -30,6 +30,7 @@
 #include <unordered_set>
 #include "SABUtils/HashUtils.h"
 
+class QProgressDialog;
 class QTreeView;
 class QMediaPlaylist;
 class QFileIconProvider;
@@ -83,7 +84,7 @@ public:
     QStandardItem *getItemFromindex( QModelIndex idx ) const;
     QStandardItem *getItemFromPath( const QFileInfo &fi ) const;
 
-    std::pair< bool, QStandardItemModel * > transform( bool displayOnly ) const;
+    std::pair< bool, QStandardItemModel * > transform( bool displayOnly, QProgressDialog * progress=nullptr ) const;
     void setTitleInfo( const QModelIndex &idx, std::shared_ptr< STitleInfo > info, bool applyToChilren );
     void setTitleInfo( QStandardItem *item, std::shared_ptr< STitleInfo > info, bool applyToChilren );
     std::shared_ptr< STitleInfo > getTitleInfo( const QModelIndex &idx ) const;
@@ -123,7 +124,7 @@ private:
     TTreeNode getItemRow( const QFileInfo &path ) const;
 
     QString getDispName( const QString &absPath ) const;
-    bool transform( const QStandardItem *item, bool displayOnly, QStandardItemModel *resultsModel, QStandardItem *resultsParentItem ) const;
+    bool transform( const QStandardItem *item, bool displayOnly, QStandardItemModel *resultsModel, QStandardItem *resultsParentItem, QProgressDialog * progressDlg ) const;
 
     QStandardItem * getTransformItem( const QStandardItem * parent ) const;
 
