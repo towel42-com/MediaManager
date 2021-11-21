@@ -584,17 +584,19 @@ void CDirModel::setTitleInfo( const QModelIndex &idx, std::shared_ptr< STitleInf
         titleInfo.reset();
 
     auto fi = fileInfo( idx );
-    if ( !titleInfo )
-        fTitleInfoMapping.erase( fi.absoluteFilePath() );
-    else
-        fTitleInfoMapping[fi.absoluteFilePath()] = titleInfo;
-    if ( isDir( idx ) )
-        fDirMapping.erase( fi.absoluteFilePath() );
-    else 
-        fFileMapping.erase( fi.absoluteFilePath() );
+    if ( !isIgnoredPathName( fi ) )
+    {
+        if ( !titleInfo )
+            fTitleInfoMapping.erase( fi.absoluteFilePath() );
+        else
+            fTitleInfoMapping[fi.absoluteFilePath()] = titleInfo;
+        if ( isDir( idx ) )
+            fDirMapping.erase( fi.absoluteFilePath() );
+        else
+            fFileMapping.erase( fi.absoluteFilePath() );
 
-    updatePattern( getItemFromindex( idx ) );
-
+        updatePattern( getItemFromindex( idx ) );
+    }
     if ( applyToChildren )
     {
         auto childCount = rowCount( idx );
