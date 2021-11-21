@@ -80,7 +80,8 @@ QString STitleInfo::toString() const
         << "TMDBID: '" + fTMDBID + "'"
         << "SeasonTMBDID: '" + fSeasonTMDBID + "'"
         << "EpisodeTMDBID: '" + fEpisodeTMDBID + "'"
-        << "Season: '" + fSeason + "'"
+        << "Season: '" + fSeason + "'" 
+        << QString( " Season Only? %1" ).arg( fSeasonOnly ? "Yes" : "No" )
         << "Episode: '" + fEpisode + "'"
         << "EpisodeTitle: '" + fEpisodeTitle + "'"
         << "ExtraInfo: '" + fExtraInfo + "'"

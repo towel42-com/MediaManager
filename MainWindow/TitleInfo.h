@@ -59,11 +59,12 @@ struct STitleInfo
     QString getYear() const;
     QString getEpisodeTitle() const;
     QString getTMDBID() const;
+    bool isSeasonOnly() const { return fSeasonOnly; }
+    void setSeasonOnly( bool value ) { fSeasonOnly = value; }
 
     void removeChild( std::shared_ptr< STitleInfo > info );
 
     QString toString() const;
-
     [[nodiscard]] QString getMyText( ETitleInfo which ) const;
     [[nodiscard]] QString getText( ETitleInfo which, bool forceTop = false ) const;
 
@@ -72,7 +73,8 @@ struct STitleInfo
     QString fTMDBID;
     QString fSeasonTMDBID;
     QString fEpisodeTMDBID;
-    QString fSeason;
+    QString fSeason; 
+    bool fSeasonOnly{ false };
     QString fEpisode;
     QString fEpisodeTitle;
     QString fExtraInfo;
