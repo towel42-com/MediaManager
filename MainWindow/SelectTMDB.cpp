@@ -23,7 +23,7 @@
 #include "SelectTMDB.h"
 #include "DirModel.h"
 #include "ui_SelectTMDB.h"
-#include "TitleInfo.h"
+#include "SearchResult.h"
 #include "SearchTMDB.h"
 #include "SearchTMDBInfo.h"
 
@@ -38,19 +38,19 @@
 #include <QPushButton>
 #include <QMessageBox>
 
-CSelectTMDB::CSelectTMDB( const QString & text, std::shared_ptr< STitleInfo > titleInfo, QWidget* parent )
+CSelectTMDB::CSelectTMDB( const QString & text, std::shared_ptr< SSearchResult > searchResult, QWidget* parent )
     : QDialog( parent ),
     fImpl( new Ui::CSelectTMDB )
 {
     fImpl->setupUi( this );
 
-    fSearchInfo = std::make_shared< SSearchTMDBInfo >( text, titleInfo );
+    fSearchInfo = std::make_shared< SSearchTMDBInfo >( text, searchResult );
     fSearchTMDB = new CSearchTMDB( fSearchInfo, std::optional<QString>(), this );
 
     connect( this, &CSelectTMDB::sigStartSearch, fSearchTMDB, &CSearchTMDB::slotSearch );
     connect( fSearchTMDB, &CSearchTMDB::sigSearchFinished, this, &CSelectTMDB::slotSearchFinished );
 
-    fImpl->resultExtraInfo->setText( titleInfo ? titleInfo->fExtraInfo : QString() );
+    fImpl->resultExtraInfo->setText( searchResult ? searchResult->fExtraInfo : QString() );
 
     fImpl->resultEpisodeTitle->setText( fSearchInfo->episodeTitle() );
 
@@ -129,7 +129,7 @@ void CSelectTMDB::slotReset()
     fStopLoading = false;
     fSearchTMDB->resetResults();
     fImpl->results->clear();
-    fResultTitleInfo.clear();
+    fSearchResultMap.clear();
     resetHeader();
 }
 
@@ -214,7 +214,8 @@ void CSelectTMDB::slotLoadNextResult()
             QTimer::singleShot( 500, this, &CSelectTMDB::slotSearchTextChanged );
         }
 
-        if ( fImpl->results->selectedItems().count() == 1 )
+        auto childNode = getSingleMatchingItem( nullptr );
+        if ( childNode && childNode->isSelected() )
             slotItemSelected();
         return;
     }
@@ -227,12 +228,60 @@ void CSelectTMDB::slotLoadNextResult()
     QTimer::singleShot( 0, this, &CSelectTMDB::slotLoadNextResult );
 }
 
-void CSelectTMDB::loadResults( std::shared_ptr< STitleInfo > info, QTreeWidgetItem *parent )
+bool CSelectTMDB::isMatchingItem( QTreeWidgetItem * item ) const
+{
+    if ( !fSearchInfo )
+        return false;
+
+    auto pos = fSearchResultMap.find( item );
+    if ( pos == fSearchResultMap.end() )
+        return false;
+    return fSearchInfo && fSearchInfo->isMatch( ( *pos ).second );
+}
+
+// childless items OR if its a season search, and its a season node
+std::list < QTreeWidgetItem * > CSelectTMDB::getMatchingItems( QTreeWidgetItem * parentItem ) const
+{
+    std::list < QTreeWidgetItem * > retVal;
+
+    auto childCount = parentItem ? parentItem->childCount() : fImpl->results->topLevelItemCount();
+    for ( auto ii = 0; ii < childCount; ++ii )
+    {
+        auto child = parentItem ? parentItem->child( ii ) : fImpl->results->topLevelItem( ii );
+        if ( !child )
+            continue;
+        if ( isMatchingItem( child ) )
+            retVal.push_back( child );
+        auto children = getMatchingItems( child );
+        retVal.insert( retVal.end(), children.begin(), children.end() );
+    }
+    return retVal;
+}
+
+QTreeWidgetItem * CSelectTMDB::getSingleMatchingItem( QTreeWidgetItem * parentItem ) const
+{
+    auto children = getMatchingItems( parentItem );
+    if ( children.empty() )
+        return nullptr;
+    QTreeWidgetItem * retVal = nullptr;
+    for ( auto && ii : children )
+    {
+        if ( ii && ii->isSelected() )
+        {
+            if ( retVal != nullptr )
+                return nullptr;
+            retVal = ii;
+        }
+    }
+    return retVal;
+}
+
+void CSelectTMDB::loadResults( std::shared_ptr< SSearchResult > info, QTreeWidgetItem *parent )
 {
     if ( fStopLoading )
         return;
 
-    if ( info->fInfoType == ETitleInfoType::eTVShow || info->fInfoType == ETitleInfoType::eTVSeason )
+    if ( info->fInfoType == EResultInfoType::eTVShow || info->fInfoType == EResultInfoType::eTVSeason )
     {
         if ( info->fChildren.empty() )
             return;
@@ -261,7 +310,7 @@ void CSelectTMDB::loadResults( std::shared_ptr< STitleInfo > info, QTreeWidgetIt
     else
         item = new QTreeWidgetItem( fImpl->results, data, itemType );
 
-    fResultTitleInfo[item] = info;
+    fSearchResultMap[item] = info;
 
     auto label = new QLabel( info->fDescription, this );
     label->setWordWrap( true );
@@ -296,13 +345,13 @@ void CSelectTMDB::loadResults( std::shared_ptr< STitleInfo > info, QTreeWidgetIt
 }
 
 
-std::shared_ptr< STitleInfo > CSelectTMDB::getTitleInfo() const
+std::shared_ptr< SSearchResult > CSelectTMDB::getSearchResult() const
 {
     auto first = getFirstSelected();
     if ( !first )
         return {};
-    auto pos = fResultTitleInfo.find( first );
-    if ( pos == fResultTitleInfo.end() )
+    auto pos = fSearchResultMap.find( first );
+    if ( pos == fSearchResultMap.end() )
         return {};
 
     auto retVal = ( *pos ).second;

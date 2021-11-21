@@ -38,7 +38,7 @@ class QNetworkReply;
 class QJsonObject;
 class QTreeWidgetItem;
 class CButtonEnabler;
-struct STitleInfo;
+struct SSearchResult;
 
 class CSelectTMDB : public QDialog
 {
@@ -52,11 +52,11 @@ public:
         eEpisode
     };
 
-    CSelectTMDB( const QString & searchText, std::shared_ptr< STitleInfo > titleInfo, QWidget* parent = 0);
+    CSelectTMDB( const QString & searchText, std::shared_ptr< SSearchResult > searchResult, QWidget* parent = 0);
 
     ~CSelectTMDB();
 
-    std::shared_ptr< STitleInfo > getTitleInfo() const;
+    std::shared_ptr< SSearchResult > getSearchResult() const;
 
     void setSearchForTVShows( bool value, bool init );
     void setExactMatchOnly( bool value, bool init );
@@ -78,6 +78,10 @@ public Q_SLOTS:
 Q_SIGNALS:
     void sigStartSearch();
 private:
+    bool isMatchingItem( QTreeWidgetItem * item ) const;
+    QTreeWidgetItem * getSingleMatchingItem( QTreeWidgetItem * parentItem ) const;
+    std::list < QTreeWidgetItem * > getMatchingItems( QTreeWidgetItem * parentItem ) const;
+
     void updateEnabled();
     void updateByName( bool init );
     void updateFromSearchInfo( std::shared_ptr< SSearchTMDBInfo > searchInfo );
@@ -85,7 +89,7 @@ private:
     std::shared_ptr< SSearchTMDBInfo > getSearchInfo();
     void resetHeader();
 
-    void loadResults( std::shared_ptr< STitleInfo > item, QTreeWidgetItem *parent );
+    void loadResults( std::shared_ptr< SSearchResult > item, QTreeWidgetItem *parent );
     void deleteParent( QTreeWidgetItem *item );
 
     std::unique_ptr< Ui::CSelectTMDB > fImpl;
@@ -99,9 +103,9 @@ private:
     bool fSearchPending{ false };
     std::shared_ptr< SSearchTMDBInfo > fQueuedSearchInfo;
 
-    std::shared_ptr< STitleInfo > fBestMatch;
-    std::list< std::shared_ptr< STitleInfo > > fCurrentResults;
-    std::unordered_map< QTreeWidgetItem *, std::shared_ptr< STitleInfo > > fResultTitleInfo;
+    std::shared_ptr< SSearchResult > fBestMatch;
+    std::list< std::shared_ptr< SSearchResult > > fCurrentResults;
+    std::unordered_map< QTreeWidgetItem *, std::shared_ptr< SSearchResult > > fSearchResultMap;
 };
 
 #endif 
