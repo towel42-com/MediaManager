@@ -213,6 +213,9 @@ void CSelectTMDB::slotLoadNextResult()
             fQueuedSearchInfo.reset();
             QTimer::singleShot( 500, this, &CSelectTMDB::slotSearchTextChanged );
         }
+
+        if ( fImpl->results->selectedItems().count() == 1 )
+            slotItemSelected();
         return;
     }
 
