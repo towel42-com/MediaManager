@@ -93,7 +93,7 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     void sigSearchFinished();
-    void sigAutoSearchFinished( const QString & path);
+    void sigAutoSearchFinished( const QString & path, bool remaining );
     void sigMessage( const QString &msg );
     void sigFakeRequestFinished( ERequestType requestType, const QString & url, const QByteArray & cachedReply );
 private:

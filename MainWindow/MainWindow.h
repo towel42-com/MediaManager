@@ -45,7 +45,7 @@ public Q_SLOTS:
     void slotToggleTreatAsTVShowByDefault();
     void slotDoubleClicked( const QModelIndex &idx );
     void slotAutoSearch();
-    void slotAutoSearchFinished( const QString &path );
+    void slotAutoSearchFinished( const QString &path, bool searchesRemaining );
 private:
     void autoSearch( QModelIndex rootIdx );
 

@@ -221,9 +221,11 @@ void CMainWindow::slotAutoSearch()
         return;
     auto rootIdx = fDirModel->index( 0, 0 );
     autoSearch( rootIdx );
+    QApplication::setOverrideCursor( Qt::BusyCursor );
+    qApp->processEvents();
 }
 
-void CMainWindow::slotAutoSearchFinished( const QString & path )
+void CMainWindow::slotAutoSearchFinished( const QString & path, bool searchesRemaining )
 {
     qDebug().noquote().nospace() << "Search results for path " << path;
     auto result = fSearchTMDB->getResult( path );
@@ -235,6 +237,12 @@ void CMainWindow::slotAutoSearchFinished( const QString & path )
     if ( item && result )
     {
         fDirModel->setSearchResult( item, result, false );
+    }
+
+    if ( !searchesRemaining )
+    {
+        QApplication::restoreOverrideCursor();
+        qApp->processEvents();
     }
 }
 

@@ -195,8 +195,6 @@ std::shared_ptr< CNetworkReply > CSearchTMDB::sendRequest( const QNetworkRequest
     }
     auto retVal = fManager->get( request );
     //qDebug().noquote().nospace() << "Sending " << ::toString( requestType ) << " request:" << request.url() << "Reply: 0x" << Qt::hex << reinterpret_cast< uint64_t >( retVal );
-    if ( requestType == ERequestType::eTVSearch )
-        int xyz = 0;
     //qDebug() << *this;
     addRequestType( retVal, requestType );
     return std::make_shared< CNetworkReply >( requestType, retVal );
@@ -356,7 +354,6 @@ void CSearchTMDB::handleRequestFinished( std::shared_ptr< CNetworkReply > reply 
         removeRequestType( reply );
     }
 
-
     checkIfStillSearching();
 }
 
@@ -398,7 +395,7 @@ void CSearchTMDB::emitSigFinished()
     {
         auto path = fCurrentQueuedSearch.value().first;
         //qDebug() << "Sending autoSearchFinished " << path;
-        emit sigAutoSearchFinished( path );
+        emit sigAutoSearchFinished( path, !fSearchQueue.empty() );
         fCurrentQueuedSearch.reset();
         fSearchInfo.reset();
         startAutoSearchTimer();
