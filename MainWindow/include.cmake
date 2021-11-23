@@ -29,6 +29,7 @@ set(qtproject_SRCS
     SearchTMDBInfo.cpp
     SearchTMDB.cpp
     SelectTMDB.cpp
+    Preferences.cpp
 )
 
 set(qtproject_H
@@ -36,6 +37,7 @@ set(qtproject_H
     DirModel.h
     SearchTMDB.h
     SelectTMDB.h
+    Preferences.h
     TransformConfirm.h
 )
 
@@ -48,7 +50,8 @@ set(project_H
 set(qtproject_UIS
     MainWindow.ui
     SelectTMDB.ui
-	TransformConfirm.ui
+    Preferences.ui
+    TransformConfirm.ui
 )
 
 set(qtproject_QRC
