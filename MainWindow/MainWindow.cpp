@@ -27,6 +27,7 @@
 #include "TransformConfirm.h"
 #include "SearchTMDB.h"
 #include "SearchTMDBInfo.h"
+#include "Preferences.h"
 
 #include "SABUtils/QtUtils.h"
 #include "SABUtils/utils.h"
@@ -51,10 +52,6 @@ CMainWindow::CMainWindow( QWidget* parent )
 {
     fImpl->setupUi( this );
 
-    fImpl->tvOutFilePattern->setDelay( 1000 );
-    fImpl->tvOutDirPattern->setDelay( 1000 );
-    fImpl->movieOutFilePattern->setDelay( 1000 );
-    fImpl->movieOutDirPattern->setDelay( 1000 );
     fImpl->directory->setDelay( 1000 );
 
     auto completer = new QCompleter( this );
@@ -67,20 +64,21 @@ CMainWindow::CMainWindow( QWidget* parent )
     fImpl->directory->setCompleter( completer );
     fImpl->files->setExpandsOnDoubleClick( false );
 
-    loadSettings();
-
     connect( fImpl->directory, &CDelayLineEdit::sigTextChanged, this, &CMainWindow::slotDirectoryChanged );
     connect( fImpl->btnTransform, &QPushButton::clicked, this, &CMainWindow::slotTransform );
 
     connect( fImpl->btnSelectDir, &QPushButton::clicked, this, &CMainWindow::slotSelectDirectory );
     connect( fImpl->btnLoad, &QPushButton::clicked, this, &CMainWindow::slotLoad );
-    connect( fImpl->treatAsTVShowByDefault, &QCheckBox::clicked, this, &CMainWindow::slotToggleTreatAsTVShowByDefault );
+    connect( fImpl->actionTreatAsTVShowByDefault, &QAction::triggered, this, &CMainWindow::slotToggleTreatAsTVShowByDefault );
+    connect( fImpl->actionPreferences, &QAction::triggered, this, &CMainWindow::slotPreferences );
 
     connect( fImpl->files, &QTreeView::doubleClicked, this, &CMainWindow::slotDoubleClicked );
 
     fSearchTMDB = new CSearchTMDB( nullptr, std::optional<QString>(), this );
     fSearchTMDB->setSkipImages( true );
     connect( fSearchTMDB, &CSearchTMDB::sigAutoSearchFinished, this, &CMainWindow::slotAutoSearchFinished );
+
+    loadSettings();
 
     QTimer::singleShot( 0, this, &CMainWindow::slotDirectoryChanged );
 }
@@ -117,61 +115,19 @@ QString CMainWindow::getDefaultOutFilePattern( bool forTV ) const
 
 void CMainWindow::loadSettings()
 {
-    QSettings settings;
+    fImpl->directory->setText( CPreferences::getMediaDirectory() );
+    fImpl->actionTreatAsTVShowByDefault->setChecked( CPreferences::getTreatAsTVShowByDefault() );
+    fImpl->actionExactMatchesOnly->setChecked( CPreferences::getExactMatchesOnly() );
 
-    fImpl->directory->setText( settings.value( "Directory", QString() ).toString() );
-    fImpl->extensions->setText( settings.value( "Extensions", QString( "*.mkv;*.mp4;*.avi;*.mov;*.wmv;*.mpg;*.mpg2;*.idx;*.sub;*.srt" ) ).toString() );
-
-    fImpl->treatAsTVShowByDefault->setChecked( settings.value( "TreatAsTVShowByDefault", false ).toBool() );
-    fImpl->exactMatchesOnly->setChecked( settings.value( "ExactMatchesOnly", true ).toBool() );
-
-    loadPatterns();
     slotToggleTreatAsTVShowByDefault();
 }
 
-void CMainWindow::loadPatterns()
-{
-    QSettings settings;
-
-    settings.beginGroup( "ForTV" );
-
-    auto currText = settings.value( "OutFilePattern", getDefaultOutFilePattern( true ) ).toString();
-    fImpl->tvOutFilePattern->setText( currText );
-    currText = settings.value( "OutDirPattern", getDefaultOutDirPattern( true ) ).toString();
-    fImpl->tvOutDirPattern->setText( currText );
-
-    settings.endGroup();
-
-    settings.beginGroup( "ForMovies" );
-
-    currText = settings.value( "OutFilePattern", getDefaultOutFilePattern( false ) ).toString();
-    fImpl->movieOutFilePattern->setText( currText );
-
-    currText = settings.value( "OutDirPattern", getDefaultOutDirPattern( false ) ).toString();
-    fImpl->movieOutDirPattern->setText( currText );
-    settings.endGroup();
-}
-
+//settings.setValue( "Extensions", fImpl->extensions->text() );
 void CMainWindow::saveSettings()
 {
-    QSettings settings;
-
-    settings.setValue( "Directory", fImpl->directory->text() );
-    settings.setValue( "Extensions", fImpl->extensions->text() );
-    settings.setValue( "TreatAsTVShowByDefault", fImpl->treatAsTVShowByDefault->isChecked() );
-    settings.setValue( "ExactMatchesOnly", fImpl->exactMatchesOnly->isChecked() );
-    
-
-    settings.beginGroup( "ForMovies" );
-
-    settings.setValue( "OutFilePattern", fImpl->movieOutFilePattern->text() );
-    settings.setValue( "OutDirPattern", fImpl->movieOutDirPattern->text() );
-
-    settings.endGroup();
-
-    settings.beginGroup( "ForTV" );
-    settings.setValue( "OutFilePattern", fImpl->tvOutFilePattern->text() );
-    settings.setValue( "OutDirPattern", fImpl->tvOutDirPattern->text() );
+    CPreferences::setMediaDirectory( fImpl->directory->text() );
+    CPreferences::setTreatAsTVShowByDefault( fImpl->actionTreatAsTVShowByDefault->isChecked() );
+    CPreferences::setExactMatchesOnly( fImpl->actionExactMatchesOnly->isChecked() );
 }
 
 void CMainWindow::slotDirectoryChanged()
@@ -193,6 +149,42 @@ void CMainWindow::slotSelectDirectory()
         fImpl->directory->setText( dir );
 }
 
+void CMainWindow::slotPreferences()
+{
+    CPreferences dlg;
+    if ( dlg.exec() == QDialog::Accepted )
+    {
+        fImpl->actionTreatAsTVShowByDefault->setChecked( CPreferences::getTreatAsTVShowByDefault() );
+        fImpl->actionExactMatchesOnly->setChecked( CPreferences::getExactMatchesOnly() );
+        slotToggleTreatAsTVShowByDefault();
+        
+        if ( fDirModel )
+        {
+            fDirModel->slotTVOutputDirPatternChanged( CPreferences::getTVOutDirPattern() );
+            fDirModel->slotTVOutputFilePatternChanged( CPreferences::getTVOutFilePattern() );
+
+            fDirModel->slotMovieOutputDirPatternChanged( CPreferences::getMovieOutDirPattern() );
+            fDirModel->slotMovieOutputFilePatternChanged( CPreferences::getMovieOutFilePattern() );
+        }
+    }
+}
+
+void CMainWindow::slotAutoSearch()
+{
+    if ( !fDirModel )
+        return;
+
+    if ( fDirModel->rowCount() != 1 )
+        return;
+
+    auto count = NQtUtils::itemCount( fDirModel.get(), true );
+
+    setupProgressDlg( tr( "Finding Results" ), tr( "Cancel" ), count );
+
+    auto rootIdx = fDirModel->index( 0, 0 );
+    autoSearch( rootIdx );
+}
+
 void CMainWindow::autoSearch( QModelIndex parentIdx )
 {
     auto rowCount = fDirModel->rowCount( parentIdx );
@@ -212,23 +204,21 @@ void CMainWindow::autoSearch( QModelIndex parentIdx )
     }
 }
 
-void CMainWindow::slotAutoSearch()
-{
-    if ( !fDirModel )
-        return;
-
-    if ( fDirModel->rowCount() != 1 )
-        return;
-    auto rootIdx = fDirModel->index( 0, 0 );
-    autoSearch( rootIdx );
-    QApplication::setOverrideCursor( Qt::BusyCursor );
-    qApp->processEvents();
-}
-
 void CMainWindow::slotAutoSearchFinished( const QString & path, bool searchesRemaining )
 {
-    qDebug().noquote().nospace() << "Search results for path " << path;
     auto result = fSearchTMDB->getResult( path );
+
+    qDebug().noquote().nospace() << "Search results for path " << path << "Has Result? " << ( result ? "Yes" : "No" );
+    if ( searchesRemaining )
+    {
+        if ( fProgressDlg )
+            fProgressDlg->setValue( fProgressDlg->value() + 1 );
+    }
+    else
+    {
+        clearProgressDlg();
+    }
+
     if ( !result )
         return;
     qDebug() << result->toString();
@@ -238,12 +228,28 @@ void CMainWindow::slotAutoSearchFinished( const QString & path, bool searchesRem
     {
         fDirModel->setSearchResult( item, result, false );
     }
+}
 
-    if ( !searchesRemaining )
+void CMainWindow::clearProgressDlg()
+{
+    delete fProgressDlg; 
+    fProgressDlg = nullptr;
+}
+
+void CMainWindow::setupProgressDlg( const QString &title, const QString &cancelButtonText, int max )
+{
+    if ( !fProgressDlg )
     {
-        QApplication::restoreOverrideCursor();
-        qApp->processEvents();
+        fProgressDlg = new QProgressDialog( this );
+        fProgressDlg->setWindowModality( Qt::WindowModal );
+        fProgressDlg->setMinimumDuration( 0 );
+        fProgressDlg->setAutoClose( false );
+        fProgressDlg->setAutoReset( false );
     }
+    fProgressDlg->setWindowTitle( title );
+    fProgressDlg->setCancelButtonText( cancelButtonText );
+    fProgressDlg->setRange( 0, max );
+    fProgressDlg->show();
 }
 
 void CMainWindow::slotDoubleClicked( const QModelIndex &idx )
@@ -258,7 +264,7 @@ void CMainWindow::slotDoubleClicked( const QModelIndex &idx )
 
     CSelectTMDB dlg( nm, titleInfo, this );
     dlg.setSearchForTVShows( fDirModel->treatAsTVShow( QFileInfo( fullPath ), isTVShow ), true );
-    dlg.setExactMatchOnly( fImpl->exactMatchesOnly->isChecked(), true );
+    dlg.setExactMatchOnly( fImpl->actionExactMatchesOnly->isChecked(), true );
 
     if ( dlg.exec() == QDialog::Accepted )
     {
@@ -273,8 +279,7 @@ void CMainWindow::slotDoubleClicked( const QModelIndex &idx )
 void CMainWindow::slotToggleTreatAsTVShowByDefault()
 {
     if ( fDirModel )
-        fDirModel->slotTreatAsTVByDefaultChanged( fImpl->treatAsTVShowByDefault->isChecked() );
-    fImpl->tabWidget->setCurrentWidget( fImpl->treatAsTVShowByDefault->isChecked() ? fImpl->tvPatternsPage : fImpl->moviePatternsPage );
+        fDirModel->slotTreatAsTVByDefaultChanged( fImpl->actionTreatAsTVShowByDefault->isChecked() );
 }
 
 void CMainWindow::slotLoad()
@@ -288,17 +293,13 @@ void CMainWindow::loadDirectory()
 
     fDirModel.reset( new CDirModel );
     fImpl->files->setModel( fDirModel.get() );
-    connect( fImpl->tvOutFilePattern, &CDelayLineEdit::sigTextChanged, fDirModel.get(), &CDirModel::slotTVOutputFilePatternChanged );
-    connect( fImpl->tvOutDirPattern, &CDelayLineEdit::sigTextChanged, fDirModel.get(), &CDirModel::slotTVOutputDirPatternChanged );
-    connect( fImpl->movieOutFilePattern, &CDelayLineEdit::sigTextChanged, fDirModel.get(), &CDirModel::slotMovieOutputFilePatternChanged );
-    connect( fImpl->movieOutDirPattern, &CDelayLineEdit::sigTextChanged, fDirModel.get(), &CDirModel::slotMovieOutputDirPatternChanged );
     connect( fDirModel.get(), &CDirModel::sigDirReloaded, this, &CMainWindow::slotAutoSearch );
-    fDirModel->slotTreatAsTVByDefaultChanged( fImpl->treatAsTVShowByDefault->isChecked() );
-    fDirModel->slotTVOutputFilePatternChanged( fImpl->tvOutFilePattern->text() );
-    fDirModel->slotTVOutputDirPatternChanged( fImpl->tvOutDirPattern->text() );
-    fDirModel->slotMovieOutputFilePatternChanged( fImpl->movieOutFilePattern->text() );
-    fDirModel->slotMovieOutputDirPatternChanged( fImpl->movieOutDirPattern->text() );
-    fDirModel->setNameFilters( fImpl->extensions->text().split( ";" ), fImpl->files  );
+    fDirModel->slotTreatAsTVByDefaultChanged( fImpl->actionTreatAsTVShowByDefault->isChecked() );
+    fDirModel->slotTVOutputFilePatternChanged( CPreferences::getTVOutFilePattern() );
+    fDirModel->slotTVOutputDirPatternChanged( CPreferences::getTVOutDirPattern() );
+    fDirModel->slotMovieOutputFilePatternChanged( CPreferences::getMovieOutFilePattern() );
+    fDirModel->slotMovieOutputDirPatternChanged( CPreferences::getMovieOutDirPattern() );
+    fDirModel->setNameFilters( CPreferences::getSearchExtensions(), fImpl->files  );
     fDirModel->setRootPath( fImpl->directory->text(), fImpl->files );
     fImpl->btnTransform->setEnabled( true );
 }
@@ -318,12 +319,8 @@ void CMainWindow::slotTransform()
     dlg.setButtons( QDialogButtonBox::Yes | QDialogButtonBox::No );
     if ( dlg.exec() == QDialog::Accepted )
     {
-        auto progress = QProgressDialog( "Renaming Files...", "Abort Copy", 0, count*4, this ); // 4 events, get timestamp, create parent paths, rename, settimestamp
-        progress.setWindowModality( Qt::WindowModal );
-        progress.setMinimumDuration( 0 );
-        progress.setAutoClose( false );
-        progress.setAutoReset( false );
-        transformations = fDirModel->transform( false, &progress );
+        setupProgressDlg( tr( "Renaming Files..." ), tr( "Abort Copy" ), count * fDirModel->eventsPerPath() );
+        transformations = fDirModel->transform( false, fProgressDlg );
         if ( !transformations.first )
         {
             CTransformConfirm dlg( tr( "Error While Transforming:" ), tr( "Issues:" ), this );
@@ -332,6 +329,8 @@ void CMainWindow::slotTransform()
             dlg.setButtons( QDialogButtonBox::Ok );
             dlg.exec();
         }
+        clearProgressDlg();
+
         loadDirectory();
     }
 }

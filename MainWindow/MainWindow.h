@@ -27,6 +27,7 @@
 class CDirModel;
 class CDirFilterModel;
 class CSearchTMDB;
+class QProgressDialog;
 struct SSearchTMDBInfo;
 struct SSearchResult;
 namespace Ui {class CMainWindow;};
@@ -46,21 +47,24 @@ public Q_SLOTS:
     void slotDoubleClicked( const QModelIndex &idx );
     void slotAutoSearch();
     void slotAutoSearchFinished( const QString &path, bool searchesRemaining );
+    void slotPreferences();
 private:
     void autoSearch( QModelIndex rootIdx );
+    void setupProgressDlg( const QString & title, const QString & cancelButtonText, int max );
+    void clearProgressDlg();
 
     QString getDefaultInPattern( bool forTV ) const;
     QString getDefaultOutDirPattern( bool forTV ) const; 
     QString getDefaultOutFilePattern( bool forTV ) const;
     
     void loadSettings();
-    void loadPatterns();
     void saveSettings();
     void loadDirectory();
 
     std::unique_ptr< CDirModel > fDirModel;
     std::unique_ptr< Ui::CMainWindow > fImpl;
     CSearchTMDB *fSearchTMDB{ nullptr };
+    QProgressDialog *fProgressDlg{ nullptr };
 };
 
 #endif 
