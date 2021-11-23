@@ -74,10 +74,15 @@ void CDirModel::setRootPath( const QString & rootPath, QTreeView * view )
     reloadModel( view );
 }
 
+bool CDirModel::isAutoSetText( const QString & text )
+{
+    return ( text == "<NO MATCH>" ) || ( text == "<NO AUTO MATCH>" );
+}
+
 QString CDirModel::getSearchName( const QModelIndex &idx ) const
 {
     auto nm = index( idx.row(), CDirModel::EColumns::eTransformName, idx.parent() ).data().toString();
-    if ( nm == "<NOMATCH>" || nm.isEmpty() )
+    if ( isAutoSetText( nm ) || nm.isEmpty() )
     {
         nm = index( idx.row(), CDirModel::EColumns::eFSName, idx.parent() ).data( CDirModel::ECustomRoles::eFullPathRole ).toString();
         nm = nm.isEmpty() ? QString() : ( QFileInfo( nm ).isDir() ? QFileInfo( nm ).fileName() : QFileInfo( nm ).completeBaseName() );
@@ -322,7 +327,6 @@ bool CDirModel::isValidName( const QString & path, bool isDir, std::optional< bo
     if (   (!asTVShow && fMoviePatterns.isValidName( path, isDir ) )
          || (asTVShow && fTVPatterns.isValidName( path, isDir ) ) )
         return true;
-
 
     return false;
 }
@@ -708,7 +712,7 @@ QString CDirModel::computeTransformPath( const QStandardItem * item, bool parent
 
     auto transformItem = parentsOnly ? nullptr : getTransformItem( item );
     auto myName = transformItem ? transformItem->text() : QString();
-    if ( myName.isEmpty() || ( myName == "<NOMATCH>" ) )
+    if ( myName.isEmpty() || isAutoSetText( myName ) )
     {
         myName = item->text();
     }
@@ -951,15 +955,20 @@ void CDirModel::updatePattern( const QStandardItem * item, QStandardItem * trans
     if ( !item || !transformedItem )
         return;
 
+    transformedItem->setBackground( Qt::white );
+
     auto path = item->data( ECustomRoles::eFullPathRole ).toString();
     auto fileInfo = QFileInfo( path );
+
+    if ( isIgnoredPathName( fileInfo ) && !isLanguageFile( fileInfo ) )
+        return;
+
     auto transformInfo = transformItem( fileInfo );
-    transformedItem->setBackground( Qt::white );
     if ( transformedItem->text() != transformInfo.second )
         transformedItem->setText( transformInfo.second );
 
     auto isTVShow = treatAsTVShow( fileInfo, this->isTVShow( path ) );
-    if ( shouldAutoSearch( path ) && ( transformInfo.second == "<NOMATCH>" || !isValidName( transformInfo.second, fileInfo.isDir(), isTVShow ) && !isValidName( fileInfo ) && !isIgnoredPathName( fileInfo ) && !isLanguageFile( fileInfo ) ) )
+    if ( shouldAutoSearch( fileInfo ) && ( CDirModel::isAutoSetText( transformInfo.second ) || ( !isValidName( transformInfo.second, fileInfo.isDir(), isTVShow ) && !isValidName( fileInfo ) ) ) )
         transformedItem->setBackground( Qt::red );
 }
 

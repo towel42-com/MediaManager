@@ -105,6 +105,9 @@ public:
 
     bool shouldAutoSearch( const QModelIndex & index ) const;
     bool shouldAutoSearch( const QFileInfo & info ) const;
+    int eventsPerPath() const { return 4; }// 4 events, get timestamp, create parent paths, rename, settimestamp}
+
+    static bool isAutoSetText( const QString &text );
 Q_SIGNALS:
     void sigDirReloaded();
 public Q_SLOTS:
