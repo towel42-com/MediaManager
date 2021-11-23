@@ -4,5 +4,7 @@
         <file>resources/open.png</file>
         <file>resources/error.png</file>
         <file>resources/ok.png</file>
+        <file>resources/add.png</file>
+        <file>resources/delete.png</file>
     </qresource>
 </RCC>
