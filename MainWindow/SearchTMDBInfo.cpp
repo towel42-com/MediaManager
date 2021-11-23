@@ -22,9 +22,11 @@
 
 #include "SearchTMDBInfo.h"
 #include "SearchResult.h"
+#include "Preferences.h"
+#include "SABUtils/QtUtils.h"
+
 #include <QRegularExpression>
 #include <QDebug>
-#include "SABUtils/QtUtils.h"
 
 SSearchTMDBInfo::SSearchTMDBInfo( const QString &text, std::shared_ptr< SSearchResult > searchResult )
 {
@@ -37,43 +39,11 @@ SSearchTMDBInfo::SSearchTMDBInfo( const QString &text, std::shared_ptr< SSearchR
 QString SSearchTMDBInfo::stripKnownData( const QString & string )
 {
     QString retVal = string;
-    auto separators = 
-        QStringList() 
-        << "1080p" 
-        << "720p" 
-        << "Amazon"
-        << "DL.DD+"
-        << "DL.DD"
-        << "DL.AAC2.0.AVC"
-        << "AAC2.0.AVC"
-        << "AAC2.0"
-        << "AVC"
-        << "AMZN"
-        << "WebRip" 
-        << "WEB" 
-        << "-RUMOUR" 
-        << "-PECULATE" 
-        << "2.0.h.264"
-        << "2.0.h.265"
-        << "h.264"
-        << "h.265"
-        << "x264"
-        << "x265" 
-        << "h264" 
-        << "h265" 
-        << "rarbg" 
-        << "BluRay" 
-        << "ion10" 
-        << "LiMiTED" 
-        << "DVDRip" 
-        << "XviDTLF"
-        << "TrollHD"
-        << "Troll"
-        ;
-    for ( auto &&separator : separators )
+    auto knownStrings = CPreferences::getKnownStrings();
+    for ( auto && knownString : knownStrings )
     {
-        retVal.replace( "[" + separator + "]", "", Qt::CaseSensitivity::CaseInsensitive );
-        retVal.replace( separator, "", Qt::CaseSensitivity::CaseInsensitive );
+        retVal.replace( "[" + knownString + "]", "", Qt::CaseSensitivity::CaseInsensitive );
+        retVal.replace( knownString, "", Qt::CaseSensitivity::CaseInsensitive );
     }
     return retVal;
 }
