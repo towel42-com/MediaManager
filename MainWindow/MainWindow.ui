@@ -15,7 +15,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="application.qrc">
-    <normaloff>:/resources/open.png</normaloff>:/resources/open.png</iconset>
+    <normaloff>:/resources/rename.png</normaloff>:/resources/rename.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
@@ -24,7 +24,7 @@
       <property name="orientation">
        <enum>Qt::Vertical</enum>
       </property>
-      <widget class="QWidget" name="">
+      <widget class="QWidget" name="layoutWidget">
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
          <widget class="QLabel" name="label">
