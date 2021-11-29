@@ -92,6 +92,11 @@ void CSearchTMDB::addSearch( const QString &filePath, std::shared_ptr< SSearchTM
     //qDebug() << "AddSearch After: SearchTMBD" << *this;
 }
 
+void CSearchTMDB::clearSearchCache()
+{
+    fSearchQueue.clear();
+}
+
 QString CSearchTMDB::toString() const
 {
     QString retVal =
@@ -130,7 +135,10 @@ QString CSearchTMDB::toString() const
     retVal += QString( "QueuedResults( %1 -" ).arg( fQueuedResults.size() );
     for( auto && ii : fQueuedResults )
     {
-        retVal += QString( "(%1 - %2)" ).arg( ii.first ).arg( ii.second->toString() );
+        for ( auto && jj : ii.second )
+        {
+            retVal += QString( "(%1 - %2)" ).arg( ii.first ).arg( jj->toString() );
+        }
     }
     retVal += ") ";
 
@@ -423,7 +431,7 @@ bool CSearchTMDB::isActive() const
     return false;
 }
 
-std::shared_ptr< SSearchResult > CSearchTMDB::getResult( const QString &path ) const
+std::list< std::shared_ptr< SSearchResult > > CSearchTMDB::getResults( const QString &path ) const
 {
     auto pos = fQueuedResults.find( path );
     if ( pos == fQueuedResults.end() )
@@ -611,7 +619,7 @@ bool CSearchTMDB::loadSearchResult( std::shared_ptr< CNetworkReply > reply )
     fSearchReply.reset();
 
     auto doc = QJsonDocument::fromJson( data );
-    //qDebug().noquote().nospace() << doc.toJson( QJsonDocument::Indented );
+    qDebug().noquote().nospace() << doc.toJson( QJsonDocument::Indented );
     if ( doc.object().contains( "results" ) )
     {
         auto results = doc.object()["results"].toArray();
@@ -696,7 +704,7 @@ bool CSearchTMDB::loadTVResult( std::shared_ptr< CNetworkReply > reply )
 */
 bool CSearchTMDB::loadSearchResult( const QJsonObject &resultItem, bool multipleResults )
 {
-    //qDebug().nospace().noquote() << QJsonDocument( resultItem ).toJson( QJsonDocument::Indented );
+    qDebug().nospace().noquote() << QJsonDocument( resultItem ).toJson( QJsonDocument::Indented );
 
     if ( !fSearchInfo )
         return false;
@@ -914,7 +922,7 @@ void CSearchTMDB::addQueuedResult( std::shared_ptr<SSearchResult> result )
 {
     if ( fCurrentQueuedSearch.has_value() )
     {
-        fQueuedResults[fCurrentQueuedSearch.value().first] = result;
+        fQueuedResults[fCurrentQueuedSearch.value().first].push_back( result );
     }
 }
 

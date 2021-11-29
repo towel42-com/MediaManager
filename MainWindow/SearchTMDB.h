@@ -61,7 +61,7 @@ public:
     void setSkipImages( bool value ) { fSkipImages = value; }
     bool isActive() const;
 
-    std::shared_ptr< SSearchResult > getResult( const QString &path ) const;
+    std::list< std::shared_ptr< SSearchResult > > getResults( const QString &path ) const;
 
     std::list< std::shared_ptr< SSearchResult > > getResults() const;
     std::shared_ptr< SSearchResult > bestMatch() const { return fBestMatch; }
@@ -74,6 +74,7 @@ public:
     QString errorString() const { return fErrorMessage.value(); }
 
     void addSearch( const QString &filePath, std::shared_ptr< SSearchTMDBInfo > searchInfo );
+    void clearSearchCache();
 
     QString toString() const;
 public Q_SLOTS:
@@ -143,7 +144,7 @@ private:
 
     std::shared_ptr< SSearchTMDBInfo > fSearchInfo;
     std::optional< std::pair< QString, std::shared_ptr< SSearchTMDBInfo > > > fCurrentQueuedSearch;
-    std::unordered_map< QString, std::shared_ptr< SSearchResult > > fQueuedResults;
+    std::unordered_map< QString, std::list< std::shared_ptr< SSearchResult > > > fQueuedResults;
     std::list< std::pair< QString, std::shared_ptr< SSearchTMDBInfo > > > fSearchQueue;
     QTimer *fAutoSearchTimer{ nullptr };
 
