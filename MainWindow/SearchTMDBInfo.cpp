@@ -24,6 +24,7 @@
 #include "SearchResult.h"
 #include "Preferences.h"
 #include "SABUtils/QtUtils.h"
+#include "SABUtils/StringUtils.h"
 
 #include <QRegularExpression>
 #include <QDebug>
@@ -73,7 +74,7 @@ std::pair< bool, QString > SSearchTMDBInfo::looksLikeTVShow( const QString & sea
     bool isTV = false;
     QString dataBeforeSeason;
     auto regExpStr = QString( "S(?<season>\\d+)" );
-    auto regExp = QRegularExpression( regExpStr );
+    auto regExp = QRegularExpression( regExpStr, QRegularExpression::PatternOption::CaseInsensitiveOption );
     auto match = regExp.match( retVal );
     if ( match.hasMatch() )
     {
@@ -87,7 +88,7 @@ std::pair< bool, QString > SSearchTMDBInfo::looksLikeTVShow( const QString & sea
 
     QString dataAfterEpisode;
     regExpStr = "E(?<episode>\\d+)";
-    regExp = QRegularExpression( regExpStr );
+    regExp = QRegularExpression( regExpStr, QRegularExpression::PatternOption::CaseInsensitiveOption );
     match = regExp.match( retVal );
     if ( match.hasMatch() )
     {
@@ -104,7 +105,7 @@ std::pair< bool, QString > SSearchTMDBInfo::looksLikeTVShow( const QString & sea
         retVal += " " + dataAfterEpisode;
 
     regExpStr = ".*\\s??(?<seasonsuffix>-\\s??Season\\s?(?<season>\\d+))";
-    regExp = QRegularExpression( regExpStr );
+    regExp = QRegularExpression( regExpStr, QRegularExpression::PatternOption::CaseInsensitiveOption );
     match = regExp.match( retVal );
     if ( match.hasMatch() )
     {
@@ -270,16 +271,15 @@ bool SSearchTMDBInfo::isMatchingTMDBID( int tmdbid ) const
     return true;
 }
 
-
 bool SSearchTMDBInfo::isMatchingName( const QString & name ) const
 {
     if ( !fSearchByName )
         return true;
     if ( fExactMatchOnly )
     {
-        return name == fSearchName;
+        return name.compare( fSearchName, Qt::CaseInsensitive ) == 0;
     }
-    return fSearchName.contains( name, Qt::CaseSensitivity::CaseInsensitive );
+    return NStringUtils::isSimilar( name, fSearchName ); // if every word we are searching for is covered by name, we match
 }
 
 bool SSearchTMDBInfo::isMatchingDate( const QString & releaseDate ) const
