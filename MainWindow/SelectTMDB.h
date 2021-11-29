@@ -68,7 +68,7 @@ public Q_SLOTS:
 
     QTreeWidgetItem * getFirstSelected() const;
 
-    void slotItemSelected();
+    void slotAcceptItem();
     void slotByNameChanged();
     void slotExactOrForTVShowsChanged();
 

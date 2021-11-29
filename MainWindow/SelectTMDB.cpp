@@ -73,7 +73,7 @@ CSelectTMDB::CSelectTMDB( const QString & text, std::shared_ptr< SSearchResult >
     connect( fImpl->searchReleaseYear, &CDelayLineEdit::sigTextChanged, this, &CSelectTMDB::slotSearchTextChanged );
     connect( fImpl->searchTMDBID, &CDelayLineEdit::sigTextChanged, this, &CSelectTMDB::slotSearchTextChanged );
     connect( fImpl->results->selectionModel(), &QItemSelectionModel::selectionChanged, this, &CSelectTMDB::slotItemChanged );
-    connect( fImpl->results, &QTreeWidget::itemDoubleClicked, this, &CSelectTMDB::slotItemSelected );
+    connect( fImpl->results, &QTreeWidget::itemDoubleClicked, this, &CSelectTMDB::slotAcceptItem );
 
     fImpl->results->setIconSize( QSize( 128, 128 ) );
 
@@ -189,13 +189,13 @@ void CSelectTMDB::slotSearchFinished()
     fBestMatch = fSearchTMDB->bestMatch();
 
     fLoading = true;
-    qDebug() << QDateTime::currentDateTime().toString() << "launching slotLoadNextResult" << fCurrentResults.size();
+    //qDebug() << QDateTime::currentDateTime().toString() << "launching slotLoadNextResult" << fCurrentResults.size();
     QTimer::singleShot( 0, this, &CSelectTMDB::slotLoadNextResult );
 }
 
 void CSelectTMDB::slotLoadNextResult()
 {
-    qDebug() << QDateTime::currentDateTime().toString() << "handling slotLoadNextResult" << fCurrentResults.size();
+    //qDebug() << QDateTime::currentDateTime().toString() << "handling slotLoadNextResult" << fCurrentResults.size();
     if ( fStopLoading )
         fCurrentResults.clear();
 
@@ -216,7 +216,7 @@ void CSelectTMDB::slotLoadNextResult()
 
         auto childNode = getSingleMatchingItem( nullptr );
         if ( childNode && childNode->isSelected() )
-            slotItemSelected();
+            slotAcceptItem();
         return;
     }
 
@@ -224,7 +224,7 @@ void CSelectTMDB::slotLoadNextResult()
     fCurrentResults.pop_front();
     loadResults( curr, nullptr );
 
-    qDebug() << QDateTime::currentDateTime().toString() << "Launching slotLoadNextResult" << fCurrentResults.size();
+    //qDebug() << QDateTime::currentDateTime().toString() << "Launching slotLoadNextResult" << fCurrentResults.size();
     QTimer::singleShot( 0, this, &CSelectTMDB::slotLoadNextResult );
 }
 
@@ -287,7 +287,7 @@ void CSelectTMDB::loadResults( std::shared_ptr< SSearchResult > info, QTreeWidge
             return;
     }
 
-    qDebug() << QDateTime::currentDateTime().toString() << "loading result" << fCurrentResults.size();
+    //qDebug() << QDateTime::currentDateTime().toString() << "loading result" << fCurrentResults.size();
     QStringList data;
     EItemType itemType;
     int labelPos = -1;
@@ -359,7 +359,7 @@ std::shared_ptr< SSearchResult > CSelectTMDB::getSearchResult() const
     return ( *pos ).second;
 }
 
-void CSelectTMDB::slotItemSelected()
+void CSelectTMDB::slotAcceptItem()
 {
     slotItemChanged();
     accept();
@@ -419,9 +419,7 @@ void CSelectTMDB::setSearchForTVShows( bool value, bool init )
     searchInfo->setIsTVShow( value );
     searchInfo->updateSearchCriteria( init );
     if ( init && !fSearchPending )
-    {
         updateFromSearchInfo( searchInfo );
-    }
 }
 
 void CSelectTMDB::setExactMatchOnly( bool value, bool init )
@@ -455,8 +453,6 @@ void CSelectTMDB::slotExactOrForTVShowsChanged()
     searchInfo->setExactMatchOnly( fImpl->exactMatchesOnly->isChecked() );
     searchInfo->setIsTVShow( fImpl->searchForTVShows->isChecked() );
     updateEnabled();
-    searchInfo->updateSearchCriteria( false );
-    updateFromSearchInfo( fSearchInfo );
     slotSearchTextChanged();
 }
 
