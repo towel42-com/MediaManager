@@ -190,12 +190,18 @@ void CMainWindow::autoSearch( QModelIndex parentIdx )
     auto rowCount = fDirModel->rowCount( parentIdx );
     for ( int ii = 0; ii < rowCount; ++ii )
     {
+        if ( fProgressDlg->wasCanceled() )
+        {
+            fSearchTMDB->clearSearchCache();
+            break;
+        }
+
         auto childIndex = fDirModel->index( ii, 0, parentIdx );
         auto name = fDirModel->getSearchName( childIndex );
         auto path = fDirModel->filePath( childIndex );
         auto titleInfo = fDirModel->getSearchResultInfo( childIndex );
         auto searchInfo = std::make_shared< SSearchTMDBInfo >( name, titleInfo );
-        searchInfo->setExactMatchOnly( true );
+        searchInfo->setExactMatchOnly( CPreferences::getExactMatchesOnly() );
 
         if ( fDirModel->shouldAutoSearch( childIndex ) )
             fSearchTMDB->addSearch( path, searchInfo );
@@ -206,9 +212,9 @@ void CMainWindow::autoSearch( QModelIndex parentIdx )
 
 void CMainWindow::slotAutoSearchFinished( const QString & path, bool searchesRemaining )
 {
-    auto result = fSearchTMDB->getResult( path );
+    auto results = fSearchTMDB->getResults( path );
 
-    qDebug().noquote().nospace() << "Search results for path " << path << "Has Result? " << ( result ? "Yes" : "No" );
+    qDebug().noquote().nospace() << "Search results for path " << path << " Has Result? " << ( ( results.size() == 1 ) ? "Yes" : "No" );
     if ( searchesRemaining )
     {
         if ( fProgressDlg )
@@ -219,8 +225,12 @@ void CMainWindow::slotAutoSearchFinished( const QString & path, bool searchesRem
         clearProgressDlg();
     }
 
-    if ( !result )
+    if ( fProgressDlg && fProgressDlg->wasCanceled() )
+        fSearchTMDB->clearSearchCache();
+
+    if ( results.size() != 1 )
         return;
+    auto result = results.front();
     qDebug() << result->toString();
 
     auto item = fDirModel->getItemFromPath( path );
@@ -238,14 +248,18 @@ void CMainWindow::clearProgressDlg()
 
 void CMainWindow::setupProgressDlg( const QString &title, const QString &cancelButtonText, int max )
 {
+    if ( fProgressDlg )
+        fProgressDlg->reset();
+
     if ( !fProgressDlg )
     {
         fProgressDlg = new QProgressDialog( this );
-        fProgressDlg->setWindowModality( Qt::WindowModal );
-        fProgressDlg->setMinimumDuration( 0 );
-        fProgressDlg->setAutoClose( false );
-        fProgressDlg->setAutoReset( false );
     }
+    fProgressDlg->setWindowModality( Qt::WindowModal );
+    fProgressDlg->setMinimumDuration( 0 );
+    fProgressDlg->setAutoClose( false );
+    fProgressDlg->setAutoReset( false );
+
     fProgressDlg->setWindowTitle( title );
     fProgressDlg->setCancelButtonText( cancelButtonText );
     fProgressDlg->setRange( 0, max );
