@@ -47,7 +47,8 @@ target_link_libraries( FileRenamer
                  Qt5::Core
                  Qt5::Multimedia
                  SABUtils
-                 MainWindow
+                 FileRenamerLib
+                 FileRenamerUI
           )
 DeployQt( FileRenamer . )
 DeploySystem( FileRenamer . )

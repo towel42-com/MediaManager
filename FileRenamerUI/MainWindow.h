@@ -24,13 +24,16 @@
 #define _MAINWINDOW_H
 
 #include <QMainWindow>
-class CDirModel;
-class CDirFilterModel;
-class CSearchTMDB;
 class QProgressDialog;
-struct SSearchTMDBInfo;
-struct SSearchResult;
 namespace Ui {class CMainWindow;};
+
+namespace NFileRenamerLib
+{
+    struct SSearchTMDBInfo;
+    struct SSearchResult;
+    class CDirModel;
+    class CSearchTMDB;
+}
 
 class CMainWindow : public QMainWindow
 {
@@ -61,9 +64,9 @@ private:
     void saveSettings();
     void loadDirectory();
 
-    std::unique_ptr< CDirModel > fDirModel;
+    std::unique_ptr< NFileRenamerLib::CDirModel > fDirModel;
     std::unique_ptr< Ui::CMainWindow > fImpl;
-    CSearchTMDB *fSearchTMDB{ nullptr };
+    NFileRenamerLib::CSearchTMDB *fSearchTMDB{ nullptr };
     QProgressDialog *fProgressDlg{ nullptr };
 };
 

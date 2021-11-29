@@ -21,19 +21,21 @@
 // SOFTWARE.
 
 #include "MainWindow.h"
-#include "DirModel.h"
 #include "SelectTMDB.h"
-#include "SearchResult.h"
 #include "TransformConfirm.h"
-#include "SearchTMDB.h"
-#include "SearchTMDBInfo.h"
 #include "Preferences.h"
+
+#include "ui_MainWindow.h"
+
+#include "FileRenamerLib/DirModel.h"
+#include "FileRenamerLib/SearchResult.h"
+#include "FileRenamerLib/SearchTMDB.h"
+#include "FileRenamerLib/SearchTMDBInfo.h"
 
 #include "SABUtils/QtUtils.h"
 #include "SABUtils/utils.h"
 #include "SABUtils/ScrollMessageBox.h"
 #include "SABUtils/AutoWaitCursor.h"
-#include "ui_MainWindow.h"
 
 #include <QSettings>
 #include <QFileInfo>
@@ -74,9 +76,9 @@ CMainWindow::CMainWindow( QWidget* parent )
 
     connect( fImpl->files, &QTreeView::doubleClicked, this, &CMainWindow::slotDoubleClicked );
 
-    fSearchTMDB = new CSearchTMDB( nullptr, std::optional<QString>(), this );
+    fSearchTMDB = new NFileRenamerLib::CSearchTMDB( nullptr, std::optional<QString>(), this );
     fSearchTMDB->setSkipImages( true );
-    connect( fSearchTMDB, &CSearchTMDB::sigAutoSearchFinished, this, &CMainWindow::slotAutoSearchFinished );
+    connect( fSearchTMDB, &NFileRenamerLib::CSearchTMDB::sigAutoSearchFinished, this, &CMainWindow::slotAutoSearchFinished );
 
     loadSettings();
 
@@ -200,7 +202,7 @@ void CMainWindow::autoSearch( QModelIndex parentIdx )
         auto name = fDirModel->getSearchName( childIndex );
         auto path = fDirModel->filePath( childIndex );
         auto titleInfo = fDirModel->getSearchResultInfo( childIndex );
-        auto searchInfo = std::make_shared< SSearchTMDBInfo >( name, titleInfo );
+        auto searchInfo = std::make_shared< NFileRenamerLib::SSearchTMDBInfo >( name, titleInfo );
         searchInfo->setExactMatchOnly( CPreferences::getExactMatchesOnly() );
 
         if ( fDirModel->shouldAutoSearch( childIndex ) )
@@ -268,12 +270,12 @@ void CMainWindow::setupProgressDlg( const QString &title, const QString &cancelB
 
 void CMainWindow::slotDoubleClicked( const QModelIndex &idx )
 {
-    auto baseIdx = fDirModel->index( idx.row(), CDirModel::EColumns::eFSName, idx.parent() );
+    auto baseIdx = fDirModel->index( idx.row(), NFileRenamerLib::CDirModel::EColumns::eFSName, idx.parent() );
     auto titleInfo = fDirModel->getSearchResultInfo( idx );
     
-    auto isDir = baseIdx.data( CDirModel::ECustomRoles::eIsDir ).toBool();
-    auto fullPath = baseIdx.data( CDirModel::ECustomRoles::eFullPathRole ).toString();
-    bool isTVShow = baseIdx.data( CDirModel::ECustomRoles::eIsTVShowRole ).toBool();
+    auto isDir = baseIdx.data( NFileRenamerLib::CDirModel::ECustomRoles::eIsDir ).toBool();
+    auto fullPath = baseIdx.data( NFileRenamerLib::CDirModel::ECustomRoles::eFullPathRole ).toString();
+    bool isTVShow = baseIdx.data( NFileRenamerLib::CDirModel::ECustomRoles::eIsTVShowRole ).toBool();
     auto nm = fDirModel->getSearchName( idx );
 
     CSelectTMDB dlg( nm, titleInfo, this );
@@ -305,9 +307,9 @@ void CMainWindow::loadDirectory()
 {
     CAutoWaitCursor awc;
 
-    fDirModel.reset( new CDirModel );
+    fDirModel.reset( new NFileRenamerLib::CDirModel );
     fImpl->files->setModel( fDirModel.get() );
-    connect( fDirModel.get(), &CDirModel::sigDirReloaded, this, &CMainWindow::slotAutoSearch );
+    connect( fDirModel.get(), &NFileRenamerLib::CDirModel::sigDirReloaded, this, &CMainWindow::slotAutoSearch );
     fDirModel->slotTreatAsTVByDefaultChanged( fImpl->actionTreatAsTVShowByDefault->isChecked() );
     fDirModel->slotTVOutputFilePatternChanged( CPreferences::getTVOutFilePattern() );
     fDirModel->slotTVOutputDirPatternChanged( CPreferences::getTVOutDirPattern() );

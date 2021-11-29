@@ -31,14 +31,18 @@
 
 namespace Ui {class CSelectTMDB;};
 
-struct SSearchTMDBInfo;
-class CSearchTMDB;
+namespace NFileRenamerLib
+{
+    struct SSearchTMDBInfo;
+    class CSearchTMDB;
+    struct SSearchResult;
+}
+
 class QNetworkAccessManager;
 class QNetworkReply;
 class QJsonObject;
 class QTreeWidgetItem;
 class CButtonEnabler;
-struct SSearchResult;
 
 class CSelectTMDB : public QDialog
 {
@@ -52,11 +56,11 @@ public:
         eEpisode
     };
 
-    CSelectTMDB( const QString & searchText, std::shared_ptr< SSearchResult > searchResult, QWidget* parent = 0);
+    CSelectTMDB( const QString & searchText, std::shared_ptr< NFileRenamerLib::SSearchResult > searchResult, QWidget* parent = 0);
 
     ~CSelectTMDB();
 
-    std::shared_ptr< SSearchResult > getSearchResult() const;
+    std::shared_ptr< NFileRenamerLib::SSearchResult > getSearchResult() const;
 
     void setSearchForTVShows( bool value, bool init );
     void setExactMatchOnly( bool value, bool init );
@@ -84,28 +88,28 @@ private:
 
     void updateEnabled();
     void updateByName( bool init );
-    void updateFromSearchInfo( std::shared_ptr< SSearchTMDBInfo > searchInfo );
+    void updateFromSearchInfo( std::shared_ptr< NFileRenamerLib::SSearchTMDBInfo > searchInfo );
 
-    std::shared_ptr< SSearchTMDBInfo > getSearchInfo();
+    std::shared_ptr< NFileRenamerLib::SSearchTMDBInfo > getSearchInfo();
     void resetHeader();
 
-    void loadResults( std::shared_ptr< SSearchResult > item, QTreeWidgetItem *parent );
+    void loadResults( std::shared_ptr< NFileRenamerLib::SSearchResult > item, QTreeWidgetItem *parent );
     void deleteParent( QTreeWidgetItem *item );
 
     std::unique_ptr< Ui::CSelectTMDB > fImpl;
 
     CButtonEnabler *fButtonEnabler{ nullptr };
-    CSearchTMDB * fSearchTMDB{ nullptr };
-    std::shared_ptr< SSearchTMDBInfo > fSearchInfo;
+    NFileRenamerLib::CSearchTMDB * fSearchTMDB{ nullptr };
+    std::shared_ptr< NFileRenamerLib::SSearchTMDBInfo > fSearchInfo;
 
     bool fLoading{ false };
     bool fStopLoading{ false };
     bool fSearchPending{ false };
-    std::shared_ptr< SSearchTMDBInfo > fQueuedSearchInfo;
+    std::shared_ptr< NFileRenamerLib::SSearchTMDBInfo > fQueuedSearchInfo;
 
-    std::shared_ptr< SSearchResult > fBestMatch;
-    std::list< std::shared_ptr< SSearchResult > > fCurrentResults;
-    std::unordered_map< QTreeWidgetItem *, std::shared_ptr< SSearchResult > > fSearchResultMap;
+    std::shared_ptr< NFileRenamerLib::SSearchResult > fBestMatch;
+    std::list< std::shared_ptr< NFileRenamerLib::SSearchResult > > fCurrentResults;
+    std::unordered_map< QTreeWidgetItem *, std::shared_ptr< NFileRenamerLib::SSearchResult > > fSearchResultMap;
 };
 
 #endif 

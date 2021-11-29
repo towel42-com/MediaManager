@@ -20,26 +20,32 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-cmake_minimum_required(VERSION 3.1)
-if(CMAKE_VERSION VERSION_LESS "3.7.0")
-    set(CMAKE_INCLUDE_CURRENT_DIR ON)
-endif()
-project( MainWindow )
-
-include( include.cmake )
-include( ${CMAKE_SOURCE_DIR}/SABUtils/Project.cmake )
-
-add_library(MainWindow STATIC
-    ${project_SRCS} 
-    ${project_H}  
-    ${qtproject_SRCS} 
-    ${qtproject_QRC} 
-    ${qtproject_QRC_SRCS} 
-    ${qtproject_UIS_H} 
-    ${qtproject_MOC_SRCS} 
-    ${qtproject_H} 
-    ${qtproject_UIS}
-    ${qtproject_QRC_SOURCES}
-    ${_CMAKE_FILES}
+set(qtproject_SRCS
+    MainWindow.cpp
+    TransformConfirm.cpp
+    SelectTMDB.cpp
+    Preferences.cpp
 )
-set_target_properties( MainWindow PROPERTIES FOLDER Libs )
+
+set(qtproject_H
+    MainWindow.h
+    SelectTMDB.h
+    Preferences.h
+    TransformConfirm.h
+)
+
+set(project_H
+)
+
+set(qtproject_UIS
+    MainWindow.ui
+    SelectTMDB.ui
+    Preferences.ui
+    TransformConfirm.ui
+)
+
+set(qtproject_QRC
+    application.qrc
+)
+
+file(GLOB qtproject_QRC_SOURCES "resources/*")

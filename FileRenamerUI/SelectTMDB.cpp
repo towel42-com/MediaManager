@@ -21,11 +21,11 @@
 // SOFTWARE.
 
 #include "SelectTMDB.h"
-#include "DirModel.h"
 #include "ui_SelectTMDB.h"
-#include "SearchResult.h"
-#include "SearchTMDB.h"
-#include "SearchTMDBInfo.h"
+#include "FileRenamerLib/DirModel.h"
+#include "FileRenamerLib/SearchResult.h"
+#include "FileRenamerLib/SearchTMDB.h"
+#include "FileRenamerLib/SearchTMDBInfo.h"
 
 #include "SABUtils/ButtonEnabler.h"
 #include "SABUtils/QtUtils.h"
@@ -38,17 +38,17 @@
 #include <QPushButton>
 #include <QMessageBox>
 
-CSelectTMDB::CSelectTMDB( const QString & text, std::shared_ptr< SSearchResult > searchResult, QWidget* parent )
+CSelectTMDB::CSelectTMDB( const QString & text, std::shared_ptr< NFileRenamerLib::SSearchResult > searchResult, QWidget* parent )
     : QDialog( parent ),
     fImpl( new Ui::CSelectTMDB )
 {
     fImpl->setupUi( this );
 
-    fSearchInfo = std::make_shared< SSearchTMDBInfo >( text, searchResult );
-    fSearchTMDB = new CSearchTMDB( fSearchInfo, std::optional<QString>(), this );
+    fSearchInfo = std::make_shared< NFileRenamerLib::SSearchTMDBInfo >( text, searchResult );
+    fSearchTMDB = new NFileRenamerLib::CSearchTMDB( fSearchInfo, std::optional<QString>(), this );
 
-    connect( this, &CSelectTMDB::sigStartSearch, fSearchTMDB, &CSearchTMDB::slotSearch );
-    connect( fSearchTMDB, &CSearchTMDB::sigSearchFinished, this, &CSelectTMDB::slotSearchFinished );
+    connect( this, &CSelectTMDB::sigStartSearch, fSearchTMDB, &NFileRenamerLib::CSearchTMDB::slotSearch );
+    connect( fSearchTMDB, &NFileRenamerLib::CSearchTMDB::sigSearchFinished, this, &CSelectTMDB::slotSearchFinished );
 
     fImpl->resultExtraInfo->setText( searchResult ? searchResult->fExtraInfo : QString() );
 
@@ -83,7 +83,7 @@ CSelectTMDB::CSelectTMDB( const QString & text, std::shared_ptr< SSearchResult >
     QTimer::singleShot( 0, this, &CSelectTMDB::slotSearchTextChanged );
 }
 
-void CSelectTMDB::updateFromSearchInfo( std::shared_ptr< SSearchTMDBInfo > searchInfo )
+void CSelectTMDB::updateFromSearchInfo( std::shared_ptr< NFileRenamerLib::SSearchTMDBInfo > searchInfo )
 {
     disconnect( fImpl->byName, &QRadioButton::toggled, this, &CSelectTMDB::slotByNameChanged );
     disconnect( fImpl->exactMatchesOnly, &QCheckBox::clicked, this, &CSelectTMDB::slotExactOrForTVShowsChanged );
@@ -276,12 +276,12 @@ QTreeWidgetItem * CSelectTMDB::getSingleMatchingItem( QTreeWidgetItem * parentIt
     return retVal;
 }
 
-void CSelectTMDB::loadResults( std::shared_ptr< SSearchResult > info, QTreeWidgetItem *parent )
+void CSelectTMDB::loadResults( std::shared_ptr< NFileRenamerLib::SSearchResult > info, QTreeWidgetItem *parent )
 {
     if ( fStopLoading )
         return;
 
-    if ( info->fInfoType == EResultInfoType::eTVShow || info->fInfoType == EResultInfoType::eTVSeason )
+    if ( info->fInfoType == NFileRenamerLib::EResultInfoType::eTVShow || info->fInfoType == NFileRenamerLib::EResultInfoType::eTVSeason )
     {
         if ( info->fChildren.empty() )
             return;
@@ -345,7 +345,7 @@ void CSelectTMDB::loadResults( std::shared_ptr< SSearchResult > info, QTreeWidge
 }
 
 
-std::shared_ptr< SSearchResult > CSelectTMDB::getSearchResult() const
+std::shared_ptr< NFileRenamerLib::SSearchResult > CSelectTMDB::getSearchResult() const
 {
     auto first = getFirstSelected();
     if ( !first )
@@ -398,13 +398,13 @@ QTreeWidgetItem *CSelectTMDB::getFirstSelected() const
     return first;
 }
 
-std::shared_ptr< SSearchTMDBInfo > CSelectTMDB::getSearchInfo()
+std::shared_ptr< NFileRenamerLib::SSearchTMDBInfo > CSelectTMDB::getSearchInfo()
 {
-    std::shared_ptr< SSearchTMDBInfo > searchInfo;
+    std::shared_ptr< NFileRenamerLib::SSearchTMDBInfo > searchInfo;
     if ( fSearchTMDB->isActive() )
     {
         if ( !fQueuedSearchInfo )
-            fQueuedSearchInfo = std::make_shared< SSearchTMDBInfo >( *fSearchInfo );
+            fQueuedSearchInfo = std::make_shared< NFileRenamerLib::SSearchTMDBInfo >( *fSearchInfo );
         searchInfo = fQueuedSearchInfo;
     }
     else
