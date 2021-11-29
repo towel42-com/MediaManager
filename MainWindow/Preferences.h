@@ -64,6 +64,7 @@ public:
 public Q_SLOTS:
     void slotAddString();
     void slotDelString();
+    void accept() override;
 private:
     //static QString getDefaultInPattern( bool forTV ) const;
     static QString getDefaultOutDirPattern( bool forTV ); 

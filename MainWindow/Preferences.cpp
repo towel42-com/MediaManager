@@ -49,7 +49,12 @@ CPreferences::CPreferences( QWidget* parent )
 
 CPreferences::~CPreferences()
 {
+}
+
+void CPreferences::accept()
+{
     saveSettings();
+    QDialog::accept();
 }
 
 void CPreferences::slotAddString()
@@ -57,10 +62,16 @@ void CPreferences::slotAddString()
     auto text = QInputDialog::getText( this, tr( "Add Known String" ), tr( "String:" ) );
     if ( text.isEmpty() )
         return;
+    text = text.trimmed();
 
+    auto words = text.split( QRegularExpression( "\\s" ), Qt::SkipEmptyParts );
     auto strings = fStringModel->stringList();
-    strings.removeAll( text );
-    strings.push_back( text );
+    for ( auto &&ii : words )
+    {
+        ii = ii.trimmed();
+        strings.removeAll( ii );
+    }
+    strings << words;
     fStringModel->setStringList( strings );
     fImpl->knownStrings->scrollTo( fStringModel->index( strings.count() - 1, 0 ) );
 }
