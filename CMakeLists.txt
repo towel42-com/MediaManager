@@ -25,7 +25,7 @@ if(CMAKE_VERSION VERSION_LESS "3.7.0")
     set(CMAKE_INCLUDE_CURRENT_DIR ON)
 endif()
 
-project(root-FileRenamer) 
+project(root-MediaManager) 
 
 SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/SABUtils/Modules ${CMAKE_MODULE_PATH})
 
@@ -42,7 +42,7 @@ option( gtest_force_shared_crt "Use shared ( DLL ) run-time lib even when Google
 
 set_property( GLOBAL PROPERTY USE_FOLDERS ON )
 
-file( REAL_PATH ~/bin/FileRenamer CMAKE_INSTALL_PREFIX EXPAND_TILDE)
+file( REAL_PATH ~/bin/MediaManager CMAKE_INSTALL_PREFIX EXPAND_TILDE)
 
 add_subdirectory( SABUtils )
 add_subdirectory( SABUtils/googletest )
