@@ -70,10 +70,10 @@ namespace NFileRenamerLib
         delete fIconProvider;
     }
 
-    void CDirModel::setRootPath( const QString &rootPath, QTreeView *view )
+    void CDirModel::setRootPath( const QString &rootPath, QTreeView *view, QProgressDialog * dlg )
     {
         fRootPath = rootPath;
-        reloadModel( view );
+        reloadModel( view, dlg );
     }
 
     bool CDirModel::isAutoSetText( const QString &text )
@@ -92,15 +92,17 @@ namespace NFileRenamerLib
         return nm;
     }
 
-    void CDirModel::setNameFilters( const QStringList &filters, QTreeView *view )
+    void CDirModel::setNameFilters( const QStringList &filters, QTreeView *view, QProgressDialog * dlg )
     {
         fNameFilter = filters;
-        reloadModel( view );
+        reloadModel( view, dlg );
     }
 
-    void CDirModel::reloadModel( QTreeView *view )
+    void CDirModel::reloadModel( QTreeView *view, QProgressDialog * dlg )
     {
         fTreeView = view;
+        fProgressDlg = dlg;
+
         fTimer->stop();
         fTimer->start();
         fPatternTimer->stop(); // if its runinng when this timer stops its realoaded anyway
@@ -108,13 +110,22 @@ namespace NFileRenamerLib
 
     void CDirModel::slotLoadRootDirectory()
     {
+        CAutoWaitCursor awc;
+
         clear();
         setHorizontalHeaderLabels( QStringList() << "Name" << "Size" << "Type" << "Date Modified" << "Is TV Show?" << "Transformed Name" );
 
         QFileInfo rootFI( fRootPath );
 
+        if ( fProgressDlg )
+        {
+            fProgressDlg->setLabelText( tr( "Computing number of Files under '%1'" ).arg( fRootPath ) );
+            qApp->processEvents();
+            auto numFiles = computeNumberOfFiles( rootFI ).second;
+            fProgressDlg->setRange( 0, numFiles );
+        }
         TParentTree parentTree;
-        loadFileInfo( rootFI.absoluteFilePath(), parentTree );
+        loadFileInfo( rootFI, parentTree );
 
         if ( fTreeView )
         {
@@ -144,9 +155,42 @@ namespace NFileRenamerLib
         return QStandardItemModel::setData( idx, value, role );
     }
 
+    std::pair< uint64_t, uint64_t > CDirModel::computeNumberOfFiles( const QFileInfo &fileInfo ) const
+    {
+        if ( !fileInfo.exists() )
+            return { 0,0 };
+
+        uint64_t numDirs = 0;
+        uint64_t numFiles = 0;
+
+        if ( fileInfo.isDir() )
+        {
+            numDirs++;
+            auto dir = getDirForPath( fileInfo );
+            auto fileInfos = dir.entryInfoList();
+            for ( auto &&ii : fileInfos )
+            {
+                if ( ii.isDir() && isExcludedDirName( ii ) )
+                    continue;
+                uint64_t subNumDirs = 0;
+                uint64_t subNumFiles = 0;
+                std::tie( subNumDirs, subNumFiles ) = computeNumberOfFiles( ii );
+                numDirs += subNumDirs;
+                numFiles += subNumFiles;
+            }
+        }
+        else
+            numFiles++;
+
+        return std::make_pair( numDirs, numFiles );
+    }
+
     void CDirModel::loadFileInfo( const QFileInfo &fileInfo, TParentTree &siblings )
     {
         if ( !fileInfo.exists() )
+            return;
+
+        if ( fProgressDlg && fProgressDlg->wasCanceled() )
             return;
 
         //for( auto && ii : parentTree )
@@ -159,13 +203,16 @@ namespace NFileRenamerLib
 
         if ( fileInfo.isDir() )
         {
-            QDir dir( fileInfo.absoluteFilePath() );
-            dir.setFilter( QDir::AllDirs | QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Readable );
-            dir.setSorting( QDir::Name | QDir::DirsFirst | QDir::IgnoreCase );
-            dir.setNameFilters( fNameFilter );
+            if ( fProgressDlg )
+                fProgressDlg->setLabelText( tr( "Searching Directory '%1'" ).arg( QDir( fRootPath ).relativeFilePath( fileInfo.absoluteFilePath() ) ) );
+
+            auto dir = getDirForPath( fileInfo );
             auto fileInfos = dir.entryInfoList();
             for ( auto &&ii : fileInfos )
             {
+                if ( fProgressDlg && fProgressDlg->wasCanceled() )
+                    return;
+
                 if ( ii.isDir() && isExcludedDirName( ii ) )
                     continue;
 
@@ -176,6 +223,8 @@ namespace NFileRenamerLib
         else
         {
             attachTreeNodes( siblings );
+            if ( fProgressDlg )
+                fProgressDlg->setValue( fProgressDlg->value() + 1 );
         }
 
         if ( !siblings.back().second )
@@ -184,6 +233,15 @@ namespace NFileRenamerLib
                 delete ii;
         }
         siblings.pop_back();
+    }
+
+    QDir CDirModel::getDirForPath( const QFileInfo &fileInfo ) const
+    {
+        QDir dir( fileInfo.absoluteFilePath() );
+        dir.setFilter( QDir::AllDirs | QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Readable );
+        dir.setSorting( QDir::Name | QDir::DirsFirst | QDir::IgnoreCase );
+        dir.setNameFilters( fNameFilter );
+        return dir;
     }
 
     void CDirModel::attachTreeNodes( TParentTree &parentTree )

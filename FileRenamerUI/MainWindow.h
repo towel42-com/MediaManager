@@ -44,7 +44,7 @@ public:
 public Q_SLOTS:
     void slotSelectDirectory();
     void slotDirectoryChanged();
-    void slotLoad();
+    void slotLoadDirectory();
     void slotTransform();
     void slotToggleTreatAsTVShowByDefault();
     void slotDoubleClicked( const QModelIndex &idx );
@@ -62,12 +62,12 @@ private:
     
     void loadSettings();
     void saveSettings();
-    void loadDirectory();
 
     std::unique_ptr< NFileRenamerLib::CDirModel > fDirModel;
     std::unique_ptr< Ui::CMainWindow > fImpl;
     NFileRenamerLib::CSearchTMDB *fSearchTMDB{ nullptr };
     QProgressDialog *fProgressDlg{ nullptr };
+    uint64_t fSearchesCompleted{ 0 };
 };
 
 #endif 

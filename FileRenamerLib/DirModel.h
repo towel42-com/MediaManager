@@ -93,11 +93,11 @@ namespace NFileRenamerLib
         void setSearchResult( QStandardItem *item, std::shared_ptr< SSearchResult > info, bool applyToChilren );
         std::shared_ptr< SSearchResult > getSearchResultInfo( const QModelIndex &idx ) const;
 
-        void setNameFilters( const QStringList &filters, QTreeView *view = nullptr );
+        void setNameFilters( const QStringList &filters, QTreeView *view = nullptr, QProgressDialog *progress = nullptr );
 
-        void reloadModel( QTreeView *view );
+        void reloadModel( QTreeView *view, QProgressDialog * dlg );
 
-        void setRootPath( const QString &path, QTreeView *view = nullptr );
+        void setRootPath( const QString &path, QTreeView *view = nullptr, QProgressDialog * dlg=nullptr );
 
         QString getSearchName( const QModelIndex &idx ) const;
         bool treatAsTVShow( const QFileInfo &fileInfo, bool defaultValue ) const;
@@ -122,7 +122,11 @@ namespace NFileRenamerLib
         void slotPatternChanged();
         void slotTreatAsTVByDefaultChanged( bool treatAsTVShowByDefault );
     private:
+        std::pair< uint64_t, uint64_t > computeNumberOfFiles( const QFileInfo &fileInfo ) const;
         void loadFileInfo( const QFileInfo &info, TParentTree &parentTree );
+
+        QDir getDirForPath( const QFileInfo &fileInfo ) const;
+
         void attachTreeNodes( TParentTree &parentTree );
 
         bool isIgnoredPathName( const QFileInfo &ii ) const;
@@ -173,6 +177,7 @@ namespace NFileRenamerLib
         QTimer *fTimer{ nullptr };
         QTimer *fPatternTimer{ nullptr };
         QTreeView *fTreeView{ nullptr };
+        QProgressDialog *fProgressDlg{ nullptr };
     };
 
 }

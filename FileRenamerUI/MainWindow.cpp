@@ -70,7 +70,7 @@ CMainWindow::CMainWindow( QWidget* parent )
     connect( fImpl->btnTransform, &QPushButton::clicked, this, &CMainWindow::slotTransform );
 
     connect( fImpl->btnSelectDir, &QPushButton::clicked, this, &CMainWindow::slotSelectDirectory );
-    connect( fImpl->btnLoad, &QPushButton::clicked, this, &CMainWindow::slotLoad );
+    connect( fImpl->btnLoad, &QPushButton::clicked, this, &CMainWindow::slotLoadDirectory );
     connect( fImpl->actionTreatAsTVShowByDefault, &QAction::triggered, this, &CMainWindow::slotToggleTreatAsTVShowByDefault );
     connect( fImpl->actionPreferences, &QAction::triggered, this, &CMainWindow::slotPreferences );
 
@@ -179,12 +179,18 @@ void CMainWindow::slotAutoSearch()
     if ( fDirModel->rowCount() != 1 )
         return;
 
+    bool wasCanceled = fProgressDlg && fProgressDlg->wasCanceled();
+    clearProgressDlg();
+    if ( wasCanceled )
+        return;
+
     auto count = NQtUtils::itemCount( fDirModel.get(), true );
 
     setupProgressDlg( tr( "Finding Results" ), tr( "Cancel" ), count );
 
     auto rootIdx = fDirModel->index( 0, 0 );
     autoSearch( rootIdx );
+    fProgressDlg->setValue( fSearchesCompleted );
 }
 
 void CMainWindow::autoSearch( QModelIndex parentIdx )
@@ -206,7 +212,15 @@ void CMainWindow::autoSearch( QModelIndex parentIdx )
         searchInfo->setExactMatchOnly( CPreferences::getExactMatchesOnly() );
 
         if ( fDirModel->shouldAutoSearch( childIndex ) )
+        {
+            if ( fProgressDlg )
+            {
+                fProgressDlg->setLabelText( tr( "Adding Background Search for '%1'" ).arg( QDir( fImpl->directory->text() ).relativeFilePath( path ) ) );
+                fProgressDlg->setValue( fProgressDlg->value() + 1 );
+                qApp->processEvents();
+            }
             fSearchTMDB->addSearch( path, searchInfo );
+        }
 
         autoSearch( childIndex );
     }
@@ -220,7 +234,11 @@ void CMainWindow::slotAutoSearchFinished( const QString & path, bool searchesRem
     if ( searchesRemaining )
     {
         if ( fProgressDlg )
+        {
             fProgressDlg->setValue( fProgressDlg->value() + 1 );
+            fSearchesCompleted++;
+            fProgressDlg->setLabelText( tr( "Search Complete for '%1'" ).arg( QDir( fImpl->directory->text() ).relativeFilePath( path ) ) );
+        }
     }
     else
     {
@@ -298,15 +316,8 @@ void CMainWindow::slotToggleTreatAsTVShowByDefault()
         fDirModel->slotTreatAsTVByDefaultChanged( fImpl->actionTreatAsTVShowByDefault->isChecked() );
 }
 
-void CMainWindow::slotLoad()
+void CMainWindow::slotLoadDirectory()
 {
-    loadDirectory();
-}
-
-void CMainWindow::loadDirectory()
-{
-    CAutoWaitCursor awc;
-
     fDirModel.reset( new NFileRenamerLib::CDirModel );
     fImpl->files->setModel( fDirModel.get() );
     connect( fDirModel.get(), &NFileRenamerLib::CDirModel::sigDirReloaded, this, &CMainWindow::slotAutoSearch );
@@ -316,7 +327,8 @@ void CMainWindow::loadDirectory()
     fDirModel->slotMovieOutputFilePatternChanged( CPreferences::getMovieOutFilePattern() );
     fDirModel->slotMovieOutputDirPatternChanged( CPreferences::getMovieOutDirPattern() );
     fDirModel->setNameFilters( CPreferences::getSearchExtensions(), fImpl->files  );
-    fDirModel->setRootPath( fImpl->directory->text(), fImpl->files );
+    setupProgressDlg( tr( "Finding Files" ), tr( "Cancel" ), 1 );
+    fDirModel->setRootPath( fImpl->directory->text(), fImpl->files, fProgressDlg );
     fImpl->btnTransform->setEnabled( true );
 }
 
@@ -347,7 +359,7 @@ void CMainWindow::slotTransform()
         }
         clearProgressDlg();
 
-        loadDirectory();
+        slotLoadDirectory();
     }
 }
 
