@@ -1,0 +1,14 @@
+<RCC>
+    <qresource prefix="/">
+        <file>resources/rename.png</file>
+        <file>resources/open.png</file>
+        <file>resources/cc.png</file>
+        <file>resources/error.png</file>
+        <file>resources/ok.png</file>
+        <file>resources/add.png</file>
+        <file>resources/delete.png</file>
+        <file>resources/run.png</file>
+        <file>resources/load.png</file>
+        <file>resources/mediamanager.png</file>
+    </qresource>
+</RCC>

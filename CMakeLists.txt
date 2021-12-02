@@ -9,7 +9,7 @@
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
 #
-# The above copyright notice and this permission notice shall be included in
+# Thg above copyright notice and this permission notice shall be included in
 # all copies or substantial portions of the Software.
 #
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -50,9 +50,9 @@ set_target_properties( gmock PROPERTIES FOLDER 3rdParty/google  )
 set_target_properties( gmock_main PROPERTIES FOLDER 3rdParty/google )
 set_target_properties( gtest PROPERTIES FOLDER 3rdParty/google )
 set_target_properties( gtest_main PROPERTIES FOLDER 3rdParty/google )
-add_subdirectory( FileRenamerUI )
-add_subdirectory( FileRenamerLib )
-add_subdirectory( FileRenamerApp )
+add_subdirectory( UI )
+add_subdirectory( Core )
+add_subdirectory( App )
 
 SET( CPACK_PACKAGE_VENDOR "Scott Aron Bloom scott@towel42.com" )
 SET( CPACK_RESOURCE_FILE_LICENSE ${CMAKE_SOURCE_DIR}/LICENSE )
@@ -60,6 +60,6 @@ SET( CPACK_PACKAGE_VERSION_MAJOR "1" )
 SET( CPACK_PACKAGE_VERSION_MINOR "0" )
 SET( CPACK_PACKAGE_VERSION_PATCH "0" )
 SET( CPACK_GENERATOR ZIP NSIS )
-SET( CPACK_NSIS_MUI_ICON ${CMAKE_SOURCE_DIR}/MainWindow/resources/application.ico )
-SET( CPACK_NSIS_MUI_UNIICON ${CMAKE_SOURCE_DIR}/MainWindow/resources/application.ico )
+SET( CPACK_NSIS_MUI_ICON ${CMAKE_SOURCE_DIR}/FileRenamerUI/resources/application.ico )
+SET( CPACK_NSIS_MUI_UNIICON ${CMAKE_SOURCE_DIR}/FileRenamerUI/resources/application.ico )
 include( CPack )
