@@ -366,7 +366,7 @@ namespace NMediaManager
         void CSelectTMDB::slotAcceptItem()
         {
             slotItemChanged();
-            accept();
+            //accept();
         }
 
         void CSelectTMDB::slotItemChanged()
