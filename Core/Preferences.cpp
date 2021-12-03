@@ -53,7 +53,7 @@ namespace NMediaManager
         //    if ( forTV )
         //        return "(?<title>.+)\\.([Ss](?<season>\\d+))([Ee](?<episode>\\d+))(\\.(?<episode_title>.*))?\\.(1080|720|2160)(p|i)?.*";
         //    else
-        //        return "(?<title>.+)\\.(?<year>\\d{2,4})\\..*";
+        //        return "(?<title>.+)\\.(?<year>\\d{2}|\\d{4})\\..*";
         //}
 
 
