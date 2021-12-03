@@ -301,7 +301,7 @@ namespace NMediaManager
             return std::move( retVal );
         }
 
-        void CDirModel::iterateEveryFile( const QFileInfo &fileInfo, const SIterateInfo &iterInfo ) const
+        void CDirModel::iterateEveryFile( const QFileInfo &fileInfo, const SIterateInfo &iterInfo, std::optional< QDateTime > & lastUpdateUI ) const
         {
             if ( !fileInfo.exists() )
                 return;
@@ -325,15 +325,16 @@ namespace NMediaManager
                         return;
                     }
 
-                    int cnt = 0;
                     while ( ii->hasNext() )
                     {
                         ii->next();
                         auto fi = ii->fileInfo();
-                        iterateEveryFile( fi, iterInfo );
-                        if ( fProgressDlg && ( cnt % 10 ) == 0 )
+                        iterateEveryFile( fi, iterInfo, lastUpdateUI );
+                        if ( fProgressDlg && ( !lastUpdateUI.has_value() || ( lastUpdateUI.value().msecsTo( QDateTime::currentDateTime() ) > 250 ) ) )
+                        {
                             qApp->processEvents();
-                        cnt++;
+                            lastUpdateUI = QDateTime::currentDateTime();
+                        }
                     }
                 }
 
@@ -360,7 +361,8 @@ namespace NMediaManager
             SIterateInfo info;
             info.fPreDirFunction = [&numDirs]( const QFileInfo & /*dir*/ ) { numDirs++; return true; };
             info.fPreFileFunction = [&numFiles]( const QFileInfo & /*file*/ ) { numFiles++; return false; };
-            iterateEveryFile( fileInfo, info );
+            std::optional< QDateTime > lastUpdate;
+            iterateEveryFile( fileInfo, info, lastUpdate );
 
             return std::make_pair( numDirs, numFiles );
         }
@@ -454,7 +456,8 @@ namespace NMediaManager
                 qDebug().noquote().nospace() << "Post File B: " << dirInfo.absoluteFilePath() << tree;
             };
 
-            iterateEveryFile( fileInfo, info );
+            std::optional< QDateTime > lastUpdate;
+            iterateEveryFile( fileInfo, info, lastUpdate );
         }
 
         void CDirModel::appendRow( QStandardItem *parent, QList< QStandardItem * > &items )
@@ -563,12 +566,12 @@ namespace NMediaManager
 
             if ( model->isTransformModel() )
             {
-                bool isTVShow = SSearchTMDBInfo::looksLikeTVShow( fileInfo.fileName() ).first;
+                bool isTVShow = SSearchTMDBInfo::looksLikeTVShow( fileInfo.fileName(), nullptr );
                 auto isTVShowItem = STreeNodeItem( QString(), EColumns::eIsTVShow );
                 isTVShowItem.fIsTVShow = isTVShow;
                 isTVShowItem.fCheckable = true;
 
-                nameItem.setData( isTVShow, ECustomRoles::eIsTVShowRole );
+                fItems.front().setData( isTVShow, ECustomRoles::eIsTVShowRole );
                 fItems.push_back( isTVShowItem );
 
                 auto transformInfo = model->transformItem( fileInfo );
@@ -680,7 +683,7 @@ namespace NMediaManager
             retVal.replace( ":", "\\:" );
 
             retVal = patternToRegExp( "title", retVal, ".*", removeOptional );
-            retVal = patternToRegExp( "year", retVal, "\\d{2,4}", removeOptional );
+            retVal = patternToRegExp( "year", retVal, "(\\d{2}|\\d{4})", removeOptional );
             retVal = patternToRegExp( "tmdbid", retVal, "\\d+", removeOptional );
             retVal = patternToRegExp( "season", retVal, "\\d+", removeOptional );
             retVal = patternToRegExp( "episode", retVal, "\\d+", removeOptional );
@@ -728,7 +731,7 @@ namespace NMediaManager
             {
                 patterns
                     << patternToRegExp( fOutDirPattern, false )
-                    << "(.*)\\s\\((\\d{2,4}\\))\\s(-\\s(.*)\\s)?\\[(tmdbid=\\d+)|(imdbid=tt.*)\\]"
+                    << "(.*)\\s\\((\\d{2}|\\d{4}\\))\\s(-\\s(.*)\\s)?\\[(tmdbid=\\d+)|(imdbid=tt.*)\\]"
                     ;
             }
             else
@@ -1113,7 +1116,7 @@ namespace NMediaManager
             if ( isTransformModel() )
             {
                 auto transformItem = transformParentsOnly ? nullptr : getTransformItem( item );
-                auto myName = transformItem ? transformItem->text() : QString();
+                myName = transformItem ? transformItem->text() : QString();
                 if ( myName.isEmpty() || isAutoSetText( myName ) )
                 {
                     myName = item->text();
@@ -1146,7 +1149,7 @@ namespace NMediaManager
             return rootDir.relativeFilePath( absPath );
         }
 
-        bool CDirModel::process( const QStandardItem *item, bool displayOnly, QStandardItemModel *resultModel, QStandardItem *parentItem, QProgressDialog *progressDlg ) const
+        bool CDirModel::process( const QStandardItem *item, bool displayOnly, QStandardItemModel *resultModel, QStandardItem *parentItem ) const
         {
             if ( !item )
                 return false;
@@ -1171,6 +1174,13 @@ namespace NMediaManager
                     if ( !displayOnly )
                     {
                         bool removeIt = newName == "<DELETE THIS>";
+                        if ( fProgressDlg )
+                        {
+                            if ( removeIt )
+                                fProgressDlg->setLabelText( tr( "Removing '%1'" ).arg( getDispName( oldName ) ) );
+                            else
+                                fProgressDlg->setLabelText( tr( "Renaming '%1' => '%2'" ).arg( getDispName( oldName ) ).arg( getDispName( newName ) ) );
+                        }
                         QFileInfo fi( oldName );
                         if ( !fi.exists() && !removeIt )
                         {
@@ -1194,9 +1204,9 @@ namespace NMediaManager
                         else
                         {
                             auto timeStamps = NFileUtils::timeStamps( oldName );
-                            if ( progressDlg )
+                            if ( fProgressDlg )
                             {
-                                progressDlg->setValue( progressDlg->value() + 1 );
+                                fProgressDlg->setValue( fProgressDlg->value() + 1 );
                                 qApp->processEvents();
                             }
 
@@ -1223,9 +1233,9 @@ namespace NMediaManager
                                     }
                                 }
                             }
-                            if ( progressDlg )
+                            if ( fProgressDlg )
                             {
-                                progressDlg->setValue( progressDlg->value() + 1 );
+                                fProgressDlg->setValue( fProgressDlg->value() + 1 );
                                 qApp->processEvents();
                             }
 
@@ -1248,9 +1258,9 @@ namespace NMediaManager
                             }
                             else
                                 aOK = false;
-                            if ( progressDlg )
+                            if ( fProgressDlg )
                             {
-                                progressDlg->setValue( progressDlg->value() + 1 );
+                                fProgressDlg->setValue( fProgressDlg->value() + 1 );
                                 qApp->processEvents();
                             }
 
@@ -1283,9 +1293,9 @@ namespace NMediaManager
                             QIcon icon;
                             icon.addFile( aOK ? QString::fromUtf8( ":/resources/ok.png" ) : QString::fromUtf8( ":/resources/error.png" ), QSize(), QIcon::Normal, QIcon::Off );
                             returnItem->setIcon( icon );
-                            if ( progressDlg )
+                            if ( fProgressDlg )
                             {
-                                progressDlg->setValue( progressDlg->value() + 1 );
+                                fProgressDlg->setValue( fProgressDlg->value() + 1 );
                                 qApp->processEvents();
                             }
                         }
@@ -1300,27 +1310,28 @@ namespace NMediaManager
                 if ( !child )
                     continue;
 
-                if ( progressDlg && progressDlg->wasCanceled() )
+                if ( fProgressDlg && fProgressDlg->wasCanceled() )
                     break;
 
-                aOK = process( child, displayOnly, resultModel, returnItem, progressDlg ) && aOK;
+                aOK = process( child, displayOnly, resultModel, returnItem ) && aOK;
             }
             return aOK;
         }
 
-        std::pair< bool, QStandardItemModel * > CDirModel::process( bool displayOnly, QProgressDialog *progressDlg ) const
+        std::pair< bool, QStandardItemModel * > CDirModel::process( bool displayOnly ) const
         {
             CAutoWaitCursor awc;
             auto model = new QStandardItemModel;
-            auto retVal = std::make_pair( process( invisibleRootItem(), displayOnly, model, nullptr, progressDlg ), model );
-            if ( progressDlg )
-                progressDlg->setValue( retVal.second->rowCount() );
+            auto retVal = std::make_pair( process( invisibleRootItem(), displayOnly, model, nullptr ), model );
+            if ( fProgressDlg )
+                fProgressDlg->setValue( retVal.second->rowCount() );
             return retVal;
         }
 
 
         bool CDirModel::process( const std::function< QProgressDialog *( int count ) > &startProgress, const std::function< void( QProgressDialog * ) > &endProgress, QWidget *parent ) const
         {
+            fProgressDlg = nullptr;
             auto transformations = process( true );
             if ( transformations.second->rowCount() == 0 )
             {
@@ -1335,8 +1346,8 @@ namespace NMediaManager
             if ( dlg.exec() != QDialog::Accepted )
                 return false;
 
-            auto progressDlg = startProgress( count * eventsPerPath() );
-            transformations = process( false, progressDlg );
+            fProgressDlg = startProgress( count * eventsPerPath() );
+            transformations = process( false );
             if ( !transformations.first )
             {
                 NUi::CTransformConfirm dlg( tr( "Error While Transforming:" ), tr( "Issues:" ), parent );
@@ -1345,7 +1356,7 @@ namespace NMediaManager
                 dlg.setButtons( QDialogButtonBox::Ok );
                 dlg.exec();
             }
-            endProgress( progressDlg );
+            endProgress( fProgressDlg );
             return true;
         }
 

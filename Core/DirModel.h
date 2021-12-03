@@ -208,7 +208,7 @@ namespace NMediaManager
                 std::function< void( const QFileInfo &dir, bool aOK ) > fPostFileFunction;
             };
 
-            void CDirModel::iterateEveryFile( const QFileInfo &fileInfo, const SIterateInfo &iterInfo ) const;
+            void CDirModel::iterateEveryFile( const QFileInfo &fileInfo, const SIterateInfo &iterInfo, std::optional< QDateTime > & lastUpdateUI ) const;
             std::pair< uint64_t, uint64_t > computeNumberOfFiles( const QFileInfo &fileInfo ) const;
             void loadFileInfo( const QFileInfo &info );
 
@@ -222,8 +222,8 @@ namespace NMediaManager
             STreeNode getItemRow( const QFileInfo &path ) const;
 
             QString getDispName( const QString &absPath ) const;
-            std::pair< bool, QStandardItemModel * > process( bool displayOnly, QProgressDialog *progress = nullptr ) const;
-            bool process( const QStandardItem *item, bool displayOnly, QStandardItemModel *resultsModel, QStandardItem *resultsParentItem, QProgressDialog *progressDlg ) const;
+            std::pair< bool, QStandardItemModel * > process( bool displayOnly ) const;
+            bool process( const QStandardItem *item, bool displayOnly, QStandardItemModel *resultsModel, QStandardItem *resultsParentItem ) const;
 
             QStandardItem *getItem( const QStandardItem *item, EColumns column ) const;
             QStandardItem *getTransformItem( const QStandardItem *parent ) const;
@@ -268,7 +268,7 @@ namespace NMediaManager
             QTimer *fTimer{ nullptr };
             QTimer *fPatternTimer{ nullptr };
             QTreeView *fTreeView{ nullptr };
-            QProgressDialog *fProgressDlg{ nullptr };
+            mutable QProgressDialog *fProgressDlg{ nullptr };
         };
     }
 }
