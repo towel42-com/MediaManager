@@ -183,6 +183,8 @@ namespace NMediaManager
             if ( fXformModel->rowCount() != 1 )
                 return;
 
+            fSearchTMDB->resetResults();
+
             auto count = NQtUtils::itemCount( fXformModel.get(), true );
 
             setupProgressDlg( tr( "Finding Results" ), tr( "Cancel" ), count );
