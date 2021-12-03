@@ -37,7 +37,7 @@ namespace NMediaManager
         {
             fSearchResultInfo = searchResult;
             fInitSearchString = text;
-            fIsTVShow = looksLikeTVShow( text ).first;
+            fIsTVShow = looksLikeTVShow( text, nullptr );
             updateSearchCriteria( true );
         }
 
@@ -71,55 +71,97 @@ namespace NMediaManager
             return retVal;
         }
 
-        std::pair< bool, QString > SSearchTMDBInfo::looksLikeTVShow( const QString &searchString, QString *seasonStr, QString *episodeStr )
+        QStringList SSearchTMDBInfo::stripOutPositions( const QString & inString, const std::list< std::pair< int, int > > & positions )
         {
-            QString retVal = searchString;
+            QStringList retVal;
+            int posStart = 0;
+            for( auto ii = positions.begin(); ii != positions.end(); ++ii )
+            {
+                auto curr = smartTrim( inString.mid( posStart, ( *ii ).first - posStart ) );
+                posStart = ( *ii ).first + ( *ii ).second;
+                retVal << curr;
+            }
+            auto curr = smartTrim( inString.mid( posStart ) );
+            retVal << curr;
+            retVal.removeAll( QString() );
+            return retVal;
+        }
+
+        bool SSearchTMDBInfo::looksLikeTVShow( const QString &searchString, QString *titleStr, QString *seasonStr, QString *episodeStr, QString * extraStr )
+        {
+            QString localRetVal = searchString;
+
+            if ( titleStr )
+                titleStr->clear();
+            if ( seasonStr )
+                seasonStr->clear();
+            if ( episodeStr )
+                episodeStr->clear();
+            if ( extraStr )
+                extraStr->clear();
 
             bool isTV = false;
-            QString dataBeforeSeason;
             auto regExpStr = QString( "S(?<season>\\d+)" );
             auto regExp = QRegularExpression( regExpStr, QRegularExpression::PatternOption::CaseInsensitiveOption );
-            auto match = regExp.match( retVal );
+            auto match = regExp.match( localRetVal );
+            std::list< std::pair< int, int > > positions;
             if ( match.hasMatch() )
             {
                 if ( seasonStr )
                     *seasonStr = smartTrim( match.captured( "season" ) );
-                dataBeforeSeason = smartTrim( retVal.left( match.capturedStart( "season" ) - 1 ) );
-                retVal = retVal.mid( match.capturedStart( "season" ) - 1 );
-                retVal.replace( match.capturedStart( "season" ), match.capturedLength( "season" ), "" );
+                positions.push_back( std::make_pair( match.capturedStart( "season" ) - 1, match.capturedLength( "season" ) + 1 ) );
                 isTV = true;
             }
 
-            QString dataAfterEpisode;
-            regExpStr = "E(?<episode>\\d+)";
-            regExp = QRegularExpression( regExpStr, QRegularExpression::PatternOption::CaseInsensitiveOption );
-            match = regExp.match( retVal );
-            if ( match.hasMatch() )
+            if ( titleStr || !isTV )
             {
-                if ( episodeStr )
-                    *episodeStr = smartTrim( match.captured( "episode" ) );
-                dataAfterEpisode = smartTrim( retVal.mid( match.capturedEnd( "episode" ) ) );
-                retVal.replace( match.capturedStart( "episode" ), match.capturedLength( "episode" ), "" );
-                isTV = true;
+                regExpStr = "E(?<episode>\\d+)";
+                regExp = QRegularExpression( regExpStr, QRegularExpression::PatternOption::CaseInsensitiveOption );
+                match = regExp.match( localRetVal );
+                if ( match.hasMatch() )
+                {
+                    if ( episodeStr )
+                        *episodeStr = smartTrim( match.captured( "episode" ) );
+
+                    auto pos = std::make_pair( match.capturedStart( "episode" ) - 1, match.capturedLength( "episode" ) + 1 );
+
+                    if ( positions.empty() || ( positions.front().first < match.capturedStart( "episode" ) ) )
+                        positions.push_back( pos );
+                    else
+                        positions.push_front( pos );
+                    isTV = true;
+                }
             }
 
-            if ( !dataBeforeSeason.isEmpty() )
-                retVal = dataBeforeSeason;
-            if ( !dataAfterEpisode.isEmpty() )
-                retVal += " " + dataAfterEpisode;
-
-            regExpStr = ".*\\s??(?<seasonsuffix>-\\s??Season\\s?(?<season>\\d+))";
-            regExp = QRegularExpression( regExpStr, QRegularExpression::PatternOption::CaseInsensitiveOption );
-            match = regExp.match( retVal );
-            if ( match.hasMatch() )
+            if ( titleStr )
             {
-                if ( seasonStr )
-                    *seasonStr = smartTrim( match.captured( ( "season" ) ) );
-                retVal.replace( match.capturedStart( "seasonsuffix" ), match.capturedEnd( "seasonsuffix" ), "" );
-                isTV = true;
+                auto data = stripOutPositions( localRetVal, positions );
+                if ( !data.isEmpty() )
+                {
+                    localRetVal = data.front();
+                    data.pop_front();
+                    if ( extraStr )
+                        *extraStr = data.join( " " );
+                }
             }
 
-            return std::make_pair( isTV, retVal );
+            if ( titleStr || !isTV )
+            {
+                regExpStr = ".*\\s??(?<seasonsuffix>-\\s??Season\\s?(?<season>\\d+))";
+                regExp = QRegularExpression( regExpStr, QRegularExpression::PatternOption::CaseInsensitiveOption );
+                match = regExp.match( localRetVal );
+                if ( match.hasMatch() )
+                {
+                    if ( seasonStr )
+                        *seasonStr = smartTrim( match.captured( ( "season" ) ) );
+                    if ( titleStr )
+                        localRetVal.replace( match.capturedStart( "seasonsuffix" ), match.capturedEnd( "seasonsuffix" ), "" );
+                    isTV = true;
+                }
+            }
+            if ( titleStr )
+                *titleStr = localRetVal;
+            return isTV;
         }
 
         void SSearchTMDBInfo::updateSearchCriteria( bool updateSearchBy )
@@ -128,7 +170,7 @@ namespace NMediaManager
             QString seasonStr;
             QString episodeStr;
 
-            auto regExp = QRegularExpression( "(?<fulltext>[\\.\\(](?<releaseDate>\\d{2,4})(?:[\\.\\)]?|$))" );
+            auto regExp = QRegularExpression( "(?<fulltext>[\\.\\(](?<releaseDate>(\\d{2}|\\d{4}))(?:[\\.\\)]?|$))" );
             auto match = regExp.match( fSearchName );
             if ( match.hasMatch() )
             {
@@ -145,7 +187,10 @@ namespace NMediaManager
             }
 
             if ( fIsTVShow )
-                fSearchName = looksLikeTVShow( fSearchName, &seasonStr, &episodeStr ).second;
+            {
+                looksLikeTVShow( fSearchName, &fSearchName, &seasonStr, &episodeStr, &fEpisodeTitle );
+                fEpisodeTitle = smartTrim( fEpisodeTitle, true );
+            }
 
             fSearchName = smartTrim( fSearchName, true );
 

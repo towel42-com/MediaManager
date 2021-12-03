@@ -46,7 +46,7 @@ namespace NMediaManager
             SSearchTMDBInfo() {};
             SSearchTMDBInfo( const QString &searchString, std::shared_ptr< SSearchResult > titleInfo );
 
-            static std::pair< bool, QString > looksLikeTVShow( const QString &searchString, QString *seasonStr = nullptr, QString *episodeStr = nullptr );
+            static bool looksLikeTVShow( const QString &searchString, QString *titleStr, QString *seasonStr=nullptr, QString *episodeStr = nullptr, QString * extraStr = nullptr );
 
             void updateSearchCriteria( bool updateSearchBy );
 
@@ -117,6 +117,7 @@ namespace NMediaManager
 
             static QString stripKnownData( const QString &string );
             static QString smartTrim( const QString &string, bool stripInnerPeriods = false );
+            static QStringList stripOutPositions( const QString &inString, const std::list< std::pair< int, int > > &positions );
 
             QString fSearchName;
             QString fReleaseDate;
