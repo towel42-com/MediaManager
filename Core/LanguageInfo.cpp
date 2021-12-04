@@ -21,11 +21,7 @@
 // SOFTWARE.
 
 #include "LanguageInfo.h"
-//#include "SearchResult.h"
-//#include "Shared/Preferences.h"
-//#include "SABUtils/QtUtils.h"
-//#include "SABUtils/StringUtils.h"
-//
+#include <QFileInfo>
 #include <QRegularExpression>
 #include <QDebug>
 
@@ -35,6 +31,11 @@ namespace NMediaManager
 {
     namespace NCore
     {
+        SLanguageInfo::SLanguageInfo( const QFileInfo &fi ) :
+            SLanguageInfo( fi.completeBaseName() )
+        {
+        }
+
         SLanguageInfo::SLanguageInfo( const QString &fileName ) :
             fFileName( fileName )
         {
@@ -49,7 +50,17 @@ namespace NMediaManager
             return retVal;
         }
 
-        static std::unordered_map< QString, std::pair< QString, QString > > sLangMap =
+        void SLanguageInfo::setDefaultISOCode( const QString &value ) // default is "en_us"
+        {
+            if ( isKnownLanguage( fDefaultISOCode ) )
+            {
+                fDefaultISOCode = value;
+                return;
+            }
+            Q_ASSERT( isKnownLanguage( fDefaultISOCode ) );
+        }
+
+        std::unordered_map< QString, std::pair< QString, QString > > SLanguageInfo::sLangMap =
         {
               {"af", {"Afrikaans", "" } }
             , {"af-ZA", {"Afrikaans", "(South Africa)" } }
@@ -83,7 +94,7 @@ namespace NMediaManager
             , {"cs", {"Czech", "" } }
             , {"cs-CZ", {"Czech", "(Czech Republic)" } }
             , {"cy", {"Welsh", "" } }
-            , {"cy-GB", {"Welsh", "(United Kingdom)" } }
+            , {"cy-GB", {"Welsh", "(UK)" } }
             , {"da", {"Danish", "" } }
             , {"da-DK", {"Danish", "(Denmark)" } }
             , {"de", {"German", "" } }
@@ -101,13 +112,13 @@ namespace NMediaManager
             , {"en-BZ", {"English", "(Belize)" } }
             , {"en-CA", {"English", "(Canada)" } }
             , {"en-CB", {"English", "(Caribbean)" } }
-            , {"en-GB", {"English", "(United Kingdom)" } }
+            , {"en-GB", {"English", "(UK)" } }
             , {"en-IE", {"English", "(Ireland)" } }
             , {"en-JM", {"English", "(Jamaica)" } }
             , {"en-NZ", {"English", "(New Zealand)" } }
             , {"en-PH", {"English", "(Republic of the Philippines)" } }
             , {"en-TT", {"English", "(Trinidad and Tobago)" } }
-            , {"en-US", {"English", "(United States)" } }
+            , {"en-US", {"English", "(US)" } }
             , {"en-ZA", {"English", "(South Africa)" } }
             , {"en-ZW", {"English", "(Zimbabwe)" } }
             , {"eo", {"Esperanto", "" } }
@@ -293,10 +304,10 @@ namespace NMediaManager
             , {"zu-ZA", {"Zulu", "(South Africa)" } }
         };
 
-        static std::unordered_map< QString, std::pair< QString, std::unordered_set< QString > > > sPrimToSecondaryMap;
-        static std::map< QString, std::pair< QString, QString > > sNameToCodeMap;
+        std::unordered_map< QString, std::pair< QString, std::unordered_set< QString > > > SLanguageInfo::sPrimToSecondaryMap;
+        std::unordered_map< QString, std::pair< QString, QString > > SLanguageInfo::sNameToCodeMap;
 
-        void SLanguageInfo::computeLanguage()
+        void SLanguageInfo::setupMaps()
         {
             if ( sPrimToSecondaryMap.empty() )
             {
@@ -325,13 +336,36 @@ namespace NMediaManager
                     }
                 }
             }
+        }
+
+        bool SLanguageInfo::isKnownLanguage( const QString &lang ) const
+        {
+            setupMaps();
+            if ( sLangMap.find( lang.toLower() ) != sLangMap.end() )
+                return true;
+            if ( sNameToCodeMap.find( lang.toLower() ) != sNameToCodeMap.end() )
+                return true;
+            return false;
+        }
+
+        bool SLanguageInfo::isLangFileFormat( const QFileInfo &fi )
+        {
+            auto fn = fi.completeBaseName();
+            auto regExp = QRegularExpression( "\\d+_\\S+" );
+            return regExp.match( fn ).hasMatch();
+        }
+
+        void SLanguageInfo::computeLanguage()
+        {
+            setupMaps();
+
             fLanguage.clear();
             fIsSDH = fIsForced = false;
             if ( fFileName.isEmpty() )
                 return;
 
             auto regExp1 = QRegularExpression( "(?<num>\\d+)_(?<langname>\\S+)" );
-            auto regExp2 = QRegularExpression( "(?<filename>\\s+)\\.(?<isocode>[A-Za-z]{2})(?<country>_[A-Za-z]{2})?" );
+            auto regExp2 = QRegularExpression( "(?<filename>\\s+)\\.(?<isocode>[A-Za-z]{2})(?<country>_[A-Za-z]{2}(\\d+)?)?" );
             auto match1 = regExp1.match( fFileName );
             QRegularExpressionMatch match2;
             QString num;
@@ -350,9 +384,14 @@ namespace NMediaManager
             }
             else
             {
-                langName = "en_us";
+                langName = fDefaultISOCode;
             }
 
+            computeLanguage( langName );
+        }
+
+        void SLanguageInfo::computeLanguage( const QString &langName )
+        {
             if ( langName.isEmpty() )
                 return;
 
@@ -372,18 +411,18 @@ namespace NMediaManager
                     fISOCode = ( *pos ).second.second;
                 }
             }
-            if ( !num.isEmpty() && fLanguage.isEmpty() )
+            if ( fLanguage.isEmpty() )
             {
-                fISOCode = "en";
-                fCountry.clear();
-                fLanguage.clear();
+                fUsingDefault = true;
+                computeLanguage( fDefaultISOCode );
             }
 
-            if ( ( fISOCode.toLower() == "en" ) && fCountry.isEmpty() )
+            if (    ( fISOCode.toLower() == fDefaultISOCode.left( 2 ) ) 
+                 && ( fISOCode.length() != 2 )
+                 && fCountry.isEmpty() )
             {
-                fLanguage = "English";
-                fISOCode = "en-US";
-                fCountry = "(United States)";
+                fUsingDefault = true;
+                computeLanguage( fDefaultISOCode );
             }
         }
     }

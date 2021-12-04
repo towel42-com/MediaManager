@@ -62,7 +62,8 @@ namespace NMediaManager
             eIsDir,
             eIsRoot,
             eIsTVShowRole,
-            eISOCodeRole
+            eISOCodeRole,
+            eMD5
         };
 
         struct STreeNodeItem
@@ -95,20 +96,10 @@ namespace NMediaManager
             {
             }
 
-            QString name() const
-            {
-                return rootItem() ? rootItem()->text() : "<NO ITEMS>";
-            }
+            QString name() const;
 
-            QStandardItem *item( EColumns column, bool createIfNecessary = true ) const
-            {
-                items( createIfNecessary );
-                return ( column > fRealItems.count() ) ? nullptr : fRealItems[column];
-            }
-            QStandardItem *rootItem( bool createIfNecessary = true ) const
-            {
-                return item( static_cast<EColumns>( 0 ), createIfNecessary );
-            }
+            QStandardItem *item( EColumns column, bool createIfNecessary = true ) const;
+            QStandardItem *rootItem( bool createIfNecessary = true ) const;
             QList< QStandardItem * > items( bool createIfNecessary = true ) const;
             bool fLoaded{ false };
             bool fIsFile{ false };
@@ -196,8 +187,12 @@ namespace NMediaManager
             void slotPatternChanged();
             void slotTreatAsTVByDefaultChanged( bool treatAsTVShowByDefault );
         private:
+            QList< QFileInfo > getSRTFilesForMKV( const QFileInfo &fi ) const;
+
             void autoDetermineLanguageAttributes( QStandardItem *parent );
-            std::unordered_map< QString, std::vector< QStandardItem * > > getChildSRTFiles( QStandardItem *item ) const;
+            std::unordered_map< QString, std::vector< QStandardItem * > > getChildSRTFiles( const QStandardItem *item, bool sort ) const;
+            QStandardItem * getChildMKVFile( const QStandardItem *item ) const;
+
             void appendRow( QStandardItem *parent, QList< QStandardItem * > &items );
 
             struct SIterateInfo
@@ -224,6 +219,10 @@ namespace NMediaManager
             QString getDispName( const QString &absPath ) const;
             std::pair< bool, QStandardItemModel * > process( bool displayOnly ) const;
             bool process( const QStandardItem *item, bool displayOnly, QStandardItemModel *resultsModel, QStandardItem *resultsParentItem ) const;
+
+            std::pair< bool, QStandardItem * > processItem( const QStandardItem *item, QStandardItem *parentItem, QStandardItemModel *resultModel, bool displayOnly ) const;
+            std::pair< bool, QStandardItem * > transform( const QStandardItem *item, QStandardItem *parentItem, QStandardItemModel *resultModel, bool displayOnly ) const;
+            std::pair< bool, QStandardItem * > mergeSRT( const QStandardItem *item, QStandardItem *parentItem, QStandardItemModel *resultModel, bool displayOnly ) const;
 
             QStandardItem *getItem( const QStandardItem *item, EColumns column ) const;
             QStandardItem *getTransformItem( const QStandardItem *parent ) const;

@@ -94,7 +94,10 @@ namespace NMediaManager
 
             QSettings settings;
             fImpl->tabWidget->setCurrentIndex( settings.value( "LastFunctionalityPage", 0 ).toInt() );
-
+            if ( settings.contains( "mergeSRTSplitter" ) )
+                fImpl->mergeSRTSplitter->restoreState( settings.value( "mergeSRTSplitter" ).toByteArray() );
+            else
+                fImpl->mergeSRTSplitter->setSizes( QList< int >() << 100 << 0 );
             QTimer::singleShot( 0, this, &CMainWindow::slotDirectoryChanged );
         }
 
@@ -103,6 +106,7 @@ namespace NMediaManager
             saveSettings();
             QSettings settings;
             settings.setValue( "LastFunctionalityPage", fImpl->tabWidget->currentIndex() );
+            settings.setValue( "mergeSRTSplitter", fImpl->mergeSRTSplitter->saveState() );
         }
 
         void CMainWindow::loadSettings()
@@ -131,7 +135,10 @@ namespace NMediaManager
         void CMainWindow::slotDirectoryChanged()
         {
             slotDirectoryChangedImmediate();
+            fImpl->actionRun->setEnabled( false );
+
             CAutoWaitCursor awc;
+            qApp->processEvents();
 
             auto dirName = fImpl->directory->text();
 
@@ -166,17 +173,12 @@ namespace NMediaManager
             }
         }
 
-        void CMainWindow::slotMergeSRTDirectoryLoaded( bool /*canceled*/ )
+        void CMainWindow::slotMergeSRTDirectoryLoaded()
         {
-            clearProgressDlg();
         }
 
-        void CMainWindow::slotAutoSearchForNewNames( bool canceled )
+        void CMainWindow::slotAutoSearchForNewNames()
         {
-            clearProgressDlg();
-            if ( canceled )
-                return;
-
             if ( !fXformModel )
                 return;
 
@@ -287,10 +289,19 @@ namespace NMediaManager
             fProgressDlg->setCancelButtonText( cancelButtonText );
             fProgressDlg->setRange( 0, max );
             fProgressDlg->show();
+
+            connect( fProgressDlg, &QProgressDialog::canceled, 
+                     [this]()
+                     {
+                         fImpl->actionSelectDir->setEnabled( true );
+                     } );
         }
 
         void CMainWindow::slotDoubleClicked( const QModelIndex &idx )
         {
+            if ( !isTransformActive() )
+                return;
+
             auto baseIdx = fXformModel->index( idx.row(), NCore::EColumns::eFSName, idx.parent() );
             auto titleInfo = fXformModel->getSearchResultInfo( idx );
 
@@ -329,6 +340,27 @@ namespace NMediaManager
             return fImpl->tabWidget->currentWidget() == fImpl->mergeSRTTab;
         }
 
+        NCore::CDirModel * CMainWindow::getActiveModel() const
+        {
+            if ( isTransformActive() )
+                return fXformModel.get();
+            else if ( isMergeSRTActive() )
+                return fMergeSRTModel.get();
+            return nullptr;
+        }
+
+        void CMainWindow::slotLoadFinished( bool canceled )
+        {
+            fImpl->actionRun->setEnabled( getActiveModel() && getActiveModel()->rowCount() );
+            clearProgressDlg();
+
+            if ( canceled )
+                return;
+
+            if ( isTransformActive() )
+                QTimer::singleShot( 0, this, &CMainWindow::slotAutoSearchForNewNames );
+        }
+
         void CMainWindow::slotLoadDirectory()
         {
             bool aOK = true;
@@ -336,7 +368,7 @@ namespace NMediaManager
             {
                 fXformModel.reset( new NCore::CDirModel( NCore::CDirModel::eTransform ) );
                 fImpl->mediaNamerFiles->setModel( fXformModel.get() );
-                connect( fXformModel.get(), &NCore::CDirModel::sigDirReloaded, this, &CMainWindow::slotAutoSearchForNewNames );
+                connect( fXformModel.get(), &NCore::CDirModel::sigDirReloaded, this, &CMainWindow::slotLoadFinished );
                 fXformModel->slotTreatAsTVByDefaultChanged( fImpl->actionTreatAsTVShowByDefault->isChecked() );
                 fXformModel->slotTVOutputFilePatternChanged( NCore::CPreferences::instance()->getTVOutFilePattern() );
                 fXformModel->slotTVOutputDirPatternChanged( NCore::CPreferences::instance()->getTVOutDirPattern() );
@@ -345,43 +377,57 @@ namespace NMediaManager
                 fXformModel->setNameFilters( NCore::CPreferences::instance()->getMediaExtensions() << NCore::CPreferences::instance()->getSubtitleExtensions(), fImpl->mediaNamerFiles );
                 setupProgressDlg( tr( "Finding Files" ), tr( "Cancel" ), 1 );
                 fXformModel->setRootPath( fImpl->directory->text(), fImpl->mediaNamerFiles, fProgressDlg );
+                fImpl->actionRun->setEnabled( true );
             }
             else if ( isMergeSRTActive() )
             {
                 fMergeSRTModel.reset( new NCore::CDirModel( NCore::CDirModel::eMergeSRT ) );
                 fImpl->mergeSRTFiles->setModel( fMergeSRTModel.get() );
-                connect( fMergeSRTModel.get(), &NCore::CDirModel::sigDirReloaded, this, &CMainWindow::slotMergeSRTDirectoryLoaded );
-                fMergeSRTModel->setNameFilters( QStringList() << "*.srt", fImpl->mergeSRTFiles );
+                connect( fMergeSRTModel.get(), &NCore::CDirModel::sigDirReloaded, this, &CMainWindow::slotLoadFinished );
+                fMergeSRTModel->setNameFilters( QStringList() << "*.mkv", fImpl->mergeSRTFiles );
                 setupProgressDlg( tr( "Finding Files" ), tr( "Cancel" ), 1 );
                 fMergeSRTModel->setRootPath( fImpl->directory->text(), fImpl->mergeSRTFiles, fProgressDlg );
-                fImpl->actionRun->setEnabled( true );
             }
-            else
-                aOK = false;
-
-            fImpl->actionRun->setEnabled( aOK );
+            fImpl->actionRun->setEnabled( false );
         }
 
         void CMainWindow::slotRun()
         {
+            bool processOK = false;
+            QString actionName;
+            QString cancelName;
+
+            NCore::CDirModel *model = nullptr;
             if ( isTransformActive() )
             {
-                if ( fXformModel->process(
-                    [this]( int count ) { setupProgressDlg( tr( "Renaming Files..." ), tr( "Abort Rename" ), count ); return fProgressDlg; },
-                    [this]( QProgressDialog *dlg ) { (void)dlg; clearProgressDlg(); },
-                    this ) )
-                    slotLoadDirectory();
-                ;
+                actionName = tr( "Renaming Files..." );
+                cancelName = tr( "Abort Rename" );
+                model = fXformModel.get();
             }
             else if ( isMergeSRTActive() )
             {
-                if ( fMergeSRTModel->process(
-                    [this]( int count ) { setupProgressDlg( tr( "Merging SRT Files into MKV..." ), tr( "Abort Merge" ), count ); return fProgressDlg; },
+                auto sizes = fImpl->mergeSRTSplitter->sizes();
+                if ( sizes.back() == 0 )
+                {
+                    sizes.front() -= 30;
+                    sizes.back() = 30;
+
+                    fImpl->mergeSRTSplitter->setSizes( sizes );
+                }
+
+                actionName = tr( "Merging SRT Files into MKV..." );
+                cancelName = tr( "Abort Merge" );
+                model = fMergeSRTModel.get();
+            }
+            else
+                return;
+
+            if( model->process(
+                    [actionName, cancelName, this]( int count ) { setupProgressDlg( actionName, cancelName, count ); return fProgressDlg; },
                     [this]( QProgressDialog *dlg ) { (void)dlg; clearProgressDlg(); },
                     this ) )
                     slotLoadDirectory();
                 ;
-            }
         }
     }
 }

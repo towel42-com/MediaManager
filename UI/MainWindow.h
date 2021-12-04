@@ -59,11 +59,13 @@ namespace NMediaManager
             void slotRun();
             void slotToggleTreatAsTVShowByDefault();
             void slotDoubleClicked( const QModelIndex &idx );
-            void slotMergeSRTDirectoryLoaded( bool canceled );
-            void slotAutoSearchForNewNames( bool canceled );
+            void slotMergeSRTDirectoryLoaded();
+            void slotAutoSearchForNewNames();
             void slotAutoSearchFinished( const QString &path, bool searchesRemaining );
             void slotPreferences();
+            void slotLoadFinished( bool canceled );
         private:
+            NCore::CDirModel *getActiveModel() const;
             bool isTransformActive() const;
             bool isMergeSRTActive() const;
             void autoSearchForNewNames( QModelIndex rootIdx );
