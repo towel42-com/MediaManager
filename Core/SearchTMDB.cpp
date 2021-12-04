@@ -88,7 +88,7 @@ namespace NMediaManager
 
         void CSearchTMDB::addSearch( const QString &filePath, std::shared_ptr< SSearchTMDBInfo > searchInfo )
         {
-            qDebug() << "AddSearch: " << filePath << searchInfo->searchName();
+            //qDebug() << "AddSearch: " << filePath << searchInfo->searchName();
 
             fSearchQueue.push_back( std::make_pair( filePath, searchInfo ) );
             startAutoSearchTimer();
@@ -623,7 +623,7 @@ namespace NMediaManager
             fSearchReply.reset();
 
             auto doc = QJsonDocument::fromJson( data );
-            qDebug().noquote().nospace() << doc.toJson( QJsonDocument::Indented );
+            //qDebug().noquote().nospace() << doc.toJson( QJsonDocument::Indented );
             if ( doc.object().contains( "results" ) )
             {
                 auto results = doc.object()["results"].toArray();
@@ -708,7 +708,7 @@ namespace NMediaManager
         */
         bool CSearchTMDB::loadSearchResult( const QJsonObject &resultItem, bool multipleResults )
         {
-            qDebug().nospace().noquote() << QJsonDocument( resultItem ).toJson( QJsonDocument::Indented );
+            //qDebug().nospace().noquote() << QJsonDocument( resultItem ).toJson( QJsonDocument::Indented );
 
             if ( !fSearchInfo )
                 return false;
