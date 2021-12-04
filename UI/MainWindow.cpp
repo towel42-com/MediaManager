@@ -98,7 +98,8 @@ namespace NMediaManager
                 fImpl->mergeSRTSplitter->restoreState( settings.value( "mergeSRTSplitter" ).toByteArray() );
             else
                 fImpl->mergeSRTSplitter->setSizes( QList< int >() << 100 << 0 );
-            QTimer::singleShot( 0, this, &CMainWindow::slotDirectoryChanged );
+            QTimer::singleShot( 0, this, &CMainWindow::slotDirectoryChangedImmediate );
+            QTimer::singleShot( 10, this, &CMainWindow::slotDirectoryChanged );
         }
 
         CMainWindow::~CMainWindow()
@@ -130,6 +131,7 @@ namespace NMediaManager
         {
             fImpl->actionLoad->setEnabled( false );
             fImpl->actionRun->setEnabled( false );
+            fImpl->directory->setStyleSheet( "QLineEdit { background-color: #b7bfaf }" );
         }
 
         void CMainWindow::slotDirectoryChanged()
@@ -143,7 +145,13 @@ namespace NMediaManager
             auto dirName = fImpl->directory->text();
 
             QFileInfo fi( dirName );
-            fImpl->actionLoad->setEnabled( !dirName.isEmpty() && fi.exists() && fi.isDir() );
+            bool aOK = !dirName.isEmpty() && fi.exists() && fi.isDir();
+            if ( aOK )
+                fImpl->directory->setStyleSheet( "QLineEdit { background-color: white }" );
+            else
+                fImpl->directory->setStyleSheet( "QLineEdit { background-color: red }" );
+
+            fImpl->actionLoad->setEnabled( aOK );
         }
 
         void CMainWindow::slotSelectDirectory()
@@ -233,7 +241,7 @@ namespace NMediaManager
         {
             auto results = fSearchTMDB->getResults( path );
 
-            qDebug().noquote().nospace() << "Search results for path " << path << " Has Result? " << ( ( results.size() == 1 ) ? "Yes" : "No" );
+            //qDebug().noquote().nospace() << "Search results for path " << path << " Has Result? " << ( ( results.size() == 1 ) ? "Yes" : "No" );
             if ( searchesRemaining )
             {
                 if ( fProgressDlg )
@@ -254,7 +262,7 @@ namespace NMediaManager
             if ( results.size() != 1 )
                 return;
             auto result = results.front();
-            qDebug() << result->toString();
+            //qDebug() << result->toString();
 
             auto item = fXformModel->getItemFromPath( path );
             if ( item && result )
@@ -376,7 +384,7 @@ namespace NMediaManager
                 fXformModel->slotMovieOutputDirPatternChanged( NCore::CPreferences::instance()->getMovieOutDirPattern() );
                 fXformModel->setNameFilters( NCore::CPreferences::instance()->getMediaExtensions() << NCore::CPreferences::instance()->getSubtitleExtensions(), fImpl->mediaNamerFiles );
                 setupProgressDlg( tr( "Finding Files" ), tr( "Cancel" ), 1 );
-                fXformModel->setRootPath( fImpl->directory->text(), fImpl->mediaNamerFiles, fProgressDlg );
+                fXformModel->setRootPath( fImpl->directory->text(), fImpl->mediaNamerFiles, nullptr, fProgressDlg );
                 fImpl->actionRun->setEnabled( true );
             }
             else if ( isMergeSRTActive() )
@@ -386,7 +394,7 @@ namespace NMediaManager
                 connect( fMergeSRTModel.get(), &NCore::CDirModel::sigDirReloaded, this, &CMainWindow::slotLoadFinished );
                 fMergeSRTModel->setNameFilters( QStringList() << "*.mkv", fImpl->mergeSRTFiles );
                 setupProgressDlg( tr( "Finding Files" ), tr( "Cancel" ), 1 );
-                fMergeSRTModel->setRootPath( fImpl->directory->text(), fImpl->mergeSRTFiles, fProgressDlg );
+                fMergeSRTModel->setRootPath( fImpl->directory->text(), fImpl->mergeSRTFiles, fImpl->mergeSRTResults, fProgressDlg );
             }
             fImpl->actionRun->setEnabled( false );
         }
