@@ -1,0 +1,95 @@
+#/bin/bash
+
+for file in *.mkv; do
+    inMKV=$file
+    dirname=`dirname "$inMKV"`
+    base=`basename "$inMKV" .mkv`
+    srtFile=$dirname/Subs/$base.srt
+	echo "inMKV=$inMKV"
+	echo "dirname=$dirname"
+	echo "base=$base"
+	echo "srtFile=$srtFile"
+
+	srtSDHFile=
+	srtForcedFile=
+	if [[ ! -f "$srtFile" ]]; then
+		srtFile=$dirname/Subs/2_English.srt
+		srtSDHFile=$dirname/Subs/3_English.srt
+		srtForcedFile=$dirname/Subs/4_English.srt
+	fi
+
+	if [[ ! -f "$srtFile" ]]; then
+		echo "SRT File not found '$srtFile'"
+		continue
+	fi
+    outMKV=$dirname/newmkv/$base.mkv
+
+	jsonFile=$dirname/$base.json
+	echo "Creating JSON File $jsonFile"
+	echo "["                       > $jsonFile
+	echo "    \"--ui-language\"," >> $jsonFile
+	echo "    \"en_US\","         >> $jsonFile
+	echo "    \"--priority\","    >> $jsonFile
+	echo "    \"lower\","         >> $jsonFile
+	echo "    \"--output\","      >> $jsonFile
+	echo "    \"$outMKV\","       >> $jsonFile
+	echo "    \"--language\","    >> $jsonFile
+	echo "    \"0:en\","          >> $jsonFile
+	echo "    \"--language\","    >> $jsonFile
+	echo "    \"1:en\","          >> $jsonFile
+	echo "    \"(\","             >> $jsonFile
+	echo "    \"$inMKV\","        >> $jsonFile
+	echo "    \")\","             >> $jsonFile
+	echo "    \"--title\","       >> $jsonFile
+	echo "    \"$base\","         >> $jsonFile
+
+	trackOrder="0:0,0:1"
+	nextTrack=1
+
+	echo "    \"--language\","      >> $jsonFile
+	echo "    \"0:en\","            >> $jsonFile
+	echo "    \"--default-track\"," >> $jsonFile
+	echo "    \"0:no\","            >> $jsonFile
+	echo "    \"(\","               >> $jsonFile
+	echo "    \"$srtFile\","        >> $jsonFile
+	echo "    \")\","               >> $jsonFile
+	trackOrder="$trackOrder,$nextTrack:0"
+	nextTrack=$((nextTrack+1))
+	
+	if [[ -f "$srtSDHFile" ]]; then
+		echo "    \"--language\","              >> $jsonFile
+		echo "    \"0:en\","                    >> $jsonFile
+		echo "    \"--default-track\","         >> $jsonFile
+		echo "    \"0:no\","                    >> $jsonFile
+		#echo "    \"--hearing-impaired-flag\"," >> $jsonFile
+		#echo "    \"0:yes\","                   >> $jsonFile
+		echo "    \"(\","                       >> $jsonFile
+		echo "    \"$srtSDHFile\","             >> $jsonFile
+		echo "    \")\","                       >> $jsonFile
+		trackOrder="$trackOrder,$nextTrack:0"
+		nextTrack=$((nextTrack+1))
+	fi
+
+	if [[ -f "$srtForcedFile" ]]; then
+		echo "    \"--language\","        >> $jsonFile
+		echo "    \"0:en\","              >> $jsonFile
+		echo "    \"--default-track\","   >> $jsonFile
+		echo "    \"0:no\","              >> $jsonFile
+		echo "    \"--forced-track\","    >> $jsonFile
+		echo "    \"0:yes\","             >> $jsonFile
+		echo "    \"(\","                 >> $jsonFile
+		echo "    \"$srtForcedFile\","    >> $jsonFile
+		echo "    \")\","                 >> $jsonFile
+		trackOrder="$trackOrder,$nextTrack:0" 
+		nextTrack=$((nextTrack+1)) 
+	fi
+
+	echo "    \"--track-order\","         >> $jsonFile
+	echo "    \"$trackOrder\""            >> $jsonFile
+	echo "]"                              >> $jsonFile
+
+    cmd="/usr/local/bin/mkvmerge @\"$jsonFile\""
+	cat "$jsonFile"
+    echo $cmd
+    eval $cmd
+done
