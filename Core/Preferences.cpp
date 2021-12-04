@@ -21,13 +21,18 @@
 // SOFTWARE.
 
 #include "Preferences.h"
+#include "LanguageInfo.h"
 
 #include <QSettings>
 #include <QProgressDialog>
 #include <QStringListModel>
 #include <QInputDialog>
+#include <QFileInfo>
 
 #include "SABUtils/ButtonEnabler.h"
+
+#include <optional>
+#include <unordered_set>
 
 namespace NMediaManager
 {
@@ -263,7 +268,58 @@ namespace NMediaManager
         QString CPreferences::getMKVMergeEXE() const
         {
             QSettings settings;
-            return settings.value( "MKVMergeEXE", QString( "C:/Program Files/MKVToolNix/mkvmerge.exe" ) ).toString();
+            auto retVal = settings.value( "MKVMergeEXE", QString( "C:/Program Files/MKVToolNix/mkvmerge.exe" ) ).toString();
+
+            auto fi = QFileInfo( retVal );
+            bool aOK = !retVal.isEmpty() && fi.isExecutable();
+            return aOK ? retVal : QString();
         }
-    }
+ 
+        bool CPreferences::isMediaFile( const QFileInfo &fi ) const
+        {
+            static std::optional< std::unordered_set< QString > > extensions;
+            if ( !extensions.has_value() )
+            {
+                auto suffixes = getMediaExtensions();
+                for ( auto &&ii : suffixes )
+                {
+                    auto pos = ii.lastIndexOf( '.' );
+                    ii = ii.mid( pos + 1 );
+                }
+                extensions = { suffixes.begin(), suffixes.end() };
+            }
+
+            auto suffix = fi.suffix();
+            return ( extensions.value().find( suffix ) != extensions.value().end() );
+        }
+
+        // only return true for X_Lang.srt files or subs directories
+        bool CPreferences::isSubtitleFile( const QFileInfo &fi, bool *isLangFileFormat ) const
+        {
+            if ( isLangFileFormat )
+                *isLangFileFormat = false;
+
+            static std::optional< std::unordered_set< QString > > extensions;
+            if ( !extensions.has_value() )
+            {
+                auto exts = CPreferences::instance()->getSubtitleExtensions();
+                for ( auto &&ii : exts )
+                {
+                    auto pos = ii.lastIndexOf( '.' );
+                    ii = ii.mid( pos + 1 );
+                }
+                extensions = { exts.begin(), exts.end() };
+            }
+
+            auto suffix = fi.suffix();
+            if ( extensions.value().find( suffix ) == extensions.value().end() )
+                return false;
+
+            if ( isLangFileFormat )
+            {
+                *isLangFileFormat = SLanguageInfo::isLangFileFormat( fi );
+            }
+            return true;
+        }
+   }
 }

@@ -25,12 +25,12 @@
 
 #include <QString>
 #include <QStringList>
+class QFileInfo;
 
 namespace NMediaManager
 {
     namespace NCore
     {
-
         class CPreferences
         {
             CPreferences();
@@ -73,6 +73,9 @@ namespace NMediaManager
 
             void setMKVMergeEXE( const QString &value );
             QString getMKVMergeEXE() const;
+
+            bool isMediaFile( const QFileInfo &fi ) const;
+            bool isSubtitleFile( const QFileInfo &info, bool *isLangFileFormat = nullptr ) const;
         private:
             //QString getDefaultInPattern( bool forTV ) const;
             QString getDefaultOutDirPattern( bool forTV ) const;
