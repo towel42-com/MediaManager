@@ -47,6 +47,7 @@ namespace NMediaManager
             connect( fImpl->btnAddString, &QToolButton::clicked, this, &CPreferences::slotAddString );
             connect( fImpl->btnDelString, &QToolButton::clicked, this, &CPreferences::slotDelString );
             connect( fImpl->btnSelectMKVMergeExe, &QToolButton::clicked, this, &CPreferences::slotSelectMKVMergeExe );
+            connect( fImpl->mkvMergeExe, &QLineEdit::textChanged, this, &CPreferences::slotMKVMergeExeChanged );
 
             fStringModel = new QStringListModel( this );
             fImpl->knownStrings->setModel( fStringModel );
@@ -117,6 +118,18 @@ namespace NMediaManager
 
             if ( !exe.isEmpty() )
                 fImpl->mkvMergeExe->setText( exe );
+        }
+
+        void CPreferences::slotMKVMergeExeChanged()
+        {
+            auto cmd = fImpl->mkvMergeExe->text();
+            auto fi = QFileInfo( cmd );
+            bool aOK = !cmd.isEmpty() && fi.isExecutable();
+
+            if ( aOK )
+                fImpl->mkvMergeExe->setStyleSheet( "QLineEdit { background-color: white }" );
+            else
+                fImpl->mkvMergeExe->setStyleSheet( "QLineEdit { background-color: red }" );
         }
 
         void CPreferences::loadSettings()

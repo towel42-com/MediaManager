@@ -43,6 +43,7 @@ namespace NMediaManager
             void slotAddString();
             void slotDelString();
             void slotSelectMKVMergeExe();
+            void slotMKVMergeExeChanged();
 
             void accept() override;
         private:
