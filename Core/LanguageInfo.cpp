@@ -52,12 +52,12 @@ namespace NMediaManager
 
         void SLanguageInfo::setDefaultISOCode( const QString &value ) // default is "en_us"
         {
-            if ( isKnownLanguage( fDefaultISOCode ) )
+            if ( isKnownLanguage( value ) )
             {
-                fDefaultISOCode = value;
+                fDefaultISOCode = prettyPrintISOCode( value );
                 return;
             }
-            Q_ASSERT( isKnownLanguage( fDefaultISOCode ) );
+            Q_ASSERT( isKnownLanguage( value ) );
         }
 
         std::unordered_map< QString, std::pair< QString, QString > > SLanguageInfo::sLangMap =
@@ -355,6 +355,14 @@ namespace NMediaManager
             return regExp.match( fn ).hasMatch();
         }
 
+        QString SLanguageInfo::prettyPrintISOCode( const QString &isoCode )
+        {
+            auto tmp = isoCode.split( QRegularExpression( "_|-" ), Qt::SkipEmptyParts );
+            if ( tmp.length() > 1 )
+                tmp[1] = tmp[1].toUpper();
+            return tmp.join( "_" );
+        }
+
         void SLanguageInfo::computeLanguage()
         {
             setupMaps();
@@ -384,6 +392,7 @@ namespace NMediaManager
             }
             else
             {
+                fUsingDefault = true;
                 langName = fDefaultISOCode;
             }
 
@@ -400,7 +409,7 @@ namespace NMediaManager
             {
                 fLanguage = ( *pos ).second.first;
                 fCountry = ( *pos ).second.second;
-                fISOCode = ( *pos ).first;
+                fISOCode = prettyPrintISOCode( ( *pos ).first );
             }
             else
             {
@@ -408,7 +417,7 @@ namespace NMediaManager
                 if ( pos != sNameToCodeMap.end() )
                 {
                     fLanguage = ( *pos ).second.first;
-                    fISOCode = ( *pos ).second.second;
+                    fISOCode = prettyPrintISOCode( ( *pos ).second.second );
                 }
             }
             if ( fLanguage.isEmpty() )

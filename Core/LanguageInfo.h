@@ -40,18 +40,22 @@ namespace NMediaManager
             QString displayName() const;
             bool isForced() const { return fIsForced; }
             bool isSDH() const { return fIsSDH; }
-            QString isoCode() const { return fISOCode; }
+            QString isoCode() const 
+            { 
+                return fISOCode; 
+            }
 
             // when the iso code/language cant be determined use this
             // this happens when the following happens
             // 1) its not of the format xx_Language
             // 2) its not of the form file.Language<_country.xx>
             // 3) the language from 1 or 2 isnt a known language or country
-            void setDefaultISOCode( const QString & value );  // default is "en_us"
+            void setDefaultISOCode( const QString & value );  // default is "en_US"
 
             static bool isLangFileFormat( const QFileInfo &fi );
             bool usingDefault() const { return fUsingDefault; }
             bool knownLanguage() const { return !usingDefault(); }
+            static QString prettyPrintISOCode( const QString &isoCode );
         private:
             bool isKnownLanguage( const QString & lang ) const;
             void computeLanguage();
@@ -65,7 +69,7 @@ namespace NMediaManager
             QString fCountry;
             bool fIsForced{ false };
             bool fIsSDH{ false };
-            QString fDefaultISOCode{ "en_us" };
+            QString fDefaultISOCode{ "en_US" };
             bool fUsingDefault{ false };
 
             static std::unordered_map< QString, std::pair< QString, QString > > sLangMap;
