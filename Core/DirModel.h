@@ -36,6 +36,7 @@ class QTreeView;
 class QMediaPlaylist;
 class QFileIconProvider;
 class QDirIterator;
+class QPlainTextEdit;
 namespace NMediaManager
 {
     namespace NCore
@@ -63,6 +64,9 @@ namespace NMediaManager
             eIsRoot,
             eIsTVShowRole,
             eISOCodeRole,
+            eDefaultTrackRole,
+            eHearingImparedRole,
+            eForcedSubTitleRole,
             eMD5
         };
 
@@ -156,18 +160,19 @@ namespace NMediaManager
             void setSearchResult( QStandardItem *item, std::shared_ptr< SSearchResult > info, bool applyToChilren );
             std::shared_ptr< SSearchResult > getSearchResultInfo( const QModelIndex &idx ) const;
 
-            void setNameFilters( const QStringList &filters, QTreeView *view = nullptr, QProgressDialog *progress = nullptr );
-
-            void reloadModel( QTreeView *view, QProgressDialog *dlg );
-
-            void setRootPath( const QString &path, QTreeView *view = nullptr, QProgressDialog *dlg = nullptr );
+            void setNameFilters( const QStringList &filters, QTreeView *view = nullptr, QPlainTextEdit * resultsView = nullptr, QProgressDialog *progress = nullptr );
+            void reloadModel( QTreeView *view, QPlainTextEdit *resultsView, QProgressDialog *dlg );
+            void setRootPath( const QString &path, QTreeView *view = nullptr, QPlainTextEdit *resultsView = nullptr, QProgressDialog *dlg = nullptr );
 
             QString getSearchName( const QModelIndex &idx ) const;
             bool treatAsTVShow( const QFileInfo &fileInfo, bool defaultValue ) const;
             virtual bool setData( const QModelIndex &idx, const QVariant &value, int role ) override;
 
+            bool isMediaFile( const QStandardItem *item ) const;
+            bool isMediaFile( const QModelIndex &fi ) const;
+
+            bool isSubtitleFile( const QStandardItem *item, bool *isLangFileFormat = nullptr ) const;
             bool isSubtitleFile( const QModelIndex &idx, bool *isLangFileFormat = nullptr ) const;
-            bool isSubtitleFile( const QFileInfo &info, bool *isLangFileFormat = nullptr ) const;
 
             bool canAutoSearch( const QModelIndex &index ) const;
             bool canAutoSearch( const QFileInfo &info ) const;
@@ -190,8 +195,9 @@ namespace NMediaManager
             QList< QFileInfo > getSRTFilesForMKV( const QFileInfo &fi ) const;
 
             void autoDetermineLanguageAttributes( QStandardItem *parent );
-            std::unordered_map< QString, std::vector< QStandardItem * > > getChildSRTFiles( const QStandardItem *item, bool sort ) const;
-            QStandardItem * getChildMKVFile( const QStandardItem *item ) const;
+            
+            std::unordered_map< QString, std::vector< QStandardItem * > > getChildSRTFiles( const QStandardItem *item, bool sort ) const; // item should be a MKV file
+            QList< QStandardItem * > getChildMKVFiles( const QStandardItem *item ) const; // item should be a dir file
 
             void appendRow( QStandardItem *parent, QList< QStandardItem * > &items );
 
@@ -217,12 +223,15 @@ namespace NMediaManager
             STreeNode getItemRow( const QFileInfo &path ) const;
 
             QString getDispName( const QString &absPath ) const;
+            QString getDispName( const QFileInfo & absPath ) const;
             std::pair< bool, QStandardItemModel * > process( bool displayOnly ) const;
             bool process( const QStandardItem *item, bool displayOnly, QStandardItemModel *resultsModel, QStandardItem *resultsParentItem ) const;
 
             std::pair< bool, QStandardItem * > processItem( const QStandardItem *item, QStandardItem *parentItem, QStandardItemModel *resultModel, bool displayOnly ) const;
             std::pair< bool, QStandardItem * > transform( const QStandardItem *item, QStandardItem *parentItem, QStandardItemModel *resultModel, bool displayOnly ) const;
             std::pair< bool, QStandardItem * > mergeSRT( const QStandardItem *item, QStandardItem *parentItem, QStandardItemModel *resultModel, bool displayOnly ) const;
+
+            bool checkProcessItemExists( const QString & fileName, QStandardItem * parentItem, bool scheduledForRemoval=false ) const;
 
             QStandardItem *getItem( const QStandardItem *item, EColumns column ) const;
             QStandardItem *getTransformItem( const QStandardItem *parent ) const;
@@ -245,7 +254,8 @@ namespace NMediaManager
 
             [[nodiscard]] QString computeTransformPath( const QStandardItem *item, bool parentsOnly ) const;
 
-            void setChecked( QStandardItem *item, bool isTVShow ) const;
+            void setChecked( QStandardItem *item, bool value ) const;
+            void setChecked( QStandardItem *item, ECustomRoles role, bool value ) const;
 
             EModelType fModelType{ EModelType::eUnknown };
             QString fRootPath;
@@ -267,6 +277,7 @@ namespace NMediaManager
             QTimer *fTimer{ nullptr };
             QTimer *fPatternTimer{ nullptr };
             QTreeView *fTreeView{ nullptr };
+            QPlainTextEdit *fResults{ nullptr };
             mutable QProgressDialog *fProgressDlg{ nullptr };
         };
     }
