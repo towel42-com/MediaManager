@@ -1315,7 +1315,7 @@ namespace NMediaManager
                             fProgressDlg->setLabelText( tr( "Renaming '%1' => '%2'" ).arg( getDispName( oldName ) ).arg( getDispName( newName ) ) );
                     }
                     QFileInfo fi( oldName );
-                    if ( checkProcessItemExists( oldName, myItem, removeIt ) )
+                    if ( !checkProcessItemExists( oldName, myItem, removeIt ) )
                     {
                     }
                     else if ( fi.exists() && removeIt )
@@ -1627,8 +1627,9 @@ namespace NMediaManager
         {
             if ( isTransformModel() )
                 return transform( item, parentItem, resultModel, displayOnly );
-            else
+            else if ( isMergeSRTModel() )
                 return mergeSRT( item, parentItem, resultModel, displayOnly );
+            return { false, nullptr };
         }
 
         bool CDirModel::process( const QStandardItem *item, bool displayOnly, QStandardItemModel *resultModel, QStandardItem *parentItem ) const
