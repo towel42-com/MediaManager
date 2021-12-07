@@ -259,7 +259,7 @@
             </property>
            </widget>
           </widget>
-          <widget class="QWidget" name="widget" native="true">
+          <widget class="QWidget" name="viewerWidget" native="true">
            <layout class="QVBoxLayout" name="verticalLayout_4">
             <item>
              <widget class="QLabel" name="bifImageLabel">
@@ -282,7 +282,7 @@
                </size>
               </property>
               <property name="text">
-               <string>BIF</string>
+               <string/>
               </property>
               <property name="alignment">
                <set>Qt::AlignBottom|Qt::AlignHCenter</set>

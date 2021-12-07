@@ -69,14 +69,14 @@ namespace NMediaManager
             fImpl->directory->setIsOKFunction( []( const QString &dirName )
                                                {
                                                    auto fi = QFileInfo( dirName );
-                                                   return dirName.isEmpty() || ( fi.exists() && fi.isDir() );
-                                               } );
+                                                   return dirName.isEmpty() || ( fi.exists() && fi.isDir() && fi.isExecutable() );
+                                               }, tr( "Directory '%1' does not Exist or is not a Directory" ) );
             fImpl->bifFile->setDelay( 1000 );
             fImpl->bifFile->setIsOKFunction( []( const QString &fileName )
                                              {
                                                  auto fi = QFileInfo( fileName );
                                                  return fileName.isEmpty() || ( fi.exists() && fi.isFile() && fi.isReadable() );
-                                             } );
+                                             }, tr( "File '%1' does not Exist or is not Readable" ) );
 
             auto completer = new QCompleter( this );
             auto fsModel = new QFileSystemModel( completer );
@@ -130,10 +130,7 @@ namespace NMediaManager
             else
                 fImpl->bifViewerVSplitter->setSizes( QList< int >() << 100 << 100 );
 
-            if ( settings.contains( "bifViewerHSplitter" ) )
-                fImpl->bifViewerHSplitter->restoreState( settings.value( "bifViewerHSplitter" ).toByteArray() );
-            else
-                fImpl->bifViewerHSplitter->setSizes( QList< int >() << 100 << 0 );
+            fImpl->bifViewerHSplitter->setSizes( QList< int >() << 100 << 0 );
 #ifdef _DEBUG
             fImpl->bifFile->setText( settings.value( "LastBIFFile", "//mediabox/video/Movies/The Last Duel (2021) [tmdbid=617653]/The Last Duel-320-10.bif" ).toString() );
 #endif
@@ -205,7 +202,8 @@ namespace NMediaManager
             settings.setValue( "LastFunctionalityPage", fImpl->tabWidget->currentIndex() );
             settings.setValue( "mergeSRTSplitter", fImpl->mergeSRTSplitter->saveState() );
             settings.setValue( "bifViewerVSplitter", fImpl->bifViewerVSplitter->saveState() );
-            settings.setValue( "bifViewerHSplitter", fImpl->bifViewerHSplitter->saveState() );
+            if ( fImpl->viewerWidget->isVisible() )
+                settings.setValue( "bifViewerHSplitter", fImpl->bifViewerHSplitter->saveState() );
         }
 
         void CMainWindow::loadSettings()
