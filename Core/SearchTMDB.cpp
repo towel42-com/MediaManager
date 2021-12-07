@@ -393,7 +393,7 @@ namespace NMediaManager
         {
             if ( isActive() )
                 return;
-            if ( fSeasonInfoReplies.second.has_value() && !fSeasonInfoReplies.second.value() )
+            if ( fSearchInfo && fSeasonInfoReplies.second.has_value() && !fSeasonInfoReplies.second.value() )
             {
                 fErrorMessage = QString( "Could not find episode '%1' for TV show '%2'" ).arg( fSearchInfo->episode() ).arg( fSearchInfo->searchName() );
             }
