@@ -54,6 +54,7 @@ add_subdirectory( UI )
 add_subdirectory( Core )
 add_subdirectory( App )
 
+SET( CPACK_PACKAGE_NAME "Media Manager" )
 SET( CPACK_PACKAGE_VENDOR "Scott Aron Bloom scott@towel42.com" )
 SET( CPACK_RESOURCE_FILE_LICENSE ${CMAKE_SOURCE_DIR}/LICENSE )
 SET( CPACK_PACKAGE_VERSION_MAJOR "0" )
