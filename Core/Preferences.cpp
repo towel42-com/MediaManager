@@ -275,6 +275,18 @@ namespace NMediaManager
             return aOK ? retVal : QString();
         }
  
+        void CPreferences::setBIFTSInterval( int interval )
+        {
+            QSettings settings;
+            settings.setValue( "BIFTSInterval", interval );
+        }
+
+        int CPreferences::bifTSInterval() const
+        {
+            QSettings settings;
+            return settings.value( "BIFTSInterval", 50 ).toInt();
+        }
+
         bool CPreferences::isMediaFile( const QFileInfo &fi ) const
         {
             static std::optional< std::unordered_set< QString > > extensions;
