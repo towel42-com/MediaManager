@@ -26,7 +26,9 @@
 #include <QMainWindow>
 class QProgressDialog;
 class QTreeView;
+class QLineEdit;
 class CDelayLineEdit;
+class CBIFFile;
 namespace Ui {class CMainWindow;};
 
 
@@ -51,6 +53,8 @@ namespace NMediaManager
         public:
             CMainWindow( QWidget *parent = 0 );
             ~CMainWindow();
+
+            virtual void resizeEvent( QResizeEvent *event ) override;
         public Q_SLOTS:
             void slotSelectDirectory();
             void slotDirectoryChanged();
@@ -64,10 +68,29 @@ namespace NMediaManager
             void slotAutoSearchFinished( const QString &path, bool searchesRemaining );
             void slotPreferences();
             void slotLoadFinished( bool canceled );
+            void slotWindowChanged();
+            void slotSelectBIFFile();
+            void slotBIFFileChanged();
+            void slotResize();
+            void slotNextFrame();
+            void slotBIFBack();
+            void slotBIFForward();
+            void slotBIFPlayPause();
+            void slotBIFTSChanged();
+
         private:
+            void loadBIF();
+            void formatBIFTable();
+            void showCurrentBIFFrame();
+            void pauseBIF();
+            void playBIF();
+            void setCurrentFrame( int frame );
+
             NCore::CDirModel *getActiveModel() const;
             bool isTransformActive() const;
             bool isMergeSRTActive() const;
+            bool isBIFViewerActive() const;
+
             void autoSearchForNewNames( QModelIndex rootIdx );
             void setupProgressDlg( const QString &title, const QString &cancelButtonText, int max );
             void clearProgressDlg();
@@ -81,6 +104,10 @@ namespace NMediaManager
             NCore::CSearchTMDB *fSearchTMDB{ nullptr };
             QProgressDialog *fProgressDlg{ nullptr };
             uint64_t fSearchesCompleted{ 0 };
+            QTimer *fResizeTimer{ nullptr };
+            QTimer *fBIFFrameTimer{ nullptr };
+            uint32_t fCurrentFrame{ 0 };
+            CBIFFile *fBIF{ nullptr };
         };
     }
 }

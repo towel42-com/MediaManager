@@ -37,6 +37,7 @@
 #include "SABUtils/utils.h"
 #include "SABUtils/ScrollMessageBox.h"
 #include "SABUtils/AutoWaitCursor.h"
+#include "SABUtils/BIFFile.h"
 
 #include <QSettings>
 #include <QFileInfo>
@@ -46,6 +47,10 @@
 #include <QMessageBox>
 #include <QFileSystemModel>
 #include <QTimer>
+#include <QPixmap>
+#include <QLabel>
+#include <QMovie>
+
 
 #include <QProgressDialog>
 
@@ -58,8 +63,20 @@ namespace NMediaManager
             fImpl( new Ui::CMainWindow )
         {
             fImpl->setupUi( this );
+            formatBIFTable();
 
             fImpl->directory->setDelay( 1000 );
+            fImpl->directory->setIsOKFunction( []( const QString &dirName )
+                                               {
+                                                   auto fi = QFileInfo( dirName );
+                                                   return dirName.isEmpty() || ( fi.exists() && fi.isDir() );
+                                               } );
+            fImpl->bifFile->setDelay( 1000 );
+            fImpl->bifFile->setIsOKFunction( []( const QString &fileName )
+                                             {
+                                                 auto fi = QFileInfo( fileName );
+                                                 return fileName.isEmpty() || ( fi.exists() && fi.isFile() && fi.isReadable() );
+                                             } );
 
             auto completer = new QCompleter( this );
             auto fsModel = new QFileSystemModel( completer );
@@ -79,6 +96,13 @@ namespace NMediaManager
             fImpl->mergeSRTFiles->setExpandsOnDoubleClick( false );
             connect( fImpl->mergeSRTFiles, &QTreeView::doubleClicked, this, &CMainWindow::slotDoubleClicked );
 
+            connect( fImpl->openBIFBtn, &QToolButton::clicked, this, &CMainWindow::slotSelectBIFFile );
+            connect( fImpl->bifFile, &CDelayLineEdit::sigTextChanged, this, &CMainWindow::slotBIFFileChanged );
+            connect( fImpl->bifStepBack, &QToolButton::clicked, this, &CMainWindow::slotBIFBack );
+            connect( fImpl->bifStepForward, &QToolButton::clicked, this, &CMainWindow::slotBIFForward );
+            connect( fImpl->bifPlayPause, &QToolButton::clicked, this, &CMainWindow::slotBIFPlayPause );
+            connect( fImpl->bifTS, qOverload< int >( &QSpinBox::valueChanged ), this, &CMainWindow::slotBIFTSChanged );
+
             connect( fImpl->actionSelectDir, &QAction::triggered, this, &CMainWindow::slotSelectDirectory );
             connect( fImpl->actionLoad, &QAction::triggered, this, &CMainWindow::slotLoadDirectory );
             connect( fImpl->actionRun, &QAction::triggered, this, &CMainWindow::slotRun );
@@ -90,6 +114,8 @@ namespace NMediaManager
             fSearchTMDB->setSkipImages( true );
             connect( fSearchTMDB, &NCore::CSearchTMDB::sigAutoSearchFinished, this, &CMainWindow::slotAutoSearchFinished );
 
+            connect( fImpl->tabWidget, &QTabWidget::currentChanged, this, &CMainWindow::slotWindowChanged );
+
             loadSettings();
 
             QSettings settings;
@@ -98,8 +124,78 @@ namespace NMediaManager
                 fImpl->mergeSRTSplitter->restoreState( settings.value( "mergeSRTSplitter" ).toByteArray() );
             else
                 fImpl->mergeSRTSplitter->setSizes( QList< int >() << 100 << 0 );
+
+            if ( settings.contains( "bifViewerVSplitter" ) )
+                fImpl->bifViewerVSplitter->restoreState( settings.value( "bifViewerVSplitter" ).toByteArray() );
+            else
+                fImpl->bifViewerVSplitter->setSizes( QList< int >() << 100 << 100 );
+
+            if ( settings.contains( "bifViewerHSplitter" ) )
+                fImpl->bifViewerHSplitter->restoreState( settings.value( "bifViewerHSplitter" ).toByteArray() );
+            else
+                fImpl->bifViewerHSplitter->setSizes( QList< int >() << 100 << 0 );
+#ifdef _DEBUG
+            fImpl->bifFile->setText( settings.value( "LastBIFFile", "//mediabox/video/Movies/The Last Duel (2021) [tmdbid=617653]/The Last Duel-320-10.bif" ).toString() );
+#endif
+
+            fBIFFrameTimer = new QTimer( this );
+            fBIFFrameTimer->setSingleShot( false );
+            fBIFFrameTimer->setInterval( NCore::CPreferences::instance()->bifTSInterval() );
+            fCurrentFrame = 0;
+            connect( fBIFFrameTimer, &QTimer::timeout, this, &CMainWindow::slotNextFrame );
+
+            fResizeTimer = new QTimer( this );
+            fResizeTimer->setSingleShot( true );
+            fResizeTimer->setInterval( 250 );
+            connect( fResizeTimer, &QTimer::timeout, this, &CMainWindow::slotResize );
+
             QTimer::singleShot( 0, this, &CMainWindow::slotDirectoryChangedImmediate );
             QTimer::singleShot( 10, this, &CMainWindow::slotDirectoryChanged );
+
+            QTimer::singleShot( 0, this, &CMainWindow::slotWindowChanged );
+            QTimer::singleShot( 10, this, &CMainWindow::slotBIFFileChanged );
+        }
+
+        void CMainWindow::formatBIFTable()
+        {
+            fImpl->bifFileValues->resizeColumnToContents( 0 );
+            fImpl->bifFileValues->resizeColumnToContents( 1 );
+            for ( int ii = 0; ii < fImpl->bifFileValues->topLevelItemCount(); ++ii )
+            {
+                fImpl->bifFileValues->topLevelItem( ii )->setTextAlignment( 1, Qt::AlignRight | Qt::AlignVCenter );
+            }
+        }
+
+        void CMainWindow::showCurrentBIFFrame()
+        {
+            auto &&curr = fBIF->bifs()[fCurrentFrame];
+            fImpl->bifImageLabel->setPixmap( QPixmap::fromImage( curr.fImage.second ) );
+            fImpl->bifLabel->setText( tr( "BIF #: %1" ).arg( fCurrentFrame ) );
+        }
+
+        void CMainWindow::pauseBIF()
+        {
+            fBIFFrameTimer->stop();
+            if ( fBIF )
+            {
+                QIcon icon;
+                icon.addFile( QString::fromUtf8( ":/resources/play.png" ), QSize(), QIcon::Normal, QIcon::Off );
+                fImpl->bifPlayPause->setIcon( icon );
+            }
+        }
+
+        void CMainWindow::playBIF()
+        {
+            if ( !fBIF )
+                return;
+
+            fBIFFrameTimer->start();
+            if ( fBIF )
+            {
+                QIcon icon;
+                icon.addFile( QString::fromUtf8( ":/resources/pause.png" ), QSize(), QIcon::Normal, QIcon::Off );
+                fImpl->bifPlayPause->setIcon( icon );
+            }
         }
 
         CMainWindow::~CMainWindow()
@@ -108,6 +204,8 @@ namespace NMediaManager
             QSettings settings;
             settings.setValue( "LastFunctionalityPage", fImpl->tabWidget->currentIndex() );
             settings.setValue( "mergeSRTSplitter", fImpl->mergeSRTSplitter->saveState() );
+            settings.setValue( "bifViewerVSplitter", fImpl->bifViewerVSplitter->saveState() );
+            settings.setValue( "bifViewerHSplitter", fImpl->bifViewerHSplitter->saveState() );
         }
 
         void CMainWindow::loadSettings()
@@ -115,6 +213,7 @@ namespace NMediaManager
             fImpl->directory->setText( NCore::CPreferences::instance()->getMediaDirectory() );
             fImpl->actionTreatAsTVShowByDefault->setChecked( NCore::CPreferences::instance()->getTreatAsTVShowByDefault() );
             fImpl->actionExactMatchesOnly->setChecked( NCore::CPreferences::instance()->getExactMatchesOnly() );
+            fImpl->bifTS->setValue( NCore::CPreferences::instance()->bifTSInterval() );
 
             slotToggleTreatAsTVShowByDefault();
         }
@@ -125,13 +224,20 @@ namespace NMediaManager
             NCore::CPreferences::instance()->setMediaDirectory( fImpl->directory->text() );
             NCore::CPreferences::instance()->setTreatAsTVShowByDefault( fImpl->actionTreatAsTVShowByDefault->isChecked() );
             NCore::CPreferences::instance()->setExactMatchesOnly( fImpl->actionExactMatchesOnly->isChecked() );
+            NCore::CPreferences::instance()->setBIFTSInterval( fImpl->bifTS->value() );
+        }
+
+        void CMainWindow::slotWindowChanged()
+        {
+            fImpl->dirLabel->setVisible( !isBIFViewerActive() );
+            fImpl->directory->setVisible( !isBIFViewerActive() );
+            fImpl->dirLabel->setVisible( !isBIFViewerActive() );
         }
 
         void CMainWindow::slotDirectoryChangedImmediate()
         {
             fImpl->actionLoad->setEnabled( false );
             fImpl->actionRun->setEnabled( false );
-            fImpl->directory->setStyleSheet( "QLineEdit { background-color: #b7bfaf }" );
         }
 
         void CMainWindow::slotDirectoryChanged()
@@ -146,12 +252,150 @@ namespace NMediaManager
 
             QFileInfo fi( dirName );
             bool aOK = !dirName.isEmpty() && fi.exists() && fi.isDir();
-            if ( aOK )
-                fImpl->directory->setStyleSheet( "QLineEdit { background-color: white }" );
-            else
-                fImpl->directory->setStyleSheet( "QLineEdit { background-color: red }" );
-
             fImpl->actionLoad->setEnabled( aOK );
+        }
+
+
+        void CMainWindow::resizeEvent( QResizeEvent * /*event*/ )
+        {
+            fResizeTimer->stop();
+            fResizeTimer->start();
+        }
+
+        void CMainWindow::slotResize()
+        {
+            auto windowSize = 1.0 * fImpl->bifImages->size().width();
+            auto itemSize = 1.0 * fImpl->bifImages->iconSize().width() + 16.0; // default size of each image;
+
+            auto num = std::floor( windowSize / itemSize );
+
+            auto numPerRow = 4;
+            if ( num != numPerRow )
+            {
+                itemSize = std::ceil( windowSize / numPerRow ) - 16;
+            }
+
+            fImpl->bifImages->setIconSize( QSize( itemSize, itemSize ) );
+        }
+
+        void CMainWindow::slotSelectBIFFile()
+        {
+            auto bifFile = QFileDialog::getOpenFileName( this, tr( "Select BIF File:" ), fImpl->bifFile->text(), tr( "BIF Files (*.bif);;All Files (*.*)" ) );
+            if ( !bifFile.isEmpty() )
+                fImpl->bifFile->setText( bifFile );
+        }
+        
+
+        void CMainWindow::slotBIFFileChanged()
+        {
+            auto bifFile = fImpl->bifFile->text();
+            auto fi = QFileInfo( bifFile );
+            bool aOK = !bifFile.isEmpty() && fi.exists() && fi.isFile() && fi.isReadable();
+
+            fImpl->bifFileValues->clear();
+            fImpl->bifImages->clear();
+            fImpl->bifLabel->setPixmap( QPixmap() );
+            pauseBIF();
+            if ( !aOK )
+                return;
+
+            if ( fBIF )
+                delete fBIF;
+
+            fBIF = new CBIFFile( bifFile );
+            if ( !fBIF->isValid() )
+            {
+                QMessageBox::warning( this, tr( "Could not Load" ), tr( "Could not load BIF File: %1" ).arg( fBIF->errorString() ) );
+                delete fBIF;
+                fBIF = nullptr;
+                return;
+            }
+            loadBIF();
+            playBIF();
+            QTimer::singleShot( 0, this, &CMainWindow::slotNextFrame );
+        }
+
+        void CMainWindow::slotBIFBack()
+        {
+            pauseBIF();
+            setCurrentFrame( fCurrentFrame - 1 );
+            showCurrentBIFFrame();
+        }
+
+        void CMainWindow::slotBIFForward()
+        {
+            pauseBIF();
+            setCurrentFrame( fCurrentFrame + 1 );
+            showCurrentBIFFrame();
+        }
+
+        void CMainWindow::slotBIFPlayPause()
+        {
+            if ( fBIFFrameTimer->isActive() )
+                pauseBIF();
+            else
+                playBIF();
+        }
+
+        void CMainWindow::slotBIFTSChanged()
+        {
+            if ( !fBIFFrameTimer )
+                return;
+            bool isActive = fBIFFrameTimer->isActive();
+            if ( isActive )
+                fBIFFrameTimer->stop();
+            fBIFFrameTimer->setInterval( fImpl->bifTS->value() );
+            if ( isActive )
+                fBIFFrameTimer->start();
+        }
+
+        void CMainWindow::slotNextFrame()
+        {
+            if ( !fBIF )
+            {
+                pauseBIF();
+                return;
+            }
+            
+            showCurrentBIFFrame();
+            setCurrentFrame( fCurrentFrame + 1 );
+        }
+
+        void CMainWindow::setCurrentFrame( int frame )
+        {
+            if ( frame < 0 )
+                frame = static_cast<int>( fBIF->bifs().size() ) - 1;
+            else if ( frame >= fBIF->bifs().size() )
+                frame = 0;
+            fCurrentFrame = frame;
+
+        }
+
+        void CMainWindow::loadBIF()
+        {
+            fImpl->bifFileValues->clear();
+            fImpl->bifImages->clear();
+            fImpl->bifLabel->setPixmap( QPixmap() );
+            if ( !fBIF )
+            {
+                return;
+            }
+
+            new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "Magic Number" ) << tr( "00-07" ) << QString() << fBIF->magicNumber() );
+            new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "Version" ) << tr( "08-11" ) << QString::number( std::get< 2 >( fBIF->version() ) ) << std::get< 1 >( fBIF->version() ) );
+            new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "Number of BIF Images" ) << tr( "12-15" ) << QString::number( std::get< 2 >( fBIF->numImages() ) ) << std::get< 1 >( fBIF->numImages() ) );
+            new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "Timestamp Multiplier" ) << tr( "16-19" ) << QString::number( std::get< 2 >( fBIF->tsMultiplier() ) ) << std::get< 1 >( fBIF->tsMultiplier() ) );
+            new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "Reserved" ) << tr( "20-64" ) << QString() << fBIF->reserved() );
+
+            auto pos = 0;
+            for( auto && ii : fBIF->bifs() )
+            {
+                auto item = new QListWidgetItem( QIcon( QPixmap::fromImage( ii.fImage.second ) ), QString( "BIF #%1" ).arg( pos ) );
+                fImpl->bifImages->addItem( item );
+                pos++;
+            }
+
+            formatBIFTable();
         }
 
         void CMainWindow::slotSelectDirectory()
@@ -275,7 +519,7 @@ namespace NMediaManager
         {
             delete fProgressDlg;
             fProgressDlg = nullptr;
-            fImpl->actionSelectDir->setEnabled( true );
+            fImpl->actionSelectDir->setEnabled( !isBIFViewerActive() );
         }
 
         void CMainWindow::setupProgressDlg( const QString &title, const QString &cancelButtonText, int max )
@@ -301,7 +545,7 @@ namespace NMediaManager
             connect( fProgressDlg, &QProgressDialog::canceled, 
                      [this]()
                      {
-                         fImpl->actionSelectDir->setEnabled( true );
+                         fImpl->actionSelectDir->setEnabled( !isBIFViewerActive() );
                      } );
         }
 
@@ -348,6 +592,12 @@ namespace NMediaManager
             return fImpl->tabWidget->currentWidget() == fImpl->mergeSRTTab;
         }
 
+
+        bool CMainWindow::isBIFViewerActive() const
+        {
+            return fImpl->tabWidget->currentWidget() == fImpl->bifViewerTab;
+        }
+
         NCore::CDirModel * CMainWindow::getActiveModel() const
         {
             if ( isTransformActive() )
@@ -359,7 +609,7 @@ namespace NMediaManager
 
         void CMainWindow::slotLoadFinished( bool canceled )
         {
-            fImpl->actionRun->setEnabled( getActiveModel() && getActiveModel()->rowCount() );
+            fImpl->actionRun->setEnabled( !isBIFViewerActive() && getActiveModel() && getActiveModel()->rowCount() );
             clearProgressDlg();
 
             if ( canceled )
