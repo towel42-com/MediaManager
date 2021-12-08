@@ -71,11 +71,11 @@ namespace NMediaManager
             connect( fImpl->exactMatchesOnly, &QCheckBox::clicked, this, &CSelectTMDB::slotExactOrForTVShowsChanged );
             connect( fImpl->searchForTVShows, &QCheckBox::clicked, this, &CSelectTMDB::slotExactOrForTVShowsChanged );
 
-            connect( fImpl->searchName, &CDelayLineEdit::sigTextChanged, this, &CSelectTMDB::slotSearchTextChanged );
-            connect( fImpl->searchSeason, &CDelaySpinBox::sigValueChanged, this, &CSelectTMDB::slotSearchTextChanged );
-            connect( fImpl->searchEpisode, &CDelaySpinBox::sigValueChanged, this, &CSelectTMDB::slotSearchTextChanged );
-            connect( fImpl->searchReleaseYear, &CDelayLineEdit::sigTextChanged, this, &CSelectTMDB::slotSearchTextChanged );
-            connect( fImpl->searchTMDBID, &CDelayLineEdit::sigTextChanged, this, &CSelectTMDB::slotSearchTextChanged );
+            connect( fImpl->searchName, &CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchTextChanged );
+            connect( fImpl->searchSeason, &CDelaySpinBox::sigValueChangedAfterDelay, this, &CSelectTMDB::slotSearchTextChanged );
+            connect( fImpl->searchEpisode, &CDelaySpinBox::sigValueChangedAfterDelay, this, &CSelectTMDB::slotSearchTextChanged );
+            connect( fImpl->searchReleaseYear, &CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchTextChanged );
+            connect( fImpl->searchTMDBID, &CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchTextChanged );
             connect( fImpl->results->selectionModel(), &QItemSelectionModel::selectionChanged, this, &CSelectTMDB::slotItemChanged );
             connect( fImpl->results, &QTreeWidget::itemDoubleClicked, this, &CSelectTMDB::slotAcceptItem );
 
@@ -93,11 +93,11 @@ namespace NMediaManager
             disconnect( fImpl->exactMatchesOnly, &QCheckBox::clicked, this, &CSelectTMDB::slotExactOrForTVShowsChanged );
             disconnect( fImpl->searchForTVShows, &QCheckBox::clicked, this, &CSelectTMDB::slotExactOrForTVShowsChanged );
 
-            disconnect( fImpl->searchName, &CDelayLineEdit::sigTextChanged, this, &CSelectTMDB::slotSearchTextChanged );
-            disconnect( fImpl->searchSeason, &CDelaySpinBox::sigValueChanged, this, &CSelectTMDB::slotSearchTextChanged );
-            disconnect( fImpl->searchEpisode, &CDelaySpinBox::sigValueChanged, this, &CSelectTMDB::slotSearchTextChanged );
-            disconnect( fImpl->searchReleaseYear, &CDelayLineEdit::sigTextChanged, this, &CSelectTMDB::slotSearchTextChanged );
-            disconnect( fImpl->searchTMDBID, &CDelayLineEdit::sigTextChanged, this, &CSelectTMDB::slotSearchTextChanged );
+            disconnect( fImpl->searchName, &CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchTextChanged );
+            disconnect( fImpl->searchSeason, &CDelaySpinBox::sigValueChangedAfterDelay, this, &CSelectTMDB::slotSearchTextChanged );
+            disconnect( fImpl->searchEpisode, &CDelaySpinBox::sigValueChangedAfterDelay, this, &CSelectTMDB::slotSearchTextChanged );
+            disconnect( fImpl->searchReleaseYear, &CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchTextChanged );
+            disconnect( fImpl->searchTMDBID, &CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchTextChanged );
 
             fImpl->searchName->setText( searchInfo->searchName() );
             fImpl->searchSeason->setValue( searchInfo->season() );
@@ -114,11 +114,11 @@ namespace NMediaManager
             connect( fImpl->exactMatchesOnly, &QCheckBox::clicked, this, &CSelectTMDB::slotExactOrForTVShowsChanged );
             connect( fImpl->searchForTVShows, &QCheckBox::clicked, this, &CSelectTMDB::slotExactOrForTVShowsChanged );
 
-            connect( fImpl->searchName, &CDelayLineEdit::sigTextChanged, this, &CSelectTMDB::slotSearchTextChanged );
-            connect( fImpl->searchSeason, &CDelaySpinBox::sigValueChanged, this, &CSelectTMDB::slotSearchTextChanged );
-            connect( fImpl->searchEpisode, &CDelaySpinBox::sigValueChanged, this, &CSelectTMDB::slotSearchTextChanged );
-            connect( fImpl->searchReleaseYear, &CDelayLineEdit::sigTextChanged, this, &CSelectTMDB::slotSearchTextChanged );
-            connect( fImpl->searchTMDBID, &CDelayLineEdit::sigTextChanged, this, &CSelectTMDB::slotSearchTextChanged );
+            connect( fImpl->searchName, &CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchTextChanged );
+            connect( fImpl->searchSeason, &CDelaySpinBox::sigValueChangedAfterDelay, this, &CSelectTMDB::slotSearchTextChanged );
+            connect( fImpl->searchEpisode, &CDelaySpinBox::sigValueChangedAfterDelay, this, &CSelectTMDB::slotSearchTextChanged );
+            connect( fImpl->searchReleaseYear, &CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchTextChanged );
+            connect( fImpl->searchTMDBID, &CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchTextChanged );
         }
 
         void CSelectTMDB::slotReset()

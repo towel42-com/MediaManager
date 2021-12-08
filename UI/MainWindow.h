@@ -24,11 +24,13 @@
 #define _MAINWINDOW_H
 
 #include <QMainWindow>
+#include <optional>
 class QProgressDialog;
 class QTreeView;
 class QLineEdit;
 class CDelayLineEdit;
 class CBIFFile;
+class QSpinBox;
 namespace Ui {class CMainWindow;};
 
 
@@ -54,10 +56,11 @@ namespace NMediaManager
             CMainWindow( QWidget *parent = 0 );
             ~CMainWindow();
 
-            virtual void resizeEvent( QResizeEvent *event ) override;
+            virtual bool eventFilter( QObject *obj, QEvent *event ) override;
         public Q_SLOTS:
-            void slotSelectDirectory();
+            void slotOpen();
             void slotDirectoryChanged();
+
             void slotDirectoryChangedImmediate();
             void slotLoadDirectory();
             void slotRun();
@@ -69,22 +72,39 @@ namespace NMediaManager
             void slotPreferences();
             void slotLoadFinished( bool canceled );
             void slotWindowChanged();
-            void slotSelectBIFFile();
-            void slotBIFFileChanged();
+            void slotFileChanged();
+
             void slotResize();
             void slotNextFrame();
             void slotBIFBack();
+
             void slotBIFForward();
             void slotBIFPlayPause();
             void slotBIFTSChanged();
 
         private:
+            void validateLoadAction();
+            void validateRunAction();
+            void validateBIFPlayerActions();
+
+            void bifFileChanged();
+
+            bool canLoadBIF() const;
+
             void loadBIF();
+
+            void clearBIFValues();
+
             void formatBIFTable();
             void showCurrentBIFFrame();
             void pauseBIF();
             void playBIF();
             void setCurrentFrame( int frame );
+            void offsetFrame( int offset );
+
+            void decrCurrentFrame();
+            void incrCurrentFrame();
+
 
             NCore::CDirModel *getActiveModel() const;
             bool isTransformActive() const;
@@ -106,8 +126,9 @@ namespace NMediaManager
             uint64_t fSearchesCompleted{ 0 };
             QTimer *fResizeTimer{ nullptr };
             QTimer *fBIFFrameTimer{ nullptr };
-            uint32_t fCurrentFrame{ 0 };
+            std::optional< uint32_t > fCurrentFrame;
             CBIFFile *fBIF{ nullptr };
+            QSpinBox *fBIFTS{ nullptr };
         };
     }
 }
