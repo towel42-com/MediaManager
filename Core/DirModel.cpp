@@ -199,7 +199,7 @@ namespace NMediaManager
                 }
             }
 
-            emit sigDirReloaded( false );
+            emit sigDirReloaded( fProgressDlg && fProgressDlg->wasCanceled() );
         }
 
         QList< QStandardItem * > CDirModel::getChildMKVFiles( const QStandardItem *item ) const
