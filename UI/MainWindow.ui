@@ -151,6 +151,10 @@
        </layout>
       </widget>
       <widget class="QWidget" name="bifViewerTab">
+       <attribute name="icon">
+        <iconset resource="application.qrc">
+         <normaloff>:/resources/roku.png</normaloff>:/resources/roku.png</iconset>
+       </attribute>
        <attribute name="title">
         <string>BIF Viewer</string>
        </attribute>
