@@ -170,7 +170,9 @@ namespace NMediaManager
             QString seasonStr;
             QString episodeStr;
 
-            auto regExp = QRegularExpression( "(?<fulltext>[\\.\\(](?<releaseDate>(\\d{2}|\\d{4}))(?:[\\.\\)]?|$))" );
+                            //(?<fulltext>[\.\(]  (?<releaseDate>((\\d{2}){1,2}))(?:[\.\)]?|$))
+            auto regExpStr = "(?<fulltext>[\\.\\(](?<releaseDate>((\\d{2}){1,2}))(?:[\\.\\)]?|$))";
+            auto regExp = QRegularExpression( regExpStr );
             auto match = regExp.match( fSearchName );
             if ( match.hasMatch() )
             {
