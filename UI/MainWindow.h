@@ -30,9 +30,9 @@ class QTreeView;
 class QLineEdit;
 class CDelayLineEdit;
 class CBIFFile;
+class CBIFModel;
 class QSpinBox;
 namespace Ui {class CMainWindow;};
-
 
 namespace NMediaManager
 {
@@ -128,6 +128,7 @@ namespace NMediaManager
             QTimer *fBIFFrameTimer{ nullptr };
             std::optional< uint32_t > fCurrentFrame;
             CBIFFile *fBIF{ nullptr };
+            CBIFModel *fBIFModel{ nullptr };
             QSpinBox *fBIFTS{ nullptr };
         };
     }

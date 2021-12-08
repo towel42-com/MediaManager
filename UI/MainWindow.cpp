@@ -189,8 +189,8 @@ namespace NMediaManager
                 fImpl->bifViewerHSplitter->setSizes( sizes );
             }
 
-            auto &&curr = fBIF->bifs()[fCurrentFrame.value()];
-            fImpl->bifImageLabel->setPixmap( QPixmap::fromImage( curr.fImage.second ) );
+            auto && image = fBIFModel->image( fCurrentFrame.value() );
+            fImpl->bifImageLabel->setPixmap( QPixmap::fromImage( image ) );
             fImpl->bifLabel->setText( tr( "BIF #: %1 Time: %2" ).arg( fCurrentFrame.value() ).arg( NUtils::CTimeString( fCurrentFrame.value() * std::get< 2 >( fBIF->tsMultiplier() ) ).toString( "hh:mm:ss.zzz" ) ) );
         }
 
@@ -367,6 +367,8 @@ namespace NMediaManager
 
         void CMainWindow::bifFileChanged()
         {
+            CAutoWaitCursor awc;
+
             auto bifFile = fImpl->fileName->currentText();
             if ( fBIF && ( fBIF->fileName() == bifFile ) )
             {
@@ -388,7 +390,7 @@ namespace NMediaManager
             if ( fBIF )
                 delete fBIF;
 
-            fBIF = new CBIFFile( bifFile );
+            fBIF = new CBIFFile( bifFile, false );
             if ( !fBIF->isValid() )
             {
                 QMessageBox::warning( this, tr( "Could not Load" ), tr( "Could not load BIF File: %1" ).arg( fBIF->errorString() ) );
@@ -397,6 +399,23 @@ namespace NMediaManager
                 return;
             }
             loadBIF();
+        }
+
+        void CMainWindow::loadBIF()
+        {
+            clearBIFValues();
+            if ( !fBIF )
+                return;
+
+            new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "Magic Number" ) << tr( "00-07" ) << QString() << fBIF->magicNumber() );
+            new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "Version" ) << tr( "08-11" ) << QString::number( std::get< 2 >( fBIF->version() ) ) << std::get< 1 >( fBIF->version() ) );
+            new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "Number of BIF Images" ) << tr( "12-15" ) << QString::number( std::get< 2 >( fBIF->numImages() ) ) << std::get< 1 >( fBIF->numImages() ) );
+            new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "milliseconds/Frame" ) << tr( "16-19" ) << QString( "%1s (%2ms)" ).arg( NUtils::CTimeString( std::get< 2 >( fBIF->tsMultiplier() ) ).toString( "ss.zzz" ) ).arg( std::get< 2 >( fBIF->tsMultiplier() ) ) << std::get< 1 >( fBIF->tsMultiplier() ) );
+            new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "Reserved" ) << tr( "20-64" ) << QString() << fBIF->reserved() );
+
+            formatBIFTable();
+
+            fBIFModel->setBIFFile( fBIF );
         }
 
         bool CMainWindow::canLoadBIF() const
@@ -425,6 +444,8 @@ namespace NMediaManager
 
         void CMainWindow::slotNextFrame()
         {
+            if ( !fCurrentFrame.has_value() )
+                setCurrentFrame( 0 );
             showCurrentBIFFrame();
             incrCurrentFrame();
         }
@@ -459,6 +480,7 @@ namespace NMediaManager
             fCurrentFrame = frame;
         }
 
+
         void CMainWindow::offsetFrame( int offset )
         {
             if ( !fCurrentFrame.has_value() )
@@ -477,39 +499,19 @@ namespace NMediaManager
             offsetFrame( 1 );
         }
 
-        void CMainWindow::loadBIF()
-        {
-            clearBIFValues();
-            if ( !fBIF )
-                return;
-
-            new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "Magic Number" ) << tr( "00-07" ) << QString() << fBIF->magicNumber() );
-            new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "Version" ) << tr( "08-11" ) << QString::number( std::get< 2 >( fBIF->version() ) ) << std::get< 1 >( fBIF->version() ) );
-            new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "Number of BIF Images" ) << tr( "12-15" ) << QString::number( std::get< 2 >( fBIF->numImages() ) ) << std::get< 1 >( fBIF->numImages() ) );
-            new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "milliseconds/Frame" ) << tr( "16-19" ) << QString( "%1s (%2ms)" ).arg( NUtils::CTimeString( std::get< 2 >( fBIF->tsMultiplier() ) ).toString( "ss.zzz" ) ).arg( std::get< 2 >( fBIF->tsMultiplier() ) ) << std::get< 1 >( fBIF->tsMultiplier() ) );
-            new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "Reserved" ) << tr( "20-64" ) << QString() << fBIF->reserved() );
-
-            auto pos = 0;
-            for( auto && ii : fBIF->bifs() )
-            {
-                auto item = new QListWidgetItem( QIcon( QPixmap::fromImage( ii.fImage.second ) ), QString( "BIF #%1" ).arg( pos ) );
-                fImpl->bifImages->addItem( item );
-                pos++;
-            }
-
-            formatBIFTable();
-        }
-
         void CMainWindow::clearBIFValues()
         {
             fImpl->bifFileValues->clear();
             fImpl->bifFileValues->setHeaderLabels( QStringList() << tr( "Name" ) << tr( "Byte #s" ) << tr( "Value" ) );
 
-            fImpl->bifImages->clear();
+            //fImpl->bifImages->clear();
             fImpl->bifImageLabel->setPixmap( QPixmap() );
             fImpl->bifLabel->setText( QString() );
 
             formatBIFTable();
+            delete fBIFModel;
+            fBIFModel = new CBIFModel( this );
+            fImpl->bifImages->setModel( fBIFModel );
         }
 
         void CMainWindow::slotOpen()

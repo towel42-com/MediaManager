@@ -177,7 +177,7 @@
              </property>
             </column>
            </widget>
-           <widget class="QListWidget" name="bifImages">
+           <widget class="QListView" name="bifImages">
             <property name="iconSize">
              <size>
               <width>200</width>
