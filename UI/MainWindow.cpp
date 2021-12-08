@@ -244,6 +244,8 @@ namespace NMediaManager
 
             if ( !isBIFViewerActive() )
                 fImpl->bifWidget->slotPause();
+            else
+                bifFileChanged();
 
             fImpl->bifWidget->validatePlayerActions( isBIFViewerActive() );
         }
@@ -328,10 +330,7 @@ namespace NMediaManager
         {
             if ( isBIFViewerActive() )
             {
-                if ( bifOutOfDate() )
-                {
-                    bifFileChanged();
-                }
+                bifFileChanged();
                 fImpl->bifWidget->slotPlay();
             }
         }
@@ -340,8 +339,7 @@ namespace NMediaManager
         {
             if ( isBIFViewerActive() )
             {
-                if ( bifOutOfDate() )
-                    bifFileChanged();
+                bifFileChanged();
                 return;
             }
         }
