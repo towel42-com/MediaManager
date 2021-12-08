@@ -38,12 +38,12 @@
 #include "SABUtils/ScrollMessageBox.h"
 #include "SABUtils/AutoWaitCursor.h"
 #include "SABUtils/BIFFile.h"
+#include "SABUtils/DelayLineEdit.h"
 
 #include <QSettings>
 #include <QFileInfo>
 #include <QFileDialog>
 #include <QCompleter>
-#include <QMediaPlaylist>
 #include <QMessageBox>
 #include <QFileSystemModel>
 #include <QTimer>
@@ -94,6 +94,7 @@ namespace NMediaManager
             fImpl->directory->setCompleter( completer );
             connect( fImpl->directory, &CDelayComboBox::sigEditTextChangedAfterDelay, this, &CMainWindow::slotDirectoryChanged );
             connect( fImpl->directory, &CDelayComboBox::editTextChanged, this, &CMainWindow::slotDirectoryChangedImmediate );
+            connect( fImpl->directory->lineEdit(), &CDelayLineEdit::sigFinishedEditingAfterDelay, this, &CMainWindow::slotLoad );
 
             fImpl->fileName->setDelay( 1000 );
             fImpl->fileName->setIsOKFunction( []( const QString &fileName )
@@ -101,6 +102,7 @@ namespace NMediaManager
                                                  auto fi = QFileInfo( fileName );
                                                  return fileName.isEmpty() || ( fi.exists() && fi.isFile() && fi.isReadable() );
                                              }, tr( "File '%1' does not Exist or is not Readable" ) );
+            connect( fImpl->directory->lineEdit(), &CDelayLineEdit::sigFinishedEditingAfterDelay, this, &CMainWindow::slotBIFPlayPause );
 
             completer = new QCompleter( this );
             fsModel = new QFileSystemModel( completer );
@@ -124,7 +126,7 @@ namespace NMediaManager
             connect( fBIFTS, qOverload< int >( &QSpinBox::valueChanged ), this, &CMainWindow::slotBIFTSChanged );
 
             connect( fImpl->actionOpen, &QAction::triggered, this, &CMainWindow::slotOpen );
-            connect( fImpl->actionLoad, &QAction::triggered, this, &CMainWindow::slotLoadDirectory );
+            connect( fImpl->actionLoad, &QAction::triggered, this, &CMainWindow::slotLoad );
             connect( fImpl->actionRun, &QAction::triggered, this, &CMainWindow::slotRun );
 
             connect( fImpl->actionTreatAsTVShowByDefault, &QAction::triggered, this, &CMainWindow::slotToggleTreatAsTVShowByDefault );
@@ -744,7 +746,7 @@ namespace NMediaManager
                 QTimer::singleShot( 0, this, &CMainWindow::slotAutoSearchForNewNames );
         }
 
-        void CMainWindow::slotLoadDirectory()
+        void CMainWindow::slotLoad()
         {
             bool aOK = true;
             fImpl->directory->addCurrentItem();
@@ -802,14 +804,14 @@ namespace NMediaManager
                 cancelName = tr( "Abort Merge" );
                 model = fMergeSRTModel.get();
             }
-            else
+            else 
                 return;
 
-            if( model->process(
+            if( model && model->process(
                     [actionName, cancelName, this]( int count ) { setupProgressDlg( actionName, cancelName, count ); return fProgressDlg; },
                     [this]( QProgressDialog *dlg ) { (void)dlg; clearProgressDlg(); },
                     this ) )
-                    slotLoadDirectory();
+                    slotLoad();
                 ;
         }
     }

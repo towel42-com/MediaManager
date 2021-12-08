@@ -62,7 +62,7 @@ namespace NMediaManager
             void slotDirectoryChanged();
 
             void slotDirectoryChangedImmediate();
-            void slotLoadDirectory();
+            void slotLoad();
             void slotRun();
             void slotToggleTreatAsTVShowByDefault();
             void slotDoubleClicked( const QModelIndex &idx );
