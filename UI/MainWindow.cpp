@@ -241,10 +241,11 @@ namespace NMediaManager
 
             validateRunAction();
             validateLoadAction();
-            fImpl->bifWidget->validatePlayerActions( false );
 
             if ( !isBIFViewerActive() )
                 fImpl->bifWidget->slotPause();
+
+            fImpl->bifWidget->validatePlayerActions( isBIFViewerActive() );
         }
 
         void CMainWindow::slotDirectoryChangedImmediate()
