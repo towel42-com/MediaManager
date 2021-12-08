@@ -38,8 +38,11 @@ namespace NMediaManager
             static CPreferences *instance();
             ~CPreferences();
 
-            void setMediaDirectory( const QString &dir );
-            QString getMediaDirectory() const;
+            void setDirectories( const QStringList &dirs );
+            QStringList getDirectories() const;
+
+            void setFileNames( const QStringList & fileNames );
+            QStringList getFileNames() const;
 
             void setTreatAsTVShowByDefault( bool value );
             bool getTreatAsTVShowByDefault() const;

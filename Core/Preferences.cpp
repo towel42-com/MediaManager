@@ -58,7 +58,7 @@ namespace NMediaManager
         //    if ( forTV )
         //        return "(?<title>.+)\\.([Ss](?<season>\\d+))([Ee](?<episode>\\d+))(\\.(?<episode_title>.*))?\\.(1080|720|2160)(p|i)?.*";
         //    else
-        //        return "(?<title>.+)\\.(?<year>\\d{2}|\\d{4})\\..*";
+        //        return "(?<title>.+)\\.(?<year>(\\d{2}){1,2})\\..*";
         //}
 
 
@@ -102,16 +102,32 @@ namespace NMediaManager
             return settings.value( "ExactMatchesOnly", true ).toBool();
         }
 
-        void CPreferences::setMediaDirectory( const QString &dir )
+        void CPreferences::setDirectories( const QStringList &dir )
         {
             QSettings settings;
-            settings.setValue( "Directory", dir );
+            settings.setValue( "Directories", dir );
         }
 
-        QString CPreferences::getMediaDirectory() const
+        QStringList CPreferences::getDirectories() const
         {
             QSettings settings;
-            return settings.value( "Directory", QString() ).toString();
+            auto retVal = settings.value( "Directories", QStringList() ).toStringList();
+            retVal.removeDuplicates();
+            return retVal;
+        }
+
+        void CPreferences::setFileNames( const QStringList &dir )
+        {
+            QSettings settings;
+            settings.setValue( "FileNames", dir );
+        }
+
+        QStringList CPreferences::getFileNames() const
+        {
+            QSettings settings;
+            auto retVal = settings.value( "FileNames", QStringList() ).toStringList();
+            retVal.removeDuplicates();
+            return retVal;
         }
 
         void CPreferences::setTVOutFilePattern( const QString &value )
