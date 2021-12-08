@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>893</width>
+    <width>868</width>
     <height>840</height>
    </rect>
   </property>
@@ -192,57 +192,13 @@
             </property>
            </widget>
           </widget>
-          <widget class="QWidget" name="viewerWidget" native="true">
-           <layout class="QVBoxLayout" name="verticalLayout_4">
-            <item>
-             <widget class="QLabel" name="bifImageLabel">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>200</height>
-               </size>
-              </property>
-              <property name="baseSize">
-               <size>
-                <width>0</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>BIF Image Label</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignBottom|Qt::AlignHCenter</set>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="bifLabel">
-              <property name="text">
-               <string>BIF Frame Label</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <spacer name="verticalSpacer">
-              <property name="orientation">
-               <enum>Qt::Vertical</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>17</width>
-                <height>336</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-           </layout>
+          <widget class="NBIF::CBIFWidget" name="bifWidget">
+           <property name="frameShape">
+            <enum>QFrame::Panel</enum>
+           </property>
+           <property name="frameShadow">
+            <enum>QFrame::Sunken</enum>
+           </property>
           </widget>
          </widget>
         </item>
@@ -257,7 +213,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>893</width>
+     <width>868</width>
      <height>22</height>
     </rect>
    </property>
@@ -280,17 +236,14 @@
     <addaction name="separator"/>
     <addaction name="actionPreferences"/>
    </widget>
-   <widget class="QMenu" name="menuBIF_Player">
+   <widget class="QMenu" name="menuBIFPlayer">
     <property name="title">
      <string>BIF Player</string>
     </property>
-    <addaction name="actionBIFPreviousFrame"/>
-    <addaction name="actionBIFPlayPause"/>
-    <addaction name="actionBIFNextFrame"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuSettings"/>
-   <addaction name="menuBIF_Player"/>
+   <addaction name="menuBIFPlayer"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="toolBar">
@@ -317,9 +270,6 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionBIFPreviousFrame"/>
-   <addaction name="actionBIFPlayPause"/>
-   <addaction name="actionBIFNextFrame"/>
   </widget>
   <action name="actionOpen">
    <property name="icon">
@@ -377,39 +327,18 @@
     <string>Load...</string>
    </property>
   </action>
-  <action name="actionBIFPreviousFrame">
-   <property name="icon">
-    <iconset resource="application.qrc">
-     <normaloff>:/resources/reverse.png</normaloff>:/resources/reverse.png</iconset>
-   </property>
-   <property name="text">
-    <string>Previous Frame</string>
-   </property>
-  </action>
-  <action name="actionBIFPlayPause">
-   <property name="icon">
-    <iconset resource="application.qrc">
-     <normaloff>:/resources/play.png</normaloff>:/resources/play.png</iconset>
-   </property>
-   <property name="text">
-    <string>Play</string>
-   </property>
-  </action>
-  <action name="actionBIFNextFrame">
-   <property name="icon">
-    <iconset resource="application.qrc">
-     <normaloff>:/resources/forward.png</normaloff>:/resources/forward.png</iconset>
-   </property>
-   <property name="text">
-    <string>Next Frame</string>
-   </property>
-  </action>
  </widget>
  <customwidgets>
   <customwidget>
    <class>CDelayComboBox</class>
    <extends>QComboBox</extends>
    <header>SABUtils/DelayComboBox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>NBIF::CBIFWidget</class>
+   <extends>QFrame</extends>
+   <header>SABUtils/BIFWidget.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <tabstops>

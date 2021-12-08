@@ -29,8 +29,11 @@ class QProgressDialog;
 class QTreeView;
 class QLineEdit;
 class CDelayLineEdit;
-class CBIFFile;
-class CBIFModel;
+namespace NBIF
+{
+    class CBIFFile;
+    class CBIFModel;
+}
 class QSpinBox;
 namespace Ui {class CMainWindow;};
 
@@ -73,19 +76,14 @@ namespace NMediaManager
             void slotLoadFinished( bool canceled );
             void slotWindowChanged();
             void slotFileChanged();
-
+            void slotFileFinishedEditing();
+            void slotPlayingStarted();
             void slotResize();
-            void slotNextFrame();
-            void slotBIFBack();
-
-            void slotBIFForward();
-            void slotBIFPlayPause();
-            void slotBIFTSChanged();
-
         private:
+            bool bifOutOfDate() const;
+
             void validateLoadAction();
             void validateRunAction();
-            void validateBIFPlayerActions();
 
             void bifFileChanged();
 
@@ -96,14 +94,6 @@ namespace NMediaManager
             void clearBIFValues();
 
             void formatBIFTable();
-            void showCurrentBIFFrame();
-            void pauseBIF();
-            void playBIF();
-            void setCurrentFrame( int frame );
-            void offsetFrame( int offset );
-
-            void decrCurrentFrame();
-            void incrCurrentFrame();
 
 
             NCore::CDirModel *getActiveModel() const;
@@ -125,10 +115,8 @@ namespace NMediaManager
             QProgressDialog *fProgressDlg{ nullptr };
             uint64_t fSearchesCompleted{ 0 };
             QTimer *fResizeTimer{ nullptr };
-            QTimer *fBIFFrameTimer{ nullptr };
-            std::optional< uint32_t > fCurrentFrame;
-            CBIFFile *fBIF{ nullptr };
-            CBIFModel *fBIFModel{ nullptr };
+            std::shared_ptr< NBIF::CBIFFile > fBIF;
+            NBIF::CBIFModel *fBIFModel{ nullptr };
             QSpinBox *fBIFTS{ nullptr };
         };
     }
