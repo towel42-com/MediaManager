@@ -80,10 +80,10 @@ namespace NMediaManager
             fTVInfoReplies.clear();
             fSeasonInfoReplies.first.clear();
             fSeasonInfoReplies.second.reset();
-            fTopLevelResults.clear();
+            fResults = {};
+            fQueuedResults.clear();
             fCurrentQueuedSearch = {};
             fSearchQueue.clear();
-            fQueuedResults.clear();
         }
 
         void CSearchTMDB::addSearch( const QString &filePath, std::shared_ptr< SSearchTMDBInfo > searchInfo )
@@ -139,10 +139,7 @@ namespace NMediaManager
             retVal += QString( "QueuedResults( %1 -" ).arg( fQueuedResults.size() );
             for ( auto &&ii : fQueuedResults )
             {
-                for ( auto &&jj : ii.second )
-                {
-                    retVal += QString( "(%1 - %2)" ).arg( ii.first ).arg( jj->toString() );
-                }
+                retVal += QString( "(%1 - %2)" ).arg( ii.first ).arg( ii.second->toString() );
             }
             retVal += ") ";
 
@@ -158,9 +155,9 @@ namespace NMediaManager
             retVal += QString( "Configuration: %1 ErrorCount: %2 " ).arg( fConfiguration.has_value() ? fConfiguration.value() : QString( "<notset>" ) ).arg( fConfigErrorCount );;
 
             retVal += QString( "StopSearching: %1 SkipImages: %2 " ).arg( fStopSearching ).arg( fSkipImages );;
-            retVal += QString( "BestMatch: %1" ).arg( fBestMatch ? fBestMatch->toString() : QString() );
-            retVal += QString( "TopLevelResults( %1 -" ).arg( fTopLevelResults.size() );
-            for ( auto &&ii : fTopLevelResults )
+            retVal += QString( "BestMatch: %1" ).arg( fResults.first ? fResults.first->toString() : QString() );
+            retVal += QString( "Results( %1 -" ).arg( fResults.second.size() );
+            for ( auto &&ii : fResults.second )
             {
                 retVal += QString( "(%1) " ).arg( ii->toString() );
             }
@@ -435,7 +432,7 @@ namespace NMediaManager
             return false;
         }
 
-        std::list< std::shared_ptr< SSearchResult > > CSearchTMDB::getResults( const QString &path ) const
+        std::shared_ptr< SSearchResult > CSearchTMDB::getResult( const QString &path ) const
         {
             auto pos = fQueuedResults.find( path );
             if ( pos == fQueuedResults.end() )
@@ -445,7 +442,7 @@ namespace NMediaManager
 
         std::list< std::shared_ptr< SSearchResult > > CSearchTMDB::getResults() const
         {
-            return fTopLevelResults;
+            return fResults.second;
         }
 
         bool CSearchTMDB::searchByName()
@@ -628,9 +625,10 @@ namespace NMediaManager
             {
                 auto results = doc.object()["results"].toArray();
                 bool found = false;
-                for ( int ii = 0; ii < results.size(); ++ii )
+                auto numResults = results.count();
+                for ( int ii = 0; ii < numResults; ++ii )
                 {
-                    found = loadSearchResult( results[ii].toObject(), results.count() > 1 ) || found;
+                    found = loadSearchResult( results[ii].toObject() ) || found;
                 }
                 if ( !found )
                 {
@@ -652,7 +650,7 @@ namespace NMediaManager
 
             auto doc = QJsonDocument::fromJson( data );
             //qDebug().nospace().noquote() << doc.toJson( QJsonDocument::Indented );
-            if ( !loadSearchResult( doc.object(), false ) )
+            if ( !loadSearchResult( doc.object() ) )
             {
                 auto foundTMDBID = doc.object().contains( "id" ) ? doc.object()["id"].toInt() : -1;
 
@@ -674,7 +672,7 @@ namespace NMediaManager
             auto doc = QJsonDocument::fromJson( data );
             //qDebug().nospace().noquote() << doc.toJson( QJsonDocument::Indented );
 
-            if ( !loadSearchResult( doc.object(), false ) )
+            if ( !loadSearchResult( doc.object() ) )
             {
                 auto foundTMDBID = doc.object().contains( "id" ) ? doc.object()["id"].toInt() : -1;
 
@@ -706,7 +704,7 @@ namespace NMediaManager
             "vote_count": 1591
         }
         */
-        bool CSearchTMDB::loadSearchResult( const QJsonObject &resultItem, bool multipleResults )
+        bool CSearchTMDB::loadSearchResult( const QJsonObject &resultItem )
         {
             //qDebug().nospace().noquote() << QJsonDocument( resultItem ).toJson( QJsonDocument::Indented );
 
@@ -766,14 +764,14 @@ namespace NMediaManager
             }
             else
             {
-                if ( !multipleResults )
-                {
-                    setBestMatch( searchResult );
-                    addQueuedResult( searchResult );
-                }
+                addResult( searchResult,
+                           [this]( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr<SSearchResult> lhs, std::shared_ptr<SSearchResult> rhs )
+                           {
+                               return isBetterTitleMatch( searchInfo, lhs, rhs );
+                           } );
             }
 
-            fTopLevelResults.push_back( searchResult );
+            fResults.second.push_back( searchResult );
             return true;
         }
 
@@ -867,9 +865,11 @@ namespace NMediaManager
 
             if ( ( fSearchInfo->episode() == -1 ) && ( fSearchInfo->season() != -1 ) )
             {
-                if ( !fBestMatch || ( fBestMatch && isBetterSeasonMatch( seasonInfo, fBestMatch ) ) )
-                    setBestMatch( seasonInfo );
-                addQueuedResult( seasonInfo );
+                addResult( seasonInfo, 
+                                 [this]( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr<SSearchResult> lhs, std::shared_ptr<SSearchResult> rhs )
+                                 {
+                                     return isBetterSeasonMatch( searchInfo, lhs, rhs );
+                                 } );
             }
 
             bool episodeFound = false;
@@ -912,70 +912,124 @@ namespace NMediaManager
             seasonInfo->fChildren.push_back( episodeInfo );
             if ( fSearchInfo->episode() != -1 )
             {
-                if ( !fBestMatch || ( fBestMatch && isBetterEpisodeMatch( episodeInfo, fBestMatch ) ) )
-                    setBestMatch( episodeInfo );
-
-                addQueuedResult( episodeInfo );
+                addResult( episodeInfo,
+                                 [this]( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr<SSearchResult> lhs, std::shared_ptr<SSearchResult> rhs )
+                                 {
+                                     return isBetterEpisodeMatch( searchInfo, lhs, rhs );
+                                 } );
                 return true;
             }
             return false;
         }
 
 
-        void CSearchTMDB::addQueuedResult( std::shared_ptr<SSearchResult> result )
+        void CSearchTMDB::addResult( std::shared_ptr<SSearchResult> result, TBettterMatchFunc isBetterMatchFunc )
         {
+            setBestMatch( fSearchInfo, result, isBetterMatchFunc );
+
             if ( fCurrentQueuedSearch.has_value() )
             {
-                fQueuedResults[fCurrentQueuedSearch.value().first].push_back( result );
+                auto pos = fQueuedResults.find( fCurrentQueuedSearch.value().first );
+                bool useMatch = ( pos == fQueuedResults.end() );
+                if ( !useMatch && isBetterMatchFunc )
+                {
+                    useMatch = isBetterMatchFunc( fCurrentQueuedSearch.value().second, result, ( *pos ).second );
+                }
+
+                if ( useMatch )
+                    fQueuedResults[fCurrentQueuedSearch.value().first] = result;
             }
         }
 
-        void CSearchTMDB::setBestMatch( std::shared_ptr<SSearchResult> result )
+        void CSearchTMDB::setBestMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr<SSearchResult> result, TBettterMatchFunc isBetterMatchFunc )
         {
-            fBestMatch = result;
+            if ( isBetterMatchFunc && isBetterMatchFunc( searchInfo, result, fResults.first ) )
+                fResults.first = result;
+        }
+
+
+        bool CSearchTMDB::isBetterTitleMatch( std::shared_ptr<SSearchResult> lhs, std::shared_ptr<SSearchResult> rhs ) const
+        {
+            return isBetterTitleMatch( fSearchInfo, lhs, rhs );
+        }
+
+        bool CSearchTMDB::isBetterTitleMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr<SSearchResult> lhs, std::shared_ptr<SSearchResult> rhs ) const
+        {
+            if ( !rhs )
+                return true;
+
+            if ( !lhs )
+                return false;
+
+            if ( !searchInfo )
+                searchInfo = fSearchInfo;
+
+            if ( searchInfo->searchName() == lhs->fTitle && ( searchInfo->searchName() != rhs->fTitle ) )
+                return true;
+
+            return false;
         }
 
         bool CSearchTMDB::isBetterSeasonMatch( std::shared_ptr< SSearchResult > lhs, std::shared_ptr< SSearchResult > rhs ) const
         {
-            if ( fSearchInfo->season() != -1 )
+            return isBetterSeasonMatch( fSearchInfo, lhs, rhs );
+        }
+
+        bool CSearchTMDB::isBetterSeasonMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr< SSearchResult > lhs, std::shared_ptr< SSearchResult > rhs ) const
+        {
+            if ( !searchInfo )
+                searchInfo = fSearchInfo;
+
+            if ( searchInfo->season() != -1 )
             {
+                if ( !rhs )
+                    return true;
+                if ( !lhs )
+                    return false;
+
                 if ( lhs->fSeason != rhs->fSeason )
                 {
-                    if ( fSearchInfo->isSeasonMatch( lhs->fSeason ) )
+                    if ( searchInfo->isSeasonMatch( lhs->fSeason ) )
                         return true;
-                    if ( fSearchInfo->isSeasonMatch( rhs->fSeason ) )
+                    if ( searchInfo->isSeasonMatch( rhs->fSeason ) )
                         return false;
                 }
             }
 
-            return isBetterTitleMatch( lhs, rhs );
+            return isBetterTitleMatch( searchInfo, lhs, rhs );
         }
 
-        bool CSearchTMDB::isBetterTitleMatch( std::shared_ptr<SSearchResult> lhs, std::shared_ptr<SSearchResult> rhs ) const
-        {
-            if ( fSearchInfo->searchName() == lhs->fTitle && ( fSearchInfo->searchName() != rhs->fTitle ) )
-                return true;
-            return false;
-        }
-
-        // returns true if lhs > rhs
         bool CSearchTMDB::isBetterEpisodeMatch( std::shared_ptr< SSearchResult > lhs, std::shared_ptr< SSearchResult > rhs ) const
         {
-            if ( isBetterSeasonMatch( lhs, rhs ) )
+            return isBetterEpisodeMatch( fSearchInfo, lhs, rhs );
+        }
+
+        bool CSearchTMDB::isBetterEpisodeMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr< SSearchResult > lhs, std::shared_ptr< SSearchResult > rhs ) const
+        {
+            if ( !rhs )
                 return true;
 
-            if ( fSearchInfo->episode() != -1 )
+            if ( !lhs )
+                return false;
+
+            if ( !searchInfo )
+                searchInfo = fSearchInfo;
+
+            if ( isBetterSeasonMatch( searchInfo, lhs, rhs ) )
+                return true;
+
+            if ( searchInfo->episode() != -1 )
             {
                 if ( lhs->fEpisode != rhs->fEpisode )
                 {
-                    if ( fSearchInfo->isEpisodeMatch( lhs->fEpisode ) )
+                    if ( searchInfo->isEpisodeMatch( lhs->fEpisode ) )
                         return true;
-                    if ( fSearchInfo->isEpisodeMatch( rhs->fEpisode ) )
+                    if ( searchInfo->isEpisodeMatch( rhs->fEpisode ) )
                         return false;
                 }
             }
 
-            return isBetterTitleMatch( lhs, rhs );
+            return isBetterTitleMatch( searchInfo, lhs, rhs );
         }
 
         bool CSearchTMDB::loadImageResults( std::shared_ptr< CNetworkReply > reply )
