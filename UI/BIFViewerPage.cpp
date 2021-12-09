@@ -150,7 +150,6 @@ namespace NMediaManager
                 fBIFSkipInterval->setValue( NCore::CPreferences::instance()->bifSkipInterval() );
         }
 
-        //settings.setValue( "Extensions", fImpl->extensions->text() );
         void CBIFViewerPage::saveSettings()
         {
             QSettings settings;
