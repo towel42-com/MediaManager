@@ -66,16 +66,6 @@ namespace NMediaManager
         {
             fImpl->setupUi( this );
 
-            auto widgets = fImpl->bifViewerPage->getFrameIntervalWidgets();
-            fImpl->bifToolbar->addWidget( widgets.first );
-            fImpl->bifToolbar->addWidget( widgets.second );
-            fImpl->bifToolbar->addSeparator();
-
-            widgets = fImpl->bifViewerPage->getFrameSkipWidgets();
-            fImpl->bifToolbar->addWidget( widgets.first );
-            fImpl->bifToolbar->addWidget( widgets.second );
-            fImpl->bifToolbar->addSeparator();
-
             fImpl->directory->setDelay( 1000 );
             fImpl->directory->setIsOKFunction( []( const QString &dirName )
                                                {
@@ -113,61 +103,46 @@ namespace NMediaManager
             connect( fImpl->fileName, &CDelayComboBox::sigEditTextChangedAfterDelay, this, &CMainWindow::slotFileChanged );
             connect( fImpl->fileName->lineEdit(), &CDelayLineEdit::sigFinishedEditingAfterDelay, this, &CMainWindow::slotFileFinishedEditing );
 
-            fImpl->menuBIFPlayer->addAction( fImpl->bifViewerPage->actionSkipBackward() );
-            fImpl->menuBIFPlayer->addAction( fImpl->bifViewerPage->actionPrev() );
-            fImpl->menuBIFPlayer->addSeparator();
-            fImpl->menuBIFPlayer->addAction( fImpl->bifViewerPage->actionTogglePlayPause() );
-            fImpl->menuBIFPlayer->addSeparator();
-            fImpl->menuBIFPlayer->addAction( fImpl->bifViewerPage->actionPause() );
-            fImpl->menuBIFPlayer->addAction( fImpl->bifViewerPage->actionPlay() );
-            fImpl->menuBIFPlayer->addSeparator();
-            fImpl->menuBIFPlayer->addAction( fImpl->bifViewerPage->actionNext() );
-            fImpl->menuBIFPlayer->addAction( fImpl->bifViewerPage->actionSkipForward() );
+            auto menu = fImpl->bifViewerPage->menu();
+            if ( menu )
+                menuBar()->addMenu( menu );
 
-            fImpl->bifToolbar->addAction( fImpl->bifViewerPage->actionSkipBackward() );
-            fImpl->bifToolbar->addAction( fImpl->bifViewerPage->actionPrev() );
-            fImpl->bifToolbar->addSeparator();
-            fImpl->bifToolbar->addAction( fImpl->bifViewerPage->actionTogglePlayPause() );
-            fImpl->bifToolbar->addSeparator();
-            fImpl->bifToolbar->addAction( fImpl->bifViewerPage->actionPause() );
-            fImpl->bifToolbar->addAction( fImpl->bifViewerPage->actionPlay() );
-            fImpl->bifToolbar->addSeparator();
-            fImpl->bifToolbar->addAction( fImpl->bifViewerPage->actionNext() );
-            fImpl->bifToolbar->addAction( fImpl->bifViewerPage->actionSkipForward() );
-
-            fImpl->mediaNamerFiles->setExpandsOnDoubleClick( false );
-            connect( fImpl->mediaNamerFiles, &QTreeView::doubleClicked, this, &CMainWindow::slotDoubleClicked );
+            auto toolBar = fImpl->bifViewerPage->toolBar();
+            if ( toolBar )
+                addToolBar( toolBar );
 
             fImpl->mergeSRTFiles->setExpandsOnDoubleClick( false );
-            connect( fImpl->mergeSRTFiles, &QTreeView::doubleClicked, this, &CMainWindow::slotDoubleClicked );
 
             connect( fImpl->actionOpen, &QAction::triggered, this, &CMainWindow::slotOpen );
             connect( fImpl->actionLoad, &QAction::triggered, this, &CMainWindow::slotLoad );
             connect( fImpl->actionRun, &QAction::triggered, this, &CMainWindow::slotRun );
 
-            connect( fImpl->actionTreatAsTVShowByDefault, &QAction::triggered, this, &CMainWindow::slotToggleTreatAsTVShowByDefault );
+            connect( fImpl->actionTreatAsTVShowByDefault, &QAction::triggered, this, &CMainWindow::slotTreatAsTVShowByDefault );
+            connect( fImpl->actionExactMatchesOnly, &QAction::triggered, this, &CMainWindow::slotExactMatchesOnly );
             connect( fImpl->actionPreferences, &QAction::triggered, this, &CMainWindow::slotPreferences );
-
-            fSearchTMDB = new NCore::CSearchTMDB( nullptr, std::optional<QString>(), this );
-            fSearchTMDB->setSkipImages( true );
-            connect( fSearchTMDB, &NCore::CSearchTMDB::sigAutoSearchFinished, this, &CMainWindow::slotAutoSearchFinished );
 
             connect( fImpl->tabWidget, &QTabWidget::currentChanged, this, &CMainWindow::slotWindowChanged );
 
             loadSettings();
 
+            fImpl->transformMediaFileNamesPage->setSetupProgressDlgFunc(
+                    [this]( const QString &title, const QString &cancelButtonText, int max )
+                    {
+                        setupProgressDlg( title, cancelButtonText, max );
+                        return fProgressDlg;
+                    },
+                    [this]()
+                    {
+                        clearProgressDlg();
+                    }
+                );
+            connect( fImpl->transformMediaFileNamesPage, &CTransformMediaFileNamesPage::sigLoadFinished, this, &CMainWindow::slotLoadFinished );
             QSettings settings;
             fImpl->tabWidget->setCurrentIndex( settings.value( "LastFunctionalityPage", 0 ).toInt() );
             if ( settings.contains( "mergeSRTSplitter" ) )
                 fImpl->mergeSRTSplitter->restoreState( settings.value( "mergeSRTSplitter" ).toByteArray() );
             else
                 fImpl->mergeSRTSplitter->setSizes( QList< int >() << 100 << 0 );
-
-            setBIFPlayerButtonsLayout( fImpl->bifViewerPage->buttonsLayout() );
-
-            connect( fImpl->actionBIFPlayerButtonDiscrete, &QAction::triggered, this, &CMainWindow::slotBIFPlayerButtonDiscrete );
-            connect( fImpl->actionBIFPlayerButtonToggle, &QAction::triggered, this, &CMainWindow::slotBIFPlayerButtonToggle );
-            connect( fImpl->actionBIFPlayerButtonNone, &QAction::triggered, this, &CMainWindow::slotBIFPlayerButtonNone );
 
             QTimer::singleShot( 0, this, &CMainWindow::slotDirectoryChangedImmediate );
             QTimer::singleShot( 10, this, &CMainWindow::slotDirectoryChanged );
@@ -191,10 +166,9 @@ namespace NMediaManager
             fImpl->actionTreatAsTVShowByDefault->setChecked( NCore::CPreferences::instance()->getTreatAsTVShowByDefault() );
             fImpl->actionExactMatchesOnly->setChecked( NCore::CPreferences::instance()->getExactMatchesOnly() );
 
-            slotToggleTreatAsTVShowByDefault();
+            slotTreatAsTVShowByDefault();
         }
 
-        //settings.setValue( "Extensions", fImpl->extensions->text() );
         void CMainWindow::saveSettings()
         {
             NCore::CPreferences::instance()->setDirectories( fImpl->directory->getAllText() );
@@ -210,8 +184,6 @@ namespace NMediaManager
 
             fImpl->fileNameLabel->setVisible( isBIFViewerActive() );
             fImpl->fileName->setVisible( isBIFViewerActive() );
-
-            fImpl->bifToolbar->setVisible( isBIFViewerActive() );
 
             validateRunAction();
             validateLoadAction();
@@ -248,7 +220,7 @@ namespace NMediaManager
 
         void CMainWindow::validateRunAction()
         {
-            fImpl->actionRun->setEnabled( !isBIFViewerActive() && getActiveModel() && getActiveModel()->rowCount() );
+            fImpl->actionRun->setEnabled( !isBIFViewerActive() && canRun() );
         }
 
         void CMainWindow::slotFileFinishedEditing()
@@ -293,107 +265,12 @@ namespace NMediaManager
             {
                 fImpl->actionTreatAsTVShowByDefault->setChecked( NCore::CPreferences::instance()->getTreatAsTVShowByDefault() );
                 fImpl->actionExactMatchesOnly->setChecked( NCore::CPreferences::instance()->getExactMatchesOnly() );
-                slotToggleTreatAsTVShowByDefault();
-
-                if ( fXformModel )
-                {
-                    fXformModel->slotTVOutputDirPatternChanged( NCore::CPreferences::instance()->getTVOutDirPattern() );
-                    fXformModel->slotTVOutputFilePatternChanged( NCore::CPreferences::instance()->getTVOutFilePattern() );
-
-                    fXformModel->slotMovieOutputDirPatternChanged( NCore::CPreferences::instance()->getMovieOutDirPattern() );
-                    fXformModel->slotMovieOutputFilePatternChanged( NCore::CPreferences::instance()->getMovieOutFilePattern() );
-                }
+                slotTreatAsTVShowByDefault();
             }
         }
 
         void CMainWindow::slotMergeSRTDirectoryLoaded()
         {
-        }
-
-        void CMainWindow::slotAutoSearchForNewNames()
-        {
-            if ( !fXformModel )
-                return;
-
-            if ( fXformModel->rowCount() != 1 )
-                return;
-
-            fSearchTMDB->resetResults();
-
-            auto count = NQtUtils::itemCount( fXformModel.get(), true );
-
-            setupProgressDlg( tr( "Finding Results" ), tr( "Cancel" ), count );
-
-            auto rootIdx = fXformModel->index( 0, 0 );
-            autoSearchForNewNames( rootIdx );
-            fProgressDlg->setValue( fSearchesCompleted );
-        }
-
-        void CMainWindow::autoSearchForNewNames( QModelIndex parentIdx )
-        {
-            auto rowCount = fXformModel->rowCount( parentIdx );
-            for ( int ii = 0; ii < rowCount; ++ii )
-            {
-                if ( fProgressDlg->wasCanceled() )
-                {
-                    fSearchTMDB->clearSearchCache();
-                    break;
-                }
-
-                auto childIndex = fXformModel->index( ii, 0, parentIdx );
-                auto name = fXformModel->getSearchName( childIndex );
-                auto path = fXformModel->filePath( childIndex );
-                auto titleInfo = fXformModel->getSearchResultInfo( childIndex );
-                auto searchInfo = std::make_shared< NCore::SSearchTMDBInfo >( name, titleInfo );
-                searchInfo->setExactMatchOnly( NCore::CPreferences::instance()->getExactMatchesOnly() );
-
-                if ( fXformModel->canAutoSearch( childIndex ) )
-                {
-                    if ( fProgressDlg )
-                    {
-                        fProgressDlg->setLabelText( tr( "Adding Background Search for '%1'" ).arg( QDir( fImpl->directory->currentText() ).relativeFilePath( path ) ) );
-                        fProgressDlg->setValue( fProgressDlg->value() + 1 );
-                        qApp->processEvents();
-                    }
-                    fSearchTMDB->addSearch( path, searchInfo );
-                }
-
-                autoSearchForNewNames( childIndex );
-            }
-        }
-
-        void CMainWindow::slotAutoSearchFinished( const QString &path, bool searchesRemaining )
-        {
-            auto results = fSearchTMDB->getResults( path );
-
-            //qDebug().noquote().nospace() << "Search results for path " << path << " Has Result? " << ( ( results.size() == 1 ) ? "Yes" : "No" );
-            if ( searchesRemaining )
-            {
-                if ( fProgressDlg )
-                {
-                    fProgressDlg->setValue( fProgressDlg->value() + 1 );
-                    fSearchesCompleted++;
-                    fProgressDlg->setLabelText( tr( "Search Complete for '%1'" ).arg( QDir( fImpl->directory->currentText() ).relativeFilePath( path ) ) );
-                }
-            }
-            else
-            {
-                clearProgressDlg();
-            }
-
-            if ( fProgressDlg && fProgressDlg->wasCanceled() )
-                fSearchTMDB->clearSearchCache();
-
-            if ( results.size() != 1 )
-                return;
-            auto result = results.front();
-            //qDebug() << result->toString();
-
-            auto item = fXformModel->getItemFromPath( path );
-            if ( item && result )
-            {
-                fXformModel->setSearchResult( item, result, false );
-            }
         }
 
         void CMainWindow::clearProgressDlg()
@@ -430,42 +307,14 @@ namespace NMediaManager
                      } );
         }
 
-        void CMainWindow::slotDoubleClicked( const QModelIndex &idx )
+        void CMainWindow::slotExactMatchesOnly()
         {
-            if ( !isTransformActive() )
-                return;
-
-            auto baseIdx = fXformModel->index( idx.row(), NCore::EColumns::eFSName, idx.parent() );
-            auto titleInfo = fXformModel->getSearchResultInfo( idx );
-
-            auto isDir = baseIdx.data( NCore::ECustomRoles::eIsDir ).toBool();
-            auto fullPath = baseIdx.data( NCore::ECustomRoles::eFullPathRole ).toString();
-            bool isTVShow = baseIdx.data( NCore::ECustomRoles::eIsTVShowRole ).toBool();
-            auto nm = fXformModel->getSearchName( idx );
-
-            CSelectTMDB dlg( nm, titleInfo, this );
-            dlg.setSearchForTVShows( fXformModel->treatAsTVShow( QFileInfo( fullPath ), isTVShow ), true );
-            dlg.setExactMatchOnly( fImpl->actionExactMatchesOnly->isChecked(), true );
-
-            if ( dlg.exec() == QDialog::Accepted )
-            {
-                auto titleInfo = dlg.getSearchResult();
-                bool setChildren = true;
-                if ( titleInfo->isTVShow() && titleInfo->isSeasonOnly() )
-                    setChildren = false;
-                fXformModel->setSearchResult( idx, titleInfo, setChildren );
-            }
+            fImpl->transformMediaFileNamesPage->setExactMatchesOnly( fImpl->actionExactMatchesOnly->isChecked() );
         }
 
-        void CMainWindow::slotToggleTreatAsTVShowByDefault()
+        void CMainWindow::slotTreatAsTVShowByDefault()
         {
-            if ( fXformModel )
-                fXformModel->slotTreatAsTVByDefaultChanged( fImpl->actionTreatAsTVShowByDefault->isChecked() );
-        }
-
-        bool CMainWindow::isTransformActive() const
-        {
-            return fImpl->tabWidget->currentWidget() == fImpl->mediaNamerTab;
+            fImpl->transformMediaFileNamesPage->setTreatAsTVByDefault( fImpl->actionTreatAsTVShowByDefault->isChecked() );
         }
 
         bool CMainWindow::isMergeSRTActive() const
@@ -473,31 +322,30 @@ namespace NMediaManager
             return fImpl->tabWidget->currentWidget() == fImpl->mergeSRTTab;
         }
 
+        bool CMainWindow::isTransformActive() const
+        {
+            return fImpl->tabWidget->currentWidget() == fImpl->transformMediaFileNamesTab;
+        }
 
         bool CMainWindow::isBIFViewerActive() const
         {
             return fImpl->tabWidget->currentWidget() == fImpl->bifViewerTab;
         }
 
-        NCore::CDirModel * CMainWindow::getActiveModel() const
+        bool CMainWindow::canRun() const
         {
             if ( isTransformActive() )
-                return fXformModel.get();
+                return fImpl->transformMediaFileNamesPage->canRun();
             else if ( isMergeSRTActive() )
-                return fMergeSRTModel.get();
+                return fMergeSRTModel && fMergeSRTModel->rowCount() != 0;
             return nullptr;
         }
 
         void CMainWindow::slotLoadFinished( bool canceled )
         {
+            (void)canceled;
             validateRunAction();
             clearProgressDlg();
-
-            if ( canceled )
-                return;
-
-            if ( isTransformActive() )
-                QTimer::singleShot( 0, this, &CMainWindow::slotAutoSearchForNewNames );
         }
 
         void CMainWindow::slotLoad()
@@ -506,17 +354,7 @@ namespace NMediaManager
             fImpl->directory->addCurrentItem();
             if ( isTransformActive() )
             {
-                fXformModel.reset( new NCore::CDirModel( NCore::CDirModel::eTransform ) );
-                fImpl->mediaNamerFiles->setModel( fXformModel.get() );
-                connect( fXformModel.get(), &NCore::CDirModel::sigDirReloaded, this, &CMainWindow::slotLoadFinished );
-                fXformModel->slotTreatAsTVByDefaultChanged( fImpl->actionTreatAsTVShowByDefault->isChecked() );
-                fXformModel->slotTVOutputFilePatternChanged( NCore::CPreferences::instance()->getTVOutFilePattern() );
-                fXformModel->slotTVOutputDirPatternChanged( NCore::CPreferences::instance()->getTVOutDirPattern() );
-                fXformModel->slotMovieOutputFilePatternChanged( NCore::CPreferences::instance()->getMovieOutFilePattern() );
-                fXformModel->slotMovieOutputDirPatternChanged( NCore::CPreferences::instance()->getMovieOutDirPattern() );
-                fXformModel->setNameFilters( NCore::CPreferences::instance()->getMediaExtensions() << NCore::CPreferences::instance()->getSubtitleExtensions(), fImpl->mediaNamerFiles );
-                setupProgressDlg( tr( "Finding Files" ), tr( "Cancel" ), 1 );
-                fXformModel->setRootPath( fImpl->directory->currentText(), fImpl->mediaNamerFiles, nullptr, fProgressDlg );
+                fImpl->transformMediaFileNamesPage->load( fImpl->directory->currentText() );
             }
             else if ( isMergeSRTActive() )
             {
@@ -532,16 +370,10 @@ namespace NMediaManager
 
         void CMainWindow::slotRun()
         {
-            bool processOK = false;
-            QString actionName;
-            QString cancelName;
-
             NCore::CDirModel *model = nullptr;
             if ( isTransformActive() )
             {
-                actionName = tr( "Renaming Files..." );
-                cancelName = tr( "Abort Rename" );
-                model = fXformModel.get();
+                fImpl->transformMediaFileNamesPage->run();
             }
             else if ( isMergeSRTActive() )
             {
@@ -554,50 +386,18 @@ namespace NMediaManager
                     fImpl->mergeSRTSplitter->setSizes( sizes );
                 }
 
-                actionName = tr( "Merging SRT Files into MKV..." );
-                cancelName = tr( "Abort Merge" );
+                auto actionName = tr( "Merging SRT Files into MKV..." );
+                auto cancelName = tr( "Abort Merge" );
                 model = fMergeSRTModel.get();
-            }
-            else 
-                return;
-
-            if( model && model->process(
+                if ( model && model->process(
                     [actionName, cancelName, this]( int count ) { setupProgressDlg( actionName, cancelName, count ); return fProgressDlg; },
                     [this]( QProgressDialog *dlg ) { (void)dlg; clearProgressDlg(); },
                     this ) )
                     slotLoad();
                 ;
-        }
-
-        void CMainWindow::setBIFPlayerButtonsLayout( NBIF::EButtonsLayout layout )
-        {
-            fImpl->actionBIFPlayerButtonDiscrete->setChecked( false );
-            fImpl->actionBIFPlayerButtonToggle->setChecked( false );
-            fImpl->actionBIFPlayerButtonNone->setChecked( false );
-
-            if ( layout == NBIF::EButtonsLayout::eDiscretePlayPause )
-                fImpl->actionBIFPlayerButtonDiscrete->setChecked( true );
-            else if ( layout == NBIF::EButtonsLayout::eTogglePlayPause )
-                fImpl->actionBIFPlayerButtonToggle->setChecked( true );
-            else if ( layout == NBIF::EButtonsLayout::eNoButtons )
-                fImpl->actionBIFPlayerButtonNone->setChecked( true );
-
-            fImpl->bifViewerPage->setButtonsLayout( layout );
-        }
-
-        void CMainWindow::slotBIFPlayerButtonDiscrete()
-        {
-            setBIFPlayerButtonsLayout( NBIF::EButtonsLayout::eDiscretePlayPause );
-        }
-
-        void CMainWindow::slotBIFPlayerButtonToggle()
-        {
-            setBIFPlayerButtonsLayout( NBIF::EButtonsLayout::eTogglePlayPause );
-        }
-
-        void CMainWindow::slotBIFPlayerButtonNone()
-        {
-            setBIFPlayerButtonsLayout( NBIF::EButtonsLayout::eNoButtons );
+            }
+            else 
+                return;
         }
     }
 }

@@ -82,9 +82,9 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>2</number>
+       <number>1</number>
       </property>
-      <widget class="QWidget" name="mediaNamerTab">
+      <widget class="QWidget" name="transformMediaFileNamesTab">
        <attribute name="icon">
         <iconset resource="application.qrc">
          <normaloff>:/resources/rename.png</normaloff>:/resources/rename.png</iconset>
@@ -93,24 +93,23 @@
         <string>Media Namer</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_3">
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
         <item>
-         <widget class="QTreeView" name="mediaNamerFiles">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-            <horstretch>0</horstretch>
-            <verstretch>2</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="editTriggers">
-           <set>QAbstractItemView::NoEditTriggers</set>
-          </property>
-          <property name="alternatingRowColors">
-           <bool>true</bool>
-          </property>
-          <property name="sortingEnabled">
-           <bool>true</bool>
-          </property>
-         </widget>
+         <widget class="NMediaManager::NUi::CTransformMediaFileNamesPage" name="transformMediaFileNamesPage" native="true"/>
         </item>
        </layout>
       </widget>
@@ -123,6 +122,18 @@
         <string>Merge SRT</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_2">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
         <item>
          <widget class="QSplitter" name="mergeSRTSplitter">
           <property name="orientation">
@@ -159,6 +170,21 @@
         <string>BIF Viewer</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <property name="horizontalSpacing">
+         <number>0</number>
+        </property>
         <item row="0" column="0">
          <widget class="NMediaManager::NUi::CBIFViewerPage" name="bifViewerPage" native="true"/>
         </item>
@@ -191,34 +217,18 @@
     <property name="title">
      <string>Settings</string>
     </property>
-    <widget class="QMenu" name="menuBIFPlayerType">
-     <property name="title">
-      <string>BIF Player Type</string>
-     </property>
-     <addaction name="actionBIFPlayerButtonDiscrete"/>
-     <addaction name="actionBIFPlayerButtonToggle"/>
-     <addaction name="actionBIFPlayerButtonNone"/>
-    </widget>
     <addaction name="actionExactMatchesOnly"/>
     <addaction name="actionTreatAsTVShowByDefault"/>
     <addaction name="separator"/>
     <addaction name="actionPreferences"/>
-    <addaction name="separator"/>
-    <addaction name="menuBIFPlayerType"/>
-   </widget>
-   <widget class="QMenu" name="menuBIFPlayer">
-    <property name="title">
-     <string>BIF Player</string>
-    </property>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuSettings"/>
-   <addaction name="menuBIFPlayer"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="toolBar">
    <property name="windowTitle">
-    <string>toolBar</string>
+    <string>Main Toolbar</string>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -229,17 +239,6 @@
    <addaction name="actionOpen"/>
    <addaction name="actionLoad"/>
    <addaction name="actionRun"/>
-  </widget>
-  <widget class="QToolBar" name="bifToolbar">
-   <property name="windowTitle">
-    <string>toolBar_2</string>
-   </property>
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
   </widget>
   <action name="actionOpen">
    <property name="icon">
@@ -297,30 +296,6 @@
     <string>Load...</string>
    </property>
   </action>
-  <action name="actionBIFPlayerButtonDiscrete">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Discrete</string>
-   </property>
-  </action>
-  <action name="actionBIFPlayerButtonToggle">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Toggle</string>
-   </property>
-  </action>
-  <action name="actionBIFPlayerButtonNone">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>None</string>
-   </property>
-  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -334,11 +309,16 @@
    <header>BIFViewerPage.h</header>
    <container>1</container>
   </customwidget>
+  <customwidget>
+   <class>NMediaManager::NUi::CTransformMediaFileNamesPage</class>
+   <extends>QWidget</extends>
+   <header>TransformMediaFileNamesPage.h</header>
+   <container>1</container>
+  </customwidget>
  </customwidgets>
  <tabstops>
   <tabstop>fileName</tabstop>
   <tabstop>tabWidget</tabstop>
-  <tabstop>mediaNamerFiles</tabstop>
   <tabstop>mergeSRTFiles</tabstop>
   <tabstop>mergeSRTResults</tabstop>
   <tabstop>directory</tabstop>

@@ -27,7 +27,7 @@ set(qtproject_SRCS
     Preferences.cpp
     SelectTMDB.cpp
     TransformConfirm.cpp
-    #TransformPage.cpp
+    TransformMediaFileNamesPage.cpp
 )
 
 set(qtproject_H
@@ -37,7 +37,7 @@ set(qtproject_H
     Preferences.h
     SelectTMDB.h
     TransformConfirm.h
-    #TransformPage.h
+    TransformMediaFileNamesPage.h
 )
 
 set(project_H
@@ -50,7 +50,7 @@ set(qtproject_UIS
     Preferences.ui
     SelectTMDB.ui
     TransformConfirm.ui
-    #TransformPage.ui
+    TransformMediaFileNamesPage.ui
 )
 
 set(qtproject_QRC

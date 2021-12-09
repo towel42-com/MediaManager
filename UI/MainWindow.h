@@ -61,44 +61,34 @@ namespace NMediaManager
             void slotDirectoryChangedImmediate();
             void slotLoad();
             void slotRun();
-            void slotToggleTreatAsTVShowByDefault();
-            void slotDoubleClicked( const QModelIndex &idx );
+            void slotTreatAsTVShowByDefault();
+            void slotExactMatchesOnly();
             void slotMergeSRTDirectoryLoaded();
-            void slotAutoSearchForNewNames();
-            void slotAutoSearchFinished( const QString &path, bool searchesRemaining );
             void slotPreferences();
-            void slotLoadFinished( bool canceled );
             void slotWindowChanged();
             void slotFileChanged();
             void slotFileFinishedEditing();
 
-            void slotBIFPlayerButtonDiscrete();
-            void slotBIFPlayerButtonToggle();
-            void slotBIFPlayerButtonNone();
+            void slotLoadFinished( bool canceled );
         private:
-            void setBIFPlayerButtonsLayout( NBIF::EButtonsLayout layout );
-
             void validateLoadAction();
             void validateRunAction();
 
             void fileNameChanged( bool andExecute );
 
-            NCore::CDirModel *getActiveModel() const;
+            bool canRun() const;
             bool isTransformActive() const;
             bool isMergeSRTActive() const;
             bool isBIFViewerActive() const;
 
-            void autoSearchForNewNames( QModelIndex rootIdx );
             void setupProgressDlg( const QString &title, const QString &cancelButtonText, int max );
             void clearProgressDlg();
 
             void loadSettings();
             void saveSettings();
 
-            std::unique_ptr< NCore::CDirModel > fXformModel;
             std::unique_ptr< NCore::CDirModel > fMergeSRTModel;
             std::unique_ptr< Ui::CMainWindow > fImpl;
-            NCore::CSearchTMDB *fSearchTMDB{ nullptr };
             QProgressDialog *fProgressDlg{ nullptr };
             uint64_t fSearchesCompleted{ 0 };
         };
