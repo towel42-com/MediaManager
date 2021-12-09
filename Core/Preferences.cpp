@@ -291,16 +291,28 @@ namespace NMediaManager
             return aOK ? retVal : QString();
         }
  
-        void CPreferences::setBIFTSInterval( int interval )
+        void CPreferences::setBIFFrameInterval( int interval )
         {
             QSettings settings;
-            settings.setValue( "BIFTSInterval", interval );
+            settings.setValue( "BIFFrameInterval", interval );
         }
 
-        int CPreferences::bifTSInterval() const
+        int CPreferences::bifFrameInterval() const
         {
             QSettings settings;
-            return settings.value( "BIFTSInterval", 50 ).toInt();
+            return settings.value( "BIFFrameInterval", 50 ).toInt();
+        }
+
+        void CPreferences::setBIFSkipInterval( int interval )
+        {
+            QSettings settings;
+            settings.setValue( "BIFSkipInterval", interval );
+        }
+
+        int CPreferences::bifSkipInterval() const
+        {
+            QSettings settings;
+            return settings.value( "BIFSkipInterval", 5 ).toInt();
         }
 
         bool CPreferences::isMediaFile( const QFileInfo &fi ) const
