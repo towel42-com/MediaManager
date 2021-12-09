@@ -26,12 +26,10 @@
 #include <QWidget>
 #include <optional>
 #include <memory>
-//class QProgressDialog;
-//class QTreeView;
-//class QLineEdit;
-//class CDelayLineEdit;
 class QLabel;
 class QSpinBox;
+class QMenu;
+class QToolBar;
 namespace NBIF
 {
     class CBIFFile;
@@ -77,79 +75,28 @@ namespace NMediaManager
             void setButtonsLayout( NBIF::EButtonsLayout style );
             NBIF::EButtonsLayout buttonsLayout()const;
 
-            std::pair< QLabel *, QSpinBox * > getFrameIntervalWidgets();
-            std::pair< QLabel *, QSpinBox * > getFrameSkipWidgets();
-
             virtual bool eventFilter( QObject *obj, QEvent *event ) override;
-        public Q_SLOTS:
-            //void slotSetFrameInterval( int value );
-            //void slotSetSkipInterval( int value );
-        //    void slotOpen();
-        //    void slotDirectoryChanged();
 
-        //    void slotDirectoryChangedImmediate();
-        //    void slotLoad();
-        //    void slotRun();
-        //    void slotToggleTreatAsTVShowByDefault();
-        //    void slotDoubleClicked( const QModelIndex &idx );
-        //    void slotMergeSRTDirectoryLoaded();
-        //    void slotAutoSearchForNewNames();
-        //    void slotAutoSearchFinished( const QString &path, bool searchesRemaining );
-        //    void slotPreferences();
-        //    void slotLoadFinished( bool canceled );
-        //    void slotWindowChanged();
-        //    void slotFileChanged();
-        //    void slotFileFinishedEditing();
+            QMenu * menu();
+            QToolBar *toolBar();
+        public Q_SLOTS:
             void slotPlayingStarted();
             void slotResize();
-
-        //    void slotBIFPlayerButtonDiscrete();
-        //    void slotBIFPlayerButtonToggle();
-        //    void slotBIFPlayerButtonNone();
         private:
             bool outOfDate() const;
             void fileNameChanged();
-
-        //    void validateLoadAction();
-        //    void validateRunAction();
-
-        //    void bifFileChanged();
-
             bool canLoad() const;
-
             void load();
-
             void clear();
-
             void formatBIFTable();
-
-
-        //    NCore::CDirModel *getActiveModel() const;
-        //    bool isTransformActive() const;
-        //    bool isMergeSRTActive() const;
-        //    bool isBIFViewerActive() const;
-
-        //    void autoSearchForNewNames( QModelIndex rootIdx );
-        //    void setupProgressDlg( const QString &title, const QString &cancelButtonText, int max );
-        //    void clearProgressDlg();
-
             void loadSettings( bool init );
             void saveSettings();
-
-        //    std::unique_ptr< NCore::CDirModel > fXformModel;
-        //    std::unique_ptr< NCore::CDirModel > fMergeSRTModel;
-        //    NCore::CSearchTMDB *fSearchTMDB{ nullptr };
-        //    QProgressDialog *fProgressDlg{ nullptr };
-        //    uint64_t fSearchesCompleted{ 0 };
         
             QTimer *fResizeTimer{ nullptr };
             std::shared_ptr< NBIF::CBIFFile > fBIF;
             NBIF::CBIFModel *fBIFModel{ nullptr };
 
             std::unique_ptr< Ui::CBIFViewerPage > fImpl;
-
-            QSpinBox *fBIFFrameInterval{ nullptr };
-            QSpinBox *fBIFSkipInterval{ nullptr };
             QString fFileName;
         };
     }

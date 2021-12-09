@@ -21,9 +21,6 @@
 // SOFTWARE.
 
 #include "BIFViewerPage.h"
-//#include "SelectTMDB.h"
-//#include "TransformConfirm.h"
-//#include "Preferences.h"
 
 #include "ui_BIFViewerPage.h"
 
@@ -50,7 +47,6 @@
 #include <QTimer>
 #include <QPixmap>
 #include <QLabel>
-#include <QSpinBox>
 
 
 #include <QProgressDialog>
@@ -95,41 +91,6 @@ namespace NMediaManager
             }
         }
 
-        std::pair< QLabel *, QSpinBox * > CBIFViewerPage::getFrameIntervalWidgets()
-        {
-            auto label = new QLabel( tr( "Seconds per Frame:" ) );
-            label->setAlignment( Qt::AlignRight | Qt::AlignVCenter );
-
-            fBIFFrameInterval = new QSpinBox;
-            fBIFFrameInterval->setAlignment( Qt::AlignLeft | Qt::AlignVCenter );
-            fBIFFrameInterval->setSuffix( tr( "ms" ) );
-            fBIFFrameInterval->setMinimum( 0 );
-            fBIFFrameInterval->setMaximum( std::numeric_limits< int >::max() );
-            fBIFFrameInterval->setSingleStep( 50 );
-            loadSettings( false );
-
-            connect( fBIFFrameInterval, qOverload< int >( &QSpinBox::valueChanged ), fImpl->bifWidget, &NBIF::CBIFWidget::slotSetFrameInterval );
-            return { label, fBIFFrameInterval };
-        }
-
-        std::pair< QLabel *, QSpinBox * > CBIFViewerPage::getFrameSkipWidgets()
-        {
-            auto label = new QLabel( tr( "Frames to Skip:" ) );
-            label->setAlignment( Qt::AlignRight | Qt::AlignVCenter );
-
-            fBIFSkipInterval = new QSpinBox;
-            fBIFSkipInterval->setAlignment( Qt::AlignLeft | Qt::AlignVCenter );
-            fBIFSkipInterval->setSuffix( tr( "frames" ) );
-            fBIFSkipInterval->setMinimum( 0 );
-            fBIFSkipInterval->setMaximum( std::numeric_limits< int >::max() );
-            fBIFSkipInterval->setSingleStep( 50 );
-
-            loadSettings( false );
-
-            connect( fBIFSkipInterval, qOverload< int >( &QSpinBox::valueChanged ), fImpl->bifWidget, &NBIF::CBIFWidget::slotSetSkipInterval );
-            return { label, fBIFSkipInterval };
-        }
-
         void CBIFViewerPage::loadSettings( bool init )
         {
             if ( init )
@@ -144,10 +105,8 @@ namespace NMediaManager
                 setButtonsLayout( static_cast<NBIF::EButtonsLayout>( settings.value( "bifPlayerButtonLayout", static_cast<int>( NBIF::EButtonsLayout::eTogglePlayPause ) ).toInt() ) );
             }
 
-            if ( fBIFFrameInterval )
-                fBIFFrameInterval->setValue( NCore::CPreferences::instance()->bifFrameInterval() );
-            if ( fBIFSkipInterval )
-                fBIFSkipInterval->setValue( NCore::CPreferences::instance()->bifSkipInterval() );
+            fImpl->bifWidget->setFrameInterval( NCore::CPreferences::instance()->bifFrameInterval() );
+            fImpl->bifWidget->setSkipInterval( NCore::CPreferences::instance()->bifSkipInterval() );
         }
 
         void CBIFViewerPage::saveSettings()
@@ -156,10 +115,8 @@ namespace NMediaManager
             settings.setValue( "bifViewerVSplitter", fImpl->bifViewerVSplitter->saveState() );
             settings.setValue( "bifPlayerButtonLayout", static_cast<int>( fImpl->bifWidget->buttonsLayout() ) );
 
-            if ( fBIFFrameInterval )
-                NCore::CPreferences::instance()->setBIFFrameInterval( fBIFFrameInterval->value() );
-            if ( fBIFSkipInterval )
-                NCore::CPreferences::instance()->setBIFSkipInterval( fBIFSkipInterval->value() );
+            NCore::CPreferences::instance()->setBIFFrameInterval( fImpl->bifWidget->frameInterval() );
+            NCore::CPreferences::instance()->setBIFSkipInterval( fImpl->bifWidget->skipInterval() );
         }
 
         bool CBIFViewerPage::eventFilter( QObject * obj, QEvent * event )
@@ -170,6 +127,16 @@ namespace NMediaManager
                 fResizeTimer->start();
             }
             return QWidget::eventFilter( obj, event );
+        }
+
+        QToolBar *CBIFViewerPage::toolBar()
+        {
+            return fImpl->bifWidget->toolBar();
+        }
+
+        QMenu *CBIFViewerPage::menu()
+        {
+            return fImpl->bifWidget->menu();
         }
 
         void CBIFViewerPage::slotResize()
@@ -212,7 +179,7 @@ namespace NMediaManager
             else
                 fileNameChanged();
 
-            fImpl->bifWidget->validatePlayerActions( isActive );
+            fImpl->bifWidget->setActive( isActive );
         }
 
         void CBIFViewerPage::setFileName( const QString &fileName, bool andExecute )
@@ -285,7 +252,6 @@ namespace NMediaManager
             fImpl->bifFileValues->clear();
             fImpl->bifFileValues->setHeaderLabels( QStringList() << tr( "Name" ) << tr( "Byte #s" ) << tr( "Value" ) );
 
-            //fImpl->bifImages->clear();
             fImpl->bifWidget->clear();
 
             formatBIFTable();
