@@ -30,12 +30,11 @@
 class QAbstractButton;
 class QAbstractItemModel;
 
-namespace Ui {class CTransformConfirm;};
-
 namespace NMediaManager
 {
     namespace NUi
     {
+        namespace Ui { class CTransformConfirm; };
         class CTransformConfirm : public QDialog
         {
             Q_OBJECT
