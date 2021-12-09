@@ -21,27 +21,36 @@
 # SOFTWARE.
 
 set(qtproject_SRCS
+    BIFViewerPage.cpp
     MainWindow.cpp
+    #MergeSRTPage.cpp
     Preferences.cpp
     SelectTMDB.cpp
     TransformConfirm.cpp
+    #TransformPage.cpp
 )
 
 set(qtproject_H
+    BIFViewerPage.h
     MainWindow.h
+    #MergeSRTPage.h
     Preferences.h
     SelectTMDB.h
     TransformConfirm.h
+    #TransformPage.h
 )
 
 set(project_H
 )
 
 set(qtproject_UIS
+    BIFViewerPage.ui
     MainWindow.ui
+    #MergeSRTPage.ui
     Preferences.ui
     SelectTMDB.ui
     TransformConfirm.ui
+    #TransformPage.ui
 )
 
 set(qtproject_QRC

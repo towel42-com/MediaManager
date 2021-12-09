@@ -39,6 +39,7 @@
 #include "SABUtils/AutoWaitCursor.h"
 #include "SABUtils/BIFFile.h"
 #include "SABUtils/BIFModel.h"
+#include "SABUtils/BIFWidget.h"
 #include "SABUtils/DelayLineEdit.h"
 
 #include <QSettings>
@@ -64,32 +65,16 @@ namespace NMediaManager
             fImpl( new Ui::CMainWindow )
         {
             fImpl->setupUi( this );
-            clearBIFValues();
 
-            auto label = new QLabel( tr( "Seconds per Frame:" ) );
-            label->setAlignment( Qt::AlignRight | Qt::AlignVCenter );
-            fImpl->bifToolbar->addWidget( label );
+            auto widgets = fImpl->bifViewerPage->getFrameIntervalWidgets();
+            fImpl->bifToolbar->addWidget( widgets.first );
+            fImpl->bifToolbar->addWidget( widgets.second );
+            fImpl->bifToolbar->addSeparator();
 
-            fBIFFrameInterval = new QSpinBox;
-            fBIFFrameInterval->setAlignment( Qt::AlignLeft | Qt::AlignVCenter );
-            fBIFFrameInterval->setSuffix( tr( "ms" ) );
-            fBIFFrameInterval->setMinimum( 0 );
-            fBIFFrameInterval->setMaximum( std::numeric_limits< int >::max() );
-            fBIFFrameInterval->setSingleStep( 50 );
-            fImpl->bifToolbar->addWidget( fBIFFrameInterval );
-
-            label = new QLabel( tr( "Frames to Skip:" ) );
-            label->setAlignment( Qt::AlignRight | Qt::AlignVCenter );
-            fImpl->bifToolbar->addWidget( label );
-
-            fBIFSkipInterval = new QSpinBox;
-            fBIFSkipInterval->setAlignment( Qt::AlignLeft | Qt::AlignVCenter );
-            fBIFSkipInterval->setSuffix( tr( "ms" ) );
-            fBIFSkipInterval->setMinimum( 0 );
-            fBIFSkipInterval->setMaximum( std::numeric_limits< int >::max() );
-            fBIFSkipInterval->setSingleStep( 50 );
-            fImpl->bifToolbar->addWidget( fBIFSkipInterval );
-
+            widgets = fImpl->bifViewerPage->getFrameSkipWidgets();
+            fImpl->bifToolbar->addWidget( widgets.first );
+            fImpl->bifToolbar->addWidget( widgets.second );
+            fImpl->bifToolbar->addSeparator();
 
             fImpl->directory->setDelay( 1000 );
             fImpl->directory->setIsOKFunction( []( const QString &dirName )
@@ -127,32 +112,28 @@ namespace NMediaManager
                                              }, tr( "File '%1' does not Exist or is not Readable" ) );
             connect( fImpl->fileName, &CDelayComboBox::sigEditTextChangedAfterDelay, this, &CMainWindow::slotFileChanged );
             connect( fImpl->fileName->lineEdit(), &CDelayLineEdit::sigFinishedEditingAfterDelay, this, &CMainWindow::slotFileFinishedEditing );
-            connect( fBIFFrameInterval, qOverload< int >( &QSpinBox::valueChanged ), fImpl->bifWidget, &NBIF::CBIFWidget::slotSetFrameInterval );
-            connect( fBIFSkipInterval, qOverload< int >( &QSpinBox::valueChanged ), fImpl->bifWidget, &NBIF::CBIFWidget::slotSetSkipInterval );
 
-            fImpl->menuBIFPlayer->addAction( fImpl->bifWidget->actionSkipBackward() );
-            fImpl->menuBIFPlayer->addAction( fImpl->bifWidget->actionPrev() );
+            fImpl->menuBIFPlayer->addAction( fImpl->bifViewerPage->actionSkipBackward() );
+            fImpl->menuBIFPlayer->addAction( fImpl->bifViewerPage->actionPrev() );
             fImpl->menuBIFPlayer->addSeparator();
-            fImpl->menuBIFPlayer->addAction( fImpl->bifWidget->actionTogglePlayPause() );
+            fImpl->menuBIFPlayer->addAction( fImpl->bifViewerPage->actionTogglePlayPause() );
             fImpl->menuBIFPlayer->addSeparator();
-            fImpl->menuBIFPlayer->addAction( fImpl->bifWidget->actionPause() );
-            fImpl->menuBIFPlayer->addAction( fImpl->bifWidget->actionPlay() );
+            fImpl->menuBIFPlayer->addAction( fImpl->bifViewerPage->actionPause() );
+            fImpl->menuBIFPlayer->addAction( fImpl->bifViewerPage->actionPlay() );
             fImpl->menuBIFPlayer->addSeparator();
-            fImpl->menuBIFPlayer->addAction( fImpl->bifWidget->actionNext() );
-            fImpl->menuBIFPlayer->addAction( fImpl->bifWidget->actionSkipForward() );
+            fImpl->menuBIFPlayer->addAction( fImpl->bifViewerPage->actionNext() );
+            fImpl->menuBIFPlayer->addAction( fImpl->bifViewerPage->actionSkipForward() );
 
-            fImpl->bifToolbar->addAction( fImpl->bifWidget->actionSkipBackward() );
-            fImpl->bifToolbar->addAction( fImpl->bifWidget->actionPrev() );
+            fImpl->bifToolbar->addAction( fImpl->bifViewerPage->actionSkipBackward() );
+            fImpl->bifToolbar->addAction( fImpl->bifViewerPage->actionPrev() );
             fImpl->bifToolbar->addSeparator();
-            fImpl->bifToolbar->addAction( fImpl->bifWidget->actionTogglePlayPause() );
+            fImpl->bifToolbar->addAction( fImpl->bifViewerPage->actionTogglePlayPause() );
             fImpl->bifToolbar->addSeparator();
-            fImpl->bifToolbar->addAction( fImpl->bifWidget->actionPause() );
-            fImpl->bifToolbar->addAction( fImpl->bifWidget->actionPlay() );
+            fImpl->bifToolbar->addAction( fImpl->bifViewerPage->actionPause() );
+            fImpl->bifToolbar->addAction( fImpl->bifViewerPage->actionPlay() );
             fImpl->bifToolbar->addSeparator();
-            fImpl->bifToolbar->addAction( fImpl->bifWidget->actionNext() );
-            fImpl->bifToolbar->addAction( fImpl->bifWidget->actionSkipForward() );
-
-            connect( fImpl->bifWidget, &NBIF::CBIFWidget::sigStarted, this, &CMainWindow::slotPlayingStarted );
+            fImpl->bifToolbar->addAction( fImpl->bifViewerPage->actionNext() );
+            fImpl->bifToolbar->addAction( fImpl->bifViewerPage->actionSkipForward() );
 
             fImpl->mediaNamerFiles->setExpandsOnDoubleClick( false );
             connect( fImpl->mediaNamerFiles, &QTreeView::doubleClicked, this, &CMainWindow::slotDoubleClicked );
@@ -182,40 +163,18 @@ namespace NMediaManager
             else
                 fImpl->mergeSRTSplitter->setSizes( QList< int >() << 100 << 0 );
 
-            if ( settings.contains( "bifViewerVSplitter" ) )
-                fImpl->bifViewerVSplitter->restoreState( settings.value( "bifViewerVSplitter" ).toByteArray() );
-            else
-                fImpl->bifViewerVSplitter->setSizes( QList< int >() << 100 << 100 );
-
-            fImpl->bifViewerHSplitter->setSizes( QList< int >() << 100 << 0 );
-
-            setBIFPlayerButtonsLayout( static_cast<NBIF::EButtonsLayout>( settings.value( "bifPlayerButtonLayout", static_cast<int>( NBIF::EButtonsLayout::eTogglePlayPause ) ).toInt() ) );
+            setBIFPlayerButtonsLayout( fImpl->bifViewerPage->buttonsLayout() );
 
             connect( fImpl->actionBIFPlayerButtonDiscrete, &QAction::triggered, this, &CMainWindow::slotBIFPlayerButtonDiscrete );
             connect( fImpl->actionBIFPlayerButtonToggle, &QAction::triggered, this, &CMainWindow::slotBIFPlayerButtonToggle );
             connect( fImpl->actionBIFPlayerButtonNone, &QAction::triggered, this, &CMainWindow::slotBIFPlayerButtonNone );
 
-            fResizeTimer = new QTimer( this );
-            fResizeTimer->setSingleShot( true );
-            fResizeTimer->setInterval( 250 );
-            connect( fResizeTimer, &QTimer::timeout, this, &CMainWindow::slotResize );
-
             QTimer::singleShot( 0, this, &CMainWindow::slotDirectoryChangedImmediate );
             QTimer::singleShot( 10, this, &CMainWindow::slotDirectoryChanged );
 
             QTimer::singleShot( 0, this, &CMainWindow::slotWindowChanged );
-            fImpl->bifImages->installEventFilter( this );
         }
 
-        void CMainWindow::formatBIFTable()
-        {
-            fImpl->bifFileValues->resizeColumnToContents( 0 );
-            fImpl->bifFileValues->resizeColumnToContents( 1 );
-            for ( int ii = 0; ii < fImpl->bifFileValues->topLevelItemCount(); ++ii )
-            {
-                fImpl->bifFileValues->topLevelItem( ii )->setTextAlignment( 1, Qt::AlignRight | Qt::AlignVCenter );
-            }
-        }
 
         CMainWindow::~CMainWindow()
         {
@@ -223,8 +182,6 @@ namespace NMediaManager
             QSettings settings;
             settings.setValue( "LastFunctionalityPage", fImpl->tabWidget->currentIndex() );
             settings.setValue( "mergeSRTSplitter", fImpl->mergeSRTSplitter->saveState() );
-            settings.setValue( "bifViewerVSplitter", fImpl->bifViewerVSplitter->saveState() );
-            settings.setValue( "bifPlayerButtonLayout", static_cast< int >( fImpl->bifWidget->buttonsLayout() ) );
         }
 
         void CMainWindow::loadSettings()
@@ -233,8 +190,6 @@ namespace NMediaManager
             fImpl->fileName->addItems( NCore::CPreferences::instance()->getFileNames(), true );
             fImpl->actionTreatAsTVShowByDefault->setChecked( NCore::CPreferences::instance()->getTreatAsTVShowByDefault() );
             fImpl->actionExactMatchesOnly->setChecked( NCore::CPreferences::instance()->getExactMatchesOnly() );
-            fBIFFrameInterval->setValue( NCore::CPreferences::instance()->bifFrameInterval() );
-            fBIFSkipInterval->setValue( NCore::CPreferences::instance()->bifSkipInterval() );
 
             slotToggleTreatAsTVShowByDefault();
         }
@@ -246,8 +201,6 @@ namespace NMediaManager
             NCore::CPreferences::instance()->setFileNames( fImpl->fileName->getAllText() );
             NCore::CPreferences::instance()->setTreatAsTVShowByDefault( fImpl->actionTreatAsTVShowByDefault->isChecked() );
             NCore::CPreferences::instance()->setExactMatchesOnly( fImpl->actionExactMatchesOnly->isChecked() );
-            NCore::CPreferences::instance()->setBIFFrameInterval( fBIFFrameInterval->value() );
-            NCore::CPreferences::instance()->setBIFSkipInterval( fBIFSkipInterval->value() );
         }
 
         void CMainWindow::slotWindowChanged()
@@ -263,12 +216,7 @@ namespace NMediaManager
             validateRunAction();
             validateLoadAction();
 
-            if ( !isBIFViewerActive() )
-                fImpl->bifWidget->slotPause();
-            else
-                bifFileChanged();
-
-            fImpl->bifWidget->validatePlayerActions( isBIFViewerActive() );
+            fImpl->bifViewerPage->setActive( isBIFViewerActive() );
         }
 
         void CMainWindow::slotDirectoryChangedImmediate()
@@ -303,142 +251,23 @@ namespace NMediaManager
             fImpl->actionRun->setEnabled( !isBIFViewerActive() && getActiveModel() && getActiveModel()->rowCount() );
         }
 
-        bool CMainWindow::eventFilter( QObject * obj, QEvent * event )
-        {
-            if ( ( obj == fImpl->bifImages ) && event->type() == QEvent::Resize )
-            {
-                fResizeTimer->stop();
-                fResizeTimer->start();
-            }
-            return QMainWindow::eventFilter( obj, event );
-        }
-
-        void CMainWindow::slotResize()
-        {
-            if ( !isBIFViewerActive() )
-                return;
-            auto windowSize = 1.0 * fImpl->bifImages->size().width();
-            auto itemSize = 1.0 * fImpl->bifImages->iconSize().width();
-            itemSize += 16.0; 
-
-            auto num = std::floor( windowSize / itemSize );
-
-            auto numPerRow = 4;
-            if ( num != numPerRow )
-            {
-                itemSize = std::ceil( windowSize / numPerRow ) - 16;
-            }
-
-            fImpl->bifImages->setIconSize( QSize( itemSize, itemSize ) );
-        }
-
-        bool CMainWindow::bifOutOfDate() const
-        {
-            return ( !fBIF || ( fBIF->fileName() != fImpl->fileName->currentText() ) );
-        }
-
-        void CMainWindow::slotPlayingStarted()
-        {
-            if ( !fImpl->bifViewerHSplitter->sizes().back() )
-            {
-                auto sizes = fImpl->bifViewerHSplitter->sizes();
-                sizes.front() -= 30;
-                sizes.back() = 30;
-                fImpl->bifViewerHSplitter->setSizes( sizes );
-            }
-        }
-
         void CMainWindow::slotFileFinishedEditing()
         {
-            if ( isBIFViewerActive() )
-            {
-                bifFileChanged();
-                fImpl->bifWidget->slotPlay();
-            }
+            fileNameChanged( true );
         }
 
         void CMainWindow::slotFileChanged()
         {
-            if ( isBIFViewerActive() )
-            {
-                bifFileChanged();
-                return;
-            }
+            fileNameChanged( false );
         }
 
-        void CMainWindow::bifFileChanged()
+        void CMainWindow::fileNameChanged( bool andExecute )
         {
-            CAutoWaitCursor awc;
-            if ( !bifOutOfDate() )
-            {
-                return;
-            }
-
-            auto aOK = canLoadBIF();
-            clearBIFValues();
-            fImpl->bifWidget->clear();
-            fImpl->bifWidget->validatePlayerActions( false );
-            fImpl->bifWidget->slotPause();
-            if ( !aOK )
-                return;
-
-            slotResize();
-
             connect( fImpl->fileName, &CDelayComboBox::sigEditTextChangedAfterDelay, this, &CMainWindow::slotFileChanged );
             fImpl->fileName->addCurrentItem();
             connect( fImpl->fileName, &CDelayComboBox::sigEditTextChangedAfterDelay, this, &CMainWindow::slotFileChanged );
 
-            fBIF = std::make_shared< NBIF::CBIFFile >( fImpl->fileName->currentText(), false );
-            if ( !fBIF || !fBIF->isValid() )
-            {
-                auto msg = fBIF ? tr( "Could not load BIF File: %1" ).arg( fBIF->errorString() ) : tr( "Could not load BIF File" );
-                QMessageBox::warning( this, tr( "Could not Load" ), msg );
-                fBIF.reset();
-                return;
-            }
-            loadBIF();
-        }
-
-        void CMainWindow::loadBIF()
-        {
-            clearBIFValues();
-            if ( !fBIF )
-                return;
-
-            new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "Magic Number" ) << tr( "00-07" ) << QString() << fBIF->magicNumber() );
-            new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "Version" ) << tr( "08-11" ) << QString::number( std::get< 2 >( fBIF->version() ) ) << std::get< 1 >( fBIF->version() ) );
-            new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "Number of BIF Images" ) << tr( "12-15" ) << QString::number( std::get< 2 >( fBIF->numImages() ) ) << std::get< 1 >( fBIF->numImages() ) );
-            new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "milliseconds/Frame" ) << tr( "16-19" ) << QString( "%1s (%2ms)" ).arg( NUtils::CTimeString( std::get< 2 >( fBIF->tsMultiplier() ) ).toString( "ss.zzz" ) ).arg( std::get< 2 >( fBIF->tsMultiplier() ) ) << std::get< 1 >( fBIF->tsMultiplier() ) );
-            new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "Reserved" ) << tr( "20-64" ) << QString() << fBIF->reserved() );
-
-            formatBIFTable();
-
-            fBIFModel->setBIFFile( fBIF );
-            fImpl->bifWidget->setBIFFile( fBIF );
-        }
-
-        bool CMainWindow::canLoadBIF() const
-        {
-            CAutoWaitCursor awc;
-
-            auto bifFile = fImpl->fileName->currentText();
-            auto fi = QFileInfo( bifFile );
-            bool aOK = !bifFile.isEmpty() && fi.exists() && fi.isFile() && fi.isReadable();
-            return aOK;
-        }
-
-        void CMainWindow::clearBIFValues()
-        {
-            fImpl->bifFileValues->clear();
-            fImpl->bifFileValues->setHeaderLabels( QStringList() << tr( "Name" ) << tr( "Byte #s" ) << tr( "Value" ) );
-
-            //fImpl->bifImages->clear();
-            fImpl->bifWidget->clear();
-
-            formatBIFTable();
-            delete fBIFModel;
-            fBIFModel = new NBIF::CBIFModel( this );
-            fImpl->bifImages->setModel( fBIFModel );
+            fImpl->bifViewerPage->setFileName( fImpl->fileName->currentText(), isBIFViewerActive() && andExecute );
         }
 
         void CMainWindow::slotOpen()
@@ -753,7 +582,7 @@ namespace NMediaManager
             else if ( layout == NBIF::EButtonsLayout::eNoButtons )
                 fImpl->actionBIFPlayerButtonNone->setChecked( true );
 
-            fImpl->bifWidget->setButtonsLayout( layout );
+            fImpl->bifViewerPage->setButtonsLayout( layout );
         }
 
         void CMainWindow::slotBIFPlayerButtonDiscrete()

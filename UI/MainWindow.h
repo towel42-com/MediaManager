@@ -26,17 +26,10 @@
 #include <QMainWindow>
 #include <optional>
 class QProgressDialog;
-class QTreeView;
-class QLineEdit;
-class CDelayLineEdit;
 namespace NBIF
 {
-    class CBIFFile;
-    class CBIFModel;
     enum class EButtonsLayout;
 }
-class QSpinBox;
-namespace Ui {class CMainWindow;};
 
 namespace NMediaManager
 {
@@ -53,6 +46,7 @@ namespace NMediaManager
 {
     namespace NUi
     {
+        namespace Ui { class CMainWindow; };
         class CMainWindow : public QMainWindow
         {
             Q_OBJECT
@@ -60,7 +54,6 @@ namespace NMediaManager
             CMainWindow( QWidget *parent = 0 );
             ~CMainWindow();
 
-            virtual bool eventFilter( QObject *obj, QEvent *event ) override;
         public Q_SLOTS:
             void slotOpen();
             void slotDirectoryChanged();
@@ -78,29 +71,17 @@ namespace NMediaManager
             void slotWindowChanged();
             void slotFileChanged();
             void slotFileFinishedEditing();
-            void slotPlayingStarted();
-            void slotResize();
 
             void slotBIFPlayerButtonDiscrete();
             void slotBIFPlayerButtonToggle();
             void slotBIFPlayerButtonNone();
         private:
-            bool bifOutOfDate() const;
             void setBIFPlayerButtonsLayout( NBIF::EButtonsLayout layout );
 
             void validateLoadAction();
             void validateRunAction();
 
-            void bifFileChanged();
-
-            bool canLoadBIF() const;
-
-            void loadBIF();
-
-            void clearBIFValues();
-
-            void formatBIFTable();
-
+            void fileNameChanged( bool andExecute );
 
             NCore::CDirModel *getActiveModel() const;
             bool isTransformActive() const;
@@ -120,11 +101,6 @@ namespace NMediaManager
             NCore::CSearchTMDB *fSearchTMDB{ nullptr };
             QProgressDialog *fProgressDlg{ nullptr };
             uint64_t fSearchesCompleted{ 0 };
-            QTimer *fResizeTimer{ nullptr };
-            std::shared_ptr< NBIF::CBIFFile > fBIF;
-            NBIF::CBIFModel *fBIFModel{ nullptr };
-            QSpinBox *fBIFFrameInterval{ nullptr };
-            QSpinBox *fBIFSkipInterval{ nullptr };
         };
     }
 }
