@@ -29,8 +29,6 @@
 #include <optional>
 #include <memory>
 
-namespace Ui {class CSelectTMDB;};
-
 class QNetworkAccessManager;
 class QNetworkReply;
 class QJsonObject;
@@ -47,6 +45,7 @@ namespace NMediaManager
     }
     namespace NUi
     {
+        namespace Ui { class CSelectTMDB; };
         class CSelectTMDB : public QDialog
         {
             Q_OBJECT
