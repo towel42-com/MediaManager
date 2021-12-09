@@ -63,7 +63,6 @@ namespace NMediaManager
             void slotRun();
             void slotTreatAsTVShowByDefault();
             void slotExactMatchesOnly();
-            void slotMergeSRTDirectoryLoaded();
             void slotPreferences();
             void slotWindowChanged();
             void slotFileChanged();
@@ -87,10 +86,8 @@ namespace NMediaManager
             void loadSettings();
             void saveSettings();
 
-            std::unique_ptr< NCore::CDirModel > fMergeSRTModel;
             std::unique_ptr< Ui::CMainWindow > fImpl;
             QProgressDialog *fProgressDlg{ nullptr };
-            uint64_t fSearchesCompleted{ 0 };
         };
     }
 }

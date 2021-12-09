@@ -63,11 +63,6 @@ namespace NMediaManager
             saveSettings();
         }
 
-        QTreeView*CTransformMediaFileNamesPage::mainView()
-        {
-            return fImpl->files;
-        }
-
         void CTransformMediaFileNamesPage::loadSettings()
         {
             setTreatAsTVByDefault( NCore::CPreferences::instance()->getTreatAsTVShowByDefault() );
@@ -171,7 +166,7 @@ namespace NMediaManager
             }
             else
             {
-                clearProgressDialog();
+                clearProgressDlg();
             }
 
             if ( fProgressDlg && fProgressDlg->wasCanceled() )
@@ -194,14 +189,14 @@ namespace NMediaManager
                 emit sigLoadFinished( false );
         }
 
-        void CTransformMediaFileNamesPage::clearProgressDialog()
+        void CTransformMediaFileNamesPage::clearProgressDlg()
         {
             fProgressDlg = nullptr;
             if ( fClearProgressFunc )
                 fClearProgressFunc();
         }
 
-        void CTransformMediaFileNamesPage::setupProgressDialog( const QString &title, const QString &cancelButtonText, int max )
+        void CTransformMediaFileNamesPage::setupProgressDlg( const QString &title, const QString &cancelButtonText, int max )
         {
             if ( fSetupProgressFunc )
                 fProgressDlg = fSetupProgressFunc( title, cancelButtonText, max );
@@ -259,8 +254,9 @@ namespace NMediaManager
             fModel->slotMovieOutputFilePatternChanged( NCore::CPreferences::instance()->getMovieOutFilePattern() );
             fModel->slotMovieOutputDirPatternChanged( NCore::CPreferences::instance()->getMovieOutDirPattern() );
             fModel->setNameFilters( NCore::CPreferences::instance()->getMediaExtensions() << NCore::CPreferences::instance()->getSubtitleExtensions(), fImpl->files );
-            setupProgressDialog( tr( "Finding Files" ), tr( "Cancel" ), 1 );
+            setupProgressDlg( tr( "Finding Files" ), tr( "Cancel" ), 1 );
             fModel->setRootPath( fDirName, fImpl->files, nullptr, fProgressDlg );
+
             emit sigLoading();
         }
 
@@ -272,8 +268,8 @@ namespace NMediaManager
             model = fModel.get();
 
             if ( fModel && fModel->process(
-                [actionName, cancelName, this]( int count ) { setupProgressDialog( actionName, cancelName, count ); return fProgressDlg; },
-                [this]( QProgressDialog *dlg ) { (void)dlg; clearProgressDialog(); },
+                [actionName, cancelName, this]( int count ) { setupProgressDlg( actionName, cancelName, count ); return fProgressDlg; },
+                [this]( QProgressDialog *dlg ) { (void)dlg; clearProgressDlg(); },
                 this ) )
             {
                 load();

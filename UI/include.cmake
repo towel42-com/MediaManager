@@ -23,7 +23,7 @@
 set(qtproject_SRCS
     BIFViewerPage.cpp
     MainWindow.cpp
-    #MergeSRTPage.cpp
+    MergeSRTPage.cpp
     Preferences.cpp
     SelectTMDB.cpp
     TransformConfirm.cpp
@@ -33,7 +33,7 @@ set(qtproject_SRCS
 set(qtproject_H
     BIFViewerPage.h
     MainWindow.h
-    #MergeSRTPage.h
+    MergeSRTPage.h
     Preferences.h
     SelectTMDB.h
     TransformConfirm.h
@@ -46,7 +46,7 @@ set(project_H
 set(qtproject_UIS
     BIFViewerPage.ui
     MainWindow.ui
-    #MergeSRTPage.ui
+    MergeSRTPage.ui
     Preferences.ui
     SelectTMDB.ui
     TransformConfirm.ui

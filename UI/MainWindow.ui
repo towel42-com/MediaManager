@@ -135,29 +135,7 @@
          <number>0</number>
         </property>
         <item>
-         <widget class="QSplitter" name="mergeSRTSplitter">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <widget class="QTreeView" name="mergeSRTFiles">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-             <horstretch>0</horstretch>
-             <verstretch>2</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="editTriggers">
-            <set>QAbstractItemView::NoEditTriggers</set>
-           </property>
-           <property name="alternatingRowColors">
-            <bool>true</bool>
-           </property>
-           <property name="sortingEnabled">
-            <bool>true</bool>
-           </property>
-          </widget>
-          <widget class="QPlainTextEdit" name="mergeSRTResults"/>
-         </widget>
+         <widget class="NMediaManager::NUi::CMergeSRTPage" name="mergeSRTPage" native="true"/>
         </item>
        </layout>
       </widget>
@@ -315,12 +293,16 @@
    <header>TransformMediaFileNamesPage.h</header>
    <container>1</container>
   </customwidget>
+  <customwidget>
+   <class>NMediaManager::NUi::CMergeSRTPage</class>
+   <extends>QWidget</extends>
+   <header>MergeSRTPage.h</header>
+   <container>1</container>
+  </customwidget>
  </customwidgets>
  <tabstops>
   <tabstop>fileName</tabstop>
   <tabstop>tabWidget</tabstop>
-  <tabstop>mergeSRTFiles</tabstop>
-  <tabstop>mergeSRTResults</tabstop>
   <tabstop>directory</tabstop>
  </tabstops>
  <resources>

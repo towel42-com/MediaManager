@@ -20,32 +20,25 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef _TRANSFORMMEDIAFILENAMESPAGE_H
-#define _TRANSFORMMEDIAFILENAMESPAGE_H
+#ifndef _MERGESRTPAGE_H
+#define _MERGESRTPAGE_H
 
 #include <QWidget>
-#include <optional>
+//#include <optional>
 class QProgressDialog;
-class QTreeView;
-class QLineEdit;
-class CDelayLineEdit;
-class QToolBar;
-namespace NBIF
-{
-    class CBIFFile;
-    class CBIFModel;
-    enum class EButtonsLayout;
-}
-class QSpinBox;
+//namespace NBIF
+//{
+//    enum class EButtonsLayout;
+//}
 
 namespace NMediaManager
 {
     namespace NCore
     {
-        struct SSearchTMDBInfo;
-        struct SSearchResult;
+//        struct SSearchTMDBInfo;
+//        struct SSearchResult;
         class CDirModel;
-        class CSearchTMDB;
+//        class CSearchTMDB;
     }
 }
 
@@ -53,50 +46,67 @@ namespace NMediaManager
 {
     namespace NUi
     {
-        namespace Ui { class CTransformMediaFileNamesPage; };
-        class CTransformMediaFileNamesPage : public QWidget
+        namespace Ui { class CMergeSRTPage; };
+        class CMergeSRTPage : public QWidget
         {
             Q_OBJECT
         public:
-            CTransformMediaFileNamesPage( QWidget *parent = 0 );
-            ~CTransformMediaFileNamesPage();
+            CMergeSRTPage( QWidget *parent = 0 );
+            ~CMergeSRTPage();
 
-            void load( const QString &fileName );
+            void load( const QString & dirName );
             void load();
 
             void run();
             bool canRun() const;
 
-            void setTreatAsTVByDefault( bool value );
-            void setExactMatchesOnly( bool value );
-
             void setSetupProgressDlgFunc( std::function< QProgressDialog *( const QString &title, const QString &cancelButtonText, int max ) > setupFunc, std::function< void() > clearFunc );
+        public Q_SLOTS:
+            //void slotOpen();
+            //void slotDirectoryChanged();
+
+            //void slotDirectoryChangedImmediate();
+            //void slotLoad();
+            //void slotRun();
+            //void slotTreatAsTVShowByDefault();
+            //void slotExactMatchesOnly();
+            //void slotMergeSRTDirectoryLoaded();
+            //void slotPreferences();
+            //void slotWindowChanged();
+            //void slotFileChanged();
+            //void slotFileFinishedEditing();
+
+            void slotLoadFinished( bool canceled );
+
         Q_SIGNALS:
             void sigLoading();
             void sigLoadFinished( bool canceled );
-        public Q_SLOTS:
-            void slotDoubleClicked( const QModelIndex &idx );
-            void slotAutoSearchForNewNames();
-            void slotAutoSearchFinished( const QString &path, bool searchesRemaining );
-
-            void slotLoadFinished( bool canceled );
         private:
-            [[nodiscard]] bool autoSearchForNewNames( QModelIndex rootIdx );
+            //void validateLoadAction();
+            //void validateRunAction();
+
+            //void fileNameChanged( bool andExecute );
+
+            //bool canRun() const;
+            //bool isTransformActive() const;
+            //bool isMergeSRTActive() const;
+            //bool isBIFViewerActive() const;
+
             void setupProgressDlg( const QString &title, const QString &cancelButtonText, int max );
             void clearProgressDlg();
 
             void loadSettings();
             void saveSettings();
 
-            std::unique_ptr< NCore::CDirModel > fModel;
-            NCore::CSearchTMDB *fSearchTMDB{ nullptr };
             std::function< QProgressDialog *( const QString &title, const QString &cancelButtonText, int max ) > fSetupProgressFunc;
             std::function< void() > fClearProgressFunc;
             QProgressDialog *fProgressDlg{ nullptr };
-            uint64_t fSearchesCompleted{ 0 };
-            QString fDirName;
 
-            std::unique_ptr< Ui::CTransformMediaFileNamesPage > fImpl;
+            QString fDirName;
+            std::unique_ptr< NCore::CDirModel > fModel;
+            std::unique_ptr< Ui::CMergeSRTPage > fImpl;
+            //QProgressDialog *fProgressDlg{ nullptr };
+            //uint64_t fSearchesCompleted{ 0 };
         };
     }
 }

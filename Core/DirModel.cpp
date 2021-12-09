@@ -247,6 +247,7 @@ namespace NMediaManager
                 if ( !CPreferences::instance()->isSubtitleFile( fullPath, &isLangFormat ) )
                     continue;
 
+#ifdef _CHECK_FOR_UNIQUE_SRT_DATA
                 auto md5 = child->data( ECustomRoles::eMD5 ).toString();
                 if ( md5.isEmpty() )
                 {
@@ -260,6 +261,7 @@ namespace NMediaManager
                     continue;
                 }
                 uniqueSRTFiles.insert( md5 );
+#endif
                 auto languageItem = getLanguageItem( child );
                 tmp[languageItem->text()].push_back( { child, isLangFormat } );
             }

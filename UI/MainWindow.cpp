@@ -111,8 +111,6 @@ namespace NMediaManager
             if ( toolBar )
                 addToolBar( toolBar );
 
-            fImpl->mergeSRTFiles->setExpandsOnDoubleClick( false );
-
             connect( fImpl->actionOpen, &QAction::triggered, this, &CMainWindow::slotOpen );
             connect( fImpl->actionLoad, &QAction::triggered, this, &CMainWindow::slotLoad );
             connect( fImpl->actionRun, &QAction::triggered, this, &CMainWindow::slotRun );
@@ -137,12 +135,22 @@ namespace NMediaManager
                     }
                 );
             connect( fImpl->transformMediaFileNamesPage, &CTransformMediaFileNamesPage::sigLoadFinished, this, &CMainWindow::slotLoadFinished );
+
+            fImpl->mergeSRTPage->setSetupProgressDlgFunc(
+                [this]( const QString &title, const QString &cancelButtonText, int max )
+                {
+                    setupProgressDlg( title, cancelButtonText, max );
+                    return fProgressDlg;
+                },
+                [this]()
+                {
+                    clearProgressDlg();
+                }
+                );
+            connect( fImpl->mergeSRTPage, &CMergeSRTPage::sigLoadFinished, this, &CMainWindow::slotLoadFinished );
+
             QSettings settings;
             fImpl->tabWidget->setCurrentIndex( settings.value( "LastFunctionalityPage", 0 ).toInt() );
-            if ( settings.contains( "mergeSRTSplitter" ) )
-                fImpl->mergeSRTSplitter->restoreState( settings.value( "mergeSRTSplitter" ).toByteArray() );
-            else
-                fImpl->mergeSRTSplitter->setSizes( QList< int >() << 100 << 0 );
 
             QTimer::singleShot( 0, this, &CMainWindow::slotDirectoryChangedImmediate );
             QTimer::singleShot( 10, this, &CMainWindow::slotDirectoryChanged );
@@ -156,7 +164,6 @@ namespace NMediaManager
             saveSettings();
             QSettings settings;
             settings.setValue( "LastFunctionalityPage", fImpl->tabWidget->currentIndex() );
-            settings.setValue( "mergeSRTSplitter", fImpl->mergeSRTSplitter->saveState() );
         }
 
         void CMainWindow::loadSettings()
@@ -269,10 +276,6 @@ namespace NMediaManager
             }
         }
 
-        void CMainWindow::slotMergeSRTDirectoryLoaded()
-        {
-        }
-
         void CMainWindow::clearProgressDlg()
         {
             delete fProgressDlg;
@@ -337,7 +340,7 @@ namespace NMediaManager
             if ( isTransformActive() )
                 return fImpl->transformMediaFileNamesPage->canRun();
             else if ( isMergeSRTActive() )
-                return fMergeSRTModel && fMergeSRTModel->rowCount() != 0;
+                return fImpl->mergeSRTPage->canRun(); 
             return nullptr;
         }
 
@@ -358,45 +361,22 @@ namespace NMediaManager
             }
             else if ( isMergeSRTActive() )
             {
-                fMergeSRTModel.reset( new NCore::CDirModel( NCore::CDirModel::eMergeSRT ) );
-                fImpl->mergeSRTFiles->setModel( fMergeSRTModel.get() );
-                connect( fMergeSRTModel.get(), &NCore::CDirModel::sigDirReloaded, this, &CMainWindow::slotLoadFinished );
-                fMergeSRTModel->setNameFilters( QStringList() << "*.mkv", fImpl->mergeSRTFiles );
-                setupProgressDlg( tr( "Finding Files" ), tr( "Cancel" ), 1 );
-                fMergeSRTModel->setRootPath( fImpl->directory->currentText(), fImpl->mergeSRTFiles, fImpl->mergeSRTResults, fProgressDlg );
+                fImpl->mergeSRTPage->load( fImpl->directory->currentText() );
             }
             fImpl->actionRun->setEnabled( false );
         }
 
         void CMainWindow::slotRun()
         {
-            NCore::CDirModel *model = nullptr;
             if ( isTransformActive() )
             {
                 fImpl->transformMediaFileNamesPage->run();
             }
             else if ( isMergeSRTActive() )
             {
-                auto sizes = fImpl->mergeSRTSplitter->sizes();
-                if ( sizes.back() == 0 )
-                {
-                    sizes.front() -= 30;
-                    sizes.back() = 30;
-
-                    fImpl->mergeSRTSplitter->setSizes( sizes );
-                }
-
-                auto actionName = tr( "Merging SRT Files into MKV..." );
-                auto cancelName = tr( "Abort Merge" );
-                model = fMergeSRTModel.get();
-                if ( model && model->process(
-                    [actionName, cancelName, this]( int count ) { setupProgressDlg( actionName, cancelName, count ); return fProgressDlg; },
-                    [this]( QProgressDialog *dlg ) { (void)dlg; clearProgressDlg(); },
-                    this ) )
-                    slotLoad();
-                ;
+                fImpl->mergeSRTPage->run();
             }
-            else 
+            else
                 return;
         }
     }
