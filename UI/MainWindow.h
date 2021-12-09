@@ -33,6 +33,7 @@ namespace NBIF
 {
     class CBIFFile;
     class CBIFModel;
+    enum class EButtonsLayout;
 }
 class QSpinBox;
 namespace Ui {class CMainWindow;};
@@ -79,8 +80,13 @@ namespace NMediaManager
             void slotFileFinishedEditing();
             void slotPlayingStarted();
             void slotResize();
+
+            void slotBIFPlayerButtonDiscrete();
+            void slotBIFPlayerButtonToggle();
+            void slotBIFPlayerButtonNone();
         private:
             bool bifOutOfDate() const;
+            void setBIFPlayerButtonsLayout( NBIF::EButtonsLayout layout );
 
             void validateLoadAction();
             void validateRunAction();
@@ -117,7 +123,8 @@ namespace NMediaManager
             QTimer *fResizeTimer{ nullptr };
             std::shared_ptr< NBIF::CBIFFile > fBIF;
             NBIF::CBIFModel *fBIFModel{ nullptr };
-            QSpinBox *fBIFTS{ nullptr };
+            QSpinBox *fBIFFrameInterval{ nullptr };
+            QSpinBox *fBIFSkipInterval{ nullptr };
         };
     }
 }

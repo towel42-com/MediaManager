@@ -69,13 +69,26 @@ namespace NMediaManager
             auto label = new QLabel( tr( "Seconds per Frame:" ) );
             label->setAlignment( Qt::AlignRight | Qt::AlignVCenter );
             fImpl->bifToolbar->addWidget( label );
-            fBIFTS = new QSpinBox;
-            fBIFTS->setAlignment( Qt::AlignLeft | Qt::AlignVCenter );
-            fBIFTS->setSuffix( tr( "ms" ) );
-            fBIFTS->setMinimum( 0 );
-            fBIFTS->setMaximum( std::numeric_limits< int >::max() );
-            fBIFTS->setSingleStep( 50 );
-            fImpl->bifToolbar->addWidget( fBIFTS );
+
+            fBIFFrameInterval = new QSpinBox;
+            fBIFFrameInterval->setAlignment( Qt::AlignLeft | Qt::AlignVCenter );
+            fBIFFrameInterval->setSuffix( tr( "ms" ) );
+            fBIFFrameInterval->setMinimum( 0 );
+            fBIFFrameInterval->setMaximum( std::numeric_limits< int >::max() );
+            fBIFFrameInterval->setSingleStep( 50 );
+            fImpl->bifToolbar->addWidget( fBIFFrameInterval );
+
+            label = new QLabel( tr( "Frames to Skip:" ) );
+            label->setAlignment( Qt::AlignRight | Qt::AlignVCenter );
+            fImpl->bifToolbar->addWidget( label );
+
+            fBIFSkipInterval = new QSpinBox;
+            fBIFSkipInterval->setAlignment( Qt::AlignLeft | Qt::AlignVCenter );
+            fBIFSkipInterval->setSuffix( tr( "ms" ) );
+            fBIFSkipInterval->setMinimum( 0 );
+            fBIFSkipInterval->setMaximum( std::numeric_limits< int >::max() );
+            fBIFSkipInterval->setSingleStep( 50 );
+            fImpl->bifToolbar->addWidget( fBIFSkipInterval );
 
 
             fImpl->directory->setDelay( 1000 );
@@ -114,7 +127,8 @@ namespace NMediaManager
                                              }, tr( "File '%1' does not Exist or is not Readable" ) );
             connect( fImpl->fileName, &CDelayComboBox::sigEditTextChangedAfterDelay, this, &CMainWindow::slotFileChanged );
             connect( fImpl->fileName->lineEdit(), &CDelayLineEdit::sigFinishedEditingAfterDelay, this, &CMainWindow::slotFileFinishedEditing );
-            connect( fBIFTS, qOverload< int >( &QSpinBox::valueChanged ), fImpl->bifWidget, &NBIF::CBIFWidget::slotSetFrameInterval );
+            connect( fBIFFrameInterval, qOverload< int >( &QSpinBox::valueChanged ), fImpl->bifWidget, &NBIF::CBIFWidget::slotSetFrameInterval );
+            connect( fBIFSkipInterval, qOverload< int >( &QSpinBox::valueChanged ), fImpl->bifWidget, &NBIF::CBIFWidget::slotSetSkipInterval );
 
             fImpl->menuBIFPlayer->addAction( fImpl->bifWidget->actionSkipBackward() );
             fImpl->menuBIFPlayer->addAction( fImpl->bifWidget->actionPrev() );
@@ -175,6 +189,12 @@ namespace NMediaManager
 
             fImpl->bifViewerHSplitter->setSizes( QList< int >() << 100 << 0 );
 
+            setBIFPlayerButtonsLayout( static_cast<NBIF::EButtonsLayout>( settings.value( "bifPlayerButtonLayout", static_cast<int>( NBIF::EButtonsLayout::eTogglePlayPause ) ).toInt() ) );
+
+            connect( fImpl->actionBIFPlayerButtonDiscrete, &QAction::triggered, this, &CMainWindow::slotBIFPlayerButtonDiscrete );
+            connect( fImpl->actionBIFPlayerButtonToggle, &QAction::triggered, this, &CMainWindow::slotBIFPlayerButtonToggle );
+            connect( fImpl->actionBIFPlayerButtonNone, &QAction::triggered, this, &CMainWindow::slotBIFPlayerButtonNone );
+
             fResizeTimer = new QTimer( this );
             fResizeTimer->setSingleShot( true );
             fResizeTimer->setInterval( 250 );
@@ -204,8 +224,7 @@ namespace NMediaManager
             settings.setValue( "LastFunctionalityPage", fImpl->tabWidget->currentIndex() );
             settings.setValue( "mergeSRTSplitter", fImpl->mergeSRTSplitter->saveState() );
             settings.setValue( "bifViewerVSplitter", fImpl->bifViewerVSplitter->saveState() );
-            if ( fImpl->bifWidget->isVisible() )
-                settings.setValue( "bifViewerHSplitter", fImpl->bifViewerHSplitter->saveState() );
+            settings.setValue( "bifPlayerButtonLayout", static_cast< int >( fImpl->bifWidget->buttonsLayout() ) );
         }
 
         void CMainWindow::loadSettings()
@@ -214,7 +233,8 @@ namespace NMediaManager
             fImpl->fileName->addItems( NCore::CPreferences::instance()->getFileNames(), true );
             fImpl->actionTreatAsTVShowByDefault->setChecked( NCore::CPreferences::instance()->getTreatAsTVShowByDefault() );
             fImpl->actionExactMatchesOnly->setChecked( NCore::CPreferences::instance()->getExactMatchesOnly() );
-            fBIFTS->setValue( NCore::CPreferences::instance()->bifTSInterval() );
+            fBIFFrameInterval->setValue( NCore::CPreferences::instance()->bifFrameInterval() );
+            fBIFSkipInterval->setValue( NCore::CPreferences::instance()->bifSkipInterval() );
 
             slotToggleTreatAsTVShowByDefault();
         }
@@ -226,7 +246,8 @@ namespace NMediaManager
             NCore::CPreferences::instance()->setFileNames( fImpl->fileName->getAllText() );
             NCore::CPreferences::instance()->setTreatAsTVShowByDefault( fImpl->actionTreatAsTVShowByDefault->isChecked() );
             NCore::CPreferences::instance()->setExactMatchesOnly( fImpl->actionExactMatchesOnly->isChecked() );
-            NCore::CPreferences::instance()->setBIFTSInterval( fBIFTS->value() );
+            NCore::CPreferences::instance()->setBIFFrameInterval( fBIFFrameInterval->value() );
+            NCore::CPreferences::instance()->setBIFSkipInterval( fBIFSkipInterval->value() );
         }
 
         void CMainWindow::slotWindowChanged()
@@ -297,7 +318,8 @@ namespace NMediaManager
             if ( !isBIFViewerActive() )
                 return;
             auto windowSize = 1.0 * fImpl->bifImages->size().width();
-            auto itemSize = 1.0 * fImpl->bifImages->iconSize().width() + 16.0; // default size of each image;
+            auto itemSize = 1.0 * fImpl->bifImages->iconSize().width();
+            itemSize += 16.0; 
 
             auto num = std::floor( windowSize / itemSize );
 
@@ -312,7 +334,7 @@ namespace NMediaManager
 
         bool CMainWindow::bifOutOfDate() const
         {
-            return ( !fBIF || ( fBIF->fileName() == fImpl->fileName->currentText() ) );
+            return ( !fBIF || ( fBIF->fileName() != fImpl->fileName->currentText() ) );
         }
 
         void CMainWindow::slotPlayingStarted()
@@ -716,6 +738,37 @@ namespace NMediaManager
                     this ) )
                     slotLoad();
                 ;
+        }
+
+        void CMainWindow::setBIFPlayerButtonsLayout( NBIF::EButtonsLayout layout )
+        {
+            fImpl->actionBIFPlayerButtonDiscrete->setChecked( false );
+            fImpl->actionBIFPlayerButtonToggle->setChecked( false );
+            fImpl->actionBIFPlayerButtonNone->setChecked( false );
+
+            if ( layout == NBIF::EButtonsLayout::eDiscretePlayPause )
+                fImpl->actionBIFPlayerButtonDiscrete->setChecked( true );
+            else if ( layout == NBIF::EButtonsLayout::eTogglePlayPause )
+                fImpl->actionBIFPlayerButtonToggle->setChecked( true );
+            else if ( layout == NBIF::EButtonsLayout::eNoButtons )
+                fImpl->actionBIFPlayerButtonNone->setChecked( true );
+
+            fImpl->bifWidget->setButtonsLayout( layout );
+        }
+
+        void CMainWindow::slotBIFPlayerButtonDiscrete()
+        {
+            setBIFPlayerButtonsLayout( NBIF::EButtonsLayout::eDiscretePlayPause );
+        }
+
+        void CMainWindow::slotBIFPlayerButtonToggle()
+        {
+            setBIFPlayerButtonsLayout( NBIF::EButtonsLayout::eTogglePlayPause );
+        }
+
+        void CMainWindow::slotBIFPlayerButtonNone()
+        {
+            setBIFPlayerButtonsLayout( NBIF::EButtonsLayout::eNoButtons );
         }
     }
 }

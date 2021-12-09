@@ -158,8 +158,8 @@
        <attribute name="title">
         <string>BIF Viewer</string>
        </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_5">
-        <item>
+       <layout class="QGridLayout" name="gridLayout">
+        <item row="0" column="0">
          <widget class="QSplitter" name="bifViewerHSplitter">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
@@ -196,13 +196,38 @@
             </property>
            </widget>
           </widget>
-          <widget class="NBIF::CBIFWidget" name="bifWidget">
-           <property name="frameShape">
-            <enum>QFrame::Panel</enum>
-           </property>
-           <property name="frameShadow">
-            <enum>QFrame::Sunken</enum>
-           </property>
+          <widget class="QWidget" name="layoutWidget">
+           <layout class="QVBoxLayout" name="verticalLayout_4">
+            <item>
+             <widget class="NBIF::CBIFWidget" name="bifWidget">
+              <property name="minimumSize">
+               <size>
+                <width>50</width>
+                <height>50</height>
+               </size>
+              </property>
+              <property name="frameShape">
+               <enum>QFrame::StyledPanel</enum>
+              </property>
+              <property name="frameShadow">
+               <enum>QFrame::Sunken</enum>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
           </widget>
          </widget>
         </item>
@@ -235,10 +260,20 @@
     <property name="title">
      <string>Settings</string>
     </property>
+    <widget class="QMenu" name="menuBIFPlayerType">
+     <property name="title">
+      <string>BIF Player Type</string>
+     </property>
+     <addaction name="actionBIFPlayerButtonDiscrete"/>
+     <addaction name="actionBIFPlayerButtonToggle"/>
+     <addaction name="actionBIFPlayerButtonNone"/>
+    </widget>
     <addaction name="actionExactMatchesOnly"/>
     <addaction name="actionTreatAsTVShowByDefault"/>
     <addaction name="separator"/>
     <addaction name="actionPreferences"/>
+    <addaction name="separator"/>
+    <addaction name="menuBIFPlayerType"/>
    </widget>
    <widget class="QMenu" name="menuBIFPlayer">
     <property name="title">
@@ -329,6 +364,30 @@
    </property>
    <property name="text">
     <string>Load...</string>
+   </property>
+  </action>
+  <action name="actionBIFPlayerButtonDiscrete">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Discrete</string>
+   </property>
+  </action>
+  <action name="actionBIFPlayerButtonToggle">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Toggle</string>
+   </property>
+  </action>
+  <action name="actionBIFPlayerButtonNone">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>None</string>
    </property>
   </action>
  </widget>
