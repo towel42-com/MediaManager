@@ -26,12 +26,11 @@
 #include <QDialog>
 
 class QStringListModel;
-namespace Ui {class CPreferences;};
-
 namespace NMediaManager
 {
     namespace NUi
     {
+        namespace Ui { class CPreferences; };
         class CPreferences : public QDialog
         {
             Q_OBJECT
