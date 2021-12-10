@@ -166,6 +166,28 @@ namespace NMediaManager
             settings.setValue( "LastFunctionalityPage", fImpl->tabWidget->currentIndex() );
         }
 
+        bool CMainWindow::setBIFFileName( const QString &name )
+        {
+            if ( name.isEmpty() )
+                return false;
+            if ( !QFileInfo( name ).exists() )
+            {
+                QMessageBox::critical( this, tr( "Could not View BIF File" ), tr( "'%1' does not exist" ).arg( name ) );
+                return false;
+            }
+
+            fImpl->tabWidget->setCurrentWidget( fImpl->bifViewerTab );
+
+            disconnect( fImpl->fileName, &CDelayComboBox::sigEditTextChangedAfterDelay, this, &CMainWindow::slotFileChanged );
+            disconnect( fImpl->fileName->lineEdit(), &CDelayLineEdit::sigFinishedEditingAfterDelay, this, &CMainWindow::slotFileFinishedEditing );
+            fImpl->fileName->setCurrentText( name );
+            connect( fImpl->fileName, &CDelayComboBox::sigEditTextChangedAfterDelay, this, &CMainWindow::slotFileChanged );
+            connect( fImpl->fileName->lineEdit(), &CDelayLineEdit::sigFinishedEditingAfterDelay, this, &CMainWindow::slotFileFinishedEditing );
+
+            slotFileFinishedEditing();
+            return true;
+        }
+
         void CMainWindow::loadSettings()
         {
             fImpl->directory->addItems( NCore::CPreferences::instance()->getDirectories(), true );

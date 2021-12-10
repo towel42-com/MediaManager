@@ -33,7 +33,19 @@ int main( int argc, char ** argv )
     appl.setOrganizationName( "Scott Aron Bloom" );
     appl.setOrganizationDomain( "www.towel42.com" );
 
+    QString bifName;
+    for ( int ii = 0; ii < argc; ++ii )
+    {
+        QString name = argv[ii];
+        if ( name.toLower().endsWith( ".bif" ) )
+        {
+            bifName = name;
+            break;
+        }
+    }
     NMediaManager::NUi::CMainWindow mainWindow;
     mainWindow.show();
+    if ( !mainWindow.setBIFFileName( bifName ) )
+        return -1;
     return appl.exec();
 }

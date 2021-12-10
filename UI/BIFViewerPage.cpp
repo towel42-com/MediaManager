@@ -182,12 +182,16 @@ namespace NMediaManager
             fImpl->bifWidget->setActive( isActive );
         }
 
-        void CBIFViewerPage::setFileName( const QString &fileName, bool andExecute )
+        bool CBIFViewerPage::setFileName( const QString &fileName, bool andExecute )
         {
+            if ( fileName.isEmpty() || !QFileInfo( fileName ).exists() )
+                return false;
+
             fFileName = fileName;
             fileNameChanged();
             if ( andExecute )
                 fImpl->bifWidget->slotPlay();
+            return true;
         }
 
         void CBIFViewerPage::fileNameChanged()

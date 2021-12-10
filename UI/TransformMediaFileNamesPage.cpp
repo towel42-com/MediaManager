@@ -172,7 +172,7 @@ namespace NMediaManager
             if ( fProgressDlg && fProgressDlg->wasCanceled() )
                 fSearchTMDB->clearSearchCache();
 
-            if ( !result )
+            if ( result.empty() )
             {
                 if ( !searchesRemaining )
                     emit sigLoadFinished( false );
@@ -181,9 +181,9 @@ namespace NMediaManager
             //qDebug() << result->toString();
 
             auto item = fModel->getItemFromPath( path );
-            if ( item && result )
+            if ( item && !result.empty() )
             {
-                fModel->setSearchResult( item, result, false );
+                fModel->setSearchResult( item, result.front(), false );
             }
             if ( !searchesRemaining )
                 emit sigLoadFinished( false );

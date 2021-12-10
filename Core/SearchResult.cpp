@@ -21,6 +21,8 @@
 // SOFTWARE.
 
 #include "SearchResult.h"
+#include "SearchTMDBInfo.h"
+
 #include "SABUtils/StringUtils.h"
 #include "SABUtils/QtUtils.h"
 
@@ -139,6 +141,69 @@ namespace NMediaManager
                 text = parentPtr->getText( which, forceTop );
             }
             return text;
+        }
+
+
+        bool SSearchResult::isBetterTitleMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr<SSearchResult> rhs ) const
+        {
+            if ( !rhs )
+                return true;
+
+            if ( searchInfo->searchName() == fTitle && ( searchInfo->searchName() != rhs->fTitle ) )
+                return true;
+
+            return false;
+        }
+
+        bool SSearchResult::isBetterSeasonMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr< SSearchResult > rhs ) const
+        {
+            if ( searchInfo->season() != -1 )
+            {
+                if ( !rhs )
+                    return true;
+
+                if ( fSeason != rhs->fSeason )
+                {
+                    if ( searchInfo->isSeasonMatch( fSeason ) )
+                        return true;
+                    if ( searchInfo->isSeasonMatch( rhs->fSeason ) )
+                        return false;
+                }
+            }
+
+            return isBetterTitleMatch( searchInfo, rhs );
+        }
+
+        bool SSearchResult::isBetterEpisodeMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr< SSearchResult > rhs ) const
+        {
+            if ( !rhs )
+                return true;
+
+            if ( isBetterSeasonMatch( searchInfo, rhs ) )
+                return true;
+
+            if ( searchInfo->episode() != -1 )
+            {
+                if ( fEpisode != rhs->fEpisode )
+                {
+                    if ( searchInfo->isEpisodeMatch( fEpisode ) )
+                        return true;
+                    if ( searchInfo->isEpisodeMatch( rhs->fEpisode ) )
+                        return false;
+                }
+            }
+
+            return isBetterTitleMatch( searchInfo, rhs );
+        }
+
+        bool SSearchResult::isBetterMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr<SSearchResult> rhs ) const
+        {
+            if ( fInfoType == EResultInfoType::eTVSeason )
+                return isBetterSeasonMatch( searchInfo, rhs );
+            else if ( fInfoType == EResultInfoType::eTVEpisode )
+                return isBetterSeasonMatch( searchInfo, rhs );
+            else
+                return isBetterTitleMatch( searchInfo, rhs );
         }
 
         QString SSearchResult::getMyText( ETitleInfo which ) const

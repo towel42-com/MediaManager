@@ -54,6 +54,7 @@ namespace NMediaManager
             CMainWindow( QWidget *parent = 0 );
             ~CMainWindow();
 
+            bool setBIFFileName( const QString &name );
         public Q_SLOTS:
             void slotOpen();
             void slotDirectoryChanged();

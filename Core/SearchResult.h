@@ -32,6 +32,7 @@ namespace NMediaManager
 {
     namespace NCore
     {
+        struct SSearchTMDBInfo;
         enum class ETitleInfo
         {
             eTitle,
@@ -74,6 +75,8 @@ namespace NMediaManager
             [[nodiscard]] QString getMyText( ETitleInfo which ) const;
             [[nodiscard]] QString getText( ETitleInfo which, bool forceTop = false ) const;
 
+            bool isBetterMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr<SSearchResult> rhs ) const;
+
             QString fTitle;
             QString fReleaseDate;
             QString fTMDBID;
@@ -91,6 +94,11 @@ namespace NMediaManager
             std::weak_ptr < SSearchResult > fParent;
             std::list< std::shared_ptr< SSearchResult > > fChildren;
             EResultInfoType fInfoType;
+
+        private:
+            bool isBetterTitleMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr<SSearchResult> rhs ) const;
+            bool isBetterSeasonMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr< SSearchResult > rhs ) const;
+            bool isBetterEpisodeMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr< SSearchResult > rhs ) const;
         };
     }
 }

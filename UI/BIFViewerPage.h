@@ -62,7 +62,7 @@ namespace NMediaManager
             ~CBIFViewerPage();
 
             void setActive( bool isActive );
-            void setFileName( const QString &fileName, bool andExecute );
+            bool setFileName( const QString &fileName, bool andExecute );
 
             QAction *actionSkipBackward();
             QAction *actionPrev();

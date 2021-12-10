@@ -67,10 +67,10 @@ namespace NMediaManager
             void setSkipImages( bool value ) { fSkipImages = value; }
             bool isActive() const;
 
-            std::shared_ptr< SSearchResult > getResult( const QString &path ) const; // uses the queued results
+            std::list < std::shared_ptr< SSearchResult > > getResult( const QString &path ) const; // uses the queued results
             std::list< std::shared_ptr< SSearchResult > > getResults() const;
-            std::shared_ptr< SSearchResult > bestMatch() const { return fResults.first; }
-
+            std::shared_ptr< SSearchResult > bestMatch() const;
+\
             bool searchByName();
 
             void resetResults();
@@ -136,9 +136,8 @@ namespace NMediaManager
             [[nodiscard]] bool loadSearchResult( const QJsonObject &resultItem );
             [[nodiscard]] bool loadEpisodeDetails( const QJsonObject &episodeInfo, std::shared_ptr< SSearchResult > seasonItem );
 
-            using TBettterMatchFunc=std::function< bool( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr<SSearchResult> lhs, std::shared_ptr<SSearchResult> rhs ) >;
-            void addResult( std::shared_ptr<SSearchResult> result, TBettterMatchFunc isBetterMatch );
-            void setBestMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr<SSearchResult> result, TBettterMatchFunc isBetterMatchFunc );
+            void addResult( std::shared_ptr<SSearchResult> result );
+            void addResultToList( std::list< std::shared_ptr< SSearchResult > > &list, std::shared_ptr<SSearchResult> result, std::shared_ptr< SSearchTMDBInfo > searchInfo ) const;
 
             void checkIfStillSearching();
 
@@ -154,7 +153,7 @@ namespace NMediaManager
 
             std::shared_ptr< SSearchTMDBInfo > fSearchInfo;
             std::optional< std::pair< QString, std::shared_ptr< SSearchTMDBInfo > > > fCurrentQueuedSearch;
-            std::unordered_map< QString, std::shared_ptr< SSearchResult > > fQueuedResults;
+            std::unordered_map< QString, std::list< std::shared_ptr< SSearchResult > > > fQueuedResults;
             std::list< std::pair< QString, std::shared_ptr< SSearchTMDBInfo > > > fSearchQueue;
             QTimer *fAutoSearchTimer{ nullptr };
 
@@ -165,7 +164,7 @@ namespace NMediaManager
 
             bool fStopSearching{ true };
             bool fSkipImages{ false };
-            std::pair< std::shared_ptr< SSearchResult >, std::list< std::shared_ptr< SSearchResult > > > fResults;
+            std::list< std::shared_ptr< SSearchResult > > fResults;
 
             std::unordered_map< QString, QByteArray > fURLResultsCache;
             std::unordered_map< QNetworkReply *, ERequestType > fRequestTypeMap;
