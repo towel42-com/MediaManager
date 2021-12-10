@@ -29,7 +29,7 @@ int main( int argc, char ** argv )
     Q_INIT_RESOURCE( application );
     QApplication appl( argc, argv );
     appl.setApplicationName( "Media Manager" );
-    appl.setApplicationVersion( "0.9" );
+    appl.setApplicationVersion( "0.10" );
     appl.setOrganizationName( "Scott Aron Bloom" );
     appl.setOrganizationDomain( "www.towel42.com" );
 
