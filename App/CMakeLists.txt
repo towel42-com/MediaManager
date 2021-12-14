@@ -58,4 +58,9 @@ INSTALL( TARGETS ${PROJECT_NAME} RUNTIME DESTINATION . )
 INSTALL( FILES ${CMAKE_CURRENT_BINARY_DIR}/Debug/${PROJECT_NAME}.pdb DESTINATION . CONFIGURATIONS Debug )
 INSTALL( FILES ${CMAKE_CURRENT_BINARY_DIR}/RelWithDebInfo/${PROJECT_NAME}.pdb DESTINATION . CONFIGURATIONS Debug RelWithDebInfo )
 
-
+add_custom_command( TARGET MediaManager POST_BUILD 
+    COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:bif>" "$<TARGET_FILE_DIR:MediaManager>/imageformats" 
+    COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE_DIR:bif>/$<TARGET_FILE_BASE_NAME:bif>.pdb" "$<TARGET_FILE_DIR:MediaManager>/imageformats" 
+	DEPENDS bif
+    COMMENT "ADDING BIF Image Formate Shared Library"
+    )
