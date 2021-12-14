@@ -34,7 +34,7 @@ int main( int argc, char ** argv )
     appl.setOrganizationDomain( "www.towel42.com" );
 
     QString bifName;
-    for ( int ii = 0; ii < argc; ++ii )
+    for ( int ii = 1; ii < argc; ++ii )
     {
         QString name = argv[ii];
         if ( name.toLower().endsWith( ".bif" ) )
@@ -45,7 +45,7 @@ int main( int argc, char ** argv )
     }
     NMediaManager::NUi::CMainWindow mainWindow;
     mainWindow.show();
-    if ( !mainWindow.setBIFFileName( bifName ) )
+    if ( !bifName.isEmpty() && !mainWindow.setBIFFileName( bifName ) )
         return -1;
     return appl.exec();
 }
