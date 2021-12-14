@@ -21,40 +21,10 @@
 // SOFTWARE.
 
 #include "MergeSRTPage.h"
-//#include "SelectTMDB.h"
-//#include "TransformConfirm.h"
-//#include "Preferences.h"
-
 #include "ui_MergeSRTPage.h"
 
-//#include "Core/Preferences.h"
 #include "Core/DirModel.h"
-//#include "Core/SearchResult.h"
-//#include "Core/SearchTMDBInfo.h"
-//#include "Core/SearchTMDB.h"
-//
-//#include "SABUtils/QtUtils.h"
-//#include "SABUtils/utils.h"
-//#include "SABUtils/ScrollMessageBox.h"
-//#include "SABUtils/AutoWaitCursor.h"
-//#include "SABUtils/BIFFile.h"
-//#include "SABUtils/BIFModel.h"
-//#include "SABUtils/BIFWidget.h"
-//#include "SABUtils/DelayLineEdit.h"
-//
 #include <QSettings>
-//#include <QFileInfo>
-//#include <QFileDialog>
-//#include <QCompleter>
-//#include <QMessageBox>
-//#include <QFileSystemModel>
-//#include <QTimer>
-//#include <QPixmap>
-//#include <QLabel>
-//#include <QSpinBox>
-//
-//
-//#include <QProgressDialog>
 
 namespace NMediaManager
 {
@@ -80,8 +50,9 @@ namespace NMediaManager
         void CMergeSRTPage::loadSettings()
         {
             QSettings settings;
-            if ( settings.contains( "mergeSRTSplitter" ) )
-                fImpl->splitter->restoreState( settings.value( "mergeSRTSplitter" ).toByteArray() );
+            settings.beginGroup("Merge SRT");
+            if ( settings.contains( "Splitter" ) )
+                fImpl->splitter->restoreState( settings.value( "Splitter" ).toByteArray() );
             else
                 fImpl->splitter->setSizes( QList< int >() << 100 << 0 );
         }
@@ -89,7 +60,8 @@ namespace NMediaManager
         void CMergeSRTPage::saveSettings()
         {
             QSettings settings;
-            settings.setValue( "mergeSRTSplitter", fImpl->splitter->saveState() );
+            settings.beginGroup("Merge SRT");
+            settings.setValue("Splitter", fImpl->splitter->saveState());
         }
 
         void CMergeSRTPage::setSetupProgressDlgFunc( std::function< QProgressDialog *( const QString &title, const QString &cancelButtonText, int max ) > setupFunc, std::function< void() > clearFunc )
