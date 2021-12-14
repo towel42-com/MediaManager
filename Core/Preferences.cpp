@@ -289,6 +289,8 @@ namespace NMediaManager
                 << "TrollHD"
                 << "Troll"
                 << "nogrp"
+                << "-CM"
+                << "NF"
                 ;
 
             QSettings settings;
