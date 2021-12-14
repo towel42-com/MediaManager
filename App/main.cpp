@@ -22,19 +22,21 @@
 
 #include "UI/MainWindow.h"
 
+#include "Version.h"
+
 #include <QApplication>
 
 int main( int argc, char ** argv )
 {
     Q_INIT_RESOURCE( application );
     QApplication appl( argc, argv );
-    appl.setApplicationName( "Media Manager" );
-    appl.setApplicationVersion( "0.10" );
-    appl.setOrganizationName( "Scott Aron Bloom" );
-    appl.setOrganizationDomain( "www.towel42.com" );
+    appl.setApplicationName( QString::fromStdString( NVersion::APP_NAME ) );
+    appl.setApplicationVersion(QString::fromStdString(NVersion::getVersionString( true ) ) );
+    appl.setOrganizationName(QString::fromStdString(NVersion::VENDOR ) );
+    appl.setOrganizationDomain(QString::fromStdString(NVersion::HOMEPAGE ));
 
     QString bifName;
-    for ( int ii = 0; ii < argc; ++ii )
+    for ( int ii = 1; ii < argc; ++ii )
     {
         QString name = argv[ii];
         if ( name.toLower().endsWith( ".bif" ) )
@@ -44,8 +46,9 @@ int main( int argc, char ** argv )
         }
     }
     NMediaManager::NUi::CMainWindow mainWindow;
+    mainWindow.setWindowTitle(QString("%1 v%2 - http://%3").arg(QString::fromStdString(NVersion::APP_NAME)).arg(QString::fromStdString(NVersion::getVersionString(true))).arg(QString::fromStdString(NVersion::HOMEPAGE)));
     mainWindow.show();
-    if ( !mainWindow.setBIFFileName( bifName ) )
+    if ( !bifName.isEmpty() && !mainWindow.setBIFFileName( bifName ) )
         return -1;
     return appl.exec();
 }

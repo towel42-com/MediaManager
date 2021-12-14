@@ -35,6 +35,15 @@ find_package(Threads)
 find_package(Qt5 COMPONENTS Core Widgets Multimedia REQUIRED)
 find_package(Deploy REQUIRED)
 find_package(AddUnitTest REQUIRED)
+find_package(Git REQUIRED)
+
+GetGitInfo(${CMAKE_SOURCE_DIR} GIT_VERSION_INFO)
+
+include( VersionInfo.cmake )
+
+CreateVersion(GIT_VERSION_INFO ${CMAKE_SOURCE_DIR}/SABUtils/Modules/Version.h.in
+	${MAJOR_VERSION} ${MINOR_VERSION} ${APP_NAME} ${VENDOR} ${HOMEPAGE} ${EMAIL} )
+	
 
 CheckOpenSSL()
 
@@ -46,6 +55,7 @@ file( REAL_PATH ~/bin/MediaManager CMAKE_INSTALL_PREFIX EXPAND_TILDE)
 
 add_subdirectory( SABUtils )
 add_subdirectory( SABUtils/googletest )
+add_subdirectory( SABUtils/bif)
 set_target_properties( gmock PROPERTIES FOLDER 3rdParty/google  )
 set_target_properties( gmock_main PROPERTIES FOLDER 3rdParty/google )
 set_target_properties( gtest PROPERTIES FOLDER 3rdParty/google )
@@ -54,13 +64,19 @@ add_subdirectory( UI )
 add_subdirectory( Core )
 add_subdirectory( App )
 
-SET( CPACK_PACKAGE_NAME "Media Manager" )
-SET( CPACK_PACKAGE_VENDOR "Scott Aron Bloom scott@towel42.com" )
+SET( CPACK_PACKAGE_VERSION_MAJOR ${MAJOR_VERSION} )
+SET( CPACK_PACKAGE_VERSION_MINOR ${MINOR_VERSION} )
+SET( CPACK_PACKAGE_VERSION_PATCH ${VERSION_FILE_PATCH_VERSION} )
+SET( CPACK_PACKAGE_VERSION ${MAJOR_VERSION}.${MINOR_VERSION}.${VERSION_FILE_PATCH_VERSION})
+SET( CPACK_PACKAGE_NAME ${APP_NAME} )
+SET( CPACK_PACKAGE_VENDOR "${VENDOR} ${EMAIL}" )
 SET( CPACK_RESOURCE_FILE_LICENSE ${CMAKE_SOURCE_DIR}/LICENSE )
-SET( CPACK_PACKAGE_VERSION_MAJOR "0" )
-SET( CPACK_PACKAGE_VERSION_MINOR "10" )
-SET( CPACK_PACKAGE_VERSION_PATCH "0" )
+SET( CPACK_PACKAGE_HOMEPAGE_URL ${HOMEPAGE} )
+SET( CPACK_PACKAGE_DESCRIPTION "Applicaiton to help manage your media needs" )
+
 SET( CPACK_GENERATOR ZIP NSIS )
 SET( CPACK_NSIS_MUI_ICON ${CMAKE_SOURCE_DIR}/UI/resources/application.ico )
 SET( CPACK_NSIS_MUI_UNIICON ${CMAKE_SOURCE_DIR}/UI/resources/application.ico )
 include( CPack )
+
+

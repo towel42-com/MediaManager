@@ -455,7 +455,7 @@ namespace NMediaManager
 
         std::shared_ptr< NMediaManager::NCore::SSearchResult > CSearchTMDB::bestMatch() const
         {
-            if ( !fResults.empty() )
+            if ( fResults.empty() )
                 return {};
             return fResults.front();
         }

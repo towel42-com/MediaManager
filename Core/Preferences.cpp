@@ -81,24 +81,28 @@ namespace NMediaManager
         void CPreferences::setTreatAsTVShowByDefault( bool value )
         {
             QSettings settings;
+            settings.beginGroup("Transform");
             return settings.setValue( "TreatAsTVShowByDefault", value );
         }
 
         bool CPreferences::getTreatAsTVShowByDefault() const
         {
             QSettings settings;
+            settings.beginGroup("Transform");
             return settings.value( "TreatAsTVShowByDefault", false ).toBool();
         }
 
         void CPreferences::setExactMatchesOnly( bool value )
         {
             QSettings settings;
+            settings.beginGroup("Transform");
             return settings.setValue( "ExactMatchesOnly", value );
         }
 
         bool CPreferences::getExactMatchesOnly() const
         {
             QSettings settings;
+            settings.beginGroup("Transform");
             return settings.value( "ExactMatchesOnly", true ).toBool();
         }
 
@@ -133,12 +137,15 @@ namespace NMediaManager
         void CPreferences::setTVOutFilePattern( const QString &value )
         {
             QSettings settings;
+            settings.beginGroup("Transform");
+            settings.beginGroup("ForTV");
             settings.setValue( "OutFilePattern", value );
         }
 
         QString CPreferences::getTVOutFilePattern() const
         {
             QSettings settings;
+            settings.beginGroup("Transform");
             settings.beginGroup( "ForTV" );
 
             return settings.value( "OutFilePattern", getDefaultOutFilePattern( true ) ).toString();
@@ -147,12 +154,15 @@ namespace NMediaManager
         void CPreferences::setTVOutDirPattern( const QString &value )
         {
             QSettings settings;
+            settings.beginGroup("Transform");
+            settings.beginGroup("ForTV");
             settings.setValue( "OutDirPattern", value );
         }
 
         QString CPreferences::getTVOutDirPattern() const
         {
             QSettings settings;
+            settings.beginGroup("Transform");
             settings.beginGroup( "ForTV" );
 
             return settings.value( "OutDirPattern", getDefaultOutDirPattern( true ) ).toString();
@@ -161,12 +171,15 @@ namespace NMediaManager
         void CPreferences::setMovieOutFilePattern( const QString &value )
         {
             QSettings settings;
+            settings.beginGroup("Transform");
+            settings.beginGroup("ForMovies");
             settings.setValue( "OutFilePattern", value );
         }
 
         QString CPreferences::getMovieOutFilePattern() const
         {
             QSettings settings;
+            settings.beginGroup("Transform");
             settings.beginGroup( "ForMovies" );
 
             return settings.value( "OutFilePattern", getDefaultOutFilePattern( false ) ).toString();
@@ -175,12 +188,15 @@ namespace NMediaManager
         void CPreferences::setMovieOutDirPattern( const QString &value )
         {
             QSettings settings;
+            settings.beginGroup("Transform");
+            settings.beginGroup("ForMovies");
             settings.setValue( "OutDirPattern", value );
         }
 
         QString CPreferences::getMovieOutDirPattern() const
         {
             QSettings settings;
+            settings.beginGroup("Transform");
             settings.beginGroup( "ForMovies" );
 
             return settings.value( "OutDirPattern", getDefaultOutDirPattern( false ) ).toString();
@@ -189,6 +205,7 @@ namespace NMediaManager
         void CPreferences::setMediaExtensions( const QString &value )
         {
             QSettings settings;
+            settings.beginGroup("Transform");
             settings.setValue( "MediaExtensions", value );
 
         }
@@ -201,14 +218,15 @@ namespace NMediaManager
         QStringList  CPreferences::getMediaExtensions() const
         {
             QSettings settings;
+            settings.beginGroup("Transform");
             return settings.value( "MediaExtensions", QString( "*.mkv;*.mp4;*.avi;*.mov;*.wmv;*.mpg;*.mpg2" ) ).toString().split( ";" );
         }
 
         void CPreferences::setSubtitleExtensions( const QString &value )
         {
             QSettings settings;
+            settings.beginGroup("Transform");
             settings.setValue( "SubtitleExtensions", value );
-
         }
 
         void CPreferences::setSubtitleExtensions( const QStringList &value )
@@ -219,12 +237,14 @@ namespace NMediaManager
         QStringList  CPreferences::getSubtitleExtensions() const
         {
             QSettings settings;
+            settings.beginGroup("Transform");
             return settings.value( "SubtitleExtensions", QString( "*.idx;*.sub;*.srt" ) ).toString().split( ";" );
         }
 
         void CPreferences::setKnownStrings( const QStringList &value )
         {
             QSettings settings;
+            settings.beginGroup("Transform");
             settings.setValue( "KnownStrings", value );
         }
 
@@ -269,9 +289,12 @@ namespace NMediaManager
                 << "TrollHD"
                 << "Troll"
                 << "nogrp"
+                << "-CM"
+                << "NF"
                 ;
 
             QSettings settings;
+            settings.beginGroup("Transform");
             return settings.value( "KnownStrings", knownStrings ).toStringList();
         }
 
@@ -291,28 +314,49 @@ namespace NMediaManager
             return aOK ? retVal : QString();
         }
  
-        void CPreferences::setBIFFrameInterval( int interval )
+        void CPreferences::setBIFPlayerSpeedMultiplier( int interval )
         {
             QSettings settings;
-            settings.setValue( "BIFFrameInterval", interval );
+            settings.beginGroup("BIFViewer");
+            settings.setValue( "PlayerSpeedMultiplier", interval );
         }
 
-        int CPreferences::bifFrameInterval() const
+        int CPreferences::bifPlayerSpeedMultiplier() const
         {
             QSettings settings;
-            return settings.value( "BIFFrameInterval", 50 ).toInt();
+            settings.beginGroup("BIFViewer");
+            return settings.value("PlayerSpeedMultiplier", 200).toInt();
         }
 
-        void CPreferences::setBIFSkipInterval( int interval )
+        void CPreferences::setBIFNumFramesToSkip( int interval )
         {
             QSettings settings;
-            settings.setValue( "BIFSkipInterval", interval );
+            settings.beginGroup("BIFViewer");
+            settings.setValue("NumFramesToSkip", interval);
         }
 
-        int CPreferences::bifSkipInterval() const
+        int CPreferences::bifNumFramesToSkip() const
         {
             QSettings settings;
-            return settings.value( "BIFSkipInterval", 5 ).toInt();
+            settings.beginGroup("BIFViewer");
+            return settings.value( "NumFramesToSkip", 5 ).toInt();
+        }
+
+        void CPreferences::setBIFLoopCount(int loopCount)
+        {
+            QSettings settings;
+            settings.beginGroup("BIFViewer");
+            settings.setValue("LoopCount", loopCount);
+        }
+
+        int CPreferences::bifLoopCount() const
+        {
+            QSettings settings;
+            settings.beginGroup("BIFViewer");
+            auto retVal = settings.value("LoopCount", -1).toInt();
+            if (retVal == 0)
+                retVal = -1;
+            return retVal;
         }
 
         bool CPreferences::isMediaFile( const QFileInfo &fi ) const
