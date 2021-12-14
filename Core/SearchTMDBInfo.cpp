@@ -47,8 +47,13 @@ namespace NMediaManager
             auto knownStrings = CPreferences::instance()->getKnownStrings();
             for ( auto &&knownString : knownStrings )
             {
-                retVal.replace( "[" + knownString + "]", "", Qt::CaseSensitivity::CaseInsensitive );
-                retVal.replace( knownString, "", Qt::CaseSensitivity::CaseInsensitive );
+                auto regExpStr = "\\W(?<word>" + QRegularExpression::escape(knownString) + ")(\\W|$)";
+                auto regExp = QRegularExpression(regExpStr, QRegularExpression::CaseInsensitiveOption);
+                auto match = regExp.match(retVal);
+                if (match.hasMatch())
+                {
+                    retVal.remove(match.capturedStart("word"), match.capturedLength("word"));
+                }
             }
             return retVal;
         }
