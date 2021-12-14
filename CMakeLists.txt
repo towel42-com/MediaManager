@@ -46,6 +46,7 @@ file( REAL_PATH ~/bin/MediaManager CMAKE_INSTALL_PREFIX EXPAND_TILDE)
 
 add_subdirectory( SABUtils )
 add_subdirectory( SABUtils/googletest )
+add_subdirectory( SABUtils/bif)
 set_target_properties( gmock PROPERTIES FOLDER 3rdParty/google  )
 set_target_properties( gmock_main PROPERTIES FOLDER 3rdParty/google )
 set_target_properties( gtest PROPERTIES FOLDER 3rdParty/google )
@@ -64,3 +65,4 @@ SET( CPACK_GENERATOR ZIP NSIS )
 SET( CPACK_NSIS_MUI_ICON ${CMAKE_SOURCE_DIR}/UI/resources/application.ico )
 SET( CPACK_NSIS_MUI_UNIICON ${CMAKE_SOURCE_DIR}/UI/resources/application.ico )
 include( CPack )
+
