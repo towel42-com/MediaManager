@@ -37,9 +37,6 @@
 #include "SABUtils/utils.h"
 #include "SABUtils/ScrollMessageBox.h"
 #include "SABUtils/AutoWaitCursor.h"
-#include "SABUtils/BIFFile.h"
-#include "SABUtils/BIFModel.h"
-#include "SABUtils/BIFWidget.h"
 #include "SABUtils/DelayLineEdit.h"
 
 #include <QSettings>
@@ -169,7 +166,7 @@ namespace NMediaManager
         bool CMainWindow::setBIFFileName( const QString &name )
         {
             if ( name.isEmpty() )
-                return false;
+                return true;
             if ( !QFileInfo( name ).exists() )
             {
                 QMessageBox::critical( this, tr( "Could not View BIF File" ), tr( "'%1' does not exist" ).arg( name ) );
@@ -216,6 +213,11 @@ namespace NMediaManager
 
             validateRunAction();
             validateLoadAction();
+
+            if ( isBIFViewerActive() )
+                fImpl->actionOpen->setText(tr("Open File..."));
+            else
+                fImpl->actionOpen->setText(tr("Set Directory..."));
 
             fImpl->bifViewerPage->setActive( isBIFViewerActive() );
         }
