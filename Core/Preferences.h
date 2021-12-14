@@ -80,11 +80,14 @@ namespace NMediaManager
             bool isMediaFile( const QFileInfo &fi ) const;
             bool isSubtitleFile( const QFileInfo &info, bool *isLangFileFormat = nullptr ) const;
 
-            void setBIFFrameInterval( int interval );
-            int bifFrameInterval() const;
+            void setBIFPlayerSpeedMultiplier( int speed ); // 100 = "full speed" ie 1x default is 200x
+            int bifPlayerSpeedMultiplier() const;
 
-            void setBIFSkipInterval( int interval );
-            int bifSkipInterval() const;
+            void setBIFNumFramesToSkip( int numFrames );
+            int bifNumFramesToSkip() const;
+
+            void setBIFLoopCount(int loopCount);
+            int bifLoopCount() const;
         private:
             //QString getDefaultInPattern( bool forTV ) const;
             QString getDefaultOutDirPattern( bool forTV ) const;
