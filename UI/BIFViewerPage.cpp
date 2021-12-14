@@ -62,7 +62,7 @@ namespace NMediaManager
             fImpl->setupUi( this );
             clear();
 
-            connect( fImpl->bifWidget, &NBIF::CBIFWidget::sigStarted, this, &CBIFViewerPage::slotPlayingStarted );
+            connect( fImpl->bifWidget, &NBIF::CBIFWidget::sigPlayingStarted, this, &CBIFViewerPage::slotPlayingStarted );
 
             loadSettings( true );
 
@@ -105,8 +105,9 @@ namespace NMediaManager
                 setButtonsLayout( static_cast<NBIF::EButtonsLayout>( settings.value( "bifPlayerButtonLayout", static_cast<int>( NBIF::EButtonsLayout::eTogglePlayPause ) ).toInt() ) );
             }
 
-            fImpl->bifWidget->setFrameInterval( NCore::CPreferences::instance()->bifFrameInterval() );
-            fImpl->bifWidget->setSkipInterval( NCore::CPreferences::instance()->bifSkipInterval() );
+            fImpl->bifWidget->setSpeedMultiplier( NCore::CPreferences::instance()->bifPlayerSpeedMultiplier() );
+            fImpl->bifWidget->setNumFramesToSkip( NCore::CPreferences::instance()->bifNumFramesToSkip() );
+            fImpl->bifWidget->setPlayCount(NCore::CPreferences::instance()->bifLoopCount());
         }
 
         void CBIFViewerPage::saveSettings()
@@ -115,8 +116,9 @@ namespace NMediaManager
             settings.setValue( "bifViewerVSplitter", fImpl->bifViewerVSplitter->saveState() );
             settings.setValue( "bifPlayerButtonLayout", static_cast<int>( fImpl->bifWidget->buttonsLayout() ) );
 
-            NCore::CPreferences::instance()->setBIFFrameInterval( fImpl->bifWidget->frameInterval() );
-            NCore::CPreferences::instance()->setBIFSkipInterval( fImpl->bifWidget->skipInterval() );
+            NCore::CPreferences::instance()->setBIFPlayerSpeedMultiplier( fImpl->bifWidget->playerSpeedMultiplier() );
+            NCore::CPreferences::instance()->setBIFNumFramesToSkip( fImpl->bifWidget->numFramesToSkip() );
+            NCore::CPreferences::instance()->setBIFLoopCount(fImpl->bifWidget->playCount());
         }
 
         bool CBIFViewerPage::eventFilter( QObject * obj, QEvent * event )
@@ -158,7 +160,7 @@ namespace NMediaManager
 
         bool CBIFViewerPage::outOfDate() const
         {
-            return ( !fBIF || ( fBIF->fileName() != fFileName ) );
+            return ( !fBIF || ( fBIF->fileName() != fFileName ) || ( fImpl->bifWidget->fileName() != fFileName ) );
         }
 
         void CBIFViewerPage::slotPlayingStarted()
@@ -166,8 +168,8 @@ namespace NMediaManager
             if ( !fImpl->bifViewerHSplitter->sizes().back() )
             {
                 auto sizes = fImpl->bifViewerHSplitter->sizes();
-                sizes.front() -= 30;
-                sizes.back() = 30;
+                sizes.front() -= ( fImpl->bifWidget->sizeHint().width() + 16 );
+                sizes.back() = fImpl->bifWidget->sizeHint().width() + 16;
                 fImpl->bifViewerHSplitter->setSizes( sizes );
             }
         }
@@ -212,8 +214,8 @@ namespace NMediaManager
 
             slotResize();
 
-            fBIF = std::make_shared< NBIF::CBIFFile >( fFileName, false );
-            if ( !fBIF || !fBIF->isValid() )
+            fBIF = fImpl->bifWidget->setFileName(fFileName);
+            if ( !fImpl->bifWidget->isValid() )
             {
                 auto msg = fBIF ? tr( "Could not load BIF File: %1" ).arg( fBIF->errorString() ) : tr( "Could not load BIF File" );
                 QMessageBox::warning( this, tr( "Could not Load" ), msg );
@@ -225,7 +227,6 @@ namespace NMediaManager
 
         void CBIFViewerPage::load()
         {
-            clear();
             if ( !fBIF )
                 return;
 
@@ -238,7 +239,6 @@ namespace NMediaManager
             formatBIFTable();
 
             fBIFModel->setBIFFile( fBIF );
-            fImpl->bifWidget->setBIFFile( fBIF );
         }
 
         bool CBIFViewerPage::canLoad() const
