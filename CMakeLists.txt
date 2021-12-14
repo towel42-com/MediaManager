@@ -39,12 +39,7 @@ find_package(Git REQUIRED)
 
 GetGitInfo(${CMAKE_SOURCE_DIR} GIT_VERSION_INFO)
 
-SET( MAJOR_VERSION 0 )
-SET( MINOR_VERSION 11 )
-SET( APP_NAME "Media Manager" )
-SET( VENDOR   "Scott Aron Bloom" )
-SET( HOMEPAGE "www.towel42.com" )
-SET( EMAIL    "scott@towel42.com" )
+include( VersionInfo.cmake )
 
 CreateVersion(GIT_VERSION_INFO ${CMAKE_SOURCE_DIR}/SABUtils/Modules/Version.h.in
 	${MAJOR_VERSION} ${MINOR_VERSION} ${APP_NAME} ${VENDOR} ${HOMEPAGE} ${EMAIL} )
