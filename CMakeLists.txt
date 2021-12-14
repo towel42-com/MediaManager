@@ -35,6 +35,20 @@ find_package(Threads)
 find_package(Qt5 COMPONENTS Core Widgets Multimedia REQUIRED)
 find_package(Deploy REQUIRED)
 find_package(AddUnitTest REQUIRED)
+find_package(Git REQUIRED)
+
+GetGitInfo(${CMAKE_SOURCE_DIR} GIT_VERSION_INFO)
+
+SET( MAJOR_VERSION 0 )
+SET( MINOR_VERSION 11 )
+SET( APP_NAME "Media Manager" )
+SET( VENDOR   "Scott Aron Bloom" )
+SET( HOMEPAGE "www.towel42.com" )
+SET( EMAIL    "scott@towel42.com" )
+
+CreateVersion(GIT_VERSION_INFO ${CMAKE_SOURCE_DIR}/SABUtils/Modules/Version.h.in
+	${MAJOR_VERSION} ${MINOR_VERSION} ${APP_NAME} ${VENDOR} ${HOMEPAGE} ${EMAIL} )
+	
 
 CheckOpenSSL()
 
@@ -55,14 +69,18 @@ add_subdirectory( UI )
 add_subdirectory( Core )
 add_subdirectory( App )
 
-SET( CPACK_PACKAGE_NAME "Media Manager" )
-SET( CPACK_PACKAGE_VENDOR "Scott Aron Bloom scott@towel42.com" )
+SET( CPACK_PACKAGE_VERSION_MAJOR ${MAJOR_VERSION} )
+SET( CPACK_PACKAGE_VERSION_MINOR ${MINOR_VERSION} )
+SET( CPACK_PACKAGE_VERSION_PATCH ${VERSION_PATCH} )
+SET( CPACK_PACKAGE_NAME ${APP_NAME} )
+SET( CPACK_PACKAGE_VENDOR "${VENDOR} ${EMAIL}" )
 SET( CPACK_RESOURCE_FILE_LICENSE ${CMAKE_SOURCE_DIR}/LICENSE )
-SET( CPACK_PACKAGE_VERSION_MAJOR "0" )
-SET( CPACK_PACKAGE_VERSION_MINOR "10" )
-SET( CPACK_PACKAGE_VERSION_PATCH "0" )
+SET( CPACK_PACKAGE_HOMEPAGE_URL ${HOMEPAGE} )
+SET( CPACK_PACKAGE_DESCRIPTION "Applicaiton to help manage your media needs" )
+
 SET( CPACK_GENERATOR ZIP NSIS )
 SET( CPACK_NSIS_MUI_ICON ${CMAKE_SOURCE_DIR}/UI/resources/application.ico )
 SET( CPACK_NSIS_MUI_UNIICON ${CMAKE_SOURCE_DIR}/UI/resources/application.ico )
 include( CPack )
+
 
