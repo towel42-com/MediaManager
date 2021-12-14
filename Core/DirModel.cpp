@@ -1806,12 +1806,15 @@ namespace NMediaManager
                 return;
 
             auto transformInfo = transformItem( fileInfo );
-            if ( transformedItem->text() != transformInfo.second )
-                transformedItem->setText( transformInfo.second );
+            if (!transformInfo.first || ( item->text() != transformInfo.second) )
+            {
+                if (transformedItem->text() != transformInfo.second)
+                    transformedItem->setText(transformInfo.second);
 
-            auto isTVShow = treatAsTVShow( fileInfo, this->isChecked( path, EColumns::eIsTVShow ) );
-            if ( canAutoSearch( fileInfo ) && ( CDirModel::isAutoSetText( transformInfo.second ) || ( !isValidName( transformInfo.second, fileInfo.isDir(), isTVShow ) && !isValidName( fileInfo ) ) ) )
-                transformedItem->setBackground( Qt::red );
+                auto isTVShow = treatAsTVShow(fileInfo, this->isChecked(path, EColumns::eIsTVShow));
+                if (canAutoSearch(fileInfo) && (CDirModel::isAutoSetText(transformInfo.second) || (!isValidName(transformInfo.second, fileInfo.isDir(), isTVShow) && !isValidName(fileInfo))))
+                    transformedItem->setBackground(Qt::red);
+            }
         }
     }
 }
