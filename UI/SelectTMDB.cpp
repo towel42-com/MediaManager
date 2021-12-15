@@ -476,16 +476,19 @@ namespace NMediaManager
         {
             if (fPrevSearchName.startsWith( fImpl->searchName->text() ) )
             {
-                auto tmp = fPrevSearchName.mid(fImpl->searchName->text().length()).split(QRegularExpression("\\W"));
-                auto origWords = tmp;
-                for( auto && curr : tmp )
+                auto tmp = fPrevSearchName.mid(fImpl->searchName->text().length()).split(QRegularExpression("\\W"),Qt::SkipEmptyParts);
+                if (!tmp.isEmpty())
                 {
-                    curr = QString("<li>%1</li>").arg(curr);
-                }
-                auto msg = tr("Words you removed: <ul>%1</ul>").arg(tmp.join(""));
-                if ( QMessageBox::question( this, tr( "Would you like to add these words to the known words list?" ), msg, QMessageBox::StandardButton::Yes, QMessageBox::StandardButton::No ) == QMessageBox::StandardButton::Yes )
-                {
-                    NCore::CPreferences::instance()->addKnownStrings(origWords);
+                    auto origWords = tmp;
+                    for (auto && curr : tmp)
+                    {
+                        curr = QString("<li>%1</li>").arg(curr);
+                    }
+                    auto msg = tr("Words you removed: <ul>%1</ul>").arg(tmp.join(""));
+                    if (QMessageBox::question(this, tr("Would you like to add these words to the known words list?"), msg, QMessageBox::StandardButton::Yes, QMessageBox::StandardButton::No) == QMessageBox::StandardButton::Yes)
+                    {
+                        NCore::CPreferences::instance()->addKnownStrings(origWords);
+                    }
                 }
             }
             fPrevSearchName = fImpl->searchName->text();
