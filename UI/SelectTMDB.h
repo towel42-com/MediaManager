@@ -68,6 +68,7 @@ namespace NMediaManager
             void setExactMatchOnly( bool value, bool init );
 
         public Q_SLOTS:
+            void slotSearchCriteriaChanged();
             void slotSearchTextChanged();
 
             void slotItemChanged();
@@ -108,6 +109,7 @@ namespace NMediaManager
             bool fStopLoading{ false };
             bool fSearchPending{ false };
             std::shared_ptr< NCore::SSearchTMDBInfo > fQueuedSearchInfo;
+            QString fPrevSearchName;
 
             std::shared_ptr< NCore::SSearchResult > fBestMatch;
             std::list< std::shared_ptr< NCore::SSearchResult > > fCurrentResults;

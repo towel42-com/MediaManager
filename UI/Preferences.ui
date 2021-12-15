@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>549</width>
+    <width>604</width>
     <height>594</height>
    </rect>
   </property>
@@ -27,35 +27,58 @@
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>3</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
-       <string>Base Settings</string>
+       <string>Transformation Settings</string>
       </attribute>
-      <layout class="QGridLayout" name="gridLayout_3">
+      <layout class="QGridLayout" name="gridLayout_7">
+       <item row="4" column="2">
+        <widget class="QLineEdit" name="subtitleExtensions"/>
+       </item>
        <item row="3" column="0" colspan="2">
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>Media Extensions:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0" colspan="3">
         <widget class="QCheckBox" name="treatAsTVShowByDefault">
          <property name="text">
           <string>Treat as TV Show by default? (when auto determine fails)</string>
          </property>
         </widget>
        </item>
-       <item row="4" column="0" colspan="2">
+       <item row="3" column="2">
+        <widget class="QLineEdit" name="mediaExtensions">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="0" colspan="3">
         <widget class="QCheckBox" name="exactMatchesOnly">
          <property name="text">
           <string>Exact Matches Only?</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="0" colspan="2">
+       <item row="0" column="0" rowspan="2" colspan="3">
         <widget class="QGroupBox" name="groupBox">
          <property name="title">
           <string>Known Strings to Remove from Paths:</string>
          </property>
          <layout class="QGridLayout" name="gridLayout">
           <item row="0" column="1">
-           <widget class="QToolButton" name="btnAddString">
+           <widget class="QToolButton" name="btnAddKnownString">
             <property name="text">
              <string>...</string>
             </property>
@@ -66,7 +89,7 @@
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QToolButton" name="btnDelString">
+           <widget class="QToolButton" name="btnDelKnownString">
             <property name="text">
              <string>...</string>
             </property>
@@ -95,35 +118,59 @@
          </layout>
         </widget>
        </item>
-       <item row="1" column="1">
-        <widget class="QLineEdit" name="mediaExtensions">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="label_5">
-         <property name="text">
-          <string>Media Extensions:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0">
+       <item row="4" column="0" colspan="2">
         <widget class="QLabel" name="label_2">
          <property name="text">
           <string>Subtitle Extensions:</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="1">
-        <widget class="QLineEdit" name="subtitleExtensions"/>
+       <item row="2" column="0" colspan="3">
+        <widget class="QGroupBox" name="groupBox_2">
+         <property name="title">
+          <string>Known Strings for Extended/Extra Information</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_3">
+          <item row="0" column="1">
+           <widget class="QToolButton" name="btnAddExtraString">
+            <property name="text">
+             <string>...</string>
+            </property>
+            <property name="icon">
+             <iconset resource="application.qrc">
+              <normaloff>:/resources/add.png</normaloff>:/resources/add.png</iconset>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QToolButton" name="btnDelExtraString">
+            <property name="text">
+             <string>...</string>
+            </property>
+            <property name="icon">
+             <iconset resource="application.qrc">
+              <normaloff>:/resources/delete.png</normaloff>:/resources/delete.png</iconset>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <spacer name="verticalSpacer_5">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>174</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="0" column="0" rowspan="3">
+           <widget class="QListView" name="knownExtraStrings"/>
+          </item>
+         </layout>
+        </widget>
        </item>
       </layout>
      </widget>
@@ -313,8 +360,11 @@
  <tabstops>
   <tabstop>tabWidget</tabstop>
   <tabstop>knownStrings</tabstop>
-  <tabstop>btnAddString</tabstop>
-  <tabstop>btnDelString</tabstop>
+  <tabstop>btnAddKnownString</tabstop>
+  <tabstop>btnDelKnownString</tabstop>
+  <tabstop>knownExtraStrings</tabstop>
+  <tabstop>btnAddExtraString</tabstop>
+  <tabstop>btnDelExtraString</tabstop>
   <tabstop>mediaExtensions</tabstop>
   <tabstop>subtitleExtensions</tabstop>
   <tabstop>treatAsTVShowByDefault</tabstop>

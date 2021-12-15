@@ -44,15 +44,21 @@ namespace NMediaManager
         {
             fImpl->setupUi( this );
 
-            connect( fImpl->btnAddString, &QToolButton::clicked, this, &CPreferences::slotAddString );
-            connect( fImpl->btnDelString, &QToolButton::clicked, this, &CPreferences::slotDelString );
+            connect( fImpl->btnAddKnownString, &QToolButton::clicked, this, &CPreferences::slotAddKnownString );
+            connect( fImpl->btnDelKnownString, &QToolButton::clicked, this, &CPreferences::slotDelKnownString );
+            connect(fImpl->btnAddExtraString, &QToolButton::clicked, this, &CPreferences::slotAddExtraString);
+            connect(fImpl->btnDelExtraString, &QToolButton::clicked, this, &CPreferences::slotDelExtraString);
             connect( fImpl->btnSelectMKVMergeExe, &QToolButton::clicked, this, &CPreferences::slotSelectMKVMergeExe );
             connect( fImpl->mkvMergeExe, &QLineEdit::textChanged, this, &CPreferences::slotMKVMergeExeChanged );
 
-            fStringModel = new QStringListModel( this );
-            fImpl->knownStrings->setModel( fStringModel );
+            fKnownStringModel = new QStringListModel( this );
+            fImpl->knownStrings->setModel( fKnownStringModel );
 
-            new CButtonEnabler( fImpl->knownStrings, fImpl->btnDelString );
+            fExtraStringModel = new QStringListModel(this);
+            fImpl->knownExtraStrings->setModel(fExtraStringModel);
+
+            new CButtonEnabler( fImpl->knownStrings, fImpl->btnDelKnownString );
+            new CButtonEnabler(fImpl->knownExtraStrings, fImpl->btnDelExtraString);
             loadSettings();
             QSettings settings;
             fImpl->tabWidget->setCurrentIndex( settings.value( "LastPrefPage", 0 ).toInt() );
@@ -70,7 +76,7 @@ namespace NMediaManager
             QDialog::accept();
         }
 
-        void CPreferences::slotAddString()
+        void CPreferences::slotAddKnownString()
         {
             auto text = QInputDialog::getText( this, tr( "Add Known String" ), tr( "String:" ) );
             if ( text.isEmpty() )
@@ -78,18 +84,18 @@ namespace NMediaManager
             text = text.trimmed();
 
             auto words = text.split( QRegularExpression( "\\s" ), Qt::SkipEmptyParts );
-            auto strings = fStringModel->stringList();
+            auto strings = fKnownStringModel->stringList();
             for ( auto &&ii : words )
             {
                 ii = ii.trimmed();
                 strings.removeAll( ii );
             }
             strings << words;
-            fStringModel->setStringList( strings );
-            fImpl->knownStrings->scrollTo( fStringModel->index( strings.count() - 1, 0 ) );
+            fKnownStringModel->setStringList( strings );
+            fImpl->knownStrings->scrollTo( fKnownStringModel->index( strings.count() - 1, 0 ) );
         }
 
-        void CPreferences::slotDelString()
+        void CPreferences::slotDelKnownString()
         {
             auto model = fImpl->knownStrings->selectionModel();
             if ( !model )
@@ -97,14 +103,51 @@ namespace NMediaManager
             auto selected = model->selectedRows();
             if ( selected.isEmpty() )
                 return;
-            auto strings = fStringModel->stringList();
+            auto strings = fKnownStringModel->stringList();
             for ( auto &&ii : selected )
             {
                 auto text = ii.data().toString();
                 strings.removeAll( text );
             }
-            fStringModel->setStringList( strings );
-            fImpl->knownStrings->scrollTo( fStringModel->index( selected.front().row(), 0 ) );
+            fKnownStringModel->setStringList( strings );
+            fImpl->knownStrings->scrollTo( fKnownStringModel->index( selected.front().row(), 0 ) );
+        }
+
+        void CPreferences::slotAddExtraString()
+        {
+            auto text = QInputDialog::getText(this, tr("Add Known String For Extended Information"), tr("String:"));
+            if (text.isEmpty())
+                return;
+            text = text.trimmed();
+
+            auto words = text.split(QRegularExpression("\\s"), Qt::SkipEmptyParts);
+            auto strings = fExtraStringModel->stringList();
+            for (auto && ii : words)
+            {
+                ii = ii.trimmed();
+                strings.removeAll(ii);
+            }
+            strings << words;
+            fExtraStringModel->setStringList(strings);
+            fImpl->knownExtraStrings->scrollTo(fExtraStringModel->index(strings.count() - 1, 0));
+        }
+
+        void CPreferences::slotDelExtraString()
+        {
+            auto model = fImpl->knownStrings->selectionModel();
+            if (!model)
+                return;
+            auto selected = model->selectedRows();
+            if (selected.isEmpty())
+                return;
+            auto strings = fExtraStringModel->stringList();
+            for (auto && ii : selected)
+            {
+                auto text = ii.data().toString();
+                strings.removeAll(text);
+            }
+            fExtraStringModel->setStringList(strings);
+            fImpl->knownExtraStrings->scrollTo(fKnownStringModel->index(selected.front().row(), 0));
         }
 
         void CPreferences::slotSelectMKVMergeExe()
@@ -136,7 +179,7 @@ namespace NMediaManager
         {
             QSettings settings;
 
-            fStringModel->setStringList( NCore::CPreferences::instance()->getKnownStrings() );
+            fKnownStringModel->setStringList( NCore::CPreferences::instance()->getKnownStrings() );
             fImpl->mediaExtensions->setText( NCore::CPreferences::instance()->getMediaExtensions().join( ";" ) );
             fImpl->subtitleExtensions->setText( NCore::CPreferences::instance()->getSubtitleExtensions().join( ";" ) );
             fImpl->treatAsTVShowByDefault->setChecked( NCore::CPreferences::instance()->getTreatAsTVShowByDefault() );
@@ -153,7 +196,7 @@ namespace NMediaManager
 
         void CPreferences::saveSettings()
         {
-            NCore::CPreferences::instance()->setKnownStrings( fStringModel->stringList() );
+            NCore::CPreferences::instance()->setKnownStrings( fKnownStringModel->stringList() );
             NCore::CPreferences::instance()->setTreatAsTVShowByDefault( fImpl->treatAsTVShowByDefault->isChecked() );
             NCore::CPreferences::instance()->setExactMatchesOnly( fImpl->exactMatchesOnly->isChecked() );
             NCore::CPreferences::instance()->setMediaExtensions( fImpl->mediaExtensions->text() );

@@ -39,8 +39,10 @@ namespace NMediaManager
             ~CPreferences();
 
         public Q_SLOTS:
-            void slotAddString();
-            void slotDelString();
+            void slotAddKnownString();
+            void slotDelKnownString();
+            void slotAddExtraString();
+            void slotDelExtraString();
             void slotSelectMKVMergeExe();
             void slotMKVMergeExeChanged();
 
@@ -49,7 +51,8 @@ namespace NMediaManager
             void loadSettings();
             void saveSettings();
 
-            QStringListModel *fStringModel;
+            QStringListModel * fKnownStringModel;
+            QStringListModel * fExtraStringModel;
             std::unique_ptr< Ui::CPreferences > fImpl;
         };
     }

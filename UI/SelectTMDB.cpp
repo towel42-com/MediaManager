@@ -26,6 +26,7 @@
 #include "Core/SearchResult.h"
 #include "Core/SearchTMDB.h"
 #include "Core/SearchTMDBInfo.h"
+#include "Core/Preferences.h"
 
 #include "SABUtils/ButtonEnabler.h"
 #include "SABUtils/QtUtils.h"
@@ -55,7 +56,6 @@ namespace NMediaManager
             connect( fSearchTMDB, &NCore::CSearchTMDB::sigSearchFinished, this, &CSelectTMDB::slotSearchFinished );
 
             fImpl->resultExtraInfo->setText( searchResult ? searchResult->fExtraInfo : QString() );
-
             fImpl->resultEpisodeTitle->setText( fSearchInfo->episodeTitle() );
 
             fImpl->searchName->setDelay( 1000 );
@@ -72,10 +72,10 @@ namespace NMediaManager
             connect( fImpl->searchForTVShows, &QCheckBox::clicked, this, &CSelectTMDB::slotExactOrForTVShowsChanged );
 
             connect( fImpl->searchName, &CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchTextChanged );
-            connect( fImpl->searchSeason, &CDelaySpinBox::sigValueChangedAfterDelay, this, &CSelectTMDB::slotSearchTextChanged );
-            connect( fImpl->searchEpisode, &CDelaySpinBox::sigValueChangedAfterDelay, this, &CSelectTMDB::slotSearchTextChanged );
-            connect( fImpl->searchReleaseYear, &CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchTextChanged );
-            connect( fImpl->searchTMDBID, &CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchTextChanged );
+            connect( fImpl->searchSeason, &CDelaySpinBox::sigValueChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
+            connect( fImpl->searchEpisode, &CDelaySpinBox::sigValueChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
+            connect( fImpl->searchReleaseYear, &CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
+            connect( fImpl->searchTMDBID, &CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
             connect( fImpl->results->selectionModel(), &QItemSelectionModel::selectionChanged, this, &CSelectTMDB::slotItemChanged );
             connect( fImpl->results, &QTreeWidget::itemDoubleClicked, this, &CSelectTMDB::slotAcceptItem );
 
@@ -84,7 +84,7 @@ namespace NMediaManager
             updateByName( true );
             updateEnabled();
 
-            QTimer::singleShot( 0, this, &CSelectTMDB::slotSearchTextChanged );
+            QTimer::singleShot( 0, this, &CSelectTMDB::slotSearchCriteriaChanged );
         }
 
         void CSelectTMDB::updateFromSearchInfo( std::shared_ptr< NCore::SSearchTMDBInfo > searchInfo )
@@ -93,13 +93,15 @@ namespace NMediaManager
             disconnect( fImpl->exactMatchesOnly, &QCheckBox::clicked, this, &CSelectTMDB::slotExactOrForTVShowsChanged );
             disconnect( fImpl->searchForTVShows, &QCheckBox::clicked, this, &CSelectTMDB::slotExactOrForTVShowsChanged );
 
-            disconnect( fImpl->searchName, &CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchTextChanged );
-            disconnect( fImpl->searchSeason, &CDelaySpinBox::sigValueChangedAfterDelay, this, &CSelectTMDB::slotSearchTextChanged );
-            disconnect( fImpl->searchEpisode, &CDelaySpinBox::sigValueChangedAfterDelay, this, &CSelectTMDB::slotSearchTextChanged );
-            disconnect( fImpl->searchReleaseYear, &CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchTextChanged );
-            disconnect( fImpl->searchTMDBID, &CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchTextChanged );
+            disconnect( fImpl->searchName, &CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchTextChanged);
+            disconnect( fImpl->searchSeason, &CDelaySpinBox::sigValueChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
+            disconnect( fImpl->searchEpisode, &CDelaySpinBox::sigValueChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
+            disconnect( fImpl->searchReleaseYear, &CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
+            disconnect( fImpl->searchTMDBID, &CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
 
-            fImpl->searchName->setText( searchInfo->searchName() );
+            fImpl->resultExtraInfo->setText(searchInfo->getExtendedInfo());
+
+            fImpl->searchName->setText( fPrevSearchName = searchInfo->searchName() );
             fImpl->searchSeason->setValue( searchInfo->season() );
             fImpl->searchEpisode->setValue( searchInfo->episode() );
             fImpl->searchReleaseYear->setText( searchInfo->releaseDateString() );
@@ -110,15 +112,15 @@ namespace NMediaManager
             fImpl->searchForTVShows->setChecked( searchInfo->isTVShow() );
             updateEnabled();
 
-            connect( fImpl->byName, &QRadioButton::toggled, this, &CSelectTMDB::slotByNameChanged );
+            connect( fImpl->byName, &QRadioButton::toggled, this, &CSelectTMDB::slotExactOrForTVShowsChanged);
             connect( fImpl->exactMatchesOnly, &QCheckBox::clicked, this, &CSelectTMDB::slotExactOrForTVShowsChanged );
             connect( fImpl->searchForTVShows, &QCheckBox::clicked, this, &CSelectTMDB::slotExactOrForTVShowsChanged );
 
-            connect( fImpl->searchName, &CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchTextChanged );
-            connect( fImpl->searchSeason, &CDelaySpinBox::sigValueChangedAfterDelay, this, &CSelectTMDB::slotSearchTextChanged );
-            connect( fImpl->searchEpisode, &CDelaySpinBox::sigValueChangedAfterDelay, this, &CSelectTMDB::slotSearchTextChanged );
-            connect( fImpl->searchReleaseYear, &CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchTextChanged );
-            connect( fImpl->searchTMDBID, &CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchTextChanged );
+            connect( fImpl->searchName, &CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchTextChanged);
+            connect( fImpl->searchSeason, &CDelaySpinBox::sigValueChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
+            connect( fImpl->searchEpisode, &CDelaySpinBox::sigValueChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
+            connect( fImpl->searchReleaseYear, &CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
+            connect( fImpl->searchTMDBID, &CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
         }
 
         void CSelectTMDB::slotReset()
@@ -215,7 +217,7 @@ namespace NMediaManager
                 {
                     fSearchInfo = fQueuedSearchInfo;
                     fQueuedSearchInfo.reset();
-                    QTimer::singleShot( 500, this, &CSelectTMDB::slotSearchTextChanged );
+                    QTimer::singleShot( 500, this, &CSelectTMDB::slotSearchCriteriaChanged );
                 }
 
                 auto childNode = getSingleMatchingItem( nullptr );
@@ -447,7 +449,7 @@ namespace NMediaManager
             fImpl->searchEpisode->setEnabled( fImpl->searchForTVShows->isChecked() && !fImpl->byTMDBID->isChecked() );
             fImpl->searchTMDBID->setEnabled( true );
             if ( !init )
-                slotSearchTextChanged();
+                slotSearchCriteriaChanged();
         }
 
         void CSelectTMDB::slotExactOrForTVShowsChanged()
@@ -457,7 +459,7 @@ namespace NMediaManager
             searchInfo->setExactMatchOnly( fImpl->exactMatchesOnly->isChecked() );
             searchInfo->setIsTVShow( fImpl->searchForTVShows->isChecked() );
             updateEnabled();
-            slotSearchTextChanged();
+            slotSearchCriteriaChanged();
         }
 
 
@@ -472,9 +474,28 @@ namespace NMediaManager
 
         void CSelectTMDB::slotSearchTextChanged()
         {
+            if (fPrevSearchName.startsWith( fImpl->searchName->text() ) )
+            {
+                auto tmp = fPrevSearchName.mid(fImpl->searchName->text().length()).split(QRegularExpression("\\W"));
+                auto origWords = tmp;
+                for( auto && curr : tmp )
+                {
+                    curr = QString("<li>%1</li>").arg(curr);
+                }
+                auto msg = tr("Words you removed: <ul>%1</ul>").arg(tmp.join(""));
+                if ( QMessageBox::question( this, tr( "Would you like to add these words to the known words list?" ), msg, QMessageBox::StandardButton::Yes, QMessageBox::StandardButton::No ) == QMessageBox::StandardButton::Yes )
+                {
+                    NCore::CPreferences::instance()->addKnownStrings(origWords);
+                }
+            }
+            fPrevSearchName = fImpl->searchName->text();
+            slotSearchCriteriaChanged();
+        }
+        void CSelectTMDB::slotSearchCriteriaChanged()
+        {
             if ( fSearchTMDB->isActive() )
             {
-                QTimer::singleShot( 500, this, &CSelectTMDB::slotSearchTextChanged );
+                QTimer::singleShot( 500, this, &CSelectTMDB::slotSearchCriteriaChanged );
                 return;
             }
 
@@ -486,11 +507,11 @@ namespace NMediaManager
                 connect( fImpl->byName, &QRadioButton::toggled, this, &CSelectTMDB::slotByNameChanged );
             }
 
-            searchInfo->setSearchName( fImpl->searchName->text() );
-            searchInfo->setReleaseDate( fImpl->searchReleaseYear->text() );
+            searchInfo->setSearchName( fImpl->searchName->text().trimmed() );
+            searchInfo->setReleaseDate( fImpl->searchReleaseYear->text().trimmed());
             searchInfo->setSeason( fImpl->searchSeason->value() );
             searchInfo->setEpisode( fImpl->searchEpisode->value() );
-            searchInfo->setTMDBID( fImpl->searchTMDBID->text() );
+            searchInfo->setTMDBID( fImpl->searchTMDBID->text().trimmed());
             searchInfo->setIsTVShow( fImpl->searchForTVShows->isChecked() );
             searchInfo->setExactMatchOnly( fImpl->exactMatchesOnly->isChecked() );
             searchInfo->setSearchByName( fImpl->byName->isChecked() );
