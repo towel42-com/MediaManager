@@ -47,9 +47,17 @@ namespace NMediaManager
             auto knownStrings = CPreferences::instance()->getKnownStrings();
             for ( auto &&knownString : knownStrings )
             {
-                auto regExpStr = "\\W(?<word>" + QRegularExpression::escape(knownString) + ")(\\W|$)";
-                auto regExp = QRegularExpression(regExpStr, QRegularExpression::CaseInsensitiveOption);
+                auto regExpStr1 = "\\W(?<word>[\\[\\(]" + QRegularExpression::escape(knownString) + "[\\]\\)])(\\W|$)";
+                auto regExpStr2 = "\\W(?<word>" + QRegularExpression::escape(knownString) + ")(\\W|$)";
+
+                auto regExp = QRegularExpression(regExpStr1, QRegularExpression::CaseInsensitiveOption);
                 auto match = regExp.match(retVal);
+                if (match.hasMatch())
+                {
+                    retVal.remove(match.capturedStart("word"), match.capturedLength("word"));
+                }
+                regExp = QRegularExpression(regExpStr2, QRegularExpression::CaseInsensitiveOption);
+                match = regExp.match(retVal);
                 if (match.hasMatch())
                 {
                     retVal.remove(match.capturedStart("word"), match.capturedLength("word"));
