@@ -32,6 +32,7 @@
 #include "SABUtils/QtUtils.h"
 #include "SABUtils/AutoWaitCursor.h"
 #include "SABUtils/FileUtils.h"
+#include "SABUtils/FileCompare.h"
 
 #include <QDebug>
 #include <QUrl>
@@ -1299,136 +1300,191 @@ namespace NMediaManager
 
             if ( oldName != newName )
             {
-                myItem = new QStandardItem( QString( "'%1' => '%2'" ).arg( getDispName( oldName ) ).arg( getDispName( newName ) ) );
+                QFileInfo oldFileInfo(oldName);
+                QFileInfo newFileInfo(newName);
 
-                myItem->setData( oldName, Qt::UserRole + 1 );
-                myItem->setData( newName, Qt::UserRole + 2 );
-                if ( parentItem )
-                    parentItem->appendRow( myItem );
+                myItem = new QStandardItem(QString("'%1' => '%2'").arg(getDispName(oldName)).arg(getDispName(newName)));
+
+                myItem->setData(oldName, Qt::UserRole + 1);
+                myItem->setData(newName, Qt::UserRole + 2);
+                if (parentItem)
+                    parentItem->appendRow(myItem);
                 else
-                    resultModel->appendRow( myItem );
+                    resultModel->appendRow(myItem);
 
-                if ( !displayOnly )
+                if (!displayOnly)
                 {
                     bool removeIt = newName == "<DELETE THIS>";
-                    if ( fProgressDlg )
+                    if (fProgressDlg)
                     {
-                        if ( removeIt )
-                            fProgressDlg->setLabelText( tr( "Removing '%1'" ).arg( getDispName( oldName ) ) );
+                        if (removeIt)
+                            fProgressDlg->setLabelText(tr("Removing '%1'").arg(getDispName(oldName)));
                         else
-                            fProgressDlg->setLabelText( tr( "Renaming '%1' => '%2'" ).arg( getDispName( oldName ) ).arg( getDispName( newName ) ) );
+                            fProgressDlg->setLabelText(tr("Renaming '%1' => '%2'").arg(getDispName(oldName)).arg(getDispName(newName)));
                     }
-                    QFileInfo fi( oldName );
-                    if ( !checkProcessItemExists( oldName, myItem, removeIt ) )
+
+                    bool dirAlreadyExisted = (oldFileInfo.exists() && oldFileInfo.isDir() && newFileInfo.exists() && newFileInfo.isDir());
+                    if ( dirAlreadyExisted )
                     {
-                    }
-                    else if ( fi.exists() && removeIt )
-                    {
-                        auto fi = QDir( oldName );
-                            aOK = fi.removeRecursively();
-                            if ( !aOK )
+                        // new directory already exists, do move everything from old to new
+                        auto it = QDirIterator(oldName, QDir::NoDotAndDotDot | QDir::AllEntries, QDirIterator::Subdirectories);
+                        bool allDeletedOK = true;
+                        while (it.hasNext())
+                        {
+                            it.next();
+                            auto fi = it.fileInfo();
+                            auto oldPath = fi.absoluteFilePath();
+                            auto relPath = QDir(oldFileInfo.absoluteFilePath()).relativeFilePath(oldPath);
+                            auto newPath = QDir(newFileInfo.absoluteFilePath()).absoluteFilePath(relPath);
+                            if (!QFile::rename(oldPath, newPath))
                             {
-                                auto errorItem = new QStandardItem( QString( "ERROR: Failed to Remove '%1'" ).arg( oldName ) );
-                                    myItem->appendRow( errorItem );
+                                auto errorItem = new QStandardItem(QString("ERROR: %1: FAILED TO MOVE ITEM TO %2").arg(oldPath).arg(newPath));
+                                myItem->appendRow(errorItem);
+
+                                QIcon icon;
+                                icon.addFile(QString::fromUtf8(":/resources/error.png"), QSize(), QIcon::Normal, QIcon::Off);
+                                errorItem->setIcon(icon);
+                                allDeletedOK = false;
                             }
+                        }
+                        if (allDeletedOK)
+                        {
+                            auto dir = QDir(oldName);
+                            aOK = dir.removeRecursively();
+                            if (!aOK)
+                            {
+                                auto errorItem = new QStandardItem(QString("ERROR: Failed to Remove '%1'").arg(oldName));
+                                myItem->appendRow(errorItem);
+                            }
+                        }
+                        fProgressDlg->setValue(fProgressDlg->value() + 4);
                     }
                     else
                     {
-                        auto timeStamps = NFileUtils::timeStamps( oldName );
-                        if ( fProgressDlg )
+                        if (!checkProcessItemExists(oldName, myItem, removeIt))
                         {
-                            fProgressDlg->setValue( fProgressDlg->value() + 1 );
-                            qApp->processEvents();
                         }
-
-                        auto transFormItem = getTransformItem( item );
-                        bool parentPathOK = true;
-                        if ( transFormItem )
+                        else if (oldFileInfo.exists() && removeIt)
                         {
-                            auto mySubPath = transFormItem->text();
-                            if ( ( mySubPath.indexOf( "/" ) != -1 ) || ( mySubPath.indexOf( "\\" ) != -1 ) )
+                            auto dir = QDir(oldName);
+                            aOK = dir.removeRecursively();
+                            if (!aOK)
                             {
-                                auto pos = mySubPath.lastIndexOf( QRegularExpression( "[\\/\\\\]" ) );
-                                auto myParentPath = mySubPath.left( pos );
+                                auto errorItem = new QStandardItem(QString("ERROR: Failed to Remove '%1'").arg(oldName));
+                                myItem->appendRow(errorItem);
+                            }
+                        }
+                        else
+                        {
+                            auto timeStamps = NFileUtils::timeStamps(oldName);
+                            if (fProgressDlg)
+                            {
+                                fProgressDlg->setValue(fProgressDlg->value() + 1);
+                                qApp->processEvents();
+                            }
 
-                                auto parentPath = computeTransformPath( item->parent(), false );
-                                parentPathOK = QDir( parentPath ).mkpath( myParentPath );
-                                if ( !parentPathOK )
+                            auto transFormItem = getTransformItem(item);
+                            bool parentPathOK = true;
+                            if (transFormItem)
+                            {
+                                auto mySubPath = transFormItem->text();
+                                if ((mySubPath.indexOf("/") != -1) || (mySubPath.indexOf("\\") != -1))
                                 {
-                                    auto errorItem = new QStandardItem( QString( "ERROR: '%1' => '%2' : FAILED TO MAKE PARENT DIRECTORY PATH" ).arg( oldName ).arg( newName ) );
-                                    myItem->appendRow( errorItem );
+                                    auto pos = mySubPath.lastIndexOf(QRegularExpression("[\\/\\\\]"));
+                                    auto myParentPath = mySubPath.left(pos);
 
-                                    QIcon icon;
-                                    icon.addFile( QString::fromUtf8( ":/resources/error.png" ), QSize(), QIcon::Normal, QIcon::Off );
-                                    errorItem->setIcon( icon );
+                                    auto parentPath = computeTransformPath(item->parent(), false);
+                                    parentPathOK = QDir(parentPath).mkpath(myParentPath);
+                                    if (!parentPathOK)
+                                    {
+                                        auto errorItem = new QStandardItem(QString("ERROR: '%1' => '%2' : FAILED TO MAKE PARENT DIRECTORY PATH").arg(oldName).arg(newName));
+                                        myItem->appendRow(errorItem);
+
+                                        QIcon icon;
+                                        icon.addFile(QString::fromUtf8(":/resources/error.png"), QSize(), QIcon::Normal, QIcon::Off);
+                                        errorItem->setIcon(icon);
+                                    }
                                 }
                             }
-                        }
-                        if ( fProgressDlg )
-                        {
-                            fProgressDlg->setValue( fProgressDlg->value() + 1 );
-                            qApp->processEvents();
-                        }
-
-                        QString errorMsg;
-                        if ( parentPathOK )
-                        {
-                            if ( QFileInfo( newName ).exists() )
+                            if (fProgressDlg)
                             {
-                                aOK = QFile( oldName ).remove();
-                                if ( !aOK )
-                                    errorMsg = QString( "Destination file Exists - Old Size: %1 New Size: %2" ).arg( NFileUtils::fileSizeString( oldName, false ) ).arg( NFileUtils::fileSizeString( newName, false ) );
+                                fProgressDlg->setValue(fProgressDlg->value() + 1);
+                                qApp->processEvents();
+                            }
+
+                            QString errorMsg;
+                            if (parentPathOK)
+                            {
+                                if (newFileInfo.exists())
+                                {
+                                    if (newFileInfo.isFile() && oldFileInfo.isFile())
+                                    {
+                                        if (NFileUtils::CFileCompare(oldFileInfo, newFileInfo).compare() )
+                                        {
+                                            aOK = QFile(oldName).remove();
+                                            if (!aOK)
+                                                errorMsg = QString("Destination file '%1' exists and is identical to the new '%2' file, but the old file can not be deleted").arg(oldName).arg(newName);
+                                        }
+                                        else
+                                        {
+                                            aOK = false;
+                                            errorMsg = QString("Destination file Exists - Old Size: %1 New Size: %2").arg(NFileUtils::fileSizeString(oldName, false)).arg(NFileUtils::fileSizeString(newName, false));
+                                        }
+                                    }
+                                    else
+                                        aOK = true;
+                                }
+                                else
+                                {
+                                    auto fi = QFile(oldName);
+                                    aOK = fi.rename(newName);
+                                    if (!aOK)
+                                        errorMsg = fi.errorString();
+                                }
                             }
                             else
+                                aOK = false;
+                            if (fProgressDlg)
                             {
-                                auto fi = QFile( oldName );
-                                aOK = fi.rename( newName );
-                                if ( !aOK )
-                                    errorMsg = fi.errorString();
+                                fProgressDlg->setValue(fProgressDlg->value() + 1);
+                                qApp->processEvents();
                             }
-                        }
-                        else
-                            aOK = false;
-                        if ( fProgressDlg )
-                        {
-                            fProgressDlg->setValue( fProgressDlg->value() + 1 );
-                            qApp->processEvents();
-                        }
 
-                        if ( parentPathOK && !aOK )
-                        {
-                            auto errorItem = new QStandardItem( QString( "ERROR: '%1' => '%2' : FAILED TO RENAME - %3" ).arg( oldName ).arg( newName ).arg( errorMsg ) );
-                            myItem->appendRow( errorItem );
-
-                            QIcon icon;
-                            icon.addFile( QString::fromUtf8( ":/resources/error.png" ), QSize(), QIcon::Normal, QIcon::Off );
-                            errorItem->setIcon( icon );
-                        }
-                        else if ( parentPathOK )
-                        {
-                            QString msg;
-                            auto aOK = NFileUtils::setTimeStamps( newName, timeStamps );
-                            if ( !aOK )
+                            if (parentPathOK && !aOK)
                             {
-                                auto errorItem = new QStandardItem( QString( "ERROR: %1: FAILED TO MODIFY TIMESTAMP: %2" ).arg( newName ).arg( msg ) );
-                                myItem->appendRow( errorItem );
+                                auto errorItem = new QStandardItem(QString("ERROR: '%1' => '%2' : FAILED TO RENAME - %3").arg(oldName).arg(newName).arg(errorMsg));
+                                myItem->appendRow(errorItem);
 
                                 QIcon icon;
-                                icon.addFile( QString::fromUtf8( ":/resources/error.png" ), QSize(), QIcon::Normal, QIcon::Off );
-                                errorItem->setIcon( icon );
+                                icon.addFile(QString::fromUtf8(":/resources/error.png"), QSize(), QIcon::Normal, QIcon::Off);
+                                errorItem->setIcon(icon);
                             }
-                        }
-                        else
-                            aOK = parentPathOK;
+                            else if (parentPathOK && !dirAlreadyExisted)
+                            {
+                                QString msg;
+                                auto aOK = NFileUtils::setTimeStamps(newName, timeStamps);
+                                if (!aOK)
+                                {
+                                    auto errorItem = new QStandardItem(QString("ERROR: %1: FAILED TO MODIFY TIMESTAMP: %2").arg(newName).arg(msg));
+                                    myItem->appendRow(errorItem);
 
-                        QIcon icon;
-                        icon.addFile( aOK ? QString::fromUtf8( ":/resources/ok.png" ) : QString::fromUtf8( ":/resources/error.png" ), QSize(), QIcon::Normal, QIcon::Off );
-                        myItem->setIcon( icon );
-                        if ( fProgressDlg )
-                        {
-                            fProgressDlg->setValue( fProgressDlg->value() + 1 );
-                            qApp->processEvents();
+                                    QIcon icon;
+                                    icon.addFile(QString::fromUtf8(":/resources/error.png"), QSize(), QIcon::Normal, QIcon::Off);
+                                    errorItem->setIcon(icon);
+                                }
+                            }
+                            else
+                                aOK = parentPathOK;
                         }
+                    }
+                    
+                    QIcon icon;
+                    icon.addFile(aOK ? QString::fromUtf8(":/resources/ok.png") : QString::fromUtf8(":/resources/error.png"), QSize(), QIcon::Normal, QIcon::Off);
+                    myItem->setIcon(icon);
+                    if (fProgressDlg)
+                    {
+                        fProgressDlg->setValue(fProgressDlg->value() + 1);
+                        qApp->processEvents();
                     }
                 }
             }
