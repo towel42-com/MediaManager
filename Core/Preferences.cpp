@@ -329,12 +329,14 @@ namespace NMediaManager
         void CPreferences::setMKVMergeEXE( const QString &value )
         {
             QSettings settings;
+            settings.beginGroup("MKVToolNix");
             settings.setValue( "MKVMergeEXE", value );
         }
 
         QString CPreferences::getMKVMergeEXE() const
         {
             QSettings settings;
+            settings.beginGroup("MKVToolNix");
             auto retVal = settings.value( "MKVMergeEXE", QString( "C:/Program Files/MKVToolNix/mkvmerge.exe" ) ).toString();
 
             auto fi = QFileInfo( retVal );
@@ -342,6 +344,24 @@ namespace NMediaManager
             return aOK ? retVal : QString();
         }
  
+        void CPreferences::setMKVPropEditEXE(const QString & value)
+        {
+            QSettings settings;
+            settings.beginGroup("MKVToolNix");
+            settings.setValue("MKVPropEditEXE", value);
+        }
+
+        QString CPreferences::getMKVPropEditEXE() const
+        {
+            QSettings settings;
+            settings.beginGroup("MKVToolNix");
+            auto retVal = settings.value("MKVPropEditEXE", QString("C:/Program Files/MKVToolNix/mkvpropedit.exe")).toString();
+
+            auto fi = QFileInfo(retVal);
+            bool aOK = !retVal.isEmpty() && fi.isExecutable();
+            return aOK ? retVal : QString();
+        }
+
         void CPreferences::setBIFPlayerSpeedMultiplier( int interval )
         {
             QSettings settings;

@@ -81,6 +81,9 @@ namespace NMediaManager
             void setMKVMergeEXE( const QString &value );
             QString getMKVMergeEXE() const;
 
+            void setMKVPropEditEXE(const QString & value);
+            QString getMKVPropEditEXE() const;
+
             bool isMediaFile( const QFileInfo &fi ) const;
             bool isSubtitleFile( const QFileInfo &info, bool *isLangFileFormat = nullptr ) const;
 

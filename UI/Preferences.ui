@@ -27,7 +27,7 @@
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>3</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
@@ -300,38 +300,62 @@
       </attribute>
       <layout class="QGridLayout" name="gridLayout_6">
        <item row="0" column="0">
-        <layout class="QHBoxLayout" name="horizontalLayout_2">
-         <item>
-          <widget class="QLabel" name="label">
-           <property name="text">
-            <string>MKVMerge Executable:</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="CDelayLineEdit" name="mkvMergeExe">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QToolButton" name="btnSelectMKVMergeExe">
-           <property name="text">
-            <string>...</string>
-           </property>
-           <property name="icon">
-            <iconset resource="application.qrc">
-             <normaloff>:/resources/open.png</normaloff>:/resources/open.png</iconset>
-           </property>
-          </widget>
-         </item>
-        </layout>
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>MKVMerge Executable:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="CDelayLineEdit" name="mkvMergeExe">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QToolButton" name="btnSelectMKVMergeExe">
+         <property name="text">
+          <string>...</string>
+         </property>
+         <property name="icon">
+          <iconset resource="application.qrc">
+           <normaloff>:/resources/open.png</normaloff>:/resources/open.png</iconset>
+         </property>
+        </widget>
        </item>
        <item row="1" column="0">
+        <widget class="QLabel" name="label_8">
+         <property name="text">
+          <string>MKVPropEdit Executable:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="CDelayLineEdit" name="mkvPropEditExe">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QToolButton" name="btnSelectMKVPropEditExe">
+         <property name="text">
+          <string>...</string>
+         </property>
+         <property name="icon">
+          <iconset resource="application.qrc">
+           <normaloff>:/resources/open.png</normaloff>:/resources/open.png</iconset>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
         <spacer name="verticalSpacer_4">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
