@@ -24,21 +24,13 @@
 #define _MERGESRTPAGE_H
 
 #include <QWidget>
-//#include <optional>
 class QProgressDialog;
-//namespace NBIF
-//{
-//    enum class EButtonsLayout;
-//}
 
 namespace NMediaManager
 {
     namespace NCore
     {
-//        struct SSearchTMDBInfo;
-//        struct SSearchResult;
         class CDirModel;
-//        class CSearchTMDB;
     }
 }
 
@@ -62,36 +54,12 @@ namespace NMediaManager
 
             void setSetupProgressDlgFunc( std::function< QProgressDialog *( const QString &title, const QString &cancelButtonText, int max ) > setupFunc, std::function< void() > clearFunc );
         public Q_SLOTS:
-            //void slotOpen();
-            //void slotDirectoryChanged();
-
-            //void slotDirectoryChangedImmediate();
-            //void slotLoad();
-            //void slotRun();
-            //void slotTreatAsTVShowByDefault();
-            //void slotExactMatchesOnly();
-            //void slotMergeSRTDirectoryLoaded();
-            //void slotPreferences();
-            //void slotWindowChanged();
-            //void slotFileChanged();
-            //void slotFileFinishedEditing();
-
             void slotLoadFinished( bool canceled );
 
         Q_SIGNALS:
             void sigLoading();
             void sigLoadFinished( bool canceled );
         private:
-            //void validateLoadAction();
-            //void validateRunAction();
-
-            //void fileNameChanged( bool andExecute );
-
-            //bool canRun() const;
-            //bool isTransformActive() const;
-            //bool isMergeSRTActive() const;
-            //bool isBIFViewerActive() const;
-
             void setupProgressDlg( const QString &title, const QString &cancelButtonText, int max );
             void clearProgressDlg();
 
@@ -105,8 +73,6 @@ namespace NMediaManager
             QString fDirName;
             std::unique_ptr< NCore::CDirModel > fModel;
             std::unique_ptr< Ui::CMergeSRTPage > fImpl;
-            //QProgressDialog *fProgressDlg{ nullptr };
-            //uint64_t fSearchesCompleted{ 0 };
         };
     }
 }
