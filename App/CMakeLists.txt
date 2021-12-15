@@ -62,24 +62,16 @@ SET( _BIF_SL_FILES
 	"$<TARGET_FILE:bif>"
 	"$<TARGET_FILE_DIR:bif>/$<TARGET_FILE_BASE_NAME:bif>.pdb"
 	)
+
+find_package(InstallFile REQUIRED)    
 foreach( curr ${_BIF_SL_FILES} )
-	SET( _COPY_CMD 
-		"${CMAKE_COMMAND}" -E
-		copy_if_different 
-		${curr}
-		"$<TARGET_FILE_DIR:MediaManager>/imageformats"
-		)
 
-	SET( _ECHO_CMD 
-		"${CMAKE_COMMAND}" -E
-		echo
-		"ADDING BIF Image Format Shared Library File '${curr}"
-		)
-
-	add_custom_command( TARGET MediaManager POST_BUILD 
-		COMMAND "$<$<CONFIG:Debug,RelWithDebInfo>:${_COPY_CMD}>"
-		COMMAND "$<$<CONFIG:Debug,RelWithDebInfo>:${_ECHO_CMD}>"
-		COMMAND_EXPAND_LISTS
-		)
+    if ( curr MATCHES ".*\.pdb" )
+        SET( _CONFIGS
+            Debug
+            RelWithDebInfo
+            )
+    endif()
+    InstallFilePostBuild( TARGET MediaManager INFILE ${curr} OUTFILE "$<TARGET_FILE_DIR:MediaManager>/imageformats" CONFIGURATIONS ${_CONFIGS} )
 endforeach()
 
