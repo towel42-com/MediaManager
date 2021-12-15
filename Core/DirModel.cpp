@@ -1077,13 +1077,15 @@ namespace NMediaManager
                 }
                 else
                 {
-                    auto title = ( *pos ).second->getTitle();
-                    auto year = ( *pos ).second->getYear();
-                    auto tmdbid = ( *pos ).second->fTMDBID;
-                    auto season = ( *pos ).second->fSeason;
-                    auto episode = ( *pos ).second->fEpisode;
-                    auto extraInfo = ( *pos ).second->fExtraInfo;
-                    auto episodeTitle = ( *pos ).second->fEpisodeTitle;
+                    auto searchResult = (*pos).second;
+
+                    auto title = searchResult->getTitle();
+                    auto year = searchResult->getYear();
+                    auto tmdbid = searchResult->fTMDBID;
+                    auto season = searchResult->fSeason;
+                    auto episode = searchResult->fEpisode;
+                    auto extraInfo = searchResult->fExtraInfo;
+                    auto episodeTitle = searchResult->fEpisodeTitle;
 
                     retVal.second = fileInfo.isDir() ? info.fOutDirPattern : info.fOutFilePattern;
                     retVal.second = replaceCapture( "title", retVal.second, title );

@@ -58,6 +58,25 @@ namespace NMediaManager
             return retVal;
         }
 
+        QString SSearchTMDBInfo::stripKnownExtendedData(const QString & string, QString & extendedData )
+        {
+            QString retVal = string;
+            auto knownStrings = CPreferences::instance()->getKnownExtendedStrings();
+            for (auto && knownString : knownStrings)
+            {
+                auto regExpStr = "\\W(?<word>" + QRegularExpression::escape(knownString) + ")(\\W|$)";
+                auto regExp = QRegularExpression(regExpStr, QRegularExpression::CaseInsensitiveOption);
+                auto match = regExp.match(retVal);
+                if (match.hasMatch())
+                {
+                    retVal.remove(match.capturedStart("word"), match.capturedLength("word"));
+                    extendedData = NStringUtils::transformTitle( match.captured("word"),true );
+                    break;
+                }
+            }
+            return retVal;
+        }
+
         QString SSearchTMDBInfo::smartTrim( const QString &string, bool stripInnerPeriods )
         {
             auto retVal = string;
@@ -172,9 +191,13 @@ namespace NMediaManager
         void SSearchTMDBInfo::updateSearchCriteria( bool updateSearchBy )
         {
             fSearchName = smartTrim( stripKnownData( fInitSearchString ) );
+
+            QString extendedInfo;
+            fSearchName = smartTrim(stripKnownExtendedData(fSearchName, extendedInfo));
+            this->fFoundExtendedInfo = extendedInfo;
+
             QString seasonStr;
             QString episodeStr;
-
                             //(?<fulltext>[\.\(]  (?<releaseDate>((\\d{2}){1,2}))(?:[\.\)]?|$))
             auto regExpStr = "(?<fulltext>[\\.\\(](?<releaseDate>((\\d{2}){1,2}))(?:[\\.\\)]?|$))";
             auto regExp = QRegularExpression( regExpStr );

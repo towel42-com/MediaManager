@@ -71,8 +71,12 @@ namespace NMediaManager
             void setSubtitleExtensions( const QStringList &value );
             QStringList getSubtitleExtensions() const;
 
+            void addKnownStrings(const QStringList & value);
             void setKnownStrings( const QStringList &value );
             QStringList getKnownStrings() const;
+
+            void setKnownExtendedStrings(const QStringList & value);
+            QStringList getKnownExtendedStrings() const;
 
             void setMKVMergeEXE( const QString &value );
             QString getMKVMergeEXE() const;

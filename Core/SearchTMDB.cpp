@@ -744,6 +744,7 @@ namespace NMediaManager
             searchResult->fReleaseDate = releaseDate;
             searchResult->fTitle = title;
             searchResult->fTMDBID = QString::number( tmdbid );
+            searchResult->fExtraInfo = fSearchInfo->getExtendedInfo();
 
             if ( resultItem.contains( "number_of_seasons" ) )
             {

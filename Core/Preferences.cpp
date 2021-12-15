@@ -241,6 +241,12 @@ namespace NMediaManager
             return settings.value( "SubtitleExtensions", QString( "*.idx;*.sub;*.srt" ) ).toString().split( ";" );
         }
 
+        void CPreferences::addKnownStrings(const QStringList & value)
+        {
+            auto knownWords = getKnownStrings() << value;
+            setKnownStrings(knownWords);
+        }
+
         void CPreferences::setKnownStrings( const QStringList &value )
         {
             QSettings settings;
@@ -296,6 +302,28 @@ namespace NMediaManager
             QSettings settings;
             settings.beginGroup("Transform");
             return settings.value( "KnownStrings", knownStrings ).toStringList();
+        }
+
+        void CPreferences::setKnownExtendedStrings(const QStringList & value)
+        {
+            QSettings settings;
+            settings.beginGroup("Transform");
+            settings.setValue("KnownExtendedStrings", value);
+        }
+
+        QStringList CPreferences::getKnownExtendedStrings() const
+        {
+            auto knownStrings =
+                QStringList()
+                << "Extended"
+                << "Directors Cut"
+                << "Director's Cut"
+                << "Director"
+                ;
+
+            QSettings settings;
+            settings.beginGroup("Transform");
+            return settings.value("KnownExtendedStrings", knownStrings).toStringList();
         }
 
         void CPreferences::setMKVMergeEXE( const QString &value )

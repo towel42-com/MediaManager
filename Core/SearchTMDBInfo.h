@@ -80,6 +80,7 @@ namespace NMediaManager
             int episode() const { return fEpisode; }
             void setEpisode( int value ) { fEpisode = value; }
 
+            QString getExtendedInfo() const { return fFoundExtendedInfo; }
             QString toString() const;
 
             bool isMatch( std::shared_ptr< SSearchResult > searchResult ) const;
@@ -115,6 +116,8 @@ namespace NMediaManager
             bool isMatchingTMDBID( const QString &tmdbd ) const;
             bool isMatchingName( const QString &name ) const;
 
+
+            static QString stripKnownExtendedData(const QString & string, QString & extended );
             static QString stripKnownData( const QString &string );
             static QString smartTrim( const QString &string, bool stripInnerPeriods = false );
             static QStringList stripOutPositions( const QString &inString, const std::list< std::pair< int, int > > &positions );
@@ -131,6 +134,8 @@ namespace NMediaManager
             // not search criteria
             QString fEpisodeTitle;
             QString fDescription;
+
+            QString fFoundExtendedInfo;
 
             QString fInitSearchString;
             std::shared_ptr< SSearchResult > fSearchResultInfo;
