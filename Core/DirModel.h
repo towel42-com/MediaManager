@@ -176,7 +176,7 @@ namespace NMediaManager
 
             bool canAutoSearch( const QModelIndex &index ) const;
             bool canAutoSearch( const QFileInfo &info ) const;
-            int eventsPerPath() const { return 4; }// 4 events, get timestamp, create parent paths, rename, settimestamp}
+            int eventsPerPath() const { return 5; }// 4 events, get timestamp, create parent paths, rename, setting tag info, settimestamp}
 
             static bool isAutoSetText( const QString &text );
 
@@ -192,7 +192,8 @@ namespace NMediaManager
             void slotPatternChanged();
             void slotTreatAsTVByDefaultChanged( bool treatAsTVShowByDefault );
         private:
-            QList< QFileInfo > getSRTFilesForMKV( const QFileInfo &fi ) const;
+            bool SetMKVTags(const QString & fileName, std::shared_ptr< SSearchResult > & searchResults, QString & msg) const;
+            QList< QFileInfo > getSRTFilesForMKV(const QFileInfo & fi) const;
 
             void autoDetermineLanguageAttributes( QStandardItem *parent );
             

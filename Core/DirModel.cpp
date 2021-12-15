@@ -45,10 +45,14 @@
 #include <QTimer>
 #include <QTreeView>
 #include <QApplication>
+
 #include <QProgressDialog>
 #include <QDirIterator>
 #include <QPlainTextEdit>
 #include <QMessageBox>
+#include <QTemporaryFile>
+
+#include <QProcess>
 
 #include <set>
 #include <list>
@@ -1461,16 +1465,42 @@ namespace NMediaManager
                             }
                             else if (parentPathOK && !dirAlreadyExisted)
                             {
+                                auto pos = fSearchResultMap.find(oldName);
+                                auto searchInfo = ( pos == fSearchResultMap.end() ) ? std::shared_ptr< SSearchResult >() : (*pos).second;
                                 QString msg;
-                                auto aOK = NFileUtils::setTimeStamps(newName, timeStamps);
-                                if (!aOK)
+                                auto aOK = SetMKVTags(newName, searchInfo, msg );
+                                if (fProgressDlg)
                                 {
-                                    auto errorItem = new QStandardItem(QString("ERROR: %1: FAILED TO MODIFY TIMESTAMP: %2").arg(newName).arg(msg));
+                                    fProgressDlg->setValue(fProgressDlg->value() + 1);
+                                    qApp->processEvents();
+                                }
+
+                                if ( !aOK )
+                                {
+                                    auto errorItem = new QStandardItem(QString("ERROR: %1: FAILED TO MODIFY TAGS: %2").arg(newName).arg(msg));
                                     myItem->appendRow(errorItem);
 
                                     QIcon icon;
                                     icon.addFile(QString::fromUtf8(":/resources/error.png"), QSize(), QIcon::Normal, QIcon::Off);
                                     errorItem->setIcon(icon);
+                                }
+                                else
+                                {
+                                    aOK = NFileUtils::setTimeStamps(newName, timeStamps);
+                                    if (fProgressDlg)
+                                    {
+                                        fProgressDlg->setValue(fProgressDlg->value() + 1);
+                                        qApp->processEvents();
+                                    }
+                                    if (!aOK)
+                                    {
+                                        auto errorItem = new QStandardItem(QString("ERROR: %1: FAILED TO MODIFY TIMESTAMP: %2").arg(newName).arg(msg));
+                                        myItem->appendRow(errorItem);
+
+                                        QIcon icon;
+                                        icon.addFile(QString::fromUtf8(":/resources/error.png"), QSize(), QIcon::Normal, QIcon::Off);
+                                        errorItem->setIcon(icon);
+                                    }
                                 }
                             }
                             else
@@ -1873,6 +1903,74 @@ namespace NMediaManager
                 if (canAutoSearch(fileInfo) && (CDirModel::isAutoSetText(transformInfo.second) || (!isValidName(transformInfo.second, fileInfo.isDir(), isTVShow) && !isValidName(fileInfo))))
                     transformedItem->setBackground(Qt::red);
             }
+        }
+
+        bool CDirModel::SetMKVTags(const QString & fileName, std::shared_ptr< SSearchResult > & searchResults, QString & msg) const
+        {
+            Q_INIT_RESOURCE(core);
+            if (!QFileInfo(fileName).isFile())
+                return true;
+
+            auto mkvpropedit = CPreferences::instance()->getMKVPropEditEXE();
+            if ( !QFileInfo( mkvpropedit ).isExecutable() )
+            {
+                msg = tr("MKV PropEdit not found or is not an executable");
+                return false;
+            }
+            QString year;
+            QString title = QFileInfo(fileName).completeBaseName();
+            if ( searchResults )
+            {
+                year = searchResults->getYear();
+            }
+            auto file = QFile(":/resources/BlankTags.xml");
+            if ( !file.open( QFile::ReadOnly ) )
+            {
+                msg = tr("Internal error, could not open blank tags file");
+                return false;
+            }
+            auto xml = file.readAll();
+            xml.replace( QByteArray( "%TITLE%" ), title.toUtf8());
+            xml.replace( QByteArray( "%YEAR%" ), year.toUtf8());
+
+            auto templateName = QDir(QDir::tempPath()).absoluteFilePath("XXXXXX.xml");
+            QTemporaryFile tmpFile( templateName );
+            auto tmplate = tmpFile.fileTemplate();
+            if ( !tmpFile.open() )
+            {
+                msg = tr("Internal error, could not open blank tags file");
+                return false;
+            }
+
+            tmpFile.write(xml);
+            auto tmpFileName = tmpFile.fileName();
+            tmpFile.close();
+
+            auto args = QStringList()
+                << fileName
+                << "--tags"
+                << QString("global:%1").arg(tmpFileName)
+                << "--edit"
+                << "info"
+                << "--set"
+                << QString("title=%2").arg(title)
+                ;
+            auto retVal = QProcess::execute(mkvpropedit, args);
+
+            if ( retVal == -1 )
+            {
+                msg = "MKV Prop Edit crashed";
+            }
+            else if (retVal == -2)
+            {
+                msg = "MKV Prop Edit could not be started";
+            }
+            else if ( retVal != 0 )
+            {
+                msg = "MKV Prop Edit returned with an unknown error";
+            }
+    
+            return retVal == 0;
         }
     }
 }
