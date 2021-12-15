@@ -47,3 +47,9 @@ set(qtproject_UIS
 )
 
 
+set(qtproject_QRC
+    core.qrc
+)
+
+file(GLOB qtproject_QRC_SOURCES "resources/*")
+

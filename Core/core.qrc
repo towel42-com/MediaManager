@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>resources/BlankTags.xml</file>
+    </qresource>
+</RCC>
