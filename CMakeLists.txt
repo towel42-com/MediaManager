@@ -41,7 +41,7 @@ GetGitInfo(${CMAKE_SOURCE_DIR} GIT_VERSION_INFO)
 
 include( VersionInfo.cmake )
 
-CreateVersion(GIT_VERSION_INFO ${CMAKE_SOURCE_DIR}/SABUtils/Modules/Version.h.in
+CreateVersion(GIT_VERSION_INFO ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/SABUtils/Modules/Version.h.in
 	${MAJOR_VERSION} ${MINOR_VERSION} ${APP_NAME} ${VENDOR} ${HOMEPAGE} ${EMAIL} )
 	
 
