@@ -46,6 +46,7 @@ namespace NMediaManager
 {
     namespace NUi
     {
+        class CCompleterFileSystemModel;
         namespace Ui { class CMainWindow; };
         class CMainWindow : public QMainWindow
         {
@@ -88,6 +89,8 @@ namespace NMediaManager
             void saveSettings();
 
             std::unique_ptr< Ui::CMainWindow > fImpl;
+            CCompleterFileSystemModel * fDirModel{ nullptr };
+            CCompleterFileSystemModel * fFileModel{ nullptr };
             QProgressDialog *fProgressDlg{ nullptr };
         };
     }

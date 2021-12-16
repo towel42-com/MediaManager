@@ -52,11 +52,33 @@
 
 
 #include <QProgressDialog>
+#include "SABUtils/FileUtils.h"
 
 namespace NMediaManager
 {
     namespace NUi
     {
+        class CCompleterFileSystemModel : public QFileSystemModel
+        {
+        public:
+            CCompleterFileSystemModel(QObject * parent = 0) :
+                QFileSystemModel(parent)
+            {
+            }
+
+            QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override
+            {
+                if (role == Qt::DisplayRole && index.column() == 0)
+                {
+                    QString path = filePath(index);
+                    if (path.endsWith("\\") || path.endsWith("/"))
+                        path.chop(1);
+                    return path;
+                }
+                return QFileSystemModel::data(index, role);
+            }
+        };
+
         CMainWindow::CMainWindow( QWidget *parent )
             : QMainWindow( parent ),
             fImpl( new Ui::CMainWindow )
@@ -71,9 +93,9 @@ namespace NMediaManager
                                                }, tr( "Directory '%1' does not Exist or is not a Directory" ) );
 
             auto completer = new QCompleter( this );
-            auto fsModel = new QFileSystemModel( completer );
-            fsModel->setRootPath( "/" );
-            completer->setModel( fsModel );
+            fDirModel = new CCompleterFileSystemModel( completer );
+            fDirModel->setRootPath( "/" );
+            completer->setModel(fDirModel);
             completer->setCompletionMode( QCompleter::PopupCompletion );
             completer->setCaseSensitivity( Qt::CaseInsensitive );
 
@@ -83,9 +105,9 @@ namespace NMediaManager
             connect( fImpl->directory->lineEdit(), &CDelayLineEdit::sigFinishedEditingAfterDelay, this, &CMainWindow::slotLoad );
 
             completer = new QCompleter( this );
-            fsModel = new QFileSystemModel( completer );
-            fsModel->setRootPath( "/" );
-            completer->setModel( fsModel );
+            fFileModel = new CCompleterFileSystemModel( completer );
+            fFileModel->setRootPath( "/" );
+            completer->setModel(fFileModel);
             completer->setCompletionMode( QCompleter::PopupCompletion );
             completer->setCaseSensitivity( Qt::CaseInsensitive );
 
