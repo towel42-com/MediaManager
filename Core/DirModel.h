@@ -300,6 +300,7 @@ namespace NMediaManager
             {
                 SProcessInfo(){}
                 void cleanup( bool aOK );
+                QString getProgressLabel(std::function < QString(const QString &) > dispName );
 
                 QString fCmd;
                 QStringList fArgs;

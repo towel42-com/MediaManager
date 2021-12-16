@@ -1986,6 +1986,8 @@ namespace NMediaManager
 
             if (fProcessQueue.empty())
             {
+                if (fProgressDlg)
+                    fProgressDlg->setValue(fProgressDlg->value() + 1);
                 emit sigProcessesFinished( false );
                 return;
             }
@@ -2003,11 +2005,11 @@ namespace NMediaManager
                 fResults->appendPlainText("Running Command:" + tmp.join(" "));
             }
             if (fProgressDlg)
-                fProgressDlg->setLabelText(tr("Merging MKV '%1' => '%2'").arg(getDispName(curr.fOldName)).arg(getDispName(curr.fNewName)));
+            {
+                fProgressDlg->setLabelText(curr.getProgressLabel([this](const QString & text) { return getDispName(text); }));
+            }
             fProcessFinishedHandled = false;
             fProcess->start(curr.fCmd, curr.fArgs);
-            if ( fProgressDlg )
-                fProgressDlg->setValue(fProgressDlg->value() + 1);
         }
 
         QString errorString( QProcess::ProcessError error )
@@ -2155,5 +2157,20 @@ namespace NMediaManager
             }
         }
 
+        QString CDirModel::SProcessInfo::getProgressLabel(std::function < QString(const QString &) > dispName)
+        {
+            auto dir = QFileInfo(fNewName).absolutePath();
+            auto fname = QFileInfo(fOldName).fileName();
+            auto retVal = QString("Merging MKV %1<ul><li>%2</li>").arg(dispName(dir)).arg( fname ) ;
+            for (auto && ii : fSrtFiles)
+            {
+                auto fname = QFileInfo(ii).fileName();
+                retVal += QString("<li>%1</li>").arg(fname);
+            }
+            retVal += "</ul>";
+            fname = QFileInfo(fNewName).fileName();
+            retVal += QString("to create %1" ).arg(fname);
+            return retVal;
+        }
     }
 }
