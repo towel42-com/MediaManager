@@ -29,6 +29,8 @@
 #include <memory>
 #include <unordered_set>
 #include <optional>
+#include <QProcess>
+#include <QDateTime>
 #include "SABUtils/HashUtils.h"
 
 class QProgressDialog;
@@ -37,6 +39,7 @@ class QMediaPlaylist;
 class QFileIconProvider;
 class QDirIterator;
 class QPlainTextEdit;
+class QProcess;
 namespace NMediaManager
 {
     namespace NCore
@@ -155,7 +158,7 @@ namespace NMediaManager
             QStandardItem *getItemFromindex( QModelIndex idx ) const;
             QStandardItem *getItemFromPath( const QFileInfo &fi ) const;
 
-            bool process( const std::function< QProgressDialog *( int count ) > &startProgress, const std::function< void( QProgressDialog * ) > &endProgress, QWidget *parent ) const;
+            bool process( const std::function< QProgressDialog *( int count ) > &startProgress, const std::function< void( QProgressDialog * ) > &endProgress, QWidget *parent );
             void setSearchResult( const QModelIndex &idx, std::shared_ptr< SSearchResult > info, bool applyToChilren );
             void setSearchResult( QStandardItem *item, std::shared_ptr< SSearchResult > info, bool applyToChilren );
             std::shared_ptr< SSearchResult > getSearchResultInfo( const QModelIndex &idx ) const;
@@ -176,13 +179,14 @@ namespace NMediaManager
 
             bool canAutoSearch( const QModelIndex &index ) const;
             bool canAutoSearch( const QFileInfo &info ) const;
-            int eventsPerPath() const { return 5; }// 4 events, get timestamp, create parent paths, rename, setting tag info, settimestamp}
+            int eventsPerPath() const;// 4 events, get timestamp, create parent paths, rename, setting tag info, settimestamp}
 
             static bool isAutoSetText( const QString &text );
 
             const QFileIconProvider *iconProvider() const { return fIconProvider; }
         Q_SIGNALS:
             void sigDirReloaded( bool canceled );
+            void sigProcessesFinished( bool cancelled );
         public Q_SLOTS:
             void slotTVOutputFilePatternChanged( const QString &outPattern );
             void slotTVOutputDirPatternChanged( const QString &outPattern );
@@ -191,14 +195,24 @@ namespace NMediaManager
             void slotLoadRootDirectory();
             void slotPatternChanged();
             void slotTreatAsTVByDefaultChanged( bool treatAsTVShowByDefault );
+
+            void slotRunNextProcessInQueue();
+            void slotProcessErrorOccured(QProcess::ProcessError error);
+            void slotProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
+            void slotProcessStandardError();
+            void slotProcessStandardOutput();
+            void slotProcessStarted();
+            void slotProcesssStateChanged(QProcess::ProcessState newState);
+            void slotProgressCanceled();
         private:
+            void processFinished(const QString & msg, bool withError );
             bool SetMKVTags(const QString & fileName, std::shared_ptr< SSearchResult > & searchResults, QString & msg) const;
             QList< QFileInfo > getSRTFilesForMKV(const QFileInfo & fi) const;
 
             void autoDetermineLanguageAttributes( QStandardItem *parent );
             
             std::unordered_map< QString, std::vector< QStandardItem * > > getChildSRTFiles( const QStandardItem *item, bool sort ) const; // item should be a MKV file
-            QList< QStandardItem * > getChildMKVFiles( const QStandardItem *item ) const; // item should be a dir file
+            QList< QStandardItem * > getChildMKVFiles( const QStandardItem *item, bool goBelowDirs) const; // item should be a dir file
 
             void appendRow( QStandardItem *parent, QList< QStandardItem * > &items );
 
@@ -258,7 +272,9 @@ namespace NMediaManager
             void setChecked( QStandardItem *item, bool value ) const;
             void setChecked( QStandardItem *item, ECustomRoles role, bool value ) const;
 
-            EModelType fModelType{ EModelType::eUnknown };
+            void addProcessError( const QString & msg );
+
+            EModelType fModelType { EModelType::eUnknown };
             QString fRootPath;
             QStringList fNameFilter;
 
@@ -279,7 +295,25 @@ namespace NMediaManager
             QTimer *fPatternTimer{ nullptr };
             QTreeView *fTreeView{ nullptr };
             QPlainTextEdit *fResults{ nullptr };
+            QProcess * fProcess{ nullptr };
+            struct SProcessInfo
+            {
+                SProcessInfo(){}
+                void cleanup( bool aOK );
+
+                QString fCmd;
+                QStringList fArgs;
+                QStandardItem * fItem{ nullptr };
+                QString fOldName;
+                QStringList fSrtFiles;
+                QString fNewName;
+                std::unordered_map< QFileDevice::FileTime, QDateTime > fTimeStamps;
+            };
+            mutable std::list< SProcessInfo > fProcessQueue;
+            std::pair< QString, bool > fStdOutRemaining{ QString(),false };
+            std::pair< QString, bool > fStdErrRemaining{ QString(),false };
             mutable QProgressDialog *fProgressDlg{ nullptr };
+            bool fProcessFinishedHandled{ false };
         };
     }
 }
