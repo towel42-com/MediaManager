@@ -36,7 +36,11 @@
        <bool>true</bool>
       </property>
      </widget>
-     <widget class="QPlainTextEdit" name="results"/>
+     <widget class="QPlainTextEdit" name="results">
+      <property name="lineWrapMode">
+       <enum>QPlainTextEdit::NoWrap</enum>
+      </property>
+     </widget>
     </widget>
    </item>
   </layout>
