@@ -52,6 +52,7 @@
 
 
 #include <QProgressDialog>
+#include <QProgressBar>
 #include "SABUtils/FileUtils.h"
 
 namespace NMediaManager
@@ -338,12 +339,16 @@ namespace NMediaManager
             if ( !fProgressDlg )
             {
                 fProgressDlg = new QProgressDialog( this );
+                auto bar = new QProgressBar(fProgressDlg);
+                fProgressDlg->setBar(bar);
+                bar->setFormat("%p% (%v of %m)");
             }
             fProgressDlg->setWindowModality( Qt::WindowModal );
             fProgressDlg->setMinimumDuration( 0 );
             fProgressDlg->setAutoClose( false );
             fProgressDlg->setAutoReset( false );
 
+            fProgressDlg->setValue(0);
             fProgressDlg->setWindowTitle( title );
             fProgressDlg->setCancelButtonText( cancelButtonText );
             fProgressDlg->setRange( 0, max );
