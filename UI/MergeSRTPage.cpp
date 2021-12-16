@@ -79,8 +79,10 @@ namespace NMediaManager
 
         void CMergeSRTPage::setupProgressDlg( const QString &title, const QString &cancelButtonText, int max )
         {
-            if ( fSetupProgressFunc )
-                fProgressDlg = fSetupProgressFunc( title, cancelButtonText, max );
+            if (fSetupProgressFunc)
+            {
+                fProgressDlg = fSetupProgressFunc(title, cancelButtonText, max);
+            }
         }
 
         bool CMergeSRTPage::canRun() const
@@ -132,12 +134,16 @@ namespace NMediaManager
             auto actionName = tr( "Merging SRT Files into MKV..." );
             auto cancelName = tr( "Abort Merge" );
             model = fModel.get();
+            connect(model, &NCore::CDirModel::sigProcessesFinished, [this]( bool canceled ) 
+                { 
+                    clearProgressDlg(); 
+                    if ( !canceled ) 
+                        load(); 
+                });
             if ( model && model->process(
                 [actionName, cancelName, this]( int count ) { setupProgressDlg( actionName, cancelName, count ); return fProgressDlg; },
-                [this]( QProgressDialog *dlg ) { (void)dlg; clearProgressDlg(); },
-                this ) )
+                [this](QProgressDialog * dlg) { (void)dlg; }, this ) )
             {
-                load();
             }
         }
     }
