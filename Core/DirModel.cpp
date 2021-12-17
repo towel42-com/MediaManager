@@ -57,6 +57,9 @@
 #include <set>
 #include <list>
 #include "SABUtils/MD5.h"
+#ifdef Q_OS_WINDOWS
+#include <qt_windows.h>
+#endif
 
 QDebug operator<<( QDebug dbg, const NMediaManager::NCore::STreeNode & node )
 {
@@ -1553,6 +1556,7 @@ namespace NMediaManager
 
             bool aOK = true;
             QStandardItem * myItem = nullptr;
+            fFirstProcess = true;
             for ( auto &&mkvFile : mkvFiles )
             {
                 auto srtFiles = getChildSRTFiles( mkvFile, false );
@@ -1729,6 +1733,12 @@ namespace NMediaManager
                 disconnect(fProgressDlg, &QProgressDialog::canceled, this, &CDirModel::slotProgressCanceled);
                 connect(fProgressDlg, &QProgressDialog::canceled, this, &CDirModel::slotProgressCanceled);
             }
+            if ( !displayOnly )
+            {
+#ifdef Q_OS_WINDOWS
+                SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_AWAYMODE_REQUIRED);
+#endif
+            }
             auto retVal = std::make_pair( process( invisibleRootItem(), displayOnly, model, nullptr ), model );
             if (fProgressDlg)
             {
@@ -1736,6 +1746,12 @@ namespace NMediaManager
                     fProgressDlg->setValue(0);
                 else
                     fProgressDlg->setValue(retVal.second->rowCount());
+            }
+            if ( !displayOnly )
+            {
+#ifdef Q_OS_WINDOWS
+                SetThreadExecutionState(ES_CONTINUOUS);
+#endif
             }
             return retVal;
         }
@@ -1984,10 +2000,11 @@ namespace NMediaManager
             if (fProcess->state() != QProcess::NotRunning)
                 return;
 
+            if (fProgressDlg && !fFirstProcess )
+                fProgressDlg->setValue(fProgressDlg->value() + 1);
+            fFirstProcess = false;
             if (fProcessQueue.empty())
             {
-                if (fProgressDlg)
-                    fProgressDlg->setValue(fProgressDlg->value() + 1);
                 emit sigProcessesFinished( false );
                 return;
             }

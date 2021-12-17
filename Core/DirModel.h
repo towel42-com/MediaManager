@@ -315,6 +315,7 @@ namespace NMediaManager
             std::pair< QString, bool > fStdErrRemaining{ QString(),false };
             mutable QProgressDialog *fProgressDlg{ nullptr };
             bool fProcessFinishedHandled{ false };
+            mutable bool fFirstProcess{ true };
         };
     }
 }
