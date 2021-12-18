@@ -24,7 +24,6 @@
 #include "LanguageInfo.h"
 
 #include <QSettings>
-#include <QProgressDialog>
 #include <QStringListModel>
 #include <QInputDialog>
 #include <QFileInfo>

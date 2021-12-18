@@ -34,6 +34,8 @@
 #include "SABUtils/FileUtils.h"
 #include "SABUtils/FileCompare.h"
 
+#include "SABUtils/DoubleProgressDlg.h"
+
 #include <QDebug>
 #include <QUrl>
 #include <QInputDialog>
@@ -46,7 +48,6 @@
 #include <QTreeView>
 #include <QApplication>
 
-#include <QProgressDialog>
 #include <QDirIterator>
 #include <QPlainTextEdit>
 #include <QMessageBox>
@@ -66,7 +67,7 @@ QDebug operator<<( QDebug dbg, const NMediaManager::NCore::STreeNode & node )
     dbg << "STreeNode(";
     auto name = node.name();
     dbg << "'" << name << "' ";
-    dbg << "Path: " << ( QFileInfo( name ).isFile() ? "Yes" : "No" ) << " "
+    dbg << "Path: " << (QFileInfo( name ).isFile() ? "Yes" : "No") << " "
         << "Is Loaded? " << node.fLoaded << " "
         << "Is File? " << node.fIsFile
         << ")"
@@ -93,7 +94,7 @@ namespace NMediaManager
 {
     namespace NCore
     {
-        CDirModel::CDirModel( EModelType modelType, QObject *parent /*= 0*/ ) :
+        CDirModel::CDirModel( EModelType modelType, QObject * parent /*= 0*/ ) :
             QStandardItemModel( parent ),
             fModelType( modelType )
         {
@@ -111,13 +112,13 @@ namespace NMediaManager
             fExcludedDirNames = { "#recycle", "#recycler", "extras" };
             fIgnoredNames = { "sub", "subs" };
 
-            fProcess = new QProcess(this);
-            connect(fProcess, &QProcess::errorOccurred, this, &CDirModel::slotProcessErrorOccured);
-            connect(fProcess, qOverload< int, QProcess::ExitStatus >( &QProcess::finished ), this, &CDirModel::slotProcessFinished);
-            connect(fProcess, &QProcess::readyReadStandardError, this, &CDirModel::slotProcessStandardError);
-            connect(fProcess, &QProcess::readyReadStandardOutput, this, &CDirModel::slotProcessStandardOutput);
-            connect(fProcess, &QProcess::started, this, &CDirModel::slotProcessStarted);
-            connect(fProcess, &QProcess::stateChanged, this, &CDirModel::slotProcesssStateChanged);
+            fProcess = new QProcess( this );
+            connect( fProcess, &QProcess::errorOccurred, this, &CDirModel::slotProcessErrorOccured );
+            connect( fProcess, qOverload< int, QProcess::ExitStatus >( &QProcess::finished ), this, &CDirModel::slotProcessFinished );
+            connect( fProcess, &QProcess::readyReadStandardError, this, &CDirModel::slotProcessStandardError );
+            connect( fProcess, &QProcess::readyReadStandardOutput, this, &CDirModel::slotProcessStandardOutput );
+            connect( fProcess, &QProcess::started, this, &CDirModel::slotProcessStarted );
+            connect( fProcess, &QProcess::stateChanged, this, &CDirModel::slotProcesssStateChanged );
         }
 
         CDirModel::~CDirModel()
@@ -125,35 +126,35 @@ namespace NMediaManager
             delete fIconProvider;
         }
 
-        void CDirModel::setRootPath( const QString &rootPath, QTreeView *view, QPlainTextEdit *resultsView, QProgressDialog *dlg )
+        void CDirModel::setRootPath( const QString & rootPath, QTreeView * view, QPlainTextEdit * resultsView, std::shared_ptr< CDoubleProgressDlg > dlg )
         {
             fRootPath = rootPath;
             reloadModel( view, resultsView, dlg );
         }
 
-        bool CDirModel::isAutoSetText( const QString &text )
+        bool CDirModel::isAutoSetText( const QString & text )
         {
-            return ( text == "<NO MATCH>" ) || ( text == "<NO AUTO MATCH>" );
+            return (text == "<NO MATCH>") || (text == "<NO AUTO MATCH>");
         }
 
-        QString CDirModel::getSearchName( const QModelIndex &idx ) const
+        QString CDirModel::getSearchName( const QModelIndex & idx ) const
         {
             auto nm = index( idx.row(), EColumns::eTransformName, idx.parent() ).data().toString();
             if ( isAutoSetText( nm ) || nm.isEmpty() )
             {
                 nm = index( idx.row(), EColumns::eFSName, idx.parent() ).data( ECustomRoles::eFullPathRole ).toString();
-                nm = nm.isEmpty() ? QString() : ( QFileInfo( nm ).isDir() ? QFileInfo( nm ).fileName() : QFileInfo( nm ).completeBaseName() );
+                nm = nm.isEmpty() ? QString() : (QFileInfo( nm ).isDir() ? QFileInfo( nm ).fileName() : QFileInfo( nm ).completeBaseName());
             }
             return nm;
         }
 
-        void CDirModel::setNameFilters( const QStringList &filters, QTreeView *view, QPlainTextEdit *resultsView, QProgressDialog *dlg )
+        void CDirModel::setNameFilters( const QStringList & filters, QTreeView * view, QPlainTextEdit * resultsView, std::shared_ptr< CDoubleProgressDlg > dlg )
         {
             fNameFilter = filters;
             reloadModel( view, resultsView, dlg );
         }
 
-        void CDirModel::reloadModel( QTreeView *view, QPlainTextEdit *resultsView, QProgressDialog *dlg )
+        void CDirModel::reloadModel( QTreeView * view, QPlainTextEdit * resultsView, std::shared_ptr< CDoubleProgressDlg > dlg )
         {
             fTreeView = view;
             fResults = resultsView;
@@ -218,7 +219,7 @@ namespace NMediaManager
             emit sigDirReloaded( fProgressDlg && fProgressDlg->wasCanceled() );
         }
 
-        QList< QStandardItem * > CDirModel::getChildMKVFiles( const QStandardItem *item, bool goBelowDirs ) const
+        QList< QStandardItem * > CDirModel::getChildMKVFiles( const QStandardItem * item, bool goBelowDirs ) const
         {
             if ( !item )
                 return {};
@@ -230,10 +231,10 @@ namespace NMediaManager
                 if ( !child )
                     continue;
 
-                if (child->data(ECustomRoles::eIsDir).toBool())
+                if ( child->data( ECustomRoles::eIsDir ).toBool() )
                 {
-                    if (goBelowDirs)
-                        retVal << getChildMKVFiles(child, true);
+                    if ( goBelowDirs )
+                        retVal << getChildMKVFiles( child, true );
                     continue;
                 }
 
@@ -243,7 +244,7 @@ namespace NMediaManager
             return retVal;
         }
 
-        std::unordered_map< QString, std::vector< QStandardItem * > > CDirModel::getChildSRTFiles( const QStandardItem *item, bool sort ) const
+        std::unordered_map< QString, std::vector< QStandardItem * > > CDirModel::getChildSRTFiles( const QStandardItem * item, bool sort ) const
         {
             if ( !item )
                 return {};
@@ -288,10 +289,10 @@ namespace NMediaManager
 
             bool allLangFiles = true;
             std::unordered_map< QString, std::vector< QStandardItem * > > retVal;
-            for ( auto &&ii : tmp )
+            for ( auto && ii : tmp )
             {
                 std::vector< QStandardItem * > curr;
-                for ( auto &&jj : ii.second )
+                for ( auto && jj : ii.second )
                 {
                     curr.push_back( jj.first );
                     allLangFiles = allLangFiles && jj.second;
@@ -301,22 +302,22 @@ namespace NMediaManager
 
             if ( sort )
             {
-                for ( auto &&ii : retVal )
+                for ( auto && ii : retVal )
                 {
                     std::sort( ii.second.begin(), ii.second.end(),
-                               []( const QStandardItem *lhs, const QStandardItem *rhs )
-                               {
-                                   auto lhsFI = QFileInfo( lhs->data( ECustomRoles::eFullPathRole ).toString() );
-                                   auto rhsFI = QFileInfo( rhs->data( ECustomRoles::eFullPathRole ).toString() );
+                               [ ]( const QStandardItem * lhs, const QStandardItem * rhs )
+                    {
+                        auto lhsFI = QFileInfo( lhs->data( ECustomRoles::eFullPathRole ).toString() );
+                        auto rhsFI = QFileInfo( rhs->data( ECustomRoles::eFullPathRole ).toString() );
 
-                                   return lhsFI.size() < rhsFI.size();
-                               } );
+                        return lhsFI.size() < rhsFI.size();
+                    } );
                 }
             }
             return retVal;
         }
 
-        void CDirModel::autoDetermineLanguageAttributes( QStandardItem *mediaFileNode )
+        void CDirModel::autoDetermineLanguageAttributes( QStandardItem * mediaFileNode )
         {
             //if ( mediaFileNode )
             //    qDebug() << mediaFileNode->text();
@@ -325,7 +326,7 @@ namespace NMediaManager
 
             auto srtFiles = getChildSRTFiles( mediaFileNode, true ); // map of language to files sorted by filesize
 
-            for ( auto &&ii : srtFiles )
+            for ( auto && ii : srtFiles )
             {
                 if ( ii.second.size() == 3 )
                 {
@@ -349,7 +350,7 @@ namespace NMediaManager
             }
         }
 
-        bool CDirModel::setData( const QModelIndex &idx, const QVariant &value, int role )
+        bool CDirModel::setData( const QModelIndex & idx, const QVariant & value, int role )
         {
             if ( role == Qt::CheckStateRole )
             {
@@ -364,13 +365,13 @@ namespace NMediaManager
             return QStandardItemModel::setData( idx, value, role );
         }
 
-        std::unique_ptr< QDirIterator > CDirModel::getDirIteratorForPath( const QFileInfo &fileInfo ) const
+        std::unique_ptr< QDirIterator > CDirModel::getDirIteratorForPath( const QFileInfo & fileInfo ) const
         {
             auto retVal = std::make_unique< QDirIterator >( fileInfo.absoluteFilePath(), fNameFilter, QDir::AllDirs | QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Readable );
             return std::move( retVal );
         }
 
-        void CDirModel::iterateEveryFile( const QFileInfo &fileInfo, const SIterateInfo &iterInfo, std::optional< QDateTime > &lastUpdateUI ) const
+        void CDirModel::iterateEveryFile( const QFileInfo & fileInfo, const SIterateInfo & iterInfo, std::optional< QDateTime > & lastUpdateUI ) const
         {
             if ( !fileInfo.exists() )
                 return;
@@ -399,7 +400,7 @@ namespace NMediaManager
                         ii->next();
                         auto fi = ii->fileInfo();
                         iterateEveryFile( fi, iterInfo, lastUpdateUI );
-                        if ( fProgressDlg && ( !lastUpdateUI.has_value() || ( lastUpdateUI.value().msecsTo( QDateTime::currentDateTime() ) > 250 ) ) )
+                        if ( fProgressDlg && (!lastUpdateUI.has_value() || (lastUpdateUI.value().msecsTo( QDateTime::currentDateTime() ) > 250)) )
                         {
                             qApp->processEvents();
                             lastUpdateUI = QDateTime::currentDateTime();
@@ -420,7 +421,7 @@ namespace NMediaManager
             }
         }
 
-        std::pair< uint64_t, uint64_t > CDirModel::computeNumberOfFiles( const QFileInfo &fileInfo ) const
+        std::pair< uint64_t, uint64_t > CDirModel::computeNumberOfFiles( const QFileInfo & fileInfo ) const
         {
             if ( fProgressDlg )
                 fProgressDlg->setRange( 0, 0 );
@@ -428,22 +429,37 @@ namespace NMediaManager
             uint64_t numDirs = 0;
             uint64_t numFiles = 0;
             SIterateInfo info;
-            info.fPreDirFunction = [&numDirs]( const QFileInfo & /*dir*/ ) { numDirs++; return true; };
-            info.fPreFileFunction = [&numFiles]( const QFileInfo & /*file*/ ) { numFiles++; return false; };
+            info.fPreDirFunction = [ &numDirs ]( const QFileInfo & /*dir*/ ) { numDirs++; return true; };
+            info.fPreFileFunction = [ &numFiles ]( const QFileInfo & /*file*/ ) { numFiles++; return false; };
             std::optional< QDateTime > lastUpdate;
             iterateEveryFile( fileInfo, info, lastUpdate );
 
             return std::make_pair( numDirs, numFiles );
         }
 
-        QList< QFileInfo > CDirModel::getSRTFilesForMKV( const QFileInfo &fi ) const
+        QFileInfoList CDirModel::getMKVFilesInDir( const QDir & dir ) const
+        {
+            qDebug() << dir.absolutePath();
+
+            auto srtFiles = dir.entryInfoList( QStringList() << "*.srt" );
+
+            auto subDirs = dir.entryInfoList( QDir::Filter::AllDirs | QDir::Filter::NoDotAndDotDot );
+            for ( auto && ii : subDirs )
+            {
+                srtFiles << getMKVFilesInDir( QDir( ii.absoluteFilePath() ) );
+            }
+            return srtFiles;
+        }
+
+        QList< QFileInfo > CDirModel::getSRTFilesForMKV( const QFileInfo & fi ) const
         {
             if ( !fi.exists() || !fi.isFile() )
                 return {};
 
             auto dir = fi.absoluteDir();
             //qDebug().noquote().nospace() << "Finding SRT files for '" << getDispName( fi ) << "' in dir '" << getDispName( dir.absolutePath() ) << "'";
-            auto srtFiles = dir.entryInfoList( QStringList() << "*.srt" );
+            auto srtFiles = getMKVFilesInDir( dir );
+
             //qDebug().noquote().nospace() << "Found '" << srtFiles.count() << "' SRT Files";
 
             if ( srtFiles.size() <= 1 )
@@ -458,7 +474,7 @@ namespace NMediaManager
             QList< QFileInfo > languageFiles;
             QList< QFileInfo > unknownFiles;
 
-            for ( auto &&ii : srtFiles )
+            for ( auto && ii : srtFiles )
             {
                 //qDebug().noquote().nospace() << "Checking '" << getDispName( ii ) << "'";
                 //qDebug().noquote().nospace() << "Checking '" << fi.completeBaseName() << "' against '" << ii.completeBaseName() << "'";
@@ -482,10 +498,10 @@ namespace NMediaManager
                     }
                 }
             }
-           return namebasedFiles << languageFiles;
+            return namebasedFiles << languageFiles;
         }
 
-        void CDirModel::loadFileInfo( const QFileInfo &fileInfo )
+        void CDirModel::loadFileInfo( const QFileInfo & fileInfo )
         {
             if ( !fileInfo.exists() )
                 return;
@@ -493,7 +509,7 @@ namespace NMediaManager
             TParentTree tree;
 
             SIterateInfo info;
-            info.fPreDirFunction = [this, &tree]( const QFileInfo &dirInfo )
+            info.fPreDirFunction = [ this, &tree ]( const QFileInfo & dirInfo )
             {
                 //qDebug().noquote().nospace() << "Pre Directory A: " << dirInfo.absoluteFilePath() << tree;
 
@@ -514,7 +530,7 @@ namespace NMediaManager
             };
 
             std::unordered_set< QString > alreadyAdded;
-            info.fPreFileFunction = [this, &tree, &alreadyAdded]( const QFileInfo &fileInfo )
+            info.fPreFileFunction = [ this, &tree, &alreadyAdded ]( const QFileInfo & fileInfo )
             {
                 tree.push_back( std::move( getItemRow( fileInfo ) ) ); // mkv file
 
@@ -524,7 +540,7 @@ namespace NMediaManager
                 {
                     auto dir = fileInfo.absoluteDir();
                     auto srtFiles = getSRTFilesForMKV( fileInfo );
-                    for ( auto &&ii : srtFiles )
+                    for ( auto && ii : srtFiles )
                     {
                         //qDebug() << ii.absoluteFilePath();
                         if ( alreadyAdded.find( ii.absoluteFilePath() ) != alreadyAdded.end() )
@@ -550,18 +566,18 @@ namespace NMediaManager
                 return true;
             };
 
-            info.fPostDirFunction = [this, &tree]( const QFileInfo &dirInfo, bool aOK )
+            info.fPostDirFunction = [ this, &tree ]( const QFileInfo & dirInfo, bool aOK )
             {
                 (void)dirInfo;
                 (void)aOK;
                 //qDebug().noquote().nospace() << "Post Dir A: " << dirInfo.absoluteFilePath() << tree << "AOK? " << aOK;  
-                tree.pop_back(); 
+                tree.pop_back();
                 //qDebug().noquote().nospace() << "Post Dir B: " << dirInfo.absoluteFilePath() << tree;
                 if ( fTreeView )
                     fTreeView->resizeColumnToContents( EColumns::eFSName );
             };
 
-            info.fPostFileFunction = [this, &tree]( const QFileInfo &fileInfo, bool aOK )
+            info.fPostFileFunction = [ this, &tree ]( const QFileInfo & fileInfo, bool aOK )
             {
                 //qDebug() << fileInfo.absoluteFilePath();
                 if ( aOK && isMergeSRTModel() && CPreferences::instance()->isMediaFile( fileInfo ) )
@@ -569,7 +585,7 @@ namespace NMediaManager
                     auto pos = fPathMapping.find( fileInfo.absoluteFilePath() );
                     if ( pos != fPathMapping.end() )
                     {
-                        auto mkvItem = ( *pos ).second;
+                        auto mkvItem = (*pos).second;
                         if ( mkvItem )
                         {
                             //qDebug() << rootItem->text() << rootItem->data( ECustomRoles::eFullPathRole ).toString();
@@ -588,7 +604,7 @@ namespace NMediaManager
             iterateEveryFile( fileInfo, info, lastUpdate );
         }
 
-        void CDirModel::appendRow( QStandardItem *parent, QList< QStandardItem * > &items )
+        void CDirModel::appendRow( QStandardItem * parent, QList< QStandardItem * > & items )
         {
             if ( parent )
                 parent->appendRow( items );
@@ -596,10 +612,10 @@ namespace NMediaManager
                 QStandardItemModel::appendRow( items );
         }
 
-        QStandardItem * CDirModel::attachTreeNodes( TParentTree &parentTree )
+        QStandardItem * CDirModel::attachTreeNodes( TParentTree & parentTree )
         {
-            QStandardItem *prevParent = nullptr;
-            for ( auto &&ii : parentTree )
+            QStandardItem * prevParent = nullptr;
+            for ( auto && ii : parentTree )
             {
                 auto nextParent = ii.rootItem();
                 if ( !ii.fLoaded ) // already been loaded
@@ -611,7 +627,7 @@ namespace NMediaManager
                             bool isTVShow = nextParent->data( eIsTVShowRole ).toBool();
                             bool isParentTVShow = prevParent->data( eIsTVShowRole ).toBool();
 
-                            if ( !isTVShow && ( isTVShow != isParentTVShow ) )
+                            if ( !isTVShow && (isTVShow != isParentTVShow) )
                             {
                                 setChecked( ii.item( EColumns::eIsTVShow ), isParentTVShow );
                                 nextParent->setData( isParentTVShow, eIsTVShowRole );
@@ -624,7 +640,7 @@ namespace NMediaManager
                             {
                                 auto isSRT = CPreferences::instance()->isSubtitleFile( ii.name() );
                                 auto useAsParent =
-                                    [isSRT, this]( QStandardItem *item )
+                                    [ isSRT, this ]( QStandardItem * item )
                                 {
                                     if ( !item )
                                         return true;
@@ -663,32 +679,32 @@ namespace NMediaManager
             return prevParent;
         }
 
-        bool CDirModel::isExcludedDirName( const QFileInfo &ii ) const
+        bool CDirModel::isExcludedDirName( const QFileInfo & ii ) const
         {
             auto fn = ii.fileName().toLower();
 
-            return fn.endsWith( "-ignore" ) || ( fExcludedDirNames.find( fn ) != fExcludedDirNames.end() );
+            return fn.endsWith( "-ignore" ) || (fExcludedDirNames.find( fn ) != fExcludedDirNames.end());
         }
 
-        bool CDirModel::isIgnoredPathName( const QFileInfo &ii ) const
+        bool CDirModel::isIgnoredPathName( const QFileInfo & ii ) const
         {
             auto fn = ii.fileName().toLower();
-            return fn.contains( "-ignore" ) || ( fIgnoredNames.find( fn ) != fIgnoredNames.end() );
+            return fn.contains( "-ignore" ) || (fIgnoredNames.find( fn ) != fIgnoredNames.end());
         }
 
-        STreeNode CDirModel::getItemRow( const QFileInfo &fileInfo ) const
+        STreeNode CDirModel::getItemRow( const QFileInfo & fileInfo ) const
         {
             return STreeNode( fileInfo, this );
         }
 
 
-        QStandardItem *STreeNodeItem::createStandardItem() const
+        QStandardItem * STreeNodeItem::createStandardItem() const
         {
             auto retVal = new QStandardItem( fText );
             retVal->setIcon( fIcon );
             if ( fAlignment.has_value() )
                 retVal->setTextAlignment( fAlignment.value() );
-            for ( auto &&ii : fRoles )
+            for ( auto && ii : fRoles )
             {
                 retVal->setData( ii.first, ii.second );
             }
@@ -697,7 +713,7 @@ namespace NMediaManager
             return retVal;
         }
 
-        STreeNode::STreeNode( const QFileInfo &fileInfo, const CDirModel *model ) :
+        STreeNode::STreeNode( const QFileInfo & fileInfo, const CDirModel * model ) :
             fModel( model )
         {
             fIsFile = fileInfo.isFile();
@@ -761,22 +777,22 @@ namespace NMediaManager
             return rootItem() ? rootItem()->text() : "<NO ITEMS>";
         }
 
-        QStandardItem *STreeNode::item( EColumns column, bool createIfNecessary /*= true */ ) const
+        QStandardItem * STreeNode::item( EColumns column, bool createIfNecessary /*= true */ ) const
         {
             items( createIfNecessary );
-            return ( column >= fRealItems.count() ) ? nullptr : fRealItems[column];
+            return (column >= fRealItems.count()) ? nullptr : fRealItems[column];
         }
 
-        QStandardItem *STreeNode::rootItem( bool createIfNecessary /*= true */ ) const
+        QStandardItem * STreeNode::rootItem( bool createIfNecessary /*= true */ ) const
         {
-            return item( static_cast<EColumns>( 0 ), createIfNecessary );
+            return item( static_cast<EColumns>(0), createIfNecessary );
         }
 
         QList< QStandardItem * > STreeNode::items( bool createIfNecessary ) const
         {
             if ( createIfNecessary && fRealItems.isEmpty() )
             {
-                for ( auto &&ii : fItems )
+                for ( auto && ii : fItems )
                 {
                     auto currItem = ii.createStandardItem();
 
@@ -796,7 +812,7 @@ namespace NMediaManager
                     }
                     else if ( fModel->isMergeSRTModel() )
                     {
-                        if ( ( ii.fType == EColumns::eLanguage ) && ( currItem->text().isEmpty() ) )
+                        if ( (ii.fType == EColumns::eLanguage) && (currItem->text().isEmpty()) )
                         {
                             currItem->setBackground( Qt::red );
                         }
@@ -817,19 +833,19 @@ namespace NMediaManager
             return fModelType == EModelType::eTransform;
         }
 
-        void CDirModel::setChecked( QStandardItem *item, bool isChecked ) const
+        void CDirModel::setChecked( QStandardItem * item, bool isChecked ) const
         {
             item->setText( isChecked ? "Yes" : "No" );
             item->setCheckState( isChecked ? Qt::Checked : Qt::Unchecked );
         }
 
-        void CDirModel::setChecked( QStandardItem *item, ECustomRoles role, bool isChecked ) const
+        void CDirModel::setChecked( QStandardItem * item, ECustomRoles role, bool isChecked ) const
         {
             setChecked( item, isChecked );
             item->setData( isChecked, role );
         }
 
-        QString patternToRegExp( const QString &captureName, const QString &inPattern, const QString &value, bool removeOptional )
+        QString patternToRegExp( const QString & captureName, const QString & inPattern, const QString & value, bool removeOptional )
         {
             if ( captureName.isEmpty() || inPattern.isEmpty() )
                 return inPattern;
@@ -847,7 +863,7 @@ namespace NMediaManager
             return retVal;
         }
 
-        QString patternToRegExp( const QString &pattern, bool removeOptional )
+        QString patternToRegExp( const QString & pattern, bool removeOptional )
         {
             QString retVal = pattern;
             retVal.replace( "(", "\\(" );
@@ -864,37 +880,37 @@ namespace NMediaManager
             return retVal;
         }
 
-        QStandardItem *CDirModel::getItemFromPath( const QFileInfo &fi ) const
+        QStandardItem * CDirModel::getItemFromPath( const QFileInfo & fi ) const
         {
             auto path = fi.absoluteFilePath();
             auto pos = fPathMapping.find( path );
             if ( pos != fPathMapping.end() )
-                return ( *pos ).second;
+                return (*pos).second;
             return nullptr;
         }
 
-        bool CDirModel::isValidName( const QFileInfo &fi ) const
+        bool CDirModel::isValidName( const QFileInfo & fi ) const
         {
             return isValidName( fi.fileName(), fi.isDir(), {} );
         }
 
-        bool CDirModel::isValidName( const QString &path, bool isDir, std::optional< bool > isChecked ) const
+        bool CDirModel::isValidName( const QString & path, bool isDir, std::optional< bool > isChecked ) const
         {
             bool defaultAsTVShow = isChecked.has_value() ? isChecked.value() : this->isChecked( path, EColumns::eIsTVShow );
             bool asTVShow = treatAsTVShow( path, defaultAsTVShow );
-            if ( ( !asTVShow && fMoviePatterns.isValidName( path, isDir ) )
-                 || ( asTVShow && fTVPatterns.isValidName( path, isDir ) ) )
+            if ( (!asTVShow && fMoviePatterns.isValidName( path, isDir ))
+                 || (asTVShow && fTVPatterns.isValidName( path, isDir )) )
                 return true;
 
             return false;
         }
 
-        bool SPatternInfo::isValidName( const QFileInfo &fi ) const
+        bool SPatternInfo::isValidName( const QFileInfo & fi ) const
         {
             return isValidName( fi.fileName(), fi.isDir() );
         }
 
-        bool SPatternInfo::isValidName( const QString &name, bool isDir ) const
+        bool SPatternInfo::isValidName( const QString & name, bool isDir ) const
         {
             if ( name.isEmpty() )
                 return false;
@@ -911,7 +927,7 @@ namespace NMediaManager
                 patterns << patternToRegExp( fOutFilePattern, false )
                     ;
             }
-            for ( auto &&ii : patterns )
+            for ( auto && ii : patterns )
             {
                 QRegularExpression regExp( ii );
                 if ( !ii.isEmpty() && regExp.match( name ).hasMatch() )
@@ -920,14 +936,14 @@ namespace NMediaManager
             return false;
         }
 
-        QFileInfo CDirModel::fileInfo( const QStandardItem *item ) const
+        QFileInfo CDirModel::fileInfo( const QStandardItem * item ) const
         {
             if ( !item )
                 return QFileInfo();
             return QFileInfo( item->data( ECustomRoles::eFullPathRole ).toString() );
         }
 
-        QStandardItem *CDirModel::getItemFromindex( QModelIndex idx ) const
+        QStandardItem * CDirModel::getItemFromindex( QModelIndex idx ) const
         {
             if ( idx.column() != EColumns::eFSName )
             {
@@ -936,56 +952,56 @@ namespace NMediaManager
             return itemFromIndex( idx );
         }
 
-        bool CDirModel::isDir( const QStandardItem *item ) const
+        bool CDirModel::isDir( const QStandardItem * item ) const
         {
             return fileInfo( item ).isDir();
         }
 
-        QString CDirModel::filePath( const QStandardItem *item ) const
+        QString CDirModel::filePath( const QStandardItem * item ) const
         {
             return fileInfo( item ).absoluteFilePath();
         }
 
-        QString CDirModel::filePath( const QModelIndex &idx ) const
+        QString CDirModel::filePath( const QModelIndex & idx ) const
         {
             auto item = getItemFromindex( idx );
             return filePath( item );
         }
 
-        QFileInfo CDirModel::fileInfo( const QModelIndex &idx ) const
+        QFileInfo CDirModel::fileInfo( const QModelIndex & idx ) const
         {
             auto item = getItemFromindex( idx );
             return fileInfo( item );
         }
 
-        bool CDirModel::isDir( const QModelIndex &idx ) const
+        bool CDirModel::isDir( const QModelIndex & idx ) const
         {
             auto item = getItemFromindex( idx );
             return isDir( item );
         }
 
-        void CDirModel::slotTVOutputFilePatternChanged( const QString &outPattern )
+        void CDirModel::slotTVOutputFilePatternChanged( const QString & outPattern )
         {
             fTVPatterns.fOutFilePattern = outPattern;
             // need to emit datachanged on column 4 for all known indexes
             transformPatternChanged();
         }
 
-        void CDirModel::slotTVOutputDirPatternChanged( const QString &outPattern )
+        void CDirModel::slotTVOutputDirPatternChanged( const QString & outPattern )
         {
             fTVPatterns.fOutDirPattern = outPattern;
             // need to emit datachanged on column 4 for all known indexes
             transformPatternChanged();
         }
 
-        void CDirModel::slotMovieOutputFilePatternChanged( const QString &outPattern )
+        void CDirModel::slotMovieOutputFilePatternChanged( const QString & outPattern )
         {
             fMoviePatterns.fOutFilePattern = outPattern;
             // need to emit datachanged on column 4 for all known indexes
             transformPatternChanged();
         }
 
-        void CDirModel::slotMovieOutputDirPatternChanged( const QString &outPattern )
+        void CDirModel::slotMovieOutputDirPatternChanged( const QString & outPattern )
         {
             fMoviePatterns.fOutDirPattern = outPattern;
             // need to emit datachanged on column 4 for all known indexes
@@ -1000,7 +1016,7 @@ namespace NMediaManager
         }
 
         // do not include <> in the capture name
-        QString replaceCapture( const QString &captureName, const QString &returnPattern, const QString &value )
+        QString replaceCapture( const QString & captureName, const QString & returnPattern, const QString & value )
         {
             if ( captureName.isEmpty() )
                 return returnPattern;
@@ -1045,7 +1061,7 @@ namespace NMediaManager
             return retVal;
         }
 
-        void cleanFileName( QString &inFile, bool isDir )
+        void cleanFileName( QString & inFile, bool isDir )
         {
             if ( inFile.isEmpty() )
                 return;
@@ -1061,7 +1077,7 @@ namespace NMediaManager
             inFile.replace( QRegularExpression( text ), "" );
         }
 
-        std::pair< bool, QString > CDirModel::transformItem( const QFileInfo &fileInfo ) const
+        std::pair< bool, QString > CDirModel::transformItem( const QFileInfo & fileInfo ) const
         {
             if ( treatAsTVShow( fileInfo, isChecked( fileInfo, EColumns::eIsTVShow ) ) )
                 return transformItem( fileInfo, fTVPatterns );
@@ -1069,7 +1085,7 @@ namespace NMediaManager
                 return transformItem( fileInfo, fMoviePatterns );
         }
 
-        std::pair< bool, QString > CDirModel::transformItem( const QFileInfo &fileInfo, const SPatternInfo &info ) const
+        std::pair< bool, QString > CDirModel::transformItem( const QFileInfo & fileInfo, const SPatternInfo & info ) const
         {
             auto filePath = fileInfo.absoluteFilePath();
 
@@ -1079,7 +1095,7 @@ namespace NMediaManager
             auto pos = fileInfo.isDir() ? fDirMapping.find( filePath ) : fFileMapping.find( filePath );
             auto retVal = std::make_pair( false, QString() );
 
-            if ( pos == ( fileInfo.isDir() ? fDirMapping.end() : fFileMapping.end() ) )
+            if ( pos == (fileInfo.isDir() ? fDirMapping.end() : fFileMapping.end()) )
             {
                 QString fn = fileInfo.fileName();
                 QString ext = QString();
@@ -1128,27 +1144,27 @@ namespace NMediaManager
                     fFileMapping[filePath] = retVal;
             }
             else
-                retVal = ( *pos ).second;
+                retVal = (*pos).second;
 
             return retVal;
         }
 
-        bool CDirModel::treatAsTVShow( const QFileInfo &fileInfo, bool defaultValue ) const
+        bool CDirModel::treatAsTVShow( const QFileInfo & fileInfo, bool defaultValue ) const
         {
             bool asTVShow = defaultValue;
             auto pos = fSearchResultMap.find( fileInfo.absoluteFilePath() );
             if ( pos != fSearchResultMap.end() )
-                asTVShow = ( *pos ).second->isTVShow();
+                asTVShow = (*pos).second->isTVShow();
             return asTVShow;
         }
 
-        void CDirModel::setSearchResult( QStandardItem *item, std::shared_ptr< SSearchResult > searchResult, bool applyToChildren )
+        void CDirModel::setSearchResult( QStandardItem * item, std::shared_ptr< SSearchResult > searchResult, bool applyToChildren )
         {
             auto idx = indexFromItem( item );
             setSearchResult( idx, searchResult, applyToChildren );
         }
 
-        void CDirModel::setSearchResult( const QModelIndex &idx, std::shared_ptr< SSearchResult > searchResult, bool applyToChildren )
+        void CDirModel::setSearchResult( const QModelIndex & idx, std::shared_ptr< SSearchResult > searchResult, bool applyToChildren )
         {
             if ( !idx.isValid() )
                 return;
@@ -1199,7 +1215,7 @@ namespace NMediaManager
             return item && CPreferences::instance()->isMediaFile( QFileInfo( item->data( ECustomRoles::eFullPathRole ).toString() ) );
         }
 
-        bool CDirModel::isMediaFile( const QModelIndex &idx ) const
+        bool CDirModel::isMediaFile( const QModelIndex & idx ) const
         {
             auto path = idx.data( ECustomRoles::eFullPathRole ).toString();
             if ( path.isEmpty() )
@@ -1208,7 +1224,7 @@ namespace NMediaManager
             return CPreferences::instance()->isMediaFile( QFileInfo( path ) );
         }
 
-        bool CDirModel::isSubtitleFile( const QModelIndex &idx, bool *isLangFileFormat ) const
+        bool CDirModel::isSubtitleFile( const QModelIndex & idx, bool * isLangFileFormat ) const
         {
             auto path = idx.data( ECustomRoles::eFullPathRole ).toString();
             if ( path.isEmpty() )
@@ -1217,12 +1233,12 @@ namespace NMediaManager
             return CPreferences::instance()->isSubtitleFile( QFileInfo( path ), isLangFileFormat );
         }
 
-        bool CDirModel::isSubtitleFile( const QStandardItem *item, bool *isLangFileFormat /*= nullptr */ ) const
+        bool CDirModel::isSubtitleFile( const QStandardItem * item, bool * isLangFileFormat /*= nullptr */ ) const
         {
             return item && CPreferences::instance()->isSubtitleFile( item->data( ECustomRoles::eFullPathRole ).toString(), isLangFileFormat );
         }
 
-        bool CDirModel::canAutoSearch( const QModelIndex &index ) const
+        bool CDirModel::canAutoSearch( const QModelIndex & index ) const
         {
             auto path = index.data( ECustomRoles::eFullPathRole ).toString();
             if ( path.isEmpty() )
@@ -1230,7 +1246,7 @@ namespace NMediaManager
             return canAutoSearch( QFileInfo( path ) );
         }
 
-        bool CDirModel::canAutoSearch( const QFileInfo &fileInfo ) const
+        bool CDirModel::canAutoSearch( const QFileInfo & fileInfo ) const
         {
             bool isLangFormat;
             if ( CPreferences::instance()->isSubtitleFile( fileInfo, &isLangFormat ) && !isLangFormat )
@@ -1240,7 +1256,7 @@ namespace NMediaManager
 
             auto files = QDir( fileInfo.absoluteFilePath() ).entryInfoList( QDir::Files );
             bool hasFiles = false;
-            for ( auto &&ii : files )
+            for ( auto && ii : files )
             {
                 if ( canAutoSearch( ii ) )
                 {
@@ -1254,14 +1270,14 @@ namespace NMediaManager
 
         int CDirModel::eventsPerPath() const
         {
-            if (isTransformModel())
+            if ( isTransformModel() )
                 return 5;
-            else if (isMergeSRTModel())
+            else if ( isMergeSRTModel() )
                 return 1;
             return 1;
         }
 
-        std::shared_ptr< SSearchResult > CDirModel::getSearchResultInfo(const QModelIndex & idx) const
+        std::shared_ptr< SSearchResult > CDirModel::getSearchResultInfo( const QModelIndex & idx ) const
         {
             if ( !idx.isValid() )
                 return {};
@@ -1270,12 +1286,12 @@ namespace NMediaManager
             auto pos = fSearchResultMap.find( fi.absoluteFilePath() );
             if ( pos == fSearchResultMap.end() )
                 return {};
-            return ( *pos ).second;
+            return (*pos).second;
         }
 
-        QString CDirModel::computeTransformPath( const QStandardItem *item, bool transformParentsOnly ) const
+        QString CDirModel::computeTransformPath( const QStandardItem * item, bool transformParentsOnly ) const
         {
-            if ( !item || ( item == invisibleRootItem() ) )
+            if ( !item || (item == invisibleRootItem()) )
                 return QString();
             if ( item->data( ECustomRoles::eIsRoot ).toBool() )
                 return item->data( ECustomRoles::eFullPathRole ).toString();
@@ -1306,7 +1322,7 @@ namespace NMediaManager
             return retVal;
         }
 
-        QString CDirModel::getDispName( const QString &absPath ) const
+        QString CDirModel::getDispName( const QString & absPath ) const
         {
             if ( fRootPath.isEmpty() )
                 return QString();
@@ -1314,149 +1330,170 @@ namespace NMediaManager
             return rootDir.relativeFilePath( absPath );
         }
 
-        QString CDirModel::getDispName( const QFileInfo &absPath ) const
+        QString CDirModel::getDispName( const QFileInfo & absPath ) const
         {
             return getDispName( absPath.absoluteFilePath() );
         }
 
-        std::pair< bool, QStandardItem * > CDirModel::transform( const QStandardItem *item, QStandardItem *parentItem, QStandardItemModel *resultModel, bool displayOnly ) const
+        void CDirModel::appendError( QStandardItem * parent, QStandardItem * errorNode )
         {
-            QStandardItem *myItem = nullptr;
+            auto pos = -1;
+            for ( int ii = 0; ii < parent->rowCount(); ++ii )
+            {
+                if ( !parent->child( ii )->data( ECustomRoles::eIsErrorNode ).toBool() )
+                {
+                    pos = ii;
+                    break;
+                }
+            }
+            if ( pos == -1 )
+                pos = parent->rowCount();
+
+            parent->insertRow( pos, errorNode );
+        }
+
+        std::pair< bool, QStandardItem * > CDirModel::transform( const QStandardItem * item, QStandardItem * parentItem, bool displayOnly ) const
+        {
+            QStandardItem * myItem = nullptr;
             bool aOK = true;
             auto oldName = computeTransformPath( item, true );
             auto newName = computeTransformPath( item, false );
 
             if ( oldName != newName )
             {
-                QFileInfo oldFileInfo(oldName);
-                QFileInfo newFileInfo(newName);
+                QFileInfo oldFileInfo( oldName );
+                QFileInfo newFileInfo( newName );
 
-                myItem = new QStandardItem(QString("'%1' => '%2'").arg(getDispName(oldName)).arg(getDispName(newName)));
+                myItem = new QStandardItem( QString( "'%1' => '%2'" ).arg( getDispName( oldName ) ).arg( getDispName( newName ) ) );
 
-                myItem->setData(oldName, Qt::UserRole + 1);
-                myItem->setData(newName, Qt::UserRole + 2);
-                if (parentItem)
-                    parentItem->appendRow(myItem);
+                myItem->setData( oldName, ECustomRoles::eOldName );
+                myItem->setData( newName, ECustomRoles::eNewName );
+                if ( parentItem )
+                    parentItem->appendRow( myItem );
                 else
-                    resultModel->appendRow(myItem);
+                    fProcessResults.second->appendRow( myItem );
 
-                if (!displayOnly)
+                if ( !displayOnly )
                 {
                     bool removeIt = newName == "<DELETE THIS>";
-                    if (fProgressDlg)
+                    if ( fProgressDlg )
                     {
-                        if (removeIt)
-                            fProgressDlg->setLabelText(tr("Removing '%1'").arg(getDispName(oldName)));
+                        if ( removeIt )
+                            fProgressDlg->setLabelText( tr( "Removing '%1'" ).arg( getDispName( oldName ) ) );
                         else
-                            fProgressDlg->setLabelText(tr("Renaming '%1' => '%2'").arg(getDispName(oldName)).arg(getDispName(newName)));
+                            fProgressDlg->setLabelText( tr( "Renaming '%1' => '%2'" ).arg( getDispName( oldName ) ).arg( getDispName( newName ) ) );
                     }
 
                     bool dirAlreadyExisted = (oldFileInfo.exists() && oldFileInfo.isDir() && newFileInfo.exists() && newFileInfo.isDir());
                     if ( dirAlreadyExisted )
                     {
                         // new directory already exists, do move everything from old to new
-                        auto it = QDirIterator(oldName, QDir::NoDotAndDotDot | QDir::AllEntries, QDirIterator::Subdirectories);
+                        auto it = QDirIterator( oldName, QDir::NoDotAndDotDot | QDir::AllEntries, QDirIterator::Subdirectories );
                         bool allDeletedOK = true;
-                        while (it.hasNext())
+                        while ( it.hasNext() )
                         {
                             it.next();
                             auto fi = it.fileInfo();
                             auto oldPath = fi.absoluteFilePath();
-                            auto relPath = QDir(oldFileInfo.absoluteFilePath()).relativeFilePath(oldPath);
-                            auto newPath = QDir(newFileInfo.absoluteFilePath()).absoluteFilePath(relPath);
-                            if (!QFile::rename(oldPath, newPath))
+                            auto relPath = QDir( oldFileInfo.absoluteFilePath() ).relativeFilePath( oldPath );
+                            auto newPath = QDir( newFileInfo.absoluteFilePath() ).absoluteFilePath( relPath );
+                            if ( !QFile::rename( oldPath, newPath ) )
                             {
-                                auto errorItem = new QStandardItem(QString("ERROR: %1: FAILED TO MOVE ITEM TO %2").arg(oldPath).arg(newPath));
-                                myItem->appendRow(errorItem);
+                                auto errorItem = new QStandardItem( QString( "ERROR: %1: FAILED TO MOVE ITEM TO %2" ).arg( oldPath ).arg( newPath ) );
+                                errorItem->setData( ECustomRoles::eIsErrorNode, true );
+                                appendError( myItem, errorItem );
 
                                 QIcon icon;
-                                icon.addFile(QString::fromUtf8(":/resources/error.png"), QSize(), QIcon::Normal, QIcon::Off);
-                                errorItem->setIcon(icon);
+                                icon.addFile( QString::fromUtf8( ":/resources/error.png" ), QSize(), QIcon::Normal, QIcon::Off );
+                                errorItem->setIcon( icon );
                                 allDeletedOK = false;
                             }
                         }
-                        if (allDeletedOK)
+                        if ( allDeletedOK )
                         {
-                            auto dir = QDir(oldName);
+                            auto dir = QDir( oldName );
                             aOK = dir.removeRecursively();
-                            if (!aOK)
+                            if ( !aOK )
                             {
-                                auto errorItem = new QStandardItem(QString("ERROR: Failed to Remove '%1'").arg(oldName));
-                                myItem->appendRow(errorItem);
+                                auto errorItem = new QStandardItem( QString( "ERROR: Failed to Remove '%1'" ).arg( oldName ) );
+                                errorItem->setData( ECustomRoles::eIsErrorNode, true );
+                                appendError( myItem, errorItem );
                             }
                         }
-                        fProgressDlg->setValue(fProgressDlg->value() + 4);
+                        fProgressDlg->setValue( fProgressDlg->value() + 4 );
                     }
                     else
                     {
-                        if (!checkProcessItemExists(oldName, myItem, removeIt))
+                        if ( !checkProcessItemExists( oldName, myItem, removeIt ) )
                         {
                         }
-                        else if (oldFileInfo.exists() && removeIt)
+                        else if ( oldFileInfo.exists() && removeIt )
                         {
-                            auto dir = QDir(oldName);
+                            auto dir = QDir( oldName );
                             aOK = dir.removeRecursively();
-                            if (!aOK)
+                            if ( !aOK )
                             {
-                                auto errorItem = new QStandardItem(QString("ERROR: Failed to Remove '%1'").arg(oldName));
-                                myItem->appendRow(errorItem);
+                                auto errorItem = new QStandardItem( QString( "ERROR: Failed to Remove '%1'" ).arg( oldName ) );
+                                errorItem->setData( ECustomRoles::eIsErrorNode, true );
+                                appendError( myItem, errorItem );
                             }
                         }
                         else
                         {
-                            auto timeStamps = NFileUtils::timeStamps(oldName);
-                            if (fProgressDlg)
+                            auto timeStamps = NFileUtils::timeStamps( oldName );
+                            if ( fProgressDlg )
                             {
-                                fProgressDlg->setValue(fProgressDlg->value() + 1);
+                                fProgressDlg->setValue( fProgressDlg->value() + 1 );
                                 qApp->processEvents();
                             }
 
-                            auto transFormItem = getTransformItem(item);
+                            auto transFormItem = getTransformItem( item );
                             bool parentPathOK = true;
-                            if (transFormItem)
+                            if ( transFormItem )
                             {
                                 auto mySubPath = transFormItem->text();
-                                if ((mySubPath.indexOf("/") != -1) || (mySubPath.indexOf("\\") != -1))
+                                if ( (mySubPath.indexOf( "/" ) != -1) || (mySubPath.indexOf( "\\" ) != -1) )
                                 {
-                                    auto pos = mySubPath.lastIndexOf(QRegularExpression("[\\/\\\\]"));
-                                    auto myParentPath = mySubPath.left(pos);
+                                    auto pos = mySubPath.lastIndexOf( QRegularExpression( "[\\/\\\\]" ) );
+                                    auto myParentPath = mySubPath.left( pos );
 
-                                    auto parentPath = computeTransformPath(item->parent(), false);
-                                    parentPathOK = QDir(parentPath).mkpath(myParentPath);
-                                    if (!parentPathOK)
+                                    auto parentPath = computeTransformPath( item->parent(), false );
+                                    parentPathOK = QDir( parentPath ).mkpath( myParentPath );
+                                    if ( !parentPathOK )
                                     {
-                                        auto errorItem = new QStandardItem(QString("ERROR: '%1' => '%2' : FAILED TO MAKE PARENT DIRECTORY PATH").arg(oldName).arg(newName));
-                                        myItem->appendRow(errorItem);
+                                        auto errorItem = new QStandardItem( QString( "ERROR: '%1' => '%2' : FAILED TO MAKE PARENT DIRECTORY PATH" ).arg( oldName ).arg( newName ) );
+                                        errorItem->setData( ECustomRoles::eIsErrorNode, true );
+                                        appendError( myItem, errorItem );
 
                                         QIcon icon;
-                                        icon.addFile(QString::fromUtf8(":/resources/error.png"), QSize(), QIcon::Normal, QIcon::Off);
-                                        errorItem->setIcon(icon);
+                                        icon.addFile( QString::fromUtf8( ":/resources/error.png" ), QSize(), QIcon::Normal, QIcon::Off );
+                                        errorItem->setIcon( icon );
                                     }
                                 }
                             }
-                            if (fProgressDlg)
+                            if ( fProgressDlg )
                             {
-                                fProgressDlg->setValue(fProgressDlg->value() + 1);
+                                fProgressDlg->setValue( fProgressDlg->value() + 1 );
                                 qApp->processEvents();
                             }
 
                             QString errorMsg;
-                            if (parentPathOK)
+                            if ( parentPathOK )
                             {
-                                if (newFileInfo.exists())
+                                if ( newFileInfo.exists() )
                                 {
-                                    if (newFileInfo.isFile() && oldFileInfo.isFile())
+                                    if ( newFileInfo.isFile() && oldFileInfo.isFile() )
                                     {
-                                        if (NFileUtils::CFileCompare(oldFileInfo, newFileInfo).compare() )
+                                        if ( NFileUtils::CFileCompare( oldFileInfo, newFileInfo ).compare() )
                                         {
-                                            aOK = QFile(oldName).remove();
-                                            if (!aOK)
-                                                errorMsg = QString("Destination file '%1' exists and is identical to the new '%2' file, but the old file can not be deleted").arg(oldName).arg(newName);
+                                            aOK = QFile( oldName ).remove();
+                                            if ( !aOK )
+                                                errorMsg = QString( "Destination file '%1' exists and is identical to the new '%2' file, but the old file can not be deleted" ).arg( oldName ).arg( newName );
                                         }
                                         else
                                         {
                                             aOK = false;
-                                            errorMsg = QString("Destination file Exists - Old Size: %1 New Size: %2").arg(NFileUtils::fileSizeString(oldName, false)).arg(NFileUtils::fileSizeString(newName, false));
+                                            errorMsg = QString( "Destination file Exists - Old Size: %1 New Size: %2" ).arg( NFileUtils::fileSizeString( oldName, false ) ).arg( NFileUtils::fileSizeString( newName, false ) );
                                         }
                                     }
                                     else
@@ -1464,66 +1501,69 @@ namespace NMediaManager
                                 }
                                 else
                                 {
-                                    auto fi = QFile(oldName);
-                                    aOK = fi.rename(newName);
-                                    if (!aOK)
+                                    auto fi = QFile( oldName );
+                                    aOK = fi.rename( newName );
+                                    if ( !aOK )
                                         errorMsg = fi.errorString();
                                 }
                             }
                             else
                                 aOK = false;
-                            if (fProgressDlg)
+                            if ( fProgressDlg )
                             {
-                                fProgressDlg->setValue(fProgressDlg->value() + 1);
+                                fProgressDlg->setValue( fProgressDlg->value() + 1 );
                                 qApp->processEvents();
                             }
 
-                            if (parentPathOK && !aOK)
+                            if ( parentPathOK && !aOK )
                             {
-                                auto errorItem = new QStandardItem(QString("ERROR: '%1' => '%2' : FAILED TO RENAME - %3").arg(oldName).arg(newName).arg(errorMsg));
-                                myItem->appendRow(errorItem);
+                                auto errorItem = new QStandardItem( QString( "ERROR: '%1' => '%2' : FAILED TO RENAME - %3" ).arg( oldName ).arg( newName ).arg( errorMsg ) );
+                                errorItem->setData( ECustomRoles::eIsErrorNode, true );
+                                appendError( myItem, errorItem );
 
                                 QIcon icon;
-                                icon.addFile(QString::fromUtf8(":/resources/error.png"), QSize(), QIcon::Normal, QIcon::Off);
-                                errorItem->setIcon(icon);
+                                icon.addFile( QString::fromUtf8( ":/resources/error.png" ), QSize(), QIcon::Normal, QIcon::Off );
+                                errorItem->setIcon( icon );
                             }
-                            else if (parentPathOK && !dirAlreadyExisted)
+                            else if ( parentPathOK && !dirAlreadyExisted )
                             {
-                                auto pos = fSearchResultMap.find(oldName);
-                                auto searchInfo = ( pos == fSearchResultMap.end() ) ? std::shared_ptr< SSearchResult >() : (*pos).second;
+                                auto pos = fSearchResultMap.find( oldName );
+                                auto searchInfo = (pos == fSearchResultMap.end()) ? std::shared_ptr< SSearchResult >() : (*pos).second;
                                 QString msg;
-                                auto aOK = SetMKVTags(newName, searchInfo, msg );
-                                if (fProgressDlg)
+                                auto aOK = SetMKVTags( newName, searchInfo, msg );
+                                if ( fProgressDlg )
                                 {
-                                    fProgressDlg->setValue(fProgressDlg->value() + 1);
+                                    fProgressDlg->setValue( fProgressDlg->value() + 1 );
                                     qApp->processEvents();
                                 }
 
                                 if ( !aOK )
                                 {
-                                    auto errorItem = new QStandardItem(QString("ERROR: %1: FAILED TO MODIFY TAGS: %2").arg(newName).arg(msg));
-                                    myItem->appendRow(errorItem);
+                                    auto errorItem = new QStandardItem( QString( "ERROR: %1: FAILED TO MODIFY TAGS: %2" ).arg( newName ).arg( msg ) );
+                                    errorItem->setData( ECustomRoles::eIsErrorNode, true );
+                                    appendError( myItem, errorItem );
 
                                     QIcon icon;
-                                    icon.addFile(QString::fromUtf8(":/resources/error.png"), QSize(), QIcon::Normal, QIcon::Off);
-                                    errorItem->setIcon(icon);
+                                    icon.addFile( QString::fromUtf8( ":/resources/error.png" ), QSize(), QIcon::Normal, QIcon::Off );
+                                    errorItem->setIcon( icon );
                                 }
                                 else
                                 {
-                                    aOK = NFileUtils::setTimeStamps(newName, timeStamps);
-                                    if (fProgressDlg)
+                                    aOK = NFileUtils::setTimeStamps( newName, timeStamps );
+                                    if ( fProgressDlg )
                                     {
-                                        fProgressDlg->setValue(fProgressDlg->value() + 1);
+                                        fProgressDlg->setValue( fProgressDlg->value() + 1 );
                                         qApp->processEvents();
                                     }
-                                    if (!aOK)
+                                    if ( !aOK )
                                     {
-                                        auto errorItem = new QStandardItem(QString("ERROR: %1: FAILED TO MODIFY TIMESTAMP").arg(newName));
-                                        myItem->appendRow(errorItem);
+                                        auto errorItem = new QStandardItem( QString( "ERROR: %1: FAILED TO MODIFY TIMESTAMP" ).arg( newName ) );
+                                        errorItem->setData( ECustomRoles::eIsErrorNode, true );
+                                        appendError( myItem, errorItem );
 
                                         QIcon icon;
-                                        icon.addFile(QString::fromUtf8(":/resources/error.png"), QSize(), QIcon::Normal, QIcon::Off);
-                                        errorItem->setIcon(icon);
+                                        icon.addFile( QString::fromUtf8( ":/resources/error.png" ), QSize(), QIcon::Normal, QIcon::Off );
+                                        errorItem->setIcon( icon );
                                     }
                                 }
                             }
@@ -1531,13 +1571,13 @@ namespace NMediaManager
                                 aOK = parentPathOK;
                         }
                     }
-                    
+
                     QIcon icon;
-                    icon.addFile(aOK ? QString::fromUtf8(":/resources/ok.png") : QString::fromUtf8(":/resources/error.png"), QSize(), QIcon::Normal, QIcon::Off);
-                    myItem->setIcon(icon);
-                    if (fProgressDlg)
+                    icon.addFile( aOK ? QString::fromUtf8( ":/resources/ok.png" ) : QString::fromUtf8( ":/resources/error.png" ), QSize(), QIcon::Normal, QIcon::Off );
+                    myItem->setIcon( icon );
+                    if ( fProgressDlg )
                     {
-                        fProgressDlg->setValue(fProgressDlg->value() + 1);
+                        fProgressDlg->setValue( fProgressDlg->value() + 1 );
                         qApp->processEvents();
                     }
                 }
@@ -1545,7 +1585,7 @@ namespace NMediaManager
             return std::make_pair( aOK, myItem );
         }
 
-        std::pair< bool, QStandardItem * > CDirModel::mergeSRT( const QStandardItem *item, QStandardItem *parentItem, QStandardItemModel *resultModel, bool displayOnly ) const
+        std::pair< bool, QStandardItem * > CDirModel::mergeSRT( const QStandardItem * item, QStandardItem * parentItem, bool displayOnly ) const
         {
             if ( !item->data( ECustomRoles::eIsDir ).toBool() )
                 return std::make_pair( true, nullptr );
@@ -1557,7 +1597,7 @@ namespace NMediaManager
             bool aOK = true;
             QStandardItem * myItem = nullptr;
             fFirstProcess = true;
-            for ( auto &&mkvFile : mkvFiles )
+            for ( auto && mkvFile : mkvFiles )
             {
                 auto srtFiles = getChildSRTFiles( mkvFile, false );
                 if ( srtFiles.empty() )
@@ -1565,21 +1605,21 @@ namespace NMediaManager
 
                 SProcessInfo processInfo;
                 processInfo.fOldName = computeTransformPath( mkvFile, true );
-                auto oldFI = QFileInfo(processInfo.fOldName);
+                auto oldFI = QFileInfo( processInfo.fOldName );
 
                 processInfo.fNewName = oldFI.absoluteDir().absoluteFilePath( oldFI.fileName() + ".new" );// prevents the emby system from picking it up
 
-                processInfo.fItem = new QStandardItem( QString( "'%1' => '%2'" ).arg( getDispName(processInfo.fOldName) ).arg( getDispName( processInfo.fNewName ) ) );
+                processInfo.fItem = new QStandardItem( QString( "'%1' => '%2'" ).arg( getDispName( processInfo.fOldName ) ).arg( getDispName( processInfo.fNewName ) ) );
                 if ( parentItem )
-                    parentItem->appendRow(processInfo.fItem);
+                    parentItem->appendRow( processInfo.fItem );
                 else
-                    resultModel->appendRow(processInfo.fItem);
+                    fProcessResults.second->appendRow( processInfo.fItem );
 
-                for ( auto &&ii : srtFiles )
+                for ( auto && ii : srtFiles )
                 {
                     auto languageItem = new QStandardItem( tr( "Language: %1" ).arg( ii.first ) );
                     processInfo.fItem->appendRow( languageItem );
-                    for ( auto &&jj : ii.second )
+                    for ( auto && jj : ii.second )
                     {
                         auto defaultItem = getItem( jj, EColumns::eOnByDefault );
                         auto forcedItem = getItem( jj, EColumns::eForced );
@@ -1587,9 +1627,9 @@ namespace NMediaManager
 
                         auto srtFileItem = new QStandardItem( tr( "'%2' - Default: %3 Forced : %4 SDH : %5" )
                                                               .arg( jj->text() )
-                                                              .arg( ( defaultItem && defaultItem->checkState() == Qt::Checked ) ? "Yes" : "No" )
-                                                              .arg( ( forcedItem && forcedItem->checkState() == Qt::Checked ) ? "Yes" : "No" )
-                                                              .arg( ( sdhItem && sdhItem->checkState() == Qt::Checked ) ? "Yes" : "No" ) );
+                                                              .arg( (defaultItem && defaultItem->checkState() == Qt::Checked) ? "Yes" : "No" )
+                                                              .arg( (forcedItem && forcedItem->checkState() == Qt::Checked) ? "Yes" : "No" )
+                                                              .arg( (sdhItem && sdhItem->checkState() == Qt::Checked) ? "Yes" : "No" ) );
                         languageItem->appendRow( srtFileItem );
                     }
                 }
@@ -1598,36 +1638,37 @@ namespace NMediaManager
                 {
                     processInfo.fCmd = CPreferences::instance()->getMKVMergeEXE();
                     bool aOK = true;
-                    if (processInfo.fCmd.isEmpty() || !QFileInfo(processInfo.fCmd).isExecutable() )
+                    if ( processInfo.fCmd.isEmpty() || !QFileInfo( processInfo.fCmd ).isExecutable() )
                     {
-                        QStandardItem *errorItem = nullptr;
-                        if (processInfo.fCmd.isEmpty() )
+                        QStandardItem * errorItem = nullptr;
+                        if ( processInfo.fCmd.isEmpty() )
                             errorItem = new QStandardItem( QString( "ERROR: mkvmerge is not set properly" ) );
                         else
-                            errorItem = new QStandardItem( QString( "ERROR: mkvmerge '%1' is not an executable" ).arg(processInfo.fCmd) );
+                            errorItem = new QStandardItem( QString( "ERROR: mkvmerge '%1' is not an executable" ).arg( processInfo.fCmd ) );
 
-                        processInfo.fItem->appendRow( errorItem );
+                        errorItem->setData( ECustomRoles::eIsErrorNode, true );
+                        appendError( processInfo.fItem, errorItem );
 
                         QIcon icon;
                         icon.addFile( QString::fromUtf8( ":/resources/error.png" ), QSize(), QIcon::Normal, QIcon::Off );
                         errorItem->setIcon( icon );
                         aOK = false;
                     }
-                    aOK = aOK && checkProcessItemExists( processInfo.fOldName, processInfo.fItem);
-                    for( auto && ii : srtFiles )
+                    aOK = aOK && checkProcessItemExists( processInfo.fOldName, processInfo.fItem );
+                    for ( auto && ii : srtFiles )
                     {
                         if ( !aOK )
                             break;
-                        for( auto && jj : ii.second )
+                        for ( auto && jj : ii.second )
                         {
-                            aOK = aOK && checkProcessItemExists( jj->data( ECustomRoles::eFullPathRole ).toString(), processInfo.fItem);
+                            aOK = aOK && checkProcessItemExists( jj->data( ECustomRoles::eFullPathRole ).toString(), processInfo.fItem );
                         }
                     }
                     // aOK = the MKV and SRT exist and the cmd is an executable
-                    processInfo.fTimeStamps = NFileUtils::timeStamps(processInfo.fOldName);
+                    processInfo.fTimeStamps = NFileUtils::timeStamps( processInfo.fOldName );
 
 
-                    processInfo.fArgs =  QStringList() 
+                    processInfo.fArgs = QStringList()
                         << "--ui-language" << "en"
                         << "--priority" << "lower"
                         << "--output" << processInfo.fNewName
@@ -1638,48 +1679,48 @@ namespace NMediaManager
                         ;
                     QStringList trackOrder = { "0:0", "0:1" };
                     int nextTrack = 1;
-                    for ( auto &&ii : srtFiles )
+                    for ( auto && ii : srtFiles )
                     {
-                        for ( auto &&jj : ii.second )
+                        for ( auto && jj : ii.second )
                         {
                             //qDebug() << jj->text();
                             auto langItem = getItem( jj, EColumns::eLanguage );
-                            auto srtFile = jj->data(ECustomRoles::eFullPathRole).toString();
+                            auto srtFile = jj->data( ECustomRoles::eFullPathRole ).toString();
                             processInfo.fArgs
                                 << "--language"
-                                << "0:" + langItem->data(ECustomRoles::eISOCodeRole).toString().left(2).toLower()
+                                << "0:" + langItem->data( ECustomRoles::eISOCodeRole ).toString()
                                 << "--default-track"
-                                << "0:" + QString(jj->data(ECustomRoles::eDefaultTrackRole).toBool() ? "yes" : "no")
+                                << "0:" + QString( jj->data( ECustomRoles::eDefaultTrackRole ).toBool() ? "yes" : "no" )
                                 << "--hearing-impaired-flag"
-                                << "0:" + QString(jj->data(ECustomRoles::eHearingImparedRole).toBool() ? "yes" : "no")
+                                << "0:" + QString( jj->data( ECustomRoles::eHearingImparedRole ).toBool() ? "yes" : "no" )
                                 << "--forced-track"
-                                << "0:" + QString(jj->data(ECustomRoles::eForcedSubTitleRole).toBool() ? "yes" : "no")
+                                << "0:" + QString( jj->data( ECustomRoles::eForcedSubTitleRole ).toBool() ? "yes" : "no" )
                                 << "(" << srtFile << ")"
                                 ;
-                            processInfo.fSrtFiles.push_back(srtFile);
+                            processInfo.fSrtFiles.push_back( srtFile );
                             trackOrder << QString( "%1:0" ).arg( nextTrack++ );
                         }
                     }
                     processInfo.fArgs << "--track-order" << trackOrder.join( "," );
-                    fProcessQueue.push_back(processInfo);
-                    QTimer::singleShot(0, this, &CDirModel::slotRunNextProcessInQueue);
+                    fProcessQueue.push_back( processInfo );
                 }
                 myItem = processInfo.fItem;
             }
+            QTimer::singleShot( 0, this, &CDirModel::slotRunNextProcessInQueue );
             if ( mkvFiles.count() > 1 )
                 return std::make_pair( aOK, myItem );
             else
                 return std::make_pair( aOK, parentItem );
-
         }
 
-        bool CDirModel::checkProcessItemExists(const QString & fileName, QStandardItem * parentItem, bool scheduledForRemoval) const
+        bool CDirModel::checkProcessItemExists( const QString & fileName, QStandardItem * parentItem, bool scheduledForRemoval ) const
         {
             QFileInfo fi( fileName );
             if ( !fi.exists() && !scheduledForRemoval )
             {
                 auto errorItem = new QStandardItem( QString( "ERROR: '%1' - No Longer Exists" ).arg( fileName ) );
-                parentItem->appendRow( errorItem );
+                errorItem->setData( ECustomRoles::eIsErrorNode, true );
+                appendError( parentItem, errorItem );
 
                 QIcon icon;
                 icon.addFile( QString::fromUtf8( ":/resources/error.png" ), QSize(), QIcon::Normal, QIcon::Off );
@@ -1690,24 +1731,24 @@ namespace NMediaManager
                 return true;
         }
 
-        std::pair< bool, QStandardItem * > CDirModel::processItem( const QStandardItem *item, QStandardItem *parentItem, QStandardItemModel *resultModel, bool displayOnly ) const
+        std::pair< bool, QStandardItem * > CDirModel::processItem( const QStandardItem * item, QStandardItem * parentItem, bool displayOnly ) const
         {
             if ( isTransformModel() )
-                return transform( item, parentItem, resultModel, displayOnly );
+                return transform( item, parentItem, displayOnly );
             else if ( isMergeSRTModel() )
-                return mergeSRT( item, parentItem, resultModel, displayOnly );
+                return mergeSRT( item, parentItem, displayOnly );
             return { false, nullptr };
         }
 
-        bool CDirModel::process( const QStandardItem *item, bool displayOnly, QStandardItemModel *resultModel, QStandardItem *parentItem ) const
+        bool CDirModel::process( const QStandardItem * item, bool displayOnly, QStandardItem * parentItem )
         {
             if ( !item )
                 return false;
 
             bool aOK = true;
-            QStandardItem *myItem = nullptr;
+            QStandardItem * myItem = nullptr;
             if ( item != invisibleRootItem() )
-                std::tie( aOK, myItem ) = processItem( item, parentItem, resultModel, displayOnly );
+                std::tie( aOK, myItem ) = processItem( item, parentItem, displayOnly );
 
             auto numRows = item->rowCount();
             for ( int ii = 0; ii < numRows; ++ii )
@@ -1719,89 +1760,93 @@ namespace NMediaManager
                 if ( fProgressDlg && fProgressDlg->wasCanceled() )
                     break;
 
-                aOK = process( child, displayOnly, resultModel, myItem ) && aOK;
+                aOK = process( child, displayOnly, myItem ) && aOK;
             }
             return aOK;
         }
 
-        std::pair< bool, QStandardItemModel * > CDirModel::process( bool displayOnly ) const
+        void CDirModel::process( bool displayOnly )
         {
             CAutoWaitCursor awc;
-            auto model = new QStandardItemModel;
+            fProcessResults.second = std::make_shared< QStandardItemModel >();
             if ( fProgressDlg )
             {
-                disconnect(fProgressDlg, &QProgressDialog::canceled, this, &CDirModel::slotProgressCanceled);
-                connect(fProgressDlg, &QProgressDialog::canceled, this, &CDirModel::slotProgressCanceled);
+                disconnect( fProgressDlg.get(), &CDoubleProgressDlg::canceled, this, &CDirModel::slotProgressCanceled );
+                connect( fProgressDlg.get(), &CDoubleProgressDlg::canceled, this, &CDirModel::slotProgressCanceled );
             }
             if ( !displayOnly )
             {
 #ifdef Q_OS_WINDOWS
-                SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_AWAYMODE_REQUIRED);
+                SetThreadExecutionState( ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_AWAYMODE_REQUIRED );
 #endif
             }
-            auto retVal = std::make_pair( process( invisibleRootItem(), displayOnly, model, nullptr ), model );
-            if (fProgressDlg)
+            fProcessResults.first = process( invisibleRootItem(), displayOnly, nullptr );
+            if ( fProgressDlg )
             {
-                if (isMergeSRTModel())
-                    fProgressDlg->setValue(0);
+                if ( isMergeSRTModel() )
+                    fProgressDlg->setValue( 0 );
                 else
-                    fProgressDlg->setValue(retVal.second->rowCount());
+                    fProgressDlg->setValue( fProcessResults.second->rowCount() );
             }
             if ( !displayOnly )
             {
 #ifdef Q_OS_WINDOWS
-                SetThreadExecutionState(ES_CONTINUOUS);
+                SetThreadExecutionState( ES_CONTINUOUS );
 #endif
             }
-            return retVal;
         }
 
+        bool CDirModel::showProcessResults( const QString & title, const QString & label, const QMessageBox::Icon & icon, const QDialogButtonBox::StandardButtons & buttons, QWidget * parent ) const
+        {
+            if ( !fProcessResults.second || fProcessResults.second->rowCount() == 0 )
+                return true;
 
-        bool CDirModel::process( const std::function< QProgressDialog *( int count ) > &startProgress, const std::function< void( QProgressDialog * ) > &endProgress, QWidget *parent )
+            NUi::CTransformConfirm dlg( title, label, parent );
+            dlg.setModel( fProcessResults.second.get() );
+            dlg.setIconLabel( icon );
+            dlg.setButtons( buttons );
+            return dlg.exec() == QDialog::Accepted;
+        }
+
+        bool CDirModel::process( const std::function< std::shared_ptr< CDoubleProgressDlg >( int count ) > & startProgress, const std::function< void( std::shared_ptr< CDoubleProgressDlg > ) > & endProgress, QWidget * parent )
         {
             fProgressDlg = startProgress( 0 );
-            auto transformations = process( true );
-            if ( transformations.second->rowCount() == 0 )
+            process( true );
+            if ( fProcessResults.second && fProcessResults.second->rowCount() == 0 )
             {
-                QMessageBox::information( parent, tr( "Nothing to change" ), tr( "No files or directories could be transformed" ) );
+                QMessageBox::information( parent, tr( "Nothing to change" ), tr( "No files or directories could be processed" ) );
                 endProgress( fProgressDlg );
                 return false;
             }
-            NUi::CTransformConfirm dlg( tr( "Transformations:" ), tr( "Proceed?" ), parent );
+
+            bool continueOn = showProcessResults( tr( "Process:" ), tr( "Proceed?" ), QMessageBox::Information, QDialogButtonBox::Yes | QDialogButtonBox::No, parent );
+            endProgress( fProgressDlg );
+            if ( !continueOn )
+            {
+                emit sigProcessesFinished( false, true );
+                return false;
+            }
+
             int count = 0;
-            if (isTransformModel())
-                count = NQtUtils::itemCount(transformations.second, true);
+            if ( isTransformModel() )
+                count = NQtUtils::itemCount( fProcessResults.second.get(), true );
             else if ( isMergeSRTModel() )
             {
                 auto mkvFiles = getChildMKVFiles( invisibleRootItem(), true );
                 count = mkvFiles.count();
             }
-            dlg.setModel( transformations.second );
-            dlg.setIconLabel( QMessageBox::Information );
-            dlg.setButtons( QDialogButtonBox::Yes | QDialogButtonBox::No );
-            if ( dlg.exec() != QDialog::Accepted )
-            {
-                endProgress( fProgressDlg );
-                emit sigProcessesFinished( true );
-                return false;
-            }
-            endProgress( fProgressDlg );
 
             fProgressDlg = startProgress( count * eventsPerPath() );
-            transformations = process( false );
-            if ( !transformations.first )
+            process( false );
+            if ( !fProcessResults.first )
             {
-                NUi::CTransformConfirm dlg( tr( "Error While Transforming:" ), tr( "Issues:" ), parent );
-                dlg.setModel( transformations.second );
-                dlg.setIconLabel( QMessageBox::Critical );
-                dlg.setButtons( QDialogButtonBox::Ok );
-                dlg.exec();
+                showProcessResults( tr( "Error While Processing:" ), tr( "Issues:" ), QMessageBox::Critical, QDialogButtonBox::Ok, parent );
             }
             endProgress( fProgressDlg );
-            return true;
+            return fProcessResults.first;
         }
 
-        QStandardItem *CDirModel::getItem( const QStandardItem *item, EColumns column ) const
+        QStandardItem * CDirModel::getItem( const QStandardItem * item, EColumns column ) const
         {
             auto idx = indexFromItem( item );
             if ( !idx.isValid() )
@@ -1811,22 +1856,22 @@ namespace NMediaManager
             return retVal;
         }
 
-        QStandardItem *CDirModel::getLanguageItem( const QStandardItem *item ) const
+        QStandardItem * CDirModel::getLanguageItem( const QStandardItem * item ) const
         {
             return getItem( item, EColumns::eLanguage );
         }
 
-        QStandardItem *CDirModel::getTransformItem( const QStandardItem *item ) const
+        QStandardItem * CDirModel::getTransformItem( const QStandardItem * item ) const
         {
             return getItem( item, EColumns::eTransformName );
         }
 
-        bool CDirModel::isChecked( const QFileInfo &fileInfo, EColumns column ) const
+        bool CDirModel::isChecked( const QFileInfo & fileInfo, EColumns column ) const
         {
             return isChecked( fileInfo.absoluteFilePath(), column );
         }
 
-        bool CDirModel::isChecked( const QString &path, EColumns column ) const
+        bool CDirModel::isChecked( const QString & path, EColumns column ) const
         {
             auto item = getItemFromPath( path );
             auto colItem = getItem( item, column );
@@ -1848,7 +1893,7 @@ namespace NMediaManager
             transformPatternChanged( invisibleRootItem() );
         }
 
-        void CDirModel::transformPatternChanged( const QStandardItem *item )
+        void CDirModel::transformPatternChanged( const QStandardItem * item )
         {
             if ( !item )
                 return;
@@ -1870,7 +1915,7 @@ namespace NMediaManager
             }
         }
 
-        void CDirModel::updateTransformPattern( const QStandardItem *item )const
+        void CDirModel::updateTransformPattern( const QStandardItem * item )const
         {
             if ( !isTransformModel() )
                 return;
@@ -1879,7 +1924,7 @@ namespace NMediaManager
             {
                 auto idx = item->index();
 
-                auto baseIdx = ( idx.column() == EColumns::eFSName ) ? idx : idx.model()->index( idx.row(), EColumns::eFSName, idx.parent() );
+                auto baseIdx = (idx.column() == EColumns::eFSName) ? idx : idx.model()->index( idx.row(), EColumns::eFSName, idx.parent() );
                 auto baseItem = this->itemFromIndex( baseIdx );
 
                 auto transformedItem = getTransformItem( baseItem );
@@ -1887,7 +1932,7 @@ namespace NMediaManager
             }
         }
 
-        void CDirModel::updateTransformPattern( const QStandardItem *item, QStandardItem *transformedItem ) const
+        void CDirModel::updateTransformPattern( const QStandardItem * item, QStandardItem * transformedItem ) const
         {
             if ( !item || !transformedItem )
                 return;
@@ -1901,74 +1946,74 @@ namespace NMediaManager
                 return;
 
             auto transformInfo = transformItem( fileInfo );
-            if (!transformInfo.first || ( item->text() != transformInfo.second) )
+            if ( !transformInfo.first || (item->text() != transformInfo.second) )
             {
-                if (transformedItem->text() != transformInfo.second)
-                    transformedItem->setText(transformInfo.second);
+                if ( transformedItem->text() != transformInfo.second )
+                    transformedItem->setText( transformInfo.second );
 
-                auto isTVShow = treatAsTVShow(fileInfo, this->isChecked(path, EColumns::eIsTVShow));
-                if (canAutoSearch(fileInfo) && (CDirModel::isAutoSetText(transformInfo.second) || (!isValidName(transformInfo.second, fileInfo.isDir(), isTVShow) && !isValidName(fileInfo))))
-                    transformedItem->setBackground(Qt::red);
+                auto isTVShow = treatAsTVShow( fileInfo, this->isChecked( path, EColumns::eIsTVShow ) );
+                if ( canAutoSearch( fileInfo ) && (CDirModel::isAutoSetText( transformInfo.second ) || (!isValidName( transformInfo.second, fileInfo.isDir(), isTVShow ) && !isValidName( fileInfo ))) )
+                    transformedItem->setBackground( Qt::red );
             }
         }
 
-        bool CDirModel::SetMKVTags(const QString & fileName, std::shared_ptr< SSearchResult > & searchResults, QString & msg) const
+        bool CDirModel::SetMKVTags( const QString & fileName, std::shared_ptr< SSearchResult > & searchResults, QString & msg ) const
         {
-            Q_INIT_RESOURCE(core);
-            if (!QFileInfo(fileName).isFile())
+            Q_INIT_RESOURCE( core );
+            if ( !QFileInfo( fileName ).isFile() )
                 return true;
 
             auto mkvpropedit = CPreferences::instance()->getMKVPropEditEXE();
             if ( !QFileInfo( mkvpropedit ).isExecutable() )
             {
-                msg = tr("MKV PropEdit not found or is not an executable");
+                msg = tr( "MKV PropEdit not found or is not an executable" );
                 return false;
             }
             QString year;
-            QString title = QFileInfo(fileName).completeBaseName();
+            QString title = QFileInfo( fileName ).completeBaseName();
             if ( searchResults )
             {
                 year = searchResults->getYear();
             }
-            auto file = QFile(":/resources/BlankTags.xml");
+            auto file = QFile( ":/resources/BlankTags.xml" );
             if ( !file.open( QFile::ReadOnly ) )
             {
-                msg = tr("Internal error, could not open blank tags file");
+                msg = tr( "Internal error, could not open blank tags file" );
                 return false;
             }
             auto xml = file.readAll();
-            xml.replace( QByteArray( "%TITLE%" ), title.toUtf8());
-            xml.replace( QByteArray( "%YEAR%" ), year.toUtf8());
+            xml.replace( QByteArray( "%TITLE%" ), title.toUtf8() );
+            xml.replace( QByteArray( "%YEAR%" ), year.toUtf8() );
 
-            auto templateName = QDir(QDir::tempPath()).absoluteFilePath("XXXXXX.xml");
+            auto templateName = QDir( QDir::tempPath() ).absoluteFilePath( "XXXXXX.xml" );
             QTemporaryFile tmpFile( templateName );
             auto tmplate = tmpFile.fileTemplate();
             if ( !tmpFile.open() )
             {
-                msg = tr("Internal error, could not open blank tags file");
+                msg = tr( "Internal error, could not open blank tags file" );
                 return false;
             }
 
-            tmpFile.write(xml);
+            tmpFile.write( xml );
             auto tmpFileName = tmpFile.fileName();
             tmpFile.close();
 
             auto args = QStringList()
                 << fileName
                 << "--tags"
-                << QString("global:%1").arg(tmpFileName)
+                << QString( "global:%1" ).arg( tmpFileName )
                 << "--edit"
                 << "info"
                 << "--set"
-                << QString("title=%2").arg(title)
+                << QString( "title=%2" ).arg( title )
                 ;
-            auto retVal = QProcess::execute(mkvpropedit, args);
+            auto retVal = QProcess::execute( mkvpropedit, args );
 
             if ( retVal == -1 )
             {
                 msg = "MKV Prop Edit crashed";
             }
-            else if (retVal == -2)
+            else if ( retVal == -2 )
             {
                 msg = "MKV Prop Edit could not be started";
             }
@@ -1976,81 +2021,83 @@ namespace NMediaManager
             {
                 msg = "MKV Prop Edit returned with an unknown error";
             }
-    
+
             return retVal == 0;
         }
 
-        void CDirModel::addProcessError(const QString & msg)
+        void CDirModel::addProcessError( const QString & msg )
         {
-            if (fProcessQueue.empty())
+            if ( fProcessQueue.empty() )
                 return;
 
-            if (!fProcessQueue.front().fItem)
+            if ( !fProcessQueue.front().fItem )
                 return;
-            auto errorItem = new QStandardItem(QString("ERROR: %1: FAILED TO PROCESS").arg(msg));
-            fProcessQueue.front().fItem->appendRow(errorItem);
+            auto errorItem = new QStandardItem( QString( "ERROR: %1: FAILED TO PROCESS" ).arg( msg ) );
+            errorItem->setData( ECustomRoles::eIsErrorNode, true );
+            appendError( fProcessQueue.front().fItem, errorItem );
 
             QIcon icon;
-            icon.addFile(QString::fromUtf8(":/resources/error.png"), QSize(), QIcon::Normal, QIcon::Off);
-            errorItem->setIcon(icon);
+            icon.addFile( QString::fromUtf8( ":/resources/error.png" ), QSize(), QIcon::Normal, QIcon::Off );
+            errorItem->setIcon( icon );
+            fProcessResults.first = false;
         }
 
         void CDirModel::slotRunNextProcessInQueue()
         {
-            if (fProcess->state() != QProcess::NotRunning)
+            if ( fProcess->state() != QProcess::NotRunning )
                 return;
 
-            if (fProgressDlg && !fFirstProcess )
-                fProgressDlg->setValue(fProgressDlg->value() + 1);
+            if ( fProgressDlg && !fFirstProcess )
+                fProgressDlg->setValue( fProgressDlg->value() + 1 );
             fFirstProcess = false;
-            if (fProcessQueue.empty())
+            if ( fProcessQueue.empty() )
             {
-                emit sigProcessesFinished( false );
+                emit sigProcessesFinished( fProcessResults.first, false );
                 return;
             }
 
             auto && curr = fProcessQueue.front();
 
-            if (fResults)
+            if ( fResults )
             {
                 auto tmp = QStringList() << curr.fCmd << curr.fArgs;
-                for (auto && ii : tmp)
+                for ( auto && ii : tmp )
                 {
-                    if (ii.contains(" "))
+                    if ( ii.contains( " " ) )
                         ii = "\"" + ii + "\"";
                 }
-                fResults->appendPlainText("Running Command:" + tmp.join(" "));
+                fResults->appendPlainText( "Running Command:" + tmp.join( " " ) );
             }
-            if (fProgressDlg)
+            if ( fProgressDlg )
             {
-                fProgressDlg->setLabelText(curr.getProgressLabel([this](const QString & text) { return getDispName(text); }));
+                fProgressDlg->setLabelText( curr.getProgressLabel( [ this ]( const QString & text ) { return getDispName( text ); } ) );
             }
             fProcessFinishedHandled = false;
-            fProcess->start(curr.fCmd, curr.fArgs);
+            fProcess->start( curr.fCmd, curr.fArgs );
         }
 
         QString errorString( QProcess::ProcessError error )
         {
-            switch (error)
+            switch ( error )
             {
-            case QProcess::FailedToStart: return QObject::tr("Failed to Start: The process failed to start.Either the invoked program is missing, or you may have insufficient permissions to invoke the program.");
-            case QProcess::Crashed: return QObject::tr("Crashed: The process crashed some time after starting successfully.");
-            case QProcess::Timedout: return QObject::tr("Timed out. The last waitFor...() function timed out.The state of QProcess is unchanged, and you can try calling waitFor...() again.");
-            case QProcess::WriteError: return QObject::tr("Write Error: An error occurred when attempting to write to the process.For example, the process may not be running, or it may have closed its input channel.");
-            case QProcess::ReadError: return QObject::tr("Read Error: An error occurred when attempting to read from the process.For example, the process may not be running.");
+            case QProcess::FailedToStart: return QObject::tr( "Failed to Start: The process failed to start.Either the invoked program is missing, or you may have insufficient permissions to invoke the program." );
+            case QProcess::Crashed: return QObject::tr( "Crashed: The process crashed some time after starting successfully." );
+            case QProcess::Timedout: return QObject::tr( "Timed out: The last waitFor...() function timed out.The state of QProcess is unchanged, and you can try calling waitFor...() again." );
+            case QProcess::WriteError: return QObject::tr( "Write Error: An error occurred when attempting to write to the process.For example, the process may not be running, or it may have closed its input channel." );
+            case QProcess::ReadError: return QObject::tr( "Read Error: An error occurred when attempting to read from the process.For example, the process may not be running." );
             default:
-            case QProcess::UnknownError: return QObject::tr("Unknown Error") ;
+            case QProcess::UnknownError: return QObject::tr( "Unknown Error" );
             }
         }
 
-        QString statusString(QProcess::ExitStatus error)
+        QString statusString( QProcess::ExitStatus error )
         {
-            switch (error)
+            switch ( error )
             {
-            case QProcess::NormalExit: return QObject::tr("Normal ExitThe process exited normally.");
-            case QProcess::CrashExit: return QObject::tr("Crashed: The process crashed.");
+            case QProcess::NormalExit: return QObject::tr( "Normal Exit: The process exited normally." );
+            case QProcess::CrashExit: return QObject::tr( "Crashed: The process crashed." );
             default:
-                return QString();
+            return QString();
             }
         }
 
@@ -2059,134 +2106,177 @@ namespace NMediaManager
             fProcess->kill();
         }
 
-        void CDirModel::processFinished(const QString & msg, bool error)
+        void CDirModel::processFinished( const QString & msg, bool error )
         {
-            if (fProcessQueue.empty())
+            if ( fProcessQueue.empty() )
                 return;
 
-            if (fResults)
-                fResults->appendPlainText((error ? tr("Error: ") : QString()) + msg);
+            if ( fResults )
+                fResults->appendPlainText( (error ? tr( "Error: " ) : QString()) + msg );
             else
-                qDebug() << (error ? tr("Error: ") : QString()) + msg;
+                qDebug() << (error ? tr( "Error: " ) : QString()) + msg;
 
-            if (error)
-                addProcessError(msg);
-
+            if ( error )
+                addProcessError( msg );
 
             bool wasCanceled = fProgressDlg && fProgressDlg->wasCanceled();
-            fProcessQueue.front().cleanup(!error && !wasCanceled); 
+            fProcessResults.first = !error && !wasCanceled;
+            fProcessQueue.front().cleanup( this, !error && !wasCanceled );
 
-            if (!fProcessQueue.empty())
+            if ( !fProcessQueue.empty() )
                 fProcessQueue.pop_front();
 
-            if (wasCanceled)
+            if ( wasCanceled )
                 fProcessQueue.clear();
 
-            QTimer::singleShot(0, this, &CDirModel::slotRunNextProcessInQueue);
+            QTimer::singleShot( 0, this, &CDirModel::slotRunNextProcessInQueue );
         }
 
-        void CDirModel::slotProcessErrorOccured(QProcess::ProcessError error)
+        void CDirModel::slotProcessErrorOccured( QProcess::ProcessError error )
         {
-            auto msg = tr("Error Running Command: %1(%2)").arg(errorString(error)).arg(error);
-            processFinished(msg, true);
+            auto msg = tr( "Error Running Command: %1(%2)" ).arg( errorString( error ) ).arg( error );
+            processFinished( msg, true );
             fProcessFinishedHandled = true;
         }
 
-        void CDirModel::slotProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
+        void CDirModel::slotProcessFinished( int exitCode, QProcess::ExitStatus exitStatus )
         {
-            if (fProcessFinishedHandled)
+            if ( fProcessFinishedHandled )
                 return;
 
-            auto msg = tr("Running Finished: Exit Code: %1(%2)").arg(statusString(exitStatus)).arg(exitCode);
-            processFinished(msg, (exitStatus != QProcess::NormalExit));
+            auto msg = tr( "Running Finished: %1 Exit Code: %2" ).arg( statusString( exitStatus ) ).arg( exitCode );
+            processFinished( msg, (exitStatus != QProcess::NormalExit) );
         }
 
 
         void CDirModel::slotProcessStandardError()
         {
-            NQtUtils::appendToLog( fResults, fProcess->readAllStandardError(), fStdErrRemaining);
+            NQtUtils::appendToLog( fResults, fProcess->readAllStandardError(), fStdErrRemaining );
         }
 
         void CDirModel::slotProcessStandardOutput()
         {
-            NQtUtils::appendToLog(fResults, fProcess->readAllStandardOutput(), fStdOutRemaining);
-         }
+            auto string = fProcess->readAllStandardOutput();
+            NQtUtils::appendToLog( fResults, string, fStdOutRemaining );
 
-        void CDirModel::slotProcessStarted()
-        {
+            if ( fProgressDlg )
+            {
+                auto regEx = QRegularExpression( "[Pp]rogress\\:\\s*(?<percent>\\d+)\\%" );
+                auto match = regEx.match( string );
+                QString percent;
+                while ( match.hasMatch() )
+                {
+                    percent = match.captured( "percent" );
+                    match = regEx.match( string, match.capturedEnd( "percent" ) + 1 );
+                }
+                if ( !percent.isEmpty() )
+                {
+                    bool aOK = false;
+                    int percentVal = percent.toInt( &aOK );
+                    if ( aOK )
+                        fProgressDlg->setSecondaryValue( percentVal );
+                }
+            }
         }
 
-        void CDirModel::slotProcesssStateChanged(QProcess::ProcessState newState)
+        void CDirModel::slotProcessStarted()
+        {}
+
+        void CDirModel::slotProcesssStateChanged( QProcess::ProcessState newState )
         {
             (void)newState;
         }
 
-
-        void CDirModel::SProcessInfo::cleanup( bool aOK )
+        void CDirModel::SProcessInfo::cleanup( CDirModel * model, bool aOK )
         {
-            if (fOldName.isEmpty() || fNewName.isEmpty())
+            if ( fOldName.isEmpty() || fNewName.isEmpty() )
                 return;
-            
+
             if ( !aOK )
             {
-                QFile::remove(fNewName );
+                QFile::remove( fNewName );
                 return;
             }
-            auto backupName = fOldName + ".bak";
-            if (!QFile::rename(fOldName, backupName))
+
+            if ( !QFileInfo::exists( fNewName ) )
             {
-                auto errorItem = new QStandardItem(QString("ERROR: %1: FAILED TO MOVE ITEM TO %2").arg(fOldName).arg(backupName));
-                fItem->appendRow(errorItem);
+                auto errorItem = new QStandardItem( QString( "ERROR: %1:  New file does not exist" ).arg( model->getDispName( fOldName ) ).arg( model->getDispName( fNewName ) ) );
+                errorItem->setData( ECustomRoles::eIsErrorNode, true );
+                appendError( fItem, errorItem );
 
                 QIcon icon;
-                icon.addFile(QString::fromUtf8(":/resources/error.png"), QSize(), QIcon::Normal, QIcon::Off);
-                errorItem->setIcon(icon);
+                icon.addFile( QString::fromUtf8( ":/resources/error.png" ), QSize(), QIcon::Normal, QIcon::Off );
+                errorItem->setIcon( icon );
+
+                model->fProcessResults.first = false;
+                return;
+            }
+
+            auto backupName = fOldName + ".bak";
+            if ( !QFile::rename( fOldName, backupName ) )
+            {
+                auto errorItem = new QStandardItem( QString( "ERROR: %1: FAILED TO MOVE ITEM TO %2" ).arg( model->getDispName( fOldName ) ).arg( model->getDispName( backupName ) ) );
+                errorItem->setData( ECustomRoles::eIsErrorNode, true );
+                appendError( fItem, errorItem );
+
+                QIcon icon;
+                icon.addFile( QString::fromUtf8( ":/resources/error.png" ), QSize(), QIcon::Normal, QIcon::Off );
+                errorItem->setIcon( icon );
+                model->fProcessResults.first = false;
+                return;
             }
 
             if ( !QFile::rename( fNewName, fOldName ) )
             {
-                auto errorItem = new QStandardItem(QString("ERROR: %1: FAILED TO MOVE ITEM TO %2").arg(fNewName).arg(fOldName));
-                fItem->appendRow(errorItem);
+                auto errorItem = new QStandardItem( QString( "ERROR: %1: FAILED TO MOVE ITEM TO %2" ).arg( model->getDispName( fNewName ) ).arg( model->getDispName( fOldName ) ) );
+                errorItem->setData( ECustomRoles::eIsErrorNode, true );
+                appendError( fItem, errorItem );
 
                 QIcon icon;
-                icon.addFile(QString::fromUtf8(":/resources/error.png"), QSize(), QIcon::Normal, QIcon::Off);
-                errorItem->setIcon(icon);
+                icon.addFile( QString::fromUtf8( ":/resources/error.png" ), QSize(), QIcon::Normal, QIcon::Off );
+                errorItem->setIcon( icon );
+                model->fProcessResults.first = false;
+                return;
             }
-            if ( !NFileUtils::setTimeStamps(fOldName, fTimeStamps ) )
+
+            if ( !NFileUtils::setTimeStamps( fOldName, fTimeStamps ) )
             {
-                auto errorItem = new QStandardItem(QString("ERROR: %1: FAILED TO MODIFY TIMESTAMP").arg(fOldName));
-                fItem->appendRow(errorItem);
+                auto errorItem = new QStandardItem( QString( "ERROR: %1: FAILED TO MODIFY TIMESTAMP" ).arg( model->getDispName( fOldName ) ) );
+                errorItem->setData( ECustomRoles::eIsErrorNode, true );
+                appendError( fItem, errorItem );
 
                 QIcon icon;
-                icon.addFile(QString::fromUtf8(":/resources/error.png"), QSize(), QIcon::Normal, QIcon::Off);
-                errorItem->setIcon(icon);
+                icon.addFile( QString::fromUtf8( ":/resources/error.png" ), QSize(), QIcon::Normal, QIcon::Off );
+                errorItem->setIcon( icon );
+                model->fProcessResults.first = false;
             }
 
-            for( auto && ii : fSrtFiles )
+            for ( auto && ii : fSrtFiles )
             {
-                bool aOK = QFile::remove(ii);
-                if (!aOK)
+                bool aOK = QFile::rename( ii, ii + ".bak" );
+                if ( !aOK )
                 {
-                    auto errorItem = new QStandardItem(QString("ERROR: Failed to Remove '%1'").arg(ii));
-                    fItem->appendRow(errorItem);
+                    auto errorItem = new QStandardItem( QString( "ERROR: Failed to backup '%1'" ).arg( ii ) );
+                    errorItem->setData( ECustomRoles::eIsErrorNode, true );
+                    appendError( fItem, errorItem );
+                    model->fProcessResults.first = false;
                 }
-
             }
         }
 
-        QString CDirModel::SProcessInfo::getProgressLabel(std::function < QString(const QString &) > dispName)
+        QString CDirModel::SProcessInfo::getProgressLabel( std::function < QString( const QString & ) > dispName )
         {
-            auto dir = QFileInfo(fNewName).absolutePath();
-            auto fname = QFileInfo(fOldName).fileName();
-            auto retVal = QString("Merging MKV %1<ul><li>%2</li>").arg(dispName(dir)).arg( fname ) ;
-            for (auto && ii : fSrtFiles)
+            auto dir = QFileInfo( fNewName ).absolutePath();
+            auto fname = QFileInfo( fOldName ).fileName();
+            auto retVal = QString( "Merging MKV %1<ul><li>%2</li>" ).arg( dispName( dir ) ).arg( fname );
+            for ( auto && ii : fSrtFiles )
             {
-                auto fname = QFileInfo(ii).fileName();
-                retVal += QString("<li>%1</li>").arg(fname);
+                auto fname = QFileInfo( ii ).fileName();
+                retVal += QString( "<li>%1</li>" ).arg( fname );
             }
             retVal += "</ul>";
-            fname = QFileInfo(fNewName).fileName();
-            retVal += QString("to create %1" ).arg(fname);
+            fname = QFileInfo( fNewName ).fileName();
+            retVal += QString( "to create %1" ).arg( fname );
             return retVal;
         }
     }

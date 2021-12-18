@@ -26,7 +26,6 @@
 #include "ui_Preferences.h"
 
 #include <QSettings>
-#include <QProgressDialog>
 #include <QStringListModel>
 #include <QInputDialog>
 #include <QFileDialog>

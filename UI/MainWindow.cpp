@@ -38,6 +38,7 @@
 #include "SABUtils/ScrollMessageBox.h"
 #include "SABUtils/AutoWaitCursor.h"
 #include "SABUtils/DelayLineEdit.h"
+#include "SABUtils/DoubleProgressDlg.h"
 
 #include <QSettings>
 #include <QFileInfo>
@@ -51,7 +52,6 @@
 #include <QSpinBox>
 
 
-#include <QProgressDialog>
 #include <QProgressBar>
 #include "SABUtils/FileUtils.h"
 
@@ -325,8 +325,8 @@ namespace NMediaManager
 
         void CMainWindow::clearProgressDlg()
         {
-            delete fProgressDlg;
-            fProgressDlg = nullptr;
+            fProgressDlg->close();
+            fProgressDlg->reset();
             fImpl->actionOpen->setEnabled( true );
         }
 
@@ -338,15 +338,13 @@ namespace NMediaManager
 
             if ( !fProgressDlg )
             {
-                fProgressDlg = new QProgressDialog( this );
-                auto bar = new QProgressBar(fProgressDlg);
-                fProgressDlg->setBar(bar);
-                bar->setFormat("%p% (%v of %m)");
+                fProgressDlg = std::make_shared< CDoubleProgressDlg >();
             }
             fProgressDlg->setWindowModality( Qt::WindowModal );
             fProgressDlg->setMinimumDuration( 0 );
             fProgressDlg->setAutoClose( false );
             fProgressDlg->setAutoReset( false );
+            fProgressDlg->setSingleProgressBarMode( true );
 
             fProgressDlg->setValue(0);
             fProgressDlg->setWindowTitle( title );
@@ -354,7 +352,7 @@ namespace NMediaManager
             fProgressDlg->setRange( 0, max );
             fProgressDlg->show();
 
-            connect( fProgressDlg, &QProgressDialog::canceled, 
+            connect( fProgressDlg.get(), &CDoubleProgressDlg::canceled,
                      [this]()
                      {
                          fImpl->actionOpen->setEnabled( true );

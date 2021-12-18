@@ -25,7 +25,7 @@
 
 #include <QMainWindow>
 #include <optional>
-class QProgressDialog;
+class CDoubleProgressDlg;
 namespace NBIF
 {
     enum class EButtonsLayout;
@@ -91,7 +91,7 @@ namespace NMediaManager
             std::unique_ptr< Ui::CMainWindow > fImpl;
             CCompleterFileSystemModel * fDirModel{ nullptr };
             CCompleterFileSystemModel * fFileModel{ nullptr };
-            QProgressDialog *fProgressDlg{ nullptr };
+            std::shared_ptr< CDoubleProgressDlg > fProgressDlg;
         };
     }
 }

@@ -24,7 +24,7 @@
 #define _MERGESRTPAGE_H
 
 #include <QWidget>
-class QProgressDialog;
+class CDoubleProgressDlg;
 
 namespace NMediaManager
 {
@@ -52,7 +52,7 @@ namespace NMediaManager
             void run();
             bool canRun() const;
 
-            void setSetupProgressDlgFunc( std::function< QProgressDialog *( const QString &title, const QString &cancelButtonText, int max ) > setupFunc, std::function< void() > clearFunc );
+            void setSetupProgressDlgFunc( std::function< std::shared_ptr< CDoubleProgressDlg >( const QString &title, const QString &cancelButtonText, int max ) > setupFunc, std::function< void() > clearFunc );
         public Q_SLOTS:
             void slotLoadFinished( bool canceled );
 
@@ -66,9 +66,9 @@ namespace NMediaManager
             void loadSettings();
             void saveSettings();
 
-            std::function< QProgressDialog *( const QString &title, const QString &cancelButtonText, int max ) > fSetupProgressFunc;
+            std::function< std::shared_ptr< CDoubleProgressDlg >( const QString &title, const QString &cancelButtonText, int max ) > fSetupProgressFunc;
             std::function< void() > fClearProgressFunc;
-            QProgressDialog *fProgressDlg{ nullptr };
+            std::shared_ptr< CDoubleProgressDlg > fProgressDlg;
 
             QString fDirName;
             std::unique_ptr< NCore::CDirModel > fModel;

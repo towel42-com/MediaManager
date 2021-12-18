@@ -24,6 +24,7 @@
 #include "ui_MergeSRTPage.h"
 
 #include "Core/DirModel.h"
+#include "SABUtils/DoubleProgressDlg.h"
 #include <QSettings>
 
 namespace NMediaManager
@@ -64,7 +65,7 @@ namespace NMediaManager
             settings.setValue("Splitter", fImpl->splitter->saveState());
         }
 
-        void CMergeSRTPage::setSetupProgressDlgFunc( std::function< QProgressDialog *( const QString &title, const QString &cancelButtonText, int max ) > setupFunc, std::function< void() > clearFunc )
+        void CMergeSRTPage::setSetupProgressDlgFunc( std::function< std::shared_ptr< CDoubleProgressDlg >( const QString &title, const QString &cancelButtonText, int max ) > setupFunc, std::function< void() > clearFunc )
         {
             fSetupProgressFunc = setupFunc;
             fClearProgressFunc = clearFunc;
@@ -82,6 +83,14 @@ namespace NMediaManager
             if (fSetupProgressFunc)
             {
                 fProgressDlg = fSetupProgressFunc(title, cancelButtonText, max);
+                fProgressDlg->setSingleProgressBarMode( !canRun() );
+
+                if ( canRun() )
+                {
+                    fProgressDlg->setSecondaryProgressLabel( tr( "Current Movie:" ) );
+                    fProgressDlg->setSecondaryRange( 0, 100 );
+                    fProgressDlg->setSecondaryValue( 0 );
+                }
             }
         }
 
@@ -134,16 +143,26 @@ namespace NMediaManager
             auto actionName = tr( "Merging SRT Files into MKV..." );
             auto cancelName = tr( "Abort Merge" );
             model = fModel.get();
-            connect(model, &NCore::CDirModel::sigProcessesFinished, [this]( bool canceled ) 
+            connect(model, &NCore::CDirModel::sigProcessesFinished, [this]( bool status, bool /*canceled*/ ) 
                 { 
                     clearProgressDlg(); 
-                    if ( !canceled ) 
-                        load(); 
+                    if ( !status )
+                    {
+                        fModel->showProcessResults( tr( "Error While Processing:" ), tr( "Issues:" ), QMessageBox::Critical, QDialogButtonBox::Ok, this );
+                    }
+                    //if ( !canceled ) 
+                    //    load(); 
                 });
-            if ( model && model->process(
-                [actionName, cancelName, this]( int count ) { setupProgressDlg( actionName, cancelName, count ); return fProgressDlg; },
-                [this](QProgressDialog * dlg) { (void)dlg; }, this ) )
+
+            if ( fModel )
             {
+                fModel->process(
+                    [ actionName, cancelName, this ]( int count )
+                {
+                    setupProgressDlg( actionName, cancelName, count );
+                    return fProgressDlg;
+                },
+                    [ this ]( std::shared_ptr< CDoubleProgressDlg > dlg ) { (void)dlg; }, this );
             }
         }
     }

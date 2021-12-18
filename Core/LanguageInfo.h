@@ -40,10 +40,7 @@ namespace NMediaManager
             QString displayName() const;
             bool isForced() const { return fIsForced; }
             bool isSDH() const { return fIsSDH; }
-            QString isoCode() const 
-            { 
-                return fISOCode; 
-            }
+            QString isoCode() const;
 
             // when the iso code/language cant be determined use this
             // this happens when the following happens

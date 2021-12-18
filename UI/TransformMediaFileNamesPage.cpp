@@ -33,8 +33,8 @@
 #include "Core/SearchTMDB.h"
 
 #include "SABUtils/QtUtils.h"
+#include "SABUtils/DoubleProgressDlg.h"
 
-#include <QProgressDialog>
 #include <QTimer>
 #include <QDir>
 
@@ -72,7 +72,7 @@ namespace NMediaManager
         {
         }
 
-        void CTransformMediaFileNamesPage::setSetupProgressDlgFunc( std::function< QProgressDialog *( const QString &title, const QString &cancelButtonText, int max ) > setupFunc, std::function< void() > clearFunc )
+        void CTransformMediaFileNamesPage::setSetupProgressDlgFunc( std::function< std::shared_ptr< CDoubleProgressDlg >( const QString &title, const QString &cancelButtonText, int max ) > setupFunc, std::function< void() > clearFunc )
         {
             fSetupProgressFunc = setupFunc;
             fClearProgressFunc = clearFunc;
@@ -262,14 +262,14 @@ namespace NMediaManager
 
         void CTransformMediaFileNamesPage::run()
         {
-            NCore::CDirModel *model = nullptr;
+            NCore::CDirModel * model = nullptr;
             auto actionName = tr( "Renaming Files..." );
             auto cancelName = tr( "Abort Rename" );
             model = fModel.get();
 
             if ( fModel && fModel->process(
-                [actionName, cancelName, this]( int count ) { setupProgressDlg( actionName, cancelName, count ); return fProgressDlg; },
-                [this]( QProgressDialog *dlg ) { (void)dlg; clearProgressDlg(); },
+                [ actionName, cancelName, this ]( int count ) { setupProgressDlg( actionName, cancelName, count ); return fProgressDlg; },
+                [ this ]( std::shared_ptr< CDoubleProgressDlg >dlg ) { (void)dlg; clearProgressDlg(); },
                 this ) )
             {
                 load();

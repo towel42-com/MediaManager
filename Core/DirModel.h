@@ -31,9 +31,11 @@
 #include <optional>
 #include <QProcess>
 #include <QDateTime>
+#include <QMessageBox>
+#include <QDialogButtonBox>
 #include "SABUtils/HashUtils.h"
 
-class QProgressDialog;
+class CDoubleProgressDlg;
 class QTreeView;
 class QMediaPlaylist;
 class QFileIconProvider;
@@ -70,7 +72,10 @@ namespace NMediaManager
             eDefaultTrackRole,
             eHearingImparedRole,
             eForcedSubTitleRole,
-            eMD5
+            eMD5,
+            eOldName,
+            eNewName,
+            eIsErrorNode
         };
 
         struct STreeNodeItem
@@ -158,14 +163,14 @@ namespace NMediaManager
             QStandardItem *getItemFromindex( QModelIndex idx ) const;
             QStandardItem *getItemFromPath( const QFileInfo &fi ) const;
 
-            bool process( const std::function< QProgressDialog *( int count ) > &startProgress, const std::function< void( QProgressDialog * ) > &endProgress, QWidget *parent );
+            bool process( const std::function< std::shared_ptr< CDoubleProgressDlg >( int count ) > &startProgress, const std::function< void( std::shared_ptr< CDoubleProgressDlg > ) > &endProgress, QWidget *parent );
             void setSearchResult( const QModelIndex &idx, std::shared_ptr< SSearchResult > info, bool applyToChilren );
             void setSearchResult( QStandardItem *item, std::shared_ptr< SSearchResult > info, bool applyToChilren );
             std::shared_ptr< SSearchResult > getSearchResultInfo( const QModelIndex &idx ) const;
 
-            void setNameFilters( const QStringList &filters, QTreeView *view = nullptr, QPlainTextEdit * resultsView = nullptr, QProgressDialog *progress = nullptr );
-            void reloadModel( QTreeView *view, QPlainTextEdit *resultsView, QProgressDialog *dlg );
-            void setRootPath( const QString &path, QTreeView *view = nullptr, QPlainTextEdit *resultsView = nullptr, QProgressDialog *dlg = nullptr );
+            void setNameFilters( const QStringList & filters, QTreeView * view = nullptr, QPlainTextEdit * resultsView = nullptr, std::shared_ptr< CDoubleProgressDlg >progress = {} );
+            void reloadModel( QTreeView *view, QPlainTextEdit *resultsView, std::shared_ptr< CDoubleProgressDlg > dlg );
+            void setRootPath( const QString & path, QTreeView * view = nullptr, QPlainTextEdit * resultsView = nullptr, std::shared_ptr< CDoubleProgressDlg > dlg = {} );
 
             QString getSearchName( const QModelIndex &idx ) const;
             bool treatAsTVShow( const QFileInfo &fileInfo, bool defaultValue ) const;
@@ -184,9 +189,10 @@ namespace NMediaManager
             static bool isAutoSetText( const QString &text );
 
             const QFileIconProvider *iconProvider() const { return fIconProvider; }
+            bool showProcessResults( const QString & title, const QString & label, const QMessageBox::Icon & icon, const QDialogButtonBox::StandardButtons & buttons, QWidget * parent ) const;
         Q_SIGNALS:
             void sigDirReloaded( bool canceled );
-            void sigProcessesFinished( bool cancelled );
+            void sigProcessesFinished( bool status, bool cancelled );
         public Q_SLOTS:
             void slotTVOutputFilePatternChanged( const QString &outPattern );
             void slotTVOutputDirPatternChanged( const QString &outPattern );
@@ -209,12 +215,15 @@ namespace NMediaManager
             bool SetMKVTags(const QString & fileName, std::shared_ptr< SSearchResult > & searchResults, QString & msg) const;
             QList< QFileInfo > getSRTFilesForMKV(const QFileInfo & fi) const;
 
+            QFileInfoList getMKVFilesInDir( const QDir & dir ) const;
+
             void autoDetermineLanguageAttributes( QStandardItem *parent );
             
             std::unordered_map< QString, std::vector< QStandardItem * > > getChildSRTFiles( const QStandardItem *item, bool sort ) const; // item should be a MKV file
             QList< QStandardItem * > getChildMKVFiles( const QStandardItem *item, bool goBelowDirs) const; // item should be a dir file
 
             void appendRow( QStandardItem *parent, QList< QStandardItem * > &items );
+            static void appendError( QStandardItem * parent, QStandardItem * errorNode );
 
             struct SIterateInfo
             {
@@ -224,7 +233,7 @@ namespace NMediaManager
                 std::function< void( const QFileInfo &dir, bool aOK ) > fPostFileFunction;
             };
 
-            void CDirModel::iterateEveryFile( const QFileInfo &fileInfo, const SIterateInfo &iterInfo, std::optional< QDateTime > & lastUpdateUI ) const;
+            void iterateEveryFile( const QFileInfo &fileInfo, const SIterateInfo &iterInfo, std::optional< QDateTime > & lastUpdateUI ) const;
             std::pair< uint64_t, uint64_t > computeNumberOfFiles( const QFileInfo &fileInfo ) const;
             void loadFileInfo( const QFileInfo &info );
 
@@ -239,12 +248,12 @@ namespace NMediaManager
 
             QString getDispName( const QString &absPath ) const;
             QString getDispName( const QFileInfo & absPath ) const;
-            std::pair< bool, QStandardItemModel * > process( bool displayOnly ) const;
-            bool process( const QStandardItem *item, bool displayOnly, QStandardItemModel *resultsModel, QStandardItem *resultsParentItem ) const;
+            void process( bool displayOnly );
+            bool process( const QStandardItem *item, bool displayOnly, QStandardItem *resultsParentItem );
 
-            std::pair< bool, QStandardItem * > processItem( const QStandardItem *item, QStandardItem *parentItem, QStandardItemModel *resultModel, bool displayOnly ) const;
-            std::pair< bool, QStandardItem * > transform( const QStandardItem *item, QStandardItem *parentItem, QStandardItemModel *resultModel, bool displayOnly ) const;
-            std::pair< bool, QStandardItem * > mergeSRT( const QStandardItem *item, QStandardItem *parentItem, QStandardItemModel *resultModel, bool displayOnly ) const;
+            std::pair< bool, QStandardItem * > processItem( const QStandardItem *item, QStandardItem *parentItem, bool displayOnly ) const;
+            std::pair< bool, QStandardItem * > transform( const QStandardItem *item, QStandardItem *parentItem, bool displayOnly ) const;
+            std::pair< bool, QStandardItem * > mergeSRT( const QStandardItem *item, QStandardItem *parentItem, bool displayOnly ) const;
 
             bool checkProcessItemExists( const QString & fileName, QStandardItem * parentItem, bool scheduledForRemoval=false ) const;
 
@@ -296,10 +305,12 @@ namespace NMediaManager
             QTreeView *fTreeView{ nullptr };
             QPlainTextEdit *fResults{ nullptr };
             QProcess * fProcess{ nullptr };
+            std::pair< bool, std::shared_ptr< QStandardItemModel > > fProcessResults;
+
             struct SProcessInfo
             {
                 SProcessInfo(){}
-                void cleanup( bool aOK );
+                void cleanup( CDirModel * model, bool aOK );
                 QString getProgressLabel(std::function < QString(const QString &) > dispName );
 
                 QString fCmd;
@@ -313,7 +324,7 @@ namespace NMediaManager
             mutable std::list< SProcessInfo > fProcessQueue;
             std::pair< QString, bool > fStdOutRemaining{ QString(),false };
             std::pair< QString, bool > fStdErrRemaining{ QString(),false };
-            mutable QProgressDialog *fProgressDlg{ nullptr };
+            mutable std::shared_ptr< CDoubleProgressDlg > fProgressDlg;
             bool fProcessFinishedHandled{ false };
             mutable bool fFirstProcess{ true };
         };

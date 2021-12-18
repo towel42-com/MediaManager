@@ -25,7 +25,7 @@
 
 #include <QWidget>
 #include <optional>
-class QProgressDialog;
+class CDoubleProgressDlg;
 class QTreeView;
 class QLineEdit;
 class CDelayLineEdit;
@@ -70,7 +70,7 @@ namespace NMediaManager
             void setTreatAsTVByDefault( bool value );
             void setExactMatchesOnly( bool value );
 
-            void setSetupProgressDlgFunc( std::function< QProgressDialog *( const QString &title, const QString &cancelButtonText, int max ) > setupFunc, std::function< void() > clearFunc );
+            void setSetupProgressDlgFunc( std::function< std::shared_ptr< CDoubleProgressDlg >( const QString &title, const QString &cancelButtonText, int max ) > setupFunc, std::function< void() > clearFunc );
         Q_SIGNALS:
             void sigLoading();
             void sigLoadFinished( bool canceled );
@@ -90,9 +90,9 @@ namespace NMediaManager
 
             std::unique_ptr< NCore::CDirModel > fModel;
             NCore::CSearchTMDB *fSearchTMDB{ nullptr };
-            std::function< QProgressDialog *( const QString &title, const QString &cancelButtonText, int max ) > fSetupProgressFunc;
+            std::function< std::shared_ptr< CDoubleProgressDlg >( const QString &title, const QString &cancelButtonText, int max ) > fSetupProgressFunc;
             std::function< void() > fClearProgressFunc;
-            QProgressDialog *fProgressDlg{ nullptr };
+            std::shared_ptr< CDoubleProgressDlg >fProgressDlg;
             uint64_t fSearchesCompleted{ 0 };
             QString fDirName;
 

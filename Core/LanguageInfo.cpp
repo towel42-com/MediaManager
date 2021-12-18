@@ -50,7 +50,17 @@ namespace NMediaManager
             return retVal;
         }
 
-        void SLanguageInfo::setDefaultISOCode( const QString &value ) // default is "en_us"
+        QString SLanguageInfo::isoCode() const
+        {
+            auto retVal = fISOCode.toLower();
+            auto pos = retVal.indexOf( '_' );
+            if ( pos == -1 )
+                pos = retVal.indexOf( '-' );
+            if ( pos != -1 )
+                retVal = retVal.left( pos );
+            return retVal;
+        }
+        void SLanguageInfo::setDefaultISOCode( const QString & value ) // default is "en_us"
         {
             if ( isKnownLanguage( value ) )
             {

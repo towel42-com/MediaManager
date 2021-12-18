@@ -49,8 +49,6 @@
 #include <QLabel>
 
 
-#include <QProgressDialog>
-
 namespace NMediaManager
 {
     namespace NUi
