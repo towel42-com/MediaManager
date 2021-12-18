@@ -34,6 +34,11 @@ namespace NMediaManager
     }
 }
 
+namespace NUtils
+{
+    class CStayAwake;
+}
+
 namespace NMediaManager
 {
     namespace NUi
@@ -59,6 +64,8 @@ namespace NMediaManager
         Q_SIGNALS:
             void sigLoading();
             void sigLoadFinished( bool canceled );
+            void sigStartStayAwake();
+            void sigStopStayAwake();
         private:
             void setupProgressDlg( const QString &title, const QString &cancelButtonText, int max );
             void clearProgressDlg();

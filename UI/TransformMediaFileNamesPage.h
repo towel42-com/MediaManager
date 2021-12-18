@@ -38,6 +38,11 @@ namespace NBIF
 }
 class QSpinBox;
 
+namespace NUtils
+{
+    class CStayAwake;
+}
+
 namespace NMediaManager
 {
     namespace NCore
@@ -74,6 +79,8 @@ namespace NMediaManager
         Q_SIGNALS:
             void sigLoading();
             void sigLoadFinished( bool canceled );
+            void sigStartStayAwake();
+            void sigStopStayAwake();
         public Q_SLOTS:
             void slotDoubleClicked( const QModelIndex &idx );
             void slotAutoSearchForNewNames();

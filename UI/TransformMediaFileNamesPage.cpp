@@ -111,7 +111,10 @@ namespace NMediaManager
             bool somethingToSearchFor = autoSearchForNewNames( rootIdx );
             fProgressDlg->setValue( fSearchesCompleted );
             if ( !somethingToSearchFor )
-                 emit sigLoadFinished( false );
+            {
+                emit sigLoadFinished( false );
+                return;
+            }
         }
 
         bool CTransformMediaFileNamesPage::autoSearchForNewNames( QModelIndex parentIdx )
@@ -126,6 +129,7 @@ namespace NMediaManager
                     break;
                 }
 
+                emit sigStartStayAwake();
                 auto childIndex = fModel->index( ii, 0, parentIdx );
                 auto name = fModel->getSearchName( childIndex );
                 auto path = fModel->filePath( childIndex );
@@ -175,7 +179,10 @@ namespace NMediaManager
             if ( result.empty() )
             {
                 if ( !searchesRemaining )
+                {
                     emit sigLoadFinished( false );
+                    emit sigStopStayAwake();
+                }
                 return;
             }
             //qDebug() << result->toString();
@@ -186,7 +193,10 @@ namespace NMediaManager
                 fModel->setSearchResult( item, result.front(), false );
             }
             if ( !searchesRemaining )
+            {
                 emit sigLoadFinished( false );
+                emit sigStopStayAwake();
+            }
         }
 
         void CTransformMediaFileNamesPage::clearProgressDlg()
@@ -231,6 +241,7 @@ namespace NMediaManager
             if ( canceled )
             {
                 emit sigLoadFinished( canceled );
+                emit sigStopStayAwake();
                 return;
             }
 
@@ -266,12 +277,14 @@ namespace NMediaManager
             auto actionName = tr( "Renaming Files..." );
             auto cancelName = tr( "Abort Rename" );
             model = fModel.get();
+            emit sigStartStayAwake();
 
             if ( fModel && fModel->process(
                 [ actionName, cancelName, this ]( int count ) { setupProgressDlg( actionName, cancelName, count ); return fProgressDlg; },
                 [ this ]( std::shared_ptr< CDoubleProgressDlg >dlg ) { (void)dlg; clearProgressDlg(); },
                 this ) )
             {
+                emit sigStopStayAwake();
                 load();
             }
         }

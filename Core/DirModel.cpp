@@ -58,9 +58,6 @@
 #include <set>
 #include <list>
 #include "SABUtils/MD5.h"
-#ifdef Q_OS_WINDOWS
-#include <qt_windows.h>
-#endif
 
 QDebug operator<<( QDebug dbg, const NMediaManager::NCore::STreeNode & node )
 {
@@ -1774,12 +1771,7 @@ namespace NMediaManager
                 disconnect( fProgressDlg.get(), &CDoubleProgressDlg::canceled, this, &CDirModel::slotProgressCanceled );
                 connect( fProgressDlg.get(), &CDoubleProgressDlg::canceled, this, &CDirModel::slotProgressCanceled );
             }
-            if ( !displayOnly )
-            {
-#ifdef Q_OS_WINDOWS
-                SetThreadExecutionState( ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_AWAYMODE_REQUIRED );
-#endif
-            }
+
             fProcessResults.first = process( invisibleRootItem(), displayOnly, nullptr );
             if ( fProgressDlg )
             {
@@ -1787,12 +1779,6 @@ namespace NMediaManager
                     fProgressDlg->setValue( 0 );
                 else
                     fProgressDlg->setValue( fProcessResults.second->rowCount() );
-            }
-            if ( !displayOnly )
-            {
-#ifdef Q_OS_WINDOWS
-                SetThreadExecutionState( ES_CONTINUOUS );
-#endif
             }
         }
 
@@ -1823,7 +1809,7 @@ namespace NMediaManager
             endProgress( fProgressDlg );
             if ( !continueOn )
             {
-                emit sigProcessesFinished( false, true );
+                emit sigProcessesFinished( false, true, false );
                 return false;
             }
 
@@ -2052,7 +2038,7 @@ namespace NMediaManager
             fFirstProcess = false;
             if ( fProcessQueue.empty() )
             {
-                emit sigProcessesFinished( fProcessResults.first, false );
+                emit sigProcessesFinished( fProcessResults.first, false, true );
                 return;
             }
 

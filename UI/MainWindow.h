@@ -30,6 +30,7 @@ namespace NBIF
 {
     enum class EButtonsLayout;
 }
+namespace NUtils { class CStayAwake; }
 
 namespace NMediaManager
 {
@@ -71,6 +72,8 @@ namespace NMediaManager
             void slotFileFinishedEditing();
 
             void slotLoadFinished( bool canceled );
+            void slotStopStayAwake();
+            void slotStartStayAwake();
         private:
             void validateLoadAction();
             void validateRunAction();
@@ -92,6 +95,7 @@ namespace NMediaManager
             CCompleterFileSystemModel * fDirModel{ nullptr };
             CCompleterFileSystemModel * fFileModel{ nullptr };
             std::shared_ptr< CDoubleProgressDlg > fProgressDlg;
+            NUtils::CStayAwake * fStayAwake{ nullptr };
         };
     }
 }

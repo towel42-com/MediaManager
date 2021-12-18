@@ -42,6 +42,11 @@ class QFileIconProvider;
 class QDirIterator;
 class QPlainTextEdit;
 class QProcess;
+namespace NUtils
+{
+    class CStayAwake;
+}
+
 namespace NMediaManager
 {
     namespace NCore
@@ -192,7 +197,7 @@ namespace NMediaManager
             bool showProcessResults( const QString & title, const QString & label, const QMessageBox::Icon & icon, const QDialogButtonBox::StandardButtons & buttons, QWidget * parent ) const;
         Q_SIGNALS:
             void sigDirReloaded( bool canceled );
-            void sigProcessesFinished( bool status, bool cancelled );
+            void sigProcessesFinished( bool status, bool cancelled, bool reloadModel );
         public Q_SLOTS:
             void slotTVOutputFilePatternChanged( const QString &outPattern );
             void slotTVOutputDirPatternChanged( const QString &outPattern );
@@ -325,6 +330,7 @@ namespace NMediaManager
             std::pair< QString, bool > fStdOutRemaining{ QString(),false };
             std::pair< QString, bool > fStdErrRemaining{ QString(),false };
             mutable std::shared_ptr< CDoubleProgressDlg > fProgressDlg;
+
             bool fProcessFinishedHandled{ false };
             mutable bool fFirstProcess{ true };
         };

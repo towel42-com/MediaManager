@@ -101,13 +101,8 @@ namespace NMediaManager
 
         void CMergeSRTPage::slotLoadFinished( bool canceled )
         {
-            if ( canceled )
-            {
-                emit sigLoadFinished( canceled );
-                return;
-            }
-
             emit sigLoadFinished( canceled );
+            emit sigStopStayAwake();
         }
 
         void CMergeSRTPage::load( const QString &dirName )
@@ -125,6 +120,7 @@ namespace NMediaManager
             setupProgressDlg( tr( "Finding Files" ), tr( "Cancel" ), 1 );
             fModel->setRootPath( fDirName, fImpl->files, fImpl->results, fProgressDlg );
 
+            emit sigStartStayAwake();
             emit sigLoading();
         }
 
@@ -140,22 +136,26 @@ namespace NMediaManager
                 fImpl->splitter->setSizes( sizes );
             }
 
+            emit sigStartStayAwake();
+
             auto actionName = tr( "Merging SRT Files into MKV..." );
             auto cancelName = tr( "Abort Merge" );
             model = fModel.get();
-            connect(model, &NCore::CDirModel::sigProcessesFinished, [this]( bool status, bool /*canceled*/ ) 
+            connect(model, &NCore::CDirModel::sigProcessesFinished, [this]( bool status, bool canceled, bool reloadModel ) 
                 { 
                     clearProgressDlg(); 
                     if ( !status )
                     {
                         fModel->showProcessResults( tr( "Error While Processing:" ), tr( "Issues:" ), QMessageBox::Critical, QDialogButtonBox::Ok, this );
                     }
-                    //if ( !canceled ) 
-                    //    load(); 
+                    if ( !canceled && reloadModel ) 
+                        load(); 
+                    emit sigStopStayAwake();
                 });
 
             if ( fModel )
             {
+
                 fModel->process(
                     [ actionName, cancelName, this ]( int count )
                 {

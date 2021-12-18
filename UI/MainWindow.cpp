@@ -39,6 +39,7 @@
 #include "SABUtils/AutoWaitCursor.h"
 #include "SABUtils/DelayLineEdit.h"
 #include "SABUtils/DoubleProgressDlg.h"
+#include "SABUtils/StayAwake.h"
 
 #include <QSettings>
 #include <QFileInfo>
@@ -50,7 +51,7 @@
 #include <QPixmap>
 #include <QLabel>
 #include <QSpinBox>
-
+#include <QThreadPool>
 
 #include <QProgressBar>
 #include "SABUtils/FileUtils.h"
@@ -62,41 +63,40 @@ namespace NMediaManager
         class CCompleterFileSystemModel : public QFileSystemModel
         {
         public:
-            CCompleterFileSystemModel(QObject * parent = 0) :
-                QFileSystemModel(parent)
-            {
-            }
+            CCompleterFileSystemModel( QObject * parent = 0 ) :
+                QFileSystemModel( parent )
+            {}
 
-            QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override
+            QVariant data( const QModelIndex & index, int role = Qt::DisplayRole ) const override
             {
-                if (role == Qt::DisplayRole && index.column() == 0)
+                if ( role == Qt::DisplayRole && index.column() == 0 )
                 {
-                    QString path = filePath(index);
-                    if (path.endsWith("\\") || path.endsWith("/"))
-                        path.chop(1);
+                    QString path = filePath( index );
+                    if ( path.endsWith( "\\" ) || path.endsWith( "/" ) )
+                        path.chop( 1 );
                     return path;
                 }
-                return QFileSystemModel::data(index, role);
+                return QFileSystemModel::data( index, role );
             }
         };
 
-        CMainWindow::CMainWindow( QWidget *parent )
+        CMainWindow::CMainWindow( QWidget * parent )
             : QMainWindow( parent ),
             fImpl( new Ui::CMainWindow )
         {
             fImpl->setupUi( this );
 
             fImpl->directory->setDelay( 1000 );
-            fImpl->directory->setIsOKFunction( []( const QString &dirName )
-                                               {
-                                                   auto fi = QFileInfo( dirName );
-                                                   return dirName.isEmpty() || ( fi.exists() && fi.isDir() && fi.isExecutable() );
-                                               }, tr( "Directory '%1' does not Exist or is not a Directory" ) );
+            fImpl->directory->setIsOKFunction( [ ]( const QString & dirName )
+            {
+                auto fi = QFileInfo( dirName );
+                return dirName.isEmpty() || (fi.exists() && fi.isDir() && fi.isExecutable());
+            }, tr( "Directory '%1' does not Exist or is not a Directory" ) );
 
             auto completer = new QCompleter( this );
             fDirModel = new CCompleterFileSystemModel( completer );
             fDirModel->setRootPath( "/" );
-            completer->setModel(fDirModel);
+            completer->setModel( fDirModel );
             completer->setCompletionMode( QCompleter::PopupCompletion );
             completer->setCaseSensitivity( Qt::CaseInsensitive );
 
@@ -108,18 +108,18 @@ namespace NMediaManager
             completer = new QCompleter( this );
             fFileModel = new CCompleterFileSystemModel( completer );
             fFileModel->setRootPath( "/" );
-            completer->setModel(fFileModel);
+            completer->setModel( fFileModel );
             completer->setCompletionMode( QCompleter::PopupCompletion );
             completer->setCaseSensitivity( Qt::CaseInsensitive );
 
             fImpl->fileName->setCompleter( completer );
 
             fImpl->fileName->setDelay( 1000 );
-            fImpl->fileName->setIsOKFunction( []( const QString &fileName )
-                                             {
-                                                 auto fi = QFileInfo( fileName );
-                                                 return fileName.isEmpty() || ( fi.exists() && fi.isFile() && fi.isReadable() );
-                                             }, tr( "File '%1' does not Exist or is not Readable" ) );
+            fImpl->fileName->setIsOKFunction( [ ]( const QString & fileName )
+            {
+                auto fi = QFileInfo( fileName );
+                return fileName.isEmpty() || (fi.exists() && fi.isFile() && fi.isReadable());
+            }, tr( "File '%1' does not Exist or is not Readable" ) );
             connect( fImpl->fileName, &CDelayComboBox::sigEditTextChangedAfterDelay, this, &CMainWindow::slotFileChanged );
             connect( fImpl->fileName->lineEdit(), &CDelayLineEdit::sigFinishedEditingAfterDelay, this, &CMainWindow::slotFileFinishedEditing );
 
@@ -144,30 +144,34 @@ namespace NMediaManager
             loadSettings();
 
             fImpl->transformMediaFileNamesPage->setSetupProgressDlgFunc(
-                    [this]( const QString &title, const QString &cancelButtonText, int max )
-                    {
-                        setupProgressDlg( title, cancelButtonText, max );
-                        return fProgressDlg;
-                    },
-                    [this]()
-                    {
-                        clearProgressDlg();
-                    }
-                );
+                [ this ]( const QString & title, const QString & cancelButtonText, int max )
+            {
+                setupProgressDlg( title, cancelButtonText, max );
+                return fProgressDlg;
+            },
+                [ this ]()
+            {
+                clearProgressDlg();
+            }
+            );
             connect( fImpl->transformMediaFileNamesPage, &CTransformMediaFileNamesPage::sigLoadFinished, this, &CMainWindow::slotLoadFinished );
+            connect( fImpl->transformMediaFileNamesPage, &CTransformMediaFileNamesPage::sigStartStayAwake, this, &CMainWindow::slotStartStayAwake );
+            connect( fImpl->transformMediaFileNamesPage, &CTransformMediaFileNamesPage::sigStopStayAwake, this, &CMainWindow::slotStopStayAwake );
 
             fImpl->mergeSRTPage->setSetupProgressDlgFunc(
-                [this]( const QString &title, const QString &cancelButtonText, int max )
-                {
-                    setupProgressDlg( title, cancelButtonText, max );
-                    return fProgressDlg;
-                },
-                [this]()
-                {
-                    clearProgressDlg();
-                }
-                );
+                [ this ]( const QString & title, const QString & cancelButtonText, int max )
+            {
+                setupProgressDlg( title, cancelButtonText, max );
+                return fProgressDlg;
+            },
+                [ this ]()
+            {
+                clearProgressDlg();
+            }
+            );
             connect( fImpl->mergeSRTPage, &CMergeSRTPage::sigLoadFinished, this, &CMainWindow::slotLoadFinished );
+            connect( fImpl->mergeSRTPage, &CMergeSRTPage::sigStartStayAwake, this, &CMainWindow::slotStartStayAwake );
+            connect( fImpl->mergeSRTPage, &CMergeSRTPage::sigStopStayAwake, this, &CMainWindow::slotStopStayAwake );
 
             QSettings settings;
             fImpl->tabWidget->setCurrentIndex( settings.value( "LastFunctionalityPage", 0 ).toInt() );
@@ -186,7 +190,7 @@ namespace NMediaManager
             settings.setValue( "LastFunctionalityPage", fImpl->tabWidget->currentIndex() );
         }
 
-        bool CMainWindow::setBIFFileName( const QString &name )
+        bool CMainWindow::setBIFFileName( const QString & name )
         {
             if ( name.isEmpty() )
                 return true;
@@ -238,9 +242,9 @@ namespace NMediaManager
             validateLoadAction();
 
             if ( isBIFViewerActive() )
-                fImpl->actionOpen->setText(tr("Open File..."));
+                fImpl->actionOpen->setText( tr( "Open File..." ) );
             else
-                fImpl->actionOpen->setText(tr("Set Directory..."));
+                fImpl->actionOpen->setText( tr( "Set Directory..." ) );
 
             fImpl->bifViewerPage->setActive( isBIFViewerActive() );
         }
@@ -330,7 +334,7 @@ namespace NMediaManager
             fImpl->actionOpen->setEnabled( true );
         }
 
-        void CMainWindow::setupProgressDlg( const QString &title, const QString &cancelButtonText, int max )
+        void CMainWindow::setupProgressDlg( const QString & title, const QString & cancelButtonText, int max )
         {
             fImpl->actionOpen->setEnabled( false );
             if ( fProgressDlg )
@@ -346,17 +350,17 @@ namespace NMediaManager
             fProgressDlg->setAutoReset( false );
             fProgressDlg->setSingleProgressBarMode( true );
 
-            fProgressDlg->setValue(0);
+            fProgressDlg->setValue( 0 );
             fProgressDlg->setWindowTitle( title );
             fProgressDlg->setCancelButtonText( cancelButtonText );
             fProgressDlg->setRange( 0, max );
             fProgressDlg->show();
 
             connect( fProgressDlg.get(), &CDoubleProgressDlg::canceled,
-                     [this]()
-                     {
-                         fImpl->actionOpen->setEnabled( true );
-                     } );
+                     [ this ]()
+            {
+                fImpl->actionOpen->setEnabled( true );
+            } );
         }
 
         void CMainWindow::slotExactMatchesOnly()
@@ -389,7 +393,7 @@ namespace NMediaManager
             if ( isTransformActive() )
                 return fImpl->transformMediaFileNamesPage->canRun();
             else if ( isMergeSRTActive() )
-                return fImpl->mergeSRTPage->canRun(); 
+                return fImpl->mergeSRTPage->canRun();
             return nullptr;
         }
 
@@ -428,6 +432,20 @@ namespace NMediaManager
             else
                 return;
         }
+
+        void CMainWindow::slotStartStayAwake()
+        {
+            if ( !fStayAwake )
+                fStayAwake = new NUtils::CStayAwake( true );
+
+            QThreadPool::globalInstance()->start( fStayAwake );
+        }
+
+        void CMainWindow::slotStopStayAwake()
+        {
+            if ( !fStayAwake )
+                return;
+            fStayAwake->stop();
+        }
     }
 }
-
