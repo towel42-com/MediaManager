@@ -20,46 +20,40 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef _TRANSFORMMEDIAFILENAMESPAGE_H
-#define _TRANSFORMMEDIAFILENAMESPAGE_H
+#ifndef _MAKEMKV_H
+#define _MAKEMKV_H
 
 #include <QWidget>
 #include <optional>
-class CDoubleProgressDlg;
-class QTreeView;
-class QLineEdit;
-class CDelayLineEdit;
-class QToolBar;
-namespace NBIF
-{
-    class CBIFFile;
-    class CBIFModel;
-    enum class EButtonsLayout;
-}
-class QSpinBox;
+//class CDoubleProgressDlg;
+//class QTreeView;
+//class QLineEdit;
+//class CDelayLineEdit;
+//class QToolBar;
+//class QSpinBox;
 
-namespace NMediaManager
-{
-    namespace NCore
-    {
-        struct SSearchTMDBInfo;
-        struct SSearchResult;
-        class CDirModel;
-        class CSearchTMDB;
-    }
-}
+//namespace NMediaManager
+//{
+//    namespace NCore
+//    {
+//        struct SSearchTMDBInfo;
+//        struct SSearchResult;
+//        class CDirModel;
+//        class CSearchTMDB;
+//    }
+//}
 
 namespace NMediaManager
 {
     namespace NUi
     {
-        namespace Ui { class CTransformMediaFileNamesPage; };
-        class CTransformMediaFileNamesPage : public QWidget
+        namespace Ui { class CMakeMKV; };
+        class CMakeMKV : public QWidget
         {
             Q_OBJECT
         public:
-            CTransformMediaFileNamesPage( QWidget *parent = 0 );
-            ~CTransformMediaFileNamesPage();
+            CMakeMKV( QWidget *parent = 0 );
+            ~CMakeMKV();
 
             void load( const QString &fileName );
             void load();
@@ -67,36 +61,36 @@ namespace NMediaManager
             void run();
             bool canRun() const;
 
-            void setTreatAsTVByDefault( bool value );
-            void setExactMatchesOnly( bool value );
+            //void setTreatAsTVByDefault( bool value );
+            //void setExactMatchesOnly( bool value );
 
-            void setSetupProgressDlgFunc( std::function< std::shared_ptr< CDoubleProgressDlg >( const QString &title, const QString &cancelButtonText, int max ) > setupFunc, std::function< void() > clearFunc );
+            //void setSetupProgressDlgFunc( std::function< std::shared_ptr< CDoubleProgressDlg >( const QString &title, const QString &cancelButtonText, int max ) > setupFunc, std::function< void() > clearFunc );
         Q_SIGNALS:
-            void sigLoading();
-            void sigLoadFinished( bool canceled );
+            //void sigLoading();
+            //void sigLoadFinished( bool canceled );
         public Q_SLOTS:
-            void slotDoubleClicked( const QModelIndex &idx );
-            void slotAutoSearchForNewNames();
-            void slotAutoSearchFinished( const QString &path, bool searchesRemaining );
+            //void slotDoubleClicked( const QModelIndex &idx );
+            //void slotAutoSearchForNewNames();
+            //void slotAutoSearchFinished( const QString &path, bool searchesRemaining );
 
-            void slotLoadFinished( bool canceled );
+            //void slotLoadFinished( bool canceled );
         private:
-            [[nodiscard]] bool autoSearchForNewNames( QModelIndex rootIdx );
-            void setupProgressDlg( const QString &title, const QString &cancelButtonText, int max );
-            void clearProgressDlg();
+            //[[nodiscard]] bool autoSearchForNewNames( QModelIndex rootIdx );
+            //void setupProgressDlg( const QString &title, const QString &cancelButtonText, int max );
+            //void clearProgressDlg();
 
-            void loadSettings();
-            void saveSettings();
+            //void loadSettings();
+            //void saveSettings();
 
-            std::unique_ptr< NCore::CDirModel > fModel;
-            NCore::CSearchTMDB *fSearchTMDB{ nullptr };
-            std::function< std::shared_ptr< CDoubleProgressDlg >( const QString &title, const QString &cancelButtonText, int max ) > fSetupProgressFunc;
-            std::function< void() > fClearProgressFunc;
-            std::shared_ptr< CDoubleProgressDlg >fProgressDlg;
-            uint64_t fSearchesCompleted{ 0 };
-            QString fDirName;
+            //std::unique_ptr< NCore::CDirModel > fModel;
+            //NCore::CSearchTMDB *fSearchTMDB{ nullptr };
+            //std::function< std::shared_ptr< CDoubleProgressDlg >( const QString &title, const QString &cancelButtonText, int max ) > fSetupProgressFunc;
+            //std::function< void() > fClearProgressFunc;
+            //std::shared_ptr< CDoubleProgressDlg >fProgressDlg;
+            //uint64_t fSearchesCompleted{ 0 };
+            //QString fDirName;
 
-            std::unique_ptr< Ui::CTransformMediaFileNamesPage > fImpl;
+            std::unique_ptr< Ui::CMakeMKV > fImpl;
         };
     }
 }

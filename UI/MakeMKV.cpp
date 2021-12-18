@@ -20,266 +20,266 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "TransformMediaFileNamesPage.h"
-#include "SelectTMDB.h"
-#include "TransformConfirm.h"
+#include "MakeMKV.h"
+//#include "SelectTMDB.h"
+//#include "TransformConfirm.h"
 
-#include "ui_TransformMediaFileNamesPage.h"
+#include "ui_MakeMKV.h"
 
-#include "Core/Preferences.h"
-#include "Core/DirModel.h"
-#include "Core/SearchResult.h"
-#include "Core/SearchTMDBInfo.h"
-#include "Core/SearchTMDB.h"
+//#include "Core/Preferences.h"
+//#include "Core/DirModel.h"
+//#include "Core/SearchResult.h"
+//#include "Core/SearchTMDBInfo.h"
+//#include "Core/SearchTMDB.h"
 
-#include "SABUtils/QtUtils.h"
-#include "SABUtils/DoubleProgressDlg.h"
+//#include "SABUtils/QtUtils.h"
+//#include "SABUtils/DoubleProgressDlg.h"
 
-#include <QTimer>
-#include <QDir>
+//#include <QTimer>
+//#include <QDir>
 
 namespace NMediaManager
 {
     namespace NUi
     {
-        CTransformMediaFileNamesPage::CTransformMediaFileNamesPage( QWidget *parent )
+        CMakeMKV::CMakeMKV( QWidget *parent )
             : QWidget( parent )
-            ,fImpl( new Ui::CTransformMediaFileNamesPage )
+            ,fImpl( new Ui::CMakeMKV )
         {
             fImpl->setupUi( this );
 
             fImpl->files->setExpandsOnDoubleClick( false );
-            connect( fImpl->files, &QTreeView::doubleClicked, this, &CTransformMediaFileNamesPage::slotDoubleClicked );
+            //connect( fImpl->files, &QTreeView::doubleClicked, this, &CMakeMKV::slotDoubleClicked );
 
-            fSearchTMDB = new NCore::CSearchTMDB( nullptr, std::optional<QString>(), this );
-            fSearchTMDB->setSkipImages( true );
-            connect( fSearchTMDB, &NCore::CSearchTMDB::sigAutoSearchFinished, this, &CTransformMediaFileNamesPage::slotAutoSearchFinished );
+            //fSearchTMDB = new NCore::CSearchTMDB( nullptr, std::optional<QString>(), this );
+            //fSearchTMDB->setSkipImages( true );
+            //connect( fSearchTMDB, &NCore::CSearchTMDB::sigAutoSearchFinished, this, &CMakeMKV::slotAutoSearchFinished );
 
-            loadSettings();
+            //loadSettings();
         }
 
-        CTransformMediaFileNamesPage::~CTransformMediaFileNamesPage()
+        CMakeMKV::~CMakeMKV()
         {
-            saveSettings();
+            //saveSettings();
         }
 
-        void CTransformMediaFileNamesPage::loadSettings()
-        {
-            setTreatAsTVByDefault( NCore::CPreferences::instance()->getTreatAsTVShowByDefault() );
-        }
+        //void CMakeMKV::loadSettings()
+        //{
+        //    //setTreatAsTVByDefault( NCore::CPreferences::instance()->getTreatAsTVShowByDefault() );
+        //}
 
-        void CTransformMediaFileNamesPage::saveSettings()
-        {
-        }
+        //void CMakeMKV::saveSettings()
+        //{
+        //}
 
-        void CTransformMediaFileNamesPage::setSetupProgressDlgFunc( std::function< std::shared_ptr< CDoubleProgressDlg >( const QString &title, const QString &cancelButtonText, int max ) > setupFunc, std::function< void() > clearFunc )
-        {
-            fSetupProgressFunc = setupFunc;
-            fClearProgressFunc = clearFunc;
-        }
+        //void CMakeMKV::setSetupProgressDlgFunc( std::function< std::shared_ptr< CDoubleProgressDlg >( const QString &title, const QString &cancelButtonText, int max ) > setupFunc, std::function< void() > clearFunc )
+        //{
+        //    fSetupProgressFunc = setupFunc;
+        //    fClearProgressFunc = clearFunc;
+        //}
 
-        void CTransformMediaFileNamesPage::setTreatAsTVByDefault( bool value )
-        {
-            if ( fModel )
-                fModel->slotTreatAsTVByDefaultChanged( value );
-            NCore::CPreferences::instance()->setTreatAsTVShowByDefault( value );
-        }
+        //void CMakeMKV::setTreatAsTVByDefault( bool value )
+        //{
+        //    if ( fModel )
+        //        fModel->slotTreatAsTVByDefaultChanged( value );
+        //    NCore::CPreferences::instance()->setTreatAsTVShowByDefault( value );
+        //}
 
-        void CTransformMediaFileNamesPage::setExactMatchesOnly( bool value )
-        {
-            NCore::CPreferences::instance()->setExactMatchesOnly( value );
-        }
+        //void CMakeMKV::setExactMatchesOnly( bool value )
+        //{
+        //    NCore::CPreferences::instance()->setExactMatchesOnly( value );
+        //}
 
-        void CTransformMediaFileNamesPage::slotAutoSearchForNewNames()
-        {
-            if ( !fModel || !fModel->rowCount() )
-            {
-                emit sigLoadFinished( false );
-                return;
-            }
+        //void CMakeMKV::slotAutoSearchForNewNames()
+        //{
+        //    if ( !fModel || !fModel->rowCount() )
+        //    {
+        //        emit sigLoadFinished( false );
+        //        return;
+        //    }
 
-            Q_ASSERT( fImpl->files->model() == fModel.get() );
-            fSearchTMDB->resetResults();
+        //    Q_ASSERT( fImpl->files->model() == fModel.get() );
+        //    fSearchTMDB->resetResults();
 
-            if ( fSetupProgressFunc )
-            {
-                auto count = NQtUtils::itemCount( fModel.get(), true );
-                fProgressDlg = fSetupProgressFunc( tr( "Finding Results" ), tr( "Cancel" ), count );
-            }
+        //    if ( fSetupProgressFunc )
+        //    {
+        //        auto count = NQtUtils::itemCount( fModel.get(), true );
+        //        fProgressDlg = fSetupProgressFunc( tr( "Finding Results" ), tr( "Cancel" ), count );
+        //    }
 
-            auto rootIdx = fModel->index( 0, 0 );
-            bool somethingToSearchFor = autoSearchForNewNames( rootIdx );
-            fProgressDlg->setValue( fSearchesCompleted );
-            if ( !somethingToSearchFor )
-                 emit sigLoadFinished( false );
-        }
+        //    auto rootIdx = fModel->index( 0, 0 );
+        //    bool somethingToSearchFor = autoSearchForNewNames( rootIdx );
+        //    fProgressDlg->setValue( fSearchesCompleted );
+        //    if ( !somethingToSearchFor )
+        //         emit sigLoadFinished( false );
+        //}
 
-        bool CTransformMediaFileNamesPage::autoSearchForNewNames( QModelIndex parentIdx )
-        {
-            bool retVal = false;
-            auto rowCount = fModel->rowCount( parentIdx );
-            for ( int ii = 0; ii < rowCount; ++ii )
-            {
-                if ( fProgressDlg->wasCanceled() )
-                {
-                    fSearchTMDB->clearSearchCache();
-                    break;
-                }
+        //bool CMakeMKV::autoSearchForNewNames( QModelIndex parentIdx )
+        //{
+        //    bool retVal = false;
+        //    auto rowCount = fModel->rowCount( parentIdx );
+        //    for ( int ii = 0; ii < rowCount; ++ii )
+        //    {
+        //        if ( fProgressDlg->wasCanceled() )
+        //        {
+        //            fSearchTMDB->clearSearchCache();
+        //            break;
+        //        }
 
-                auto childIndex = fModel->index( ii, 0, parentIdx );
-                auto name = fModel->getSearchName( childIndex );
-                auto path = fModel->filePath( childIndex );
-                auto titleInfo = fModel->getSearchResultInfo( childIndex );
-                auto searchInfo = std::make_shared< NCore::SSearchTMDBInfo >( name, titleInfo );
-                searchInfo->setExactMatchOnly( NCore::CPreferences::instance()->getExactMatchesOnly() );
+        //        auto childIndex = fModel->index( ii, 0, parentIdx );
+        //        auto name = fModel->getSearchName( childIndex );
+        //        auto path = fModel->filePath( childIndex );
+        //        auto titleInfo = fModel->getSearchResultInfo( childIndex );
+        //        auto searchInfo = std::make_shared< NCore::SSearchTMDBInfo >( name, titleInfo );
+        //        searchInfo->setExactMatchOnly( NCore::CPreferences::instance()->getExactMatchesOnly() );
 
-                if ( fModel->canAutoSearch( childIndex ) )
-                {
-                    if ( fProgressDlg )
-                    {
-                        fProgressDlg->setLabelText( tr( "Adding Background Search for '%1'" ).arg( QDir( fDirName ).relativeFilePath( path ) ) );
-                        fProgressDlg->setValue( fProgressDlg->value() + 1 );
-                        qApp->processEvents();
-                    }
-                    fSearchTMDB->addSearch( path, searchInfo );
-                    retVal = true;
-                }
+        //        if ( fModel->canAutoSearch( childIndex ) )
+        //        {
+        //            if ( fProgressDlg )
+        //            {
+        //                fProgressDlg->setLabelText( tr( "Adding Background Search for '%1'" ).arg( QDir( fDirName ).relativeFilePath( path ) ) );
+        //                fProgressDlg->setValue( fProgressDlg->value() + 1 );
+        //                qApp->processEvents();
+        //            }
+        //            fSearchTMDB->addSearch( path, searchInfo );
+        //            retVal = true;
+        //        }
 
-                retVal = autoSearchForNewNames( childIndex ) || retVal;
-            }
-            return retVal;
-        }
+        //        retVal = autoSearchForNewNames( childIndex ) || retVal;
+        //    }
+        //    return retVal;
+        //}
 
-        void CTransformMediaFileNamesPage::slotAutoSearchFinished( const QString &path, bool searchesRemaining )
-        {
-            auto result = fSearchTMDB->getResult( path );
+        //void CMakeMKV::slotAutoSearchFinished( const QString &path, bool searchesRemaining )
+        //{
+        //    auto result = fSearchTMDB->getResult( path );
 
-            //qDebug().noquote().nospace() << "Search results for path " << path << " Has Result? " << ( ( results.size() == 1 ) ? "Yes" : "No" );
-            if ( searchesRemaining )
-            {
-                if ( fProgressDlg )
-                {
-                    fProgressDlg->setValue( fProgressDlg->value() + 1 );
-                    fSearchesCompleted++;
-                    fProgressDlg->setLabelText( tr( "Search Complete for '%1'" ).arg( QDir( fDirName ).relativeFilePath( path ) ) );
-                }
-            }
-            else
-            {
-                clearProgressDlg();
-            }
+        //    //qDebug().noquote().nospace() << "Search results for path " << path << " Has Result? " << ( ( results.size() == 1 ) ? "Yes" : "No" );
+        //    if ( searchesRemaining )
+        //    {
+        //        if ( fProgressDlg )
+        //        {
+        //            fProgressDlg->setValue( fProgressDlg->value() + 1 );
+        //            fSearchesCompleted++;
+        //            fProgressDlg->setLabelText( tr( "Search Complete for '%1'" ).arg( QDir( fDirName ).relativeFilePath( path ) ) );
+        //        }
+        //    }
+        //    else
+        //    {
+        //        clearProgressDlg();
+        //    }
 
-            if ( fProgressDlg && fProgressDlg->wasCanceled() )
-                fSearchTMDB->clearSearchCache();
+        //    if ( fProgressDlg && fProgressDlg->wasCanceled() )
+        //        fSearchTMDB->clearSearchCache();
 
-            if ( result.empty() )
-            {
-                if ( !searchesRemaining )
-                    emit sigLoadFinished( false );
-                return;
-            }
-            //qDebug() << result->toString();
+        //    if ( result.empty() )
+        //    {
+        //        if ( !searchesRemaining )
+        //            emit sigLoadFinished( false );
+        //        return;
+        //    }
+        //    //qDebug() << result->toString();
 
-            auto item = fModel->getItemFromPath( path );
-            if ( item && !result.empty() )
-            {
-                fModel->setSearchResult( item, result.front(), false );
-            }
-            if ( !searchesRemaining )
-                emit sigLoadFinished( false );
-        }
+        //    auto item = fModel->getItemFromPath( path );
+        //    if ( item && !result.empty() )
+        //    {
+        //        fModel->setSearchResult( item, result.front(), false );
+        //    }
+        //    if ( !searchesRemaining )
+        //        emit sigLoadFinished( false );
+        //}
 
-        void CTransformMediaFileNamesPage::clearProgressDlg()
-        {
-            fProgressDlg = nullptr;
-            if ( fClearProgressFunc )
-                fClearProgressFunc();
-        }
+        //void CMakeMKV::clearProgressDlg()
+        //{
+        //    fProgressDlg = nullptr;
+        //    if ( fClearProgressFunc )
+        //        fClearProgressFunc();
+        //}
 
-        void CTransformMediaFileNamesPage::setupProgressDlg( const QString &title, const QString &cancelButtonText, int max )
-        {
-            if ( fSetupProgressFunc )
-                fProgressDlg = fSetupProgressFunc( title, cancelButtonText, max );
-        }
+        //void CMakeMKV::setupProgressDlg( const QString &title, const QString &cancelButtonText, int max )
+        //{
+        //    if ( fSetupProgressFunc )
+        //        fProgressDlg = fSetupProgressFunc( title, cancelButtonText, max );
+        //}
 
-        void CTransformMediaFileNamesPage::slotDoubleClicked( const QModelIndex &idx )
-        {
-            auto baseIdx = fModel->index( idx.row(), NCore::EColumns::eFSName, idx.parent() );
-            auto titleInfo = fModel->getSearchResultInfo( idx );
+        //void CMakeMKV::slotDoubleClicked( const QModelIndex &idx )
+        //{
+        //    auto baseIdx = fModel->index( idx.row(), NCore::EColumns::eFSName, idx.parent() );
+        //    auto titleInfo = fModel->getSearchResultInfo( idx );
 
-            auto isDir = baseIdx.data( NCore::ECustomRoles::eIsDir ).toBool();
-            auto fullPath = baseIdx.data( NCore::ECustomRoles::eFullPathRole ).toString();
-            bool isTVShow = baseIdx.data( NCore::ECustomRoles::eIsTVShowRole ).toBool();
-            auto nm = fModel->getSearchName( idx );
+        //    auto isDir = baseIdx.data( NCore::ECustomRoles::eIsDir ).toBool();
+        //    auto fullPath = baseIdx.data( NCore::ECustomRoles::eFullPathRole ).toString();
+        //    bool isTVShow = baseIdx.data( NCore::ECustomRoles::eIsTVShowRole ).toBool();
+        //    auto nm = fModel->getSearchName( idx );
 
-            CSelectTMDB dlg( nm, titleInfo, this );
-            dlg.setSearchForTVShows( fModel->treatAsTVShow( QFileInfo( fullPath ), isTVShow ), true );
-            dlg.setExactMatchOnly( NCore::CPreferences::instance()->getExactMatchesOnly(), true );
+        //    CSelectTMDB dlg( nm, titleInfo, this );
+        //    dlg.setSearchForTVShows( fModel->treatAsTVShow( QFileInfo( fullPath ), isTVShow ), true );
+        //    dlg.setExactMatchOnly( NCore::CPreferences::instance()->getExactMatchesOnly(), true );
 
-            if ( dlg.exec() == QDialog::Accepted )
-            {
-                auto titleInfo = dlg.getSearchResult();
-                bool setChildren = true;
-                if ( titleInfo->isTVShow() && titleInfo->isSeasonOnly() )
-                    setChildren = false;
-                fModel->setSearchResult( idx, titleInfo, setChildren );
-            }
-        }
+        //    if ( dlg.exec() == QDialog::Accepted )
+        //    {
+        //        auto titleInfo = dlg.getSearchResult();
+        //        bool setChildren = true;
+        //        if ( titleInfo->isTVShow() && titleInfo->isSeasonOnly() )
+        //            setChildren = false;
+        //        fModel->setSearchResult( idx, titleInfo, setChildren );
+        //    }
+        //}
 
-        void CTransformMediaFileNamesPage::slotLoadFinished( bool canceled )
-        {
-            if ( canceled )
-            {
-                emit sigLoadFinished( canceled );
-                return;
-            }
+        //void CMakeMKV::slotLoadFinished( bool canceled )
+        //{
+        //    if ( canceled )
+        //    {
+        //        emit sigLoadFinished( canceled );
+        //        return;
+        //    }
 
-            QTimer::singleShot( 0, this, &CTransformMediaFileNamesPage::slotAutoSearchForNewNames );
-        }
+        //    QTimer::singleShot( 0, this, &CMakeMKV::slotAutoSearchForNewNames );
+        //}
 
-        void CTransformMediaFileNamesPage::load( const QString & dirName )
-        {
-            fDirName = dirName;
-            load();
-        }
+        //void CMakeMKV::load( const QString & dirName )
+        //{
+        //    fDirName = dirName;
+        //    load();
+        //}
 
-        void CTransformMediaFileNamesPage::load()
-        {
-            fModel.reset( new NCore::CDirModel( NCore::CDirModel::eTransform ) );
-            fImpl->files->setModel( fModel.get() );
-            connect( fModel.get(), &NCore::CDirModel::sigDirReloaded, this, &CTransformMediaFileNamesPage::slotLoadFinished );
-            fModel->slotTreatAsTVByDefaultChanged( NCore::CPreferences::instance()->getTreatAsTVShowByDefault() );
-            fModel->slotTVOutputFilePatternChanged( NCore::CPreferences::instance()->getTVOutFilePattern() );
-            fModel->slotTVOutputDirPatternChanged( NCore::CPreferences::instance()->getTVOutDirPattern() );
-            fModel->slotMovieOutputFilePatternChanged( NCore::CPreferences::instance()->getMovieOutFilePattern() );
-            fModel->slotMovieOutputDirPatternChanged( NCore::CPreferences::instance()->getMovieOutDirPattern() );
-            fModel->setNameFilters( NCore::CPreferences::instance()->getMediaExtensions() << NCore::CPreferences::instance()->getSubtitleExtensions(), fImpl->files );
-            setupProgressDlg( tr( "Finding Files" ), tr( "Cancel" ), 1 );
-            fModel->setRootPath( fDirName, fImpl->files, nullptr, fProgressDlg );
+        //void CMakeMKV::load()
+        //{
+        //    fModel.reset( new NCore::CDirModel( NCore::CDirModel::eTransform ) );
+        //    fImpl->files->setModel( fModel.get() );
+        //    connect( fModel.get(), &NCore::CDirModel::sigDirReloaded, this, &CMakeMKV::slotLoadFinished );
+        //    fModel->slotTreatAsTVByDefaultChanged( NCore::CPreferences::instance()->getTreatAsTVShowByDefault() );
+        //    fModel->slotTVOutputFilePatternChanged( NCore::CPreferences::instance()->getTVOutFilePattern() );
+        //    fModel->slotTVOutputDirPatternChanged( NCore::CPreferences::instance()->getTVOutDirPattern() );
+        //    fModel->slotMovieOutputFilePatternChanged( NCore::CPreferences::instance()->getMovieOutFilePattern() );
+        //    fModel->slotMovieOutputDirPatternChanged( NCore::CPreferences::instance()->getMovieOutDirPattern() );
+        //    fModel->setNameFilters( NCore::CPreferences::instance()->getMediaExtensions() << NCore::CPreferences::instance()->getSubtitleExtensions(), fImpl->files );
+        //    setupProgressDlg( tr( "Finding Files" ), tr( "Cancel" ), 1 );
+        //    fModel->setRootPath( fDirName, fImpl->files, nullptr, fProgressDlg );
 
-            emit sigLoading();
-        }
+        //    emit sigLoading();
+        //}
 
-        void CTransformMediaFileNamesPage::run()
-        {
-            NCore::CDirModel * model = nullptr;
-            auto actionName = tr( "Renaming Files..." );
-            auto cancelName = tr( "Abort Rename" );
-            model = fModel.get();
+        //void CMakeMKV::run()
+        //{
+        //    NCore::CDirModel * model = nullptr;
+        //    auto actionName = tr( "Renaming Files..." );
+        //    auto cancelName = tr( "Abort Rename" );
+        //    model = fModel.get();
 
-            if ( fModel && fModel->process(
-                [ actionName, cancelName, this ]( int count ) { setupProgressDlg( actionName, cancelName, count ); return fProgressDlg; },
-                [ this ]( std::shared_ptr< CDoubleProgressDlg >dlg ) { (void)dlg; clearProgressDlg(); },
-                this ) )
-            {
-                load();
-            }
-        }
+        //    if ( fModel && fModel->process(
+        //        [ actionName, cancelName, this ]( int count ) { setupProgressDlg( actionName, cancelName, count ); return fProgressDlg; },
+        //        [ this ]( std::shared_ptr< CDoubleProgressDlg >dlg ) { (void)dlg; clearProgressDlg(); },
+        //        this ) )
+        //    {
+        //        load();
+        //    }
+        //}
 
-        bool CTransformMediaFileNamesPage::canRun() const
-        {
-            return fModel && fModel->rowCount() != 0;
-        }
+        //bool CMakeMKV::canRun() const
+        //{
+        //    return fModel && fModel->rowCount() != 0;
+        //}
     }
 }
 

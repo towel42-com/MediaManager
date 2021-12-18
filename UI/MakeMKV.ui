@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>NMediaManager::NUi::CTransformMediaFileNamesPage</class>
- <widget class="QWidget" name="NMediaManager::NUi::CTransformMediaFileNamesPage">
+ <class>NMediaManager::NUi::CMakeMKV</class>
+ <widget class="QWidget" name="NMediaManager::NUi::CMakeMKV">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Transform Page</string>
+   <string>Make MKV</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
