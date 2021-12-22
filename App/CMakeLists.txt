@@ -58,13 +58,15 @@ DeploySystem( MediaManager . )
 INSTALL( TARGETS ${PROJECT_NAME} RUNTIME DESTINATION . )
 INSTALL( FILES ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.pdb DESTINATION . CONFIGURATIONS Debug RelWithDebInfo )
 
-SET( _BIF_SL_FILES
-	"$<TARGET_FILE:bif>"
-	"$<TARGET_FILE_DIR:bif>/$<TARGET_FILE_BASE_NAME:bif>.pdb"
-	)
+SET( _SL_FILES
+    "$<TARGET_FILE:bif>"
+    "$<TARGET_FILE_DIR:bif>/$<TARGET_FILE_BASE_NAME:bif>.pdb"
+    "$<TARGET_FILE:gif>"
+    "$<TARGET_FILE_DIR:gif>/$<TARGET_FILE_BASE_NAME:gif>.pdb"
+    )
 
 find_package(InstallFile REQUIRED)    
-foreach( curr ${_BIF_SL_FILES} )
+foreach( curr ${_SL_FILES} )
 
     if ( curr MATCHES ".*\.pdb" )
         SET( _CONFIGS
