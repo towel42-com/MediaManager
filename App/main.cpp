@@ -25,6 +25,57 @@
 #include "Version.h"
 
 #include <QApplication>
+#include <debugapi.h>
+#include <QFile>
+#include <QTextStream>
+#include <QFileInfo>
+
+QFile * gOutFile{ nullptr };
+void myMessageOutput( QtMsgType type, const QMessageLogContext & /*context*/, const QString & msg )
+{
+    QByteArray localMsg = msg.toLocal8Bit();
+    QString realMsg = QString( "%1 (%2:%3, %4)" ).arg( localMsg.constData() ).trimmed(); // .arg( (QFileInfo( context.file ).fileName()) ).arg( context.line ).arg( context.function );
+
+    QString typeString;
+    switch ( type )
+    {
+        case QtDebugMsg:
+            typeString = "Debug";
+            break;
+        case QtInfoMsg:
+            typeString = "Info";
+            break;
+        case QtWarningMsg:
+            typeString = "Warning";
+            break;
+        case QtCriticalMsg:
+            typeString = "Critical";
+            break;
+        case QtFatalMsg:
+            typeString = "Fatal";
+                //abort();
+            break;
+    }
+    realMsg = QString( "%1: %2" ).arg( typeString ).arg( realMsg ).trimmed();
+
+#ifdef Q_OS_WINDOWS
+    //OutputDebugString( qPrintable( realMsg ) );
+#else
+    fprintf( "%s\n", qPrintable( realMsg ) );
+#endif
+    if ( !gOutFile )
+    {
+        gOutFile = new QFile( "log.txt" );
+        gOutFile->open( QFile::WriteOnly | QFile::Truncate );
+        QString tmp = QFileInfo( gOutFile->fileName() ).absoluteFilePath();
+        int xzy = 0;
+    }
+
+    QTextStream ts( gOutFile );
+    ts << realMsg << "\n";
+    gOutFile->flush();
+
+}
 
 int main( int argc, char ** argv )
 {
@@ -34,6 +85,8 @@ int main( int argc, char ** argv )
     appl.setApplicationVersion(QString::fromStdString(NVersion::getVersionString( true ) ) );
     appl.setOrganizationName(QString::fromStdString(NVersion::VENDOR ) );
     appl.setOrganizationDomain(QString::fromStdString(NVersion::HOMEPAGE ));
+
+    qInstallMessageHandler( myMessageOutput );
 
     QString bifName;
     for ( int ii = 1; ii < argc; ++ii )
