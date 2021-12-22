@@ -406,6 +406,48 @@ namespace NMediaManager
             return retVal;
         }
 
+        void CPreferences::setGIFFlipImage( bool flipImage )
+        {
+            QSettings settings;
+            settings.beginGroup( "GIFWriter" );
+            settings.setValue( "FlipImage", flipImage );
+        }
+        
+        bool CPreferences::gifFlipImage() const
+        {
+            QSettings settings;
+            settings.beginGroup( "GIFWriter" );
+            return settings.value( "FlipImage", false ).toBool();
+        }
+
+        void CPreferences::setGIFDitherImage( bool ditherImage )
+        {
+            QSettings settings;
+            settings.beginGroup( "GIFWriter" );
+            settings.setValue( "DitherImage", ditherImage );
+        }
+        
+        bool CPreferences::gifDitherImage() const
+        {
+            QSettings settings;
+            settings.beginGroup( "GIFWriter" );
+            return settings.value( "DitherImage", true ).toBool();
+        }
+
+        void CPreferences::setGIFLoopCount( int loopCount )
+        {
+            QSettings settings;
+            settings.beginGroup( "GIFWriter" );
+            settings.setValue( "LoopCount", loopCount );
+        }
+
+        int CPreferences::gifLoopCount() const
+        {
+            QSettings settings;
+            settings.beginGroup( "GIFWriter" );
+            return settings.value( "LoopCount", true ).toInt();
+        }
+
         bool CPreferences::isMediaFile( const QFileInfo &fi ) const
         {
             static std::optional< std::unordered_set< QString > > extensions;

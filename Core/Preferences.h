@@ -66,7 +66,6 @@ namespace NMediaManager
             void setMediaExtensions( const QStringList &value );
             QStringList getMediaExtensions() const;
 
-
             void setSubtitleExtensions( const QString &value );
             void setSubtitleExtensions( const QStringList &value );
             QStringList getSubtitleExtensions() const;
@@ -95,6 +94,15 @@ namespace NMediaManager
 
             void setBIFLoopCount(int loopCount);
             int bifLoopCount() const;
+
+            void setGIFFlipImage( bool flipImage );
+            bool gifFlipImage() const;
+
+            void setGIFDitherImage( bool ditherImage );
+            bool gifDitherImage() const;
+
+            void setGIFLoopCount( int loopCount );
+            int gifLoopCount() const;
         private:
             //QString getDefaultInPattern( bool forTV ) const;
             QString getDefaultOutDirPattern( bool forTV ) const;
