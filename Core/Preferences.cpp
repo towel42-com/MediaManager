@@ -448,6 +448,34 @@ namespace NMediaManager
             return settings.value( "LoopCount", true ).toInt();
         }
 
+        void CPreferences::setGIFStartFrame( int startFrame )
+        {
+            QSettings settings;
+            settings.beginGroup( "GIFWriter" );
+            settings.setValue( "StartFrame", startFrame );
+        }
+
+        int CPreferences::gifStartFrame() const
+        {
+            QSettings settings;
+            settings.beginGroup( "GIFWriter" );
+            return settings.value( "StartFrame", true ).toInt();
+        }
+
+        void CPreferences::setGIFEndFrame( int endFrame )
+        {
+            QSettings settings;
+            settings.beginGroup( "GIFWriter" );
+            settings.setValue( "EndFrame", endFrame );
+        }
+        
+        int CPreferences::gifEndFrame() const
+        {
+            QSettings settings;
+            settings.beginGroup( "GIFWriter" );
+            return settings.value( "EndFrame", true ).toInt();
+        }
+
         bool CPreferences::isMediaFile( const QFileInfo &fi ) const
         {
             static std::optional< std::unordered_set< QString > > extensions;

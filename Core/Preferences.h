@@ -103,6 +103,13 @@ namespace NMediaManager
 
             void setGIFLoopCount( int loopCount );
             int gifLoopCount() const;
+
+            void setGIFStartFrame( int startFrame );
+            int gifStartFrame() const;
+
+            void setGIFEndFrame( int endFrame );
+            int gifEndFrame() const;
+
         private:
             //QString getDefaultInPattern( bool forTV ) const;
             QString getDefaultOutDirPattern( bool forTV ) const;
