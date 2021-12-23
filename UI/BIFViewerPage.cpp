@@ -109,6 +109,8 @@ namespace NMediaManager
             fImpl->bifWidget->setGIFFlipImage( NCore::CPreferences::instance()->gifFlipImage() );
             fImpl->bifWidget->setGIFDitherImage( NCore::CPreferences::instance()->gifDitherImage() );
             fImpl->bifWidget->setGIFLoopCount( NCore::CPreferences::instance()->gifLoopCount() );
+            fImpl->bifWidget->setGIFStartFrame( NCore::CPreferences::instance()->gifStartFrame() );
+            fImpl->bifWidget->setGIFEndFrame( NCore::CPreferences::instance()->gifEndFrame() );
         }
 
         void CBIFViewerPage::saveSettings()
@@ -123,6 +125,8 @@ namespace NMediaManager
             NCore::CPreferences::instance()->setGIFFlipImage( fImpl->bifWidget->gifFlipImage() );
             NCore::CPreferences::instance()->setGIFDitherImage( fImpl->bifWidget->gifDitherImage() );
             NCore::CPreferences::instance()->setGIFLoopCount( fImpl->bifWidget->gifLoopCount() );
+            NCore::CPreferences::instance()->setGIFStartFrame( fImpl->bifWidget->gifStartFrame() );
+            NCore::CPreferences::instance()->setGIFEndFrame( fImpl->bifWidget->gifEndFrame() );
         }
 
         bool CBIFViewerPage::eventFilter( QObject * obj, QEvent * event )
