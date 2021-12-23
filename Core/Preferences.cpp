@@ -476,6 +476,20 @@ namespace NMediaManager
             return settings.value( "EndFrame", true ).toInt();
         }
 
+        void CPreferences::setGIFDelay( int delay )
+        {
+            QSettings settings;
+            settings.beginGroup( "GIFWriter" );
+            settings.setValue( "Delay", delay );
+        }
+
+        int CPreferences::gifDelay() const
+        {
+            QSettings settings;
+            settings.beginGroup( "GIFWriter" );
+            return settings.value( "Delay", true ).toInt();
+        }
+
         bool CPreferences::isMediaFile( const QFileInfo &fi ) const
         {
             static std::optional< std::unordered_set< QString > > extensions;

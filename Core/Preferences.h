@@ -110,6 +110,8 @@ namespace NMediaManager
             void setGIFEndFrame( int endFrame );
             int gifEndFrame() const;
 
+            int gifDelay() const;
+            void setGIFDelay( int delay );
         private:
             //QString getDefaultInPattern( bool forTV ) const;
             QString getDefaultOutDirPattern( bool forTV ) const;
