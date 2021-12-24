@@ -1,0 +1,46 @@
+#!/bin/bash
+set -e
+
+while [[ $# -gt 0 ]]; do
+    file="$1"
+    shift
+    if [[ ! -f $file ]]; then
+        continue
+    fi
+    pwd=`pwd`
+    echo "=============================>>>>>>    CWD is $pwd   <<<<<<============================="
+    echo "=============================>>>>>> Working on $file <<<<<<============================="
+    ext1=${file##*.}
+    ext=.${file##*.}
+    filename=`basename "$file"`
+    base=`basename "$file" $ext`
+    dir=`dirname "$file"`
+    base=$base
+    mkv=${base}.mkv
+    meta=${base}.metadata.txt
+    backup=${base}.old${ext1}
+    echo "filename=$filename"
+    echo "ext=$ext"
+    echo "base=$base"
+    echo "dir=$dir"
+    echo "mkv=$mkv"
+    echo "meta=$meta"
+    echo "backup=$backup"
+    #read -n 1
+    echo "=============================>>>>>> Changing into '$dir' <<<<<<============================="
+    pushd "$dir"
+    echo "=============================>>>>>> Extracting meta info <<<<<<============================="
+    ffmpeg -y -i "$filename" -f ffmetadata "$meta" # 2> /dev/null
+    #read -n 1
+    echo "=============================>>>>>> Transcoding <<<<<<============================="
+    ffmpeg -y -fflags +genpts -i "$filename" -c:v copy -c:a copy "$mkv" # 2> /dev/null
+    echo "=============================>>>>>> Removing meta file <<<<<<============================="
+    rm "$meta"
+    echo "=============================>>>>>> Moving $file to $backup <<<<<<============================="
+    mv "$filename" "$backup"
+    echo "=============================>>>>>> Settings TS on $file to $backup's <<<<<<============================="
+    touch -r "$backup" "$mkv"
+    popd
+    echo "=============================>>>>>> Finished $file <<<<<<============================="
+    #read -n 1
+done
