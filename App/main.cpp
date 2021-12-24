@@ -80,6 +80,8 @@ void myMessageOutput( QtMsgType type, const QMessageLogContext & /*context*/, co
 int main( int argc, char ** argv )
 {
     Q_INIT_RESOURCE( application );
+    Q_INIT_RESOURCE( SABUtils );
+
     QApplication appl( argc, argv );
     appl.setApplicationName( QString::fromStdString( NVersion::APP_NAME ) );
     appl.setApplicationVersion(QString::fromStdString(NVersion::getVersionString( true ) ) );
