@@ -83,6 +83,7 @@ namespace NMediaManager
             bool canRun() const;
             bool isTransformActive() const;
             bool isMergeSRTActive() const;
+            bool isMakeMKVActive() const;
             bool isBIFViewerActive() const;
 
             void setupProgressDlg( const QString &title, const QString &cancelButtonText, int max );

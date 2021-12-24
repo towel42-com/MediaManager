@@ -23,7 +23,7 @@
 set(qtproject_SRCS
     BIFViewerPage.cpp
     MainWindow.cpp
-    MakeMKV.cpp
+    MakeMKVPage.cpp
     MergeSRTPage.cpp
     Preferences.cpp
     SelectTMDB.cpp
@@ -34,7 +34,7 @@ set(qtproject_SRCS
 set(qtproject_H
     BIFViewerPage.h
     MainWindow.h
-    MakeMKV.h
+    MakeMKVPage.h
     MergeSRTPage.h
     Preferences.h
     SelectTMDB.h
@@ -48,7 +48,7 @@ set(project_H
 set(qtproject_UIS
     BIFViewerPage.ui
     MainWindow.ui
-    MakeMKV.ui
+    MakeMKVPage.ui
     MergeSRTPage.ui
     Preferences.ui
     SelectTMDB.ui

@@ -113,6 +113,35 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="makeMKVTab">
+       <attribute name="icon">
+        <iconset resource="application.qrc">
+         <normaloff>:/resources/mkv.png</normaloff>:/resources/mkv.png</iconset>
+       </attribute>
+       <attribute name="title">
+        <string>Make MKV</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_4">
+        <property name="spacing">
+         <number>6</number>
+        </property>
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="NMediaManager::NUi::CMakeMKVPage" name="makeMKVPage" native="true"/>
+        </item>
+       </layout>
+      </widget>
       <widget class="QWidget" name="mergeSRTTab">
        <attribute name="icon">
         <iconset resource="application.qrc">
@@ -220,8 +249,8 @@
   </widget>
   <action name="actionOpen">
    <property name="icon">
-    <iconset resource="application.qrc">
-     <normaloff>:/resources/open.png</normaloff>:/resources/open.png</iconset>
+    <iconset resource="../SABUtils/resources/SABUtils.qrc">
+     <normaloff>:/SABUtilsResources/open.png</normaloff>:/SABUtilsResources/open.png</iconset>
    </property>
    <property name="text">
     <string>Set &amp;Directory...</string>
@@ -255,8 +284,8 @@
   </action>
   <action name="actionRun">
    <property name="icon">
-    <iconset resource="application.qrc">
-     <normaloff>:/resources/run.png</normaloff>:/resources/run.png</iconset>
+    <iconset resource="../SABUtils/resources/SABUtils.qrc">
+     <normaloff>:/SABUtilsResources/run.png</normaloff>:/SABUtilsResources/run.png</iconset>
    </property>
    <property name="text">
     <string>Run...</string>
@@ -267,8 +296,8 @@
   </action>
   <action name="actionLoad">
    <property name="icon">
-    <iconset resource="application.qrc">
-     <normaloff>:/resources/load.png</normaloff>:/resources/load.png</iconset>
+    <iconset resource="../SABUtils/resources/SABUtils.qrc">
+     <normaloff>:/SABUtilsResources/load.png</normaloff>:/SABUtilsResources/load.png</iconset>
    </property>
    <property name="text">
     <string>Load...</string>
@@ -299,6 +328,12 @@
    <header>MergeSRTPage.h</header>
    <container>1</container>
   </customwidget>
+  <customwidget>
+   <class>NMediaManager::NUi::CMakeMKVPage</class>
+   <extends>QWidget</extends>
+   <header>MakeMKVPage.h</header>
+   <container>1</container>
+  </customwidget>
  </customwidgets>
  <tabstops>
   <tabstop>fileName</tabstop>
@@ -307,6 +342,7 @@
  </tabstops>
  <resources>
   <include location="application.qrc"/>
+  <include location="../SABUtils/resources/SABUtils.qrc"/>
  </resources>
  <connections>
   <connection>

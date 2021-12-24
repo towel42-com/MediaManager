@@ -25,13 +25,14 @@
 
 #include "Core/DirModel.h"
 #include "SABUtils/DoubleProgressDlg.h"
+
 #include <QSettings>
 
 namespace NMediaManager
 {
     namespace NUi
     {
-        CMergeSRTPage::CMergeSRTPage( QWidget *parent )
+        CMergeSRTPage::CMergeSRTPage( QWidget * parent )
             : QWidget( parent ),
             fImpl( new Ui::CMergeSRTPage )
         {
@@ -42,7 +43,6 @@ namespace NMediaManager
             loadSettings();
         }
 
-
         CMergeSRTPage::~CMergeSRTPage()
         {
             saveSettings();
@@ -50,22 +50,17 @@ namespace NMediaManager
 
         void CMergeSRTPage::loadSettings()
         {
-            QSettings settings;
-            settings.beginGroup("Merge SRT");
-            if ( settings.contains( "Splitter" ) )
-                fImpl->splitter->restoreState( settings.value( "Splitter" ).toByteArray() );
-            else
-                fImpl->splitter->setSizes( QList< int >() << 100 << 0 );
+            fImpl->vsplitter->setSizes( QList< int >() << 100 << 0 );
         }
 
         void CMergeSRTPage::saveSettings()
         {
             QSettings settings;
-            settings.beginGroup("Merge SRT");
-            settings.setValue("Splitter", fImpl->splitter->saveState());
+            settings.beginGroup( "Merge SRT" );
+            settings.setValue( "Splitter", fImpl->vsplitter->saveState() );
         }
 
-        void CMergeSRTPage::setSetupProgressDlgFunc( std::function< std::shared_ptr< CDoubleProgressDlg >( const QString &title, const QString &cancelButtonText, int max ) > setupFunc, std::function< void() > clearFunc )
+        void CMergeSRTPage::setSetupProgressDlgFunc( std::function< std::shared_ptr< CDoubleProgressDlg >( const QString & title, const QString & cancelButtonText, int max ) > setupFunc, std::function< void() > clearFunc )
         {
             fSetupProgressFunc = setupFunc;
             fClearProgressFunc = clearFunc;
@@ -78,11 +73,11 @@ namespace NMediaManager
                 fClearProgressFunc();
         }
 
-        void CMergeSRTPage::setupProgressDlg( const QString &title, const QString &cancelButtonText, int max )
+        void CMergeSRTPage::setupProgressDlg( const QString & title, const QString & cancelButtonText, int max )
         {
-            if (fSetupProgressFunc)
+            if ( fSetupProgressFunc )
             {
-                fProgressDlg = fSetupProgressFunc(title, cancelButtonText, max);
+                fProgressDlg = fSetupProgressFunc( title, cancelButtonText, max );
                 fProgressDlg->setSingleProgressBarMode( !canRun() );
 
                 if ( canRun() )
@@ -105,7 +100,19 @@ namespace NMediaManager
             emit sigStopStayAwake();
         }
 
-        void CMergeSRTPage::load( const QString &dirName )
+        void CMergeSRTPage::slotProcessingStarted()
+        {
+            auto sizes = fImpl->vsplitter->sizes();
+            if ( sizes.back() == 0 )
+            {
+                sizes.front() -= 30;
+                sizes.back() = 30;
+
+                fImpl->vsplitter->setSizes( sizes );
+            }
+        }
+
+        void CMergeSRTPage::load( const QString & dirName )
         {
             fDirName = dirName;
             load();
@@ -116,7 +123,8 @@ namespace NMediaManager
             fModel.reset( new NCore::CDirModel( NCore::CDirModel::eMergeSRT ) );
             fImpl->files->setModel( fModel.get() );
             connect( fModel.get(), &NCore::CDirModel::sigDirReloaded, this, &CMergeSRTPage::slotLoadFinished );
-            fModel->setNameFilters( QStringList() << "*.mkv", fImpl->files );
+            connect( fModel.get(), &NCore::CDirModel::sigProcessingStarted, this, &CMergeSRTPage::slotProcessingStarted );
+            fModel->setNameFilters( QStringList() << "*.mkv", fImpl->files, fImpl->results );
             setupProgressDlg( tr( "Finding Files" ), tr( "Cancel" ), 1 );
             fModel->setRootPath( fDirName, fImpl->files, fImpl->results, fProgressDlg );
 
@@ -126,36 +134,25 @@ namespace NMediaManager
 
         void CMergeSRTPage::run()
         {
-            NCore::CDirModel *model = nullptr;
-            auto sizes = fImpl->splitter->sizes();
-            if ( sizes.back() == 0 )
-            {
-                sizes.front() -= 30;
-                sizes.back() = 30;
-
-                fImpl->splitter->setSizes( sizes );
-            }
-
             emit sigStartStayAwake();
 
             auto actionName = tr( "Merging SRT Files into MKV..." );
             auto cancelName = tr( "Abort Merge" );
-            model = fModel.get();
-            connect(model, &NCore::CDirModel::sigProcessesFinished, [this]( bool status, bool canceled, bool reloadModel ) 
-                { 
-                    clearProgressDlg(); 
-                    if ( !status )
-                    {
-                        fModel->showProcessResults( tr( "Error While Processing:" ), tr( "Issues:" ), QMessageBox::Critical, QDialogButtonBox::Ok, this );
-                    }
-                    if ( !canceled && reloadModel ) 
-                        load(); 
-                    emit sigStopStayAwake();
-                });
+            NCore::CDirModel * model = fModel.get();
+            connect( model, &NCore::CDirModel::sigProcessesFinished, [ this ]( bool status, bool canceled, bool reloadModel )
+            {
+                clearProgressDlg();
+                if ( !status )
+                {
+                    fModel->showProcessResults( tr( "Error While Processing:" ), tr( "Issues:" ), QMessageBox::Critical, QDialogButtonBox::Ok, this );
+                }
+                if ( !canceled && reloadModel )
+                    load();
+                emit sigStopStayAwake();
+            } );
 
             if ( fModel )
             {
-
                 fModel->process(
                     [ actionName, cancelName, this ]( int count )
                 {

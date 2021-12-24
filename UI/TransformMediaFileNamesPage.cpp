@@ -21,10 +21,11 @@
 // SOFTWARE.
 
 #include "TransformMediaFileNamesPage.h"
+#include "ui_TransformMediaFileNamesPage.h"
+
 #include "SelectTMDB.h"
 #include "TransformConfirm.h"
 
-#include "ui_TransformMediaFileNamesPage.h"
 
 #include "Core/Preferences.h"
 #include "Core/DirModel.h"
@@ -35,6 +36,7 @@
 #include "SABUtils/QtUtils.h"
 #include "SABUtils/DoubleProgressDlg.h"
 
+#include <QSettings>
 #include <QTimer>
 #include <QDir>
 
@@ -66,10 +68,14 @@ namespace NMediaManager
         void CTransformMediaFileNamesPage::loadSettings()
         {
             setTreatAsTVByDefault( NCore::CPreferences::instance()->getTreatAsTVShowByDefault() );
+            fImpl->vsplitter->setSizes( QList< int >() << 100 << 0 );
         }
 
         void CTransformMediaFileNamesPage::saveSettings()
         {
+            QSettings settings;
+            settings.beginGroup( "Transform" );
+            settings.setValue( "Splitter", fImpl->vsplitter->saveState() );
         }
 
         void CTransformMediaFileNamesPage::setSetupProgressDlgFunc( std::function< std::shared_ptr< CDoubleProgressDlg >( const QString &title, const QString &cancelButtonText, int max ) > setupFunc, std::function< void() > clearFunc )
@@ -259,6 +265,8 @@ namespace NMediaManager
             fModel.reset( new NCore::CDirModel( NCore::CDirModel::eTransform ) );
             fImpl->files->setModel( fModel.get() );
             connect( fModel.get(), &NCore::CDirModel::sigDirReloaded, this, &CTransformMediaFileNamesPage::slotLoadFinished );
+            connect( fModel.get(), &NCore::CDirModel::sigProcessingStarted, this, &CTransformMediaFileNamesPage::slotProcessingStarted );
+
             fModel->slotTreatAsTVByDefaultChanged( NCore::CPreferences::instance()->getTreatAsTVShowByDefault() );
             fModel->slotTVOutputFilePatternChanged( NCore::CPreferences::instance()->getTVOutFilePattern() );
             fModel->slotTVOutputDirPatternChanged( NCore::CPreferences::instance()->getTVOutDirPattern() );
@@ -289,6 +297,17 @@ namespace NMediaManager
             }
         }
 
+        void CTransformMediaFileNamesPage::slotProcessingStarted()
+        {
+            auto sizes = fImpl->vsplitter->sizes();
+            if ( sizes.back() == 0 )
+            {
+                sizes.front() -= 30;
+                sizes.back() = 30;
+
+                fImpl->vsplitter->setSizes( sizes );
+            }
+        }
         bool CTransformMediaFileNamesPage::canRun() const
         {
             return fModel && fModel->rowCount() != 0;

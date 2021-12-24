@@ -34,11 +34,6 @@ namespace NMediaManager
     }
 }
 
-namespace NUtils
-{
-    class CStayAwake;
-}
-
 namespace NMediaManager
 {
     namespace NUi
@@ -60,7 +55,7 @@ namespace NMediaManager
             void setSetupProgressDlgFunc( std::function< std::shared_ptr< CDoubleProgressDlg >( const QString &title, const QString &cancelButtonText, int max ) > setupFunc, std::function< void() > clearFunc );
         public Q_SLOTS:
             void slotLoadFinished( bool canceled );
-
+            void slotProcessingStarted();
         Q_SIGNALS:
             void sigLoading();
             void sigLoadFinished( bool canceled );
@@ -76,7 +71,6 @@ namespace NMediaManager
             std::function< std::shared_ptr< CDoubleProgressDlg >( const QString &title, const QString &cancelButtonText, int max ) > fSetupProgressFunc;
             std::function< void() > fClearProgressFunc;
             std::shared_ptr< CDoubleProgressDlg > fProgressDlg;
-
             QString fDirName;
             std::unique_ptr< NCore::CDirModel > fModel;
             std::unique_ptr< Ui::CMergeSRTPage > fImpl;

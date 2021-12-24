@@ -24,73 +24,56 @@
 #define _MAKEMKV_H
 
 #include <QWidget>
-#include <optional>
-//class CDoubleProgressDlg;
-//class QTreeView;
-//class QLineEdit;
-//class CDelayLineEdit;
-//class QToolBar;
-//class QSpinBox;
+class CDoubleProgressDlg;
 
-//namespace NMediaManager
-//{
-//    namespace NCore
-//    {
-//        struct SSearchTMDBInfo;
-//        struct SSearchResult;
-//        class CDirModel;
-//        class CSearchTMDB;
-//    }
-//}
+namespace NMediaManager
+{
+    namespace NCore
+    {
+        class CDirModel;
+    }
+}
 
 namespace NMediaManager
 {
     namespace NUi
     {
-        namespace Ui { class CMakeMKV; };
-        class CMakeMKV : public QWidget
+        namespace Ui { class CMakeMKVPage; };
+        class CMakeMKVPage : public QWidget
         {
             Q_OBJECT
         public:
-            CMakeMKV( QWidget *parent = 0 );
-            ~CMakeMKV();
+            CMakeMKVPage( QWidget *parent = 0 );
+            ~CMakeMKVPage();
 
-            void load( const QString &fileName );
+            void load( const QString & dirName );
             void load();
 
             void run();
             bool canRun() const;
 
-            //void setTreatAsTVByDefault( bool value );
-            //void setExactMatchesOnly( bool value );
-
-            //void setSetupProgressDlgFunc( std::function< std::shared_ptr< CDoubleProgressDlg >( const QString &title, const QString &cancelButtonText, int max ) > setupFunc, std::function< void() > clearFunc );
-        Q_SIGNALS:
-            //void sigLoading();
-            //void sigLoadFinished( bool canceled );
+            void setSetupProgressDlgFunc( std::function< std::shared_ptr< CDoubleProgressDlg >( const QString &title, const QString &cancelButtonText, int max ) > setupFunc, std::function< void() > clearFunc );
         public Q_SLOTS:
-            //void slotDoubleClicked( const QModelIndex &idx );
-            //void slotAutoSearchForNewNames();
-            //void slotAutoSearchFinished( const QString &path, bool searchesRemaining );
-
-            //void slotLoadFinished( bool canceled );
+            void slotLoadFinished( bool canceled );
+            void slotProcessingStarted();
+        Q_SIGNALS:
+            void sigLoading();
+            void sigLoadFinished( bool canceled );
+            void sigStartStayAwake();
+            void sigStopStayAwake();
         private:
-            //[[nodiscard]] bool autoSearchForNewNames( QModelIndex rootIdx );
-            //void setupProgressDlg( const QString &title, const QString &cancelButtonText, int max );
-            //void clearProgressDlg();
+            void setupProgressDlg( const QString &title, const QString &cancelButtonText, int max );
+            void clearProgressDlg();
 
-            //void loadSettings();
-            //void saveSettings();
+            void loadSettings();
+            void saveSettings();
 
-            //std::unique_ptr< NCore::CDirModel > fModel;
-            //NCore::CSearchTMDB *fSearchTMDB{ nullptr };
-            //std::function< std::shared_ptr< CDoubleProgressDlg >( const QString &title, const QString &cancelButtonText, int max ) > fSetupProgressFunc;
-            //std::function< void() > fClearProgressFunc;
-            //std::shared_ptr< CDoubleProgressDlg >fProgressDlg;
-            //uint64_t fSearchesCompleted{ 0 };
-            //QString fDirName;
-
-            std::unique_ptr< Ui::CMakeMKV > fImpl;
+            std::function< std::shared_ptr< CDoubleProgressDlg >( const QString &title, const QString &cancelButtonText, int max ) > fSetupProgressFunc;
+            std::function< void() > fClearProgressFunc;
+            std::shared_ptr< CDoubleProgressDlg > fProgressDlg;
+            QString fDirName;
+            std::unique_ptr< NCore::CDirModel > fModel;
+            std::unique_ptr< Ui::CMakeMKVPage > fImpl;
         };
     }
 }

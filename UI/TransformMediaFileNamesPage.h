@@ -38,11 +38,6 @@ namespace NBIF
 }
 class QSpinBox;
 
-namespace NUtils
-{
-    class CStayAwake;
-}
-
 namespace NMediaManager
 {
     namespace NCore
@@ -76,17 +71,17 @@ namespace NMediaManager
             void setExactMatchesOnly( bool value );
 
             void setSetupProgressDlgFunc( std::function< std::shared_ptr< CDoubleProgressDlg >( const QString &title, const QString &cancelButtonText, int max ) > setupFunc, std::function< void() > clearFunc );
+        public Q_SLOTS:
+            void slotLoadFinished( bool canceled );
+            void slotProcessingStarted();
+            void slotDoubleClicked( const QModelIndex &idx );
+            void slotAutoSearchForNewNames();
+            void slotAutoSearchFinished( const QString &path, bool searchesRemaining );
         Q_SIGNALS:
             void sigLoading();
             void sigLoadFinished( bool canceled );
             void sigStartStayAwake();
             void sigStopStayAwake();
-        public Q_SLOTS:
-            void slotDoubleClicked( const QModelIndex &idx );
-            void slotAutoSearchForNewNames();
-            void slotAutoSearchFinished( const QString &path, bool searchesRemaining );
-
-            void slotLoadFinished( bool canceled );
         private:
             [[nodiscard]] bool autoSearchForNewNames( QModelIndex rootIdx );
             void setupProgressDlg( const QString &title, const QString &cancelButtonText, int max );
@@ -95,14 +90,13 @@ namespace NMediaManager
             void loadSettings();
             void saveSettings();
 
-            std::unique_ptr< NCore::CDirModel > fModel;
             NCore::CSearchTMDB *fSearchTMDB{ nullptr };
+            uint64_t fSearchesCompleted{ 0 };
             std::function< std::shared_ptr< CDoubleProgressDlg >( const QString &title, const QString &cancelButtonText, int max ) > fSetupProgressFunc;
             std::function< void() > fClearProgressFunc;
-            std::shared_ptr< CDoubleProgressDlg >fProgressDlg;
-            uint64_t fSearchesCompleted{ 0 };
+            std::shared_ptr< CDoubleProgressDlg > fProgressDlg;
             QString fDirName;
-
+            std::unique_ptr< NCore::CDirModel > fModel;
             std::unique_ptr< Ui::CTransformMediaFileNamesPage > fImpl;
         };
     }

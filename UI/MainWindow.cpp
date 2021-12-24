@@ -158,6 +158,21 @@ namespace NMediaManager
             connect( fImpl->transformMediaFileNamesPage, &CTransformMediaFileNamesPage::sigStartStayAwake, this, &CMainWindow::slotStartStayAwake );
             connect( fImpl->transformMediaFileNamesPage, &CTransformMediaFileNamesPage::sigStopStayAwake, this, &CMainWindow::slotStopStayAwake );
 
+            fImpl->makeMKVPage->setSetupProgressDlgFunc(
+                [ this ]( const QString & title, const QString & cancelButtonText, int max )
+            {
+                setupProgressDlg( title, cancelButtonText, max );
+                return fProgressDlg;
+            },
+                [ this ]()
+            {
+                clearProgressDlg();
+            }
+            );
+            connect( fImpl->makeMKVPage, &CMakeMKVPage::sigLoadFinished, this, &CMainWindow::slotLoadFinished );
+            connect( fImpl->makeMKVPage, &CMakeMKVPage::sigStartStayAwake, this, &CMainWindow::slotStartStayAwake );
+            connect( fImpl->makeMKVPage, &CMakeMKVPage::sigStopStayAwake, this, &CMainWindow::slotStopStayAwake );
+
             fImpl->mergeSRTPage->setSetupProgressDlgFunc(
                 [ this ]( const QString & title, const QString & cancelButtonText, int max )
             {
@@ -308,7 +323,7 @@ namespace NMediaManager
                 if ( !fileName.isEmpty() )
                     fImpl->fileName->setCurrentText( fileName );
             }
-            else if ( isMergeSRTActive() || isTransformActive() )
+            else if ( isMergeSRTActive() || isTransformActive() || isMakeMKVActive() )
             {
                 auto dir = QFileDialog::getExistingDirectory( this, tr( "Select Directory:" ), fImpl->directory->currentText() );
                 if ( !dir.isEmpty() )
@@ -378,6 +393,11 @@ namespace NMediaManager
             return fImpl->tabWidget->currentWidget() == fImpl->mergeSRTTab;
         }
 
+        bool CMainWindow::isMakeMKVActive() const
+        {
+            return fImpl->tabWidget->currentWidget() == fImpl->makeMKVTab;
+        }
+
         bool CMainWindow::isTransformActive() const
         {
             return fImpl->tabWidget->currentWidget() == fImpl->transformMediaFileNamesTab;
@@ -394,6 +414,8 @@ namespace NMediaManager
                 return fImpl->transformMediaFileNamesPage->canRun();
             else if ( isMergeSRTActive() )
                 return fImpl->mergeSRTPage->canRun();
+            else if ( isMakeMKVActive() )
+                return fImpl->makeMKVPage->canRun();
             return nullptr;
         }
 
@@ -416,6 +438,10 @@ namespace NMediaManager
             {
                 fImpl->mergeSRTPage->load( fImpl->directory->currentText() );
             }
+            else if ( isMakeMKVActive() )
+            {
+                fImpl->makeMKVPage->load( fImpl->directory->currentText() );
+            }
             fImpl->actionRun->setEnabled( false );
         }
 
@@ -428,6 +454,10 @@ namespace NMediaManager
             else if ( isMergeSRTActive() )
             {
                 fImpl->mergeSRTPage->run();
+            }
+            else if ( isMakeMKVActive() )
+            {
+                fImpl->makeMKVPage->run();
             }
             else
                 return;

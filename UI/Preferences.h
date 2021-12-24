@@ -43,10 +43,10 @@ namespace NMediaManager
             void slotDelKnownString();
             void slotAddExtraString();
             void slotDelExtraString();
+
             void slotSelectMKVMergeExe();
-            void slotMKVMergeExeChanged();
             void slotSelectMKVPropEditExe();
-            void slotMKVPropEditExeChanged();
+            void slotSelectFFMpegExe();
 
             void accept() override;
         private:

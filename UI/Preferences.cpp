@@ -47,10 +47,27 @@ namespace NMediaManager
             connect( fImpl->btnDelKnownString, &QToolButton::clicked, this, &CPreferences::slotDelKnownString );
             connect(fImpl->btnAddExtraString, &QToolButton::clicked, this, &CPreferences::slotAddExtraString);
             connect(fImpl->btnDelExtraString, &QToolButton::clicked, this, &CPreferences::slotDelExtraString);
+
             connect( fImpl->btnSelectMKVMergeExe, &QToolButton::clicked, this, &CPreferences::slotSelectMKVMergeExe );
-            connect( fImpl->mkvMergeExe, &QLineEdit::textChanged, this, &CPreferences::slotMKVMergeExeChanged );
+            fImpl->mkvMergeExe->setIsOKFunction( [ ]( const QString & fileName )
+            {
+                auto fi = QFileInfo( fileName );
+                return fileName.isEmpty() || (fi.exists() && fi.isFile() && fi.isExecutable());
+            }, tr( "File '%1' does not Exist or is not an Executable" ) );
+
             connect(fImpl->btnSelectMKVPropEditExe, &QToolButton::clicked, this, &CPreferences::slotSelectMKVPropEditExe);
-            connect(fImpl->mkvPropEditExe, &QLineEdit::textChanged, this, &CPreferences::slotMKVPropEditExeChanged);
+            fImpl->mkvPropEditExe->setIsOKFunction( [ ]( const QString & fileName )
+            {
+                auto fi = QFileInfo( fileName );
+                return fileName.isEmpty() || (fi.exists() && fi.isFile() && fi.isExecutable());
+            }, tr( "File '%1' does not Exist or is not an Executable" ) );
+
+            connect( fImpl->btnSelectFFMpegExe, &QToolButton::clicked, this, &CPreferences::slotSelectFFMpegExe );
+            fImpl->ffmpegExe->setIsOKFunction( [ ]( const QString & fileName )
+            {
+                auto fi = QFileInfo( fileName );
+                return fileName.isEmpty() || (fi.exists() && fi.isFile() && fi.isExecutable());
+            }, tr( "File '%1' does not Exist or is not an Executable" ) );
 
             fKnownStringModel = new QStringListModel( this );
             fImpl->knownStrings->setModel( fKnownStringModel );
@@ -164,16 +181,17 @@ namespace NMediaManager
                 fImpl->mkvMergeExe->setText( exe );
         }
 
-        void CPreferences::slotMKVMergeExeChanged()
+        void CPreferences::slotSelectFFMpegExe()
         {
-            auto cmd = fImpl->mkvMergeExe->text();
-            auto fi = QFileInfo( cmd );
-            bool aOK = !cmd.isEmpty() && fi.isExecutable();
+            auto exe = QFileDialog::getOpenFileName( this, tr( "Select ffmpeg Executable:" ), fImpl->ffmpegExe->text(), "ffmpeg Executable (ffmpeg.exe);;All Executables (*.exe);;All Files (*.*)" );
+            if ( !exe.isEmpty() && !QFileInfo( exe ).isExecutable() )
+            {
+                QMessageBox::critical( this, "Not an Executable", tr( "The file '%1' is not an executable" ).arg( exe ) );
+                return;
+            }
 
-            if ( aOK )
-                fImpl->mkvMergeExe->setStyleSheet( "QLineEdit { background-color: white }" );
-            else
-                fImpl->mkvMergeExe->setStyleSheet( "QLineEdit { background-color: red }" );
+            if ( !exe.isEmpty() )
+                fImpl->ffmpegExe->setText( exe );
         }
 
         void CPreferences::slotSelectMKVPropEditExe()
@@ -187,18 +205,6 @@ namespace NMediaManager
 
             if (!exe.isEmpty())
                 fImpl->mkvPropEditExe->setText(exe);
-        }
-
-        void CPreferences::slotMKVPropEditExeChanged()
-        {
-            auto cmd = fImpl->mkvPropEditExe->text();
-            auto fi = QFileInfo(cmd);
-            bool aOK = !cmd.isEmpty() && fi.isExecutable();
-
-            if (aOK)
-                fImpl->mkvPropEditExe->setStyleSheet("QLineEdit { background-color: white }");
-            else
-                fImpl->mkvPropEditExe->setStyleSheet("QLineEdit { background-color: red }");
         }
 
         void CPreferences::loadSettings()
@@ -219,6 +225,7 @@ namespace NMediaManager
 
             fImpl->mkvMergeExe->setText( NCore::CPreferences::instance()->getMKVMergeEXE() );
             fImpl->mkvPropEditExe->setText(NCore::CPreferences::instance()->getMKVPropEditEXE());
+            fImpl->ffmpegExe->setText( NCore::CPreferences::instance()->getFFMpegEXE() );
         }
 
         void CPreferences::saveSettings()
@@ -236,6 +243,7 @@ namespace NMediaManager
             NCore::CPreferences::instance()->setMovieOutDirPattern( fImpl->movieOutDirPattern->text() );
             NCore::CPreferences::instance()->setMKVMergeEXE( fImpl->mkvMergeExe->text() );
             NCore::CPreferences::instance()->setMKVPropEditEXE(fImpl->mkvPropEditExe->text());
+            NCore::CPreferences::instance()->setFFMpegEXE( fImpl->ffmpegExe->text() );
         }
     }
 }

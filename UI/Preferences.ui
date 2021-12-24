@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>604</width>
+    <width>752</width>
     <height>594</height>
    </rect>
   </property>
@@ -27,31 +27,17 @@
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>3</number>
+      <number>4</number>
      </property>
-     <widget class="QWidget" name="tab">
+     <widget class="QWidget" name="tab_5">
       <attribute name="title">
-       <string>Transformation Settings</string>
+       <string>General</string>
       </attribute>
-      <layout class="QGridLayout" name="gridLayout_7">
-       <item row="4" column="2">
+      <layout class="QGridLayout" name="gridLayout_8">
+       <item row="1" column="1">
         <widget class="QLineEdit" name="subtitleExtensions"/>
        </item>
-       <item row="3" column="0" colspan="2">
-        <widget class="QLabel" name="label_5">
-         <property name="text">
-          <string>Media Extensions:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="0" colspan="3">
-        <widget class="QCheckBox" name="treatAsTVShowByDefault">
-         <property name="text">
-          <string>Treat as TV Show by default? (when auto determine fails)</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="2">
+       <item row="0" column="1">
         <widget class="QLineEdit" name="mediaExtensions">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -64,14 +50,88 @@
          </property>
         </widget>
        </item>
-       <item row="6" column="0" colspan="3">
-        <widget class="QCheckBox" name="exactMatchesOnly">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_5">
          <property name="text">
-          <string>Exact Matches Only?</string>
+          <string>Media Extensions:</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="0" rowspan="2" colspan="3">
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Subtitle Extensions:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <spacer name="verticalSpacer_6">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab">
+      <attribute name="title">
+       <string>Transformation Settings</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_7">
+       <item row="2" column="0" colspan="2">
+        <widget class="QGroupBox" name="groupBox_2">
+         <property name="title">
+          <string>Known Strings for Extended/Extra Information</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_3">
+          <item row="0" column="1">
+           <widget class="QToolButton" name="btnAddExtraString">
+            <property name="text">
+             <string>...</string>
+            </property>
+            <property name="icon">
+             <iconset resource="../SABUtils/resources/SABUtils.qrc">
+              <normaloff>:/SABUtilsResources/add.png</normaloff>:/SABUtilsResources/add.png</iconset>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QToolButton" name="btnDelExtraString">
+            <property name="text">
+             <string>...</string>
+            </property>
+            <property name="icon">
+             <iconset resource="../SABUtils/resources/SABUtils.qrc">
+              <normaloff>:/SABUtilsResources/delete.png</normaloff>:/SABUtilsResources/delete.png</iconset>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <spacer name="verticalSpacer_5">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>174</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="0" column="0" rowspan="3">
+           <widget class="QListView" name="knownExtraStrings"/>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="0" column="0" rowspan="2" colspan="2">
         <widget class="QGroupBox" name="groupBox">
          <property name="title">
           <string>Known Strings to Remove from Paths:</string>
@@ -83,8 +143,8 @@
              <string>...</string>
             </property>
             <property name="icon">
-             <iconset resource="application.qrc">
-              <normaloff>:/resources/add.png</normaloff>:/resources/add.png</iconset>
+             <iconset resource="../SABUtils/resources/SABUtils.qrc">
+              <normaloff>:/SABUtilsResources/add.png</normaloff>:/SABUtilsResources/add.png</iconset>
             </property>
            </widget>
           </item>
@@ -94,8 +154,8 @@
              <string>...</string>
             </property>
             <property name="icon">
-             <iconset resource="application.qrc">
-              <normaloff>:/resources/delete.png</normaloff>:/resources/delete.png</iconset>
+             <iconset resource="../SABUtils/resources/SABUtils.qrc">
+              <normaloff>:/SABUtilsResources/delete.png</normaloff>:/SABUtilsResources/delete.png</iconset>
             </property>
            </widget>
           </item>
@@ -119,57 +179,17 @@
         </widget>
        </item>
        <item row="4" column="0" colspan="2">
-        <widget class="QLabel" name="label_2">
+        <widget class="QCheckBox" name="exactMatchesOnly">
          <property name="text">
-          <string>Subtitle Extensions:</string>
+          <string>Exact Matches Only?</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="0" colspan="3">
-        <widget class="QGroupBox" name="groupBox_2">
-         <property name="title">
-          <string>Known Strings for Extended/Extra Information</string>
+       <item row="3" column="0" colspan="2">
+        <widget class="QCheckBox" name="treatAsTVShowByDefault">
+         <property name="text">
+          <string>Treat as TV Show by default? (when auto determine fails)</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout_3">
-          <item row="0" column="1">
-           <widget class="QToolButton" name="btnAddExtraString">
-            <property name="text">
-             <string>...</string>
-            </property>
-            <property name="icon">
-             <iconset resource="application.qrc">
-              <normaloff>:/resources/add.png</normaloff>:/resources/add.png</iconset>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QToolButton" name="btnDelExtraString">
-            <property name="text">
-             <string>...</string>
-            </property>
-            <property name="icon">
-             <iconset resource="application.qrc">
-              <normaloff>:/resources/delete.png</normaloff>:/resources/delete.png</iconset>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <spacer name="verticalSpacer_5">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>174</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="0" column="0" rowspan="3">
-           <widget class="QListView" name="knownExtraStrings"/>
-          </item>
-         </layout>
         </widget>
        </item>
       </layout>
@@ -198,14 +218,14 @@
        <item row="1" column="0">
         <widget class="QLabel" name="label_6">
          <property name="text">
-          <string>Output File:</string>
+          <string>Output File Template:</string>
          </property>
         </widget>
        </item>
        <item row="0" column="0">
         <widget class="QLabel" name="label_10">
          <property name="text">
-          <string>Output Directory:</string>
+          <string>Output Directory Template:</string>
          </property>
         </widget>
        </item>
@@ -258,7 +278,7 @@
        <item row="0" column="0">
         <widget class="QLabel" name="label_9">
          <property name="text">
-          <string>Output Directory:</string>
+          <string>Output Directory Template:</string>
          </property>
         </widget>
        </item>
@@ -275,7 +295,7 @@
        <item row="1" column="0">
         <widget class="QLabel" name="label_7">
          <property name="text">
-          <string>Output File:</string>
+          <string>Output File Template:</string>
          </property>
         </widget>
        </item>
@@ -296,16 +316,9 @@
      </widget>
      <widget class="QWidget" name="tab_4">
       <attribute name="title">
-       <string>MakeMKV Settings</string>
+       <string>External Tool Settings</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_6">
-       <item row="0" column="0">
-        <widget class="QLabel" name="label">
-         <property name="text">
-          <string>MKVMerge Executable:</string>
-         </property>
-        </widget>
-       </item>
        <item row="0" column="1">
         <widget class="CDelayLineEdit" name="mkvMergeExe">
          <property name="sizePolicy">
@@ -313,24 +326,6 @@
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="2">
-        <widget class="QToolButton" name="btnSelectMKVMergeExe">
-         <property name="text">
-          <string>...</string>
-         </property>
-         <property name="icon">
-          <iconset resource="application.qrc">
-           <normaloff>:/resources/open.png</normaloff>:/resources/open.png</iconset>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="label_8">
-         <property name="text">
-          <string>MKVPropEdit Executable:</string>
          </property>
         </widget>
        </item>
@@ -350,12 +345,37 @@
           <string>...</string>
          </property>
          <property name="icon">
-          <iconset resource="application.qrc">
-           <normaloff>:/resources/open.png</normaloff>:/resources/open.png</iconset>
+          <iconset resource="../SABUtils/resources/SABUtils.qrc">
+           <normaloff>:/SABUtilsResources/open.png</normaloff>:/SABUtilsResources/open.png</iconset>
          </property>
         </widget>
        </item>
-       <item row="2" column="0">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>MKVMerge Executable:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_8">
+         <property name="text">
+          <string>MKVPropEdit Executable:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QToolButton" name="btnSelectMKVMergeExe">
+         <property name="text">
+          <string>...</string>
+         </property>
+         <property name="icon">
+          <iconset resource="../SABUtils/resources/SABUtils.qrc">
+           <normaloff>:/SABUtilsResources/open.png</normaloff>:/SABUtilsResources/open.png</iconset>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
         <spacer name="verticalSpacer_4">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -367,6 +387,27 @@
           </size>
          </property>
         </spacer>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_11">
+         <property name="text">
+          <string>ffmpeg Executable:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="CDelayLineEdit" name="ffmpegExe"/>
+       </item>
+       <item row="2" column="2">
+        <widget class="QToolButton" name="btnSelectFFMpegExe">
+         <property name="text">
+          <string>...</string>
+         </property>
+         <property name="icon">
+          <iconset resource="../SABUtils/resources/SABUtils.qrc">
+           <normaloff>:/SABUtilsResources/open.png</normaloff>:/SABUtilsResources/open.png</iconset>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>
@@ -382,15 +423,14 @@
   </customwidget>
  </customwidgets>
  <tabstops>
-  <tabstop>tabWidget</tabstop>
+  <tabstop>mediaExtensions</tabstop>
+  <tabstop>subtitleExtensions</tabstop>
   <tabstop>knownStrings</tabstop>
   <tabstop>btnAddKnownString</tabstop>
   <tabstop>btnDelKnownString</tabstop>
   <tabstop>knownExtraStrings</tabstop>
   <tabstop>btnAddExtraString</tabstop>
   <tabstop>btnDelExtraString</tabstop>
-  <tabstop>mediaExtensions</tabstop>
-  <tabstop>subtitleExtensions</tabstop>
   <tabstop>treatAsTVShowByDefault</tabstop>
   <tabstop>exactMatchesOnly</tabstop>
   <tabstop>tvOutDirPattern</tabstop>
@@ -399,9 +439,15 @@
   <tabstop>movieOutFilePattern</tabstop>
   <tabstop>mkvMergeExe</tabstop>
   <tabstop>btnSelectMKVMergeExe</tabstop>
+  <tabstop>mkvPropEditExe</tabstop>
+  <tabstop>btnSelectMKVPropEditExe</tabstop>
+  <tabstop>ffmpegExe</tabstop>
+  <tabstop>btnSelectFFMpegExe</tabstop>
+  <tabstop>tabWidget</tabstop>
  </tabstops>
  <resources>
   <include location="application.qrc"/>
+  <include location="../SABUtils/resources/SABUtils.qrc"/>
  </resources>
  <connections>
   <connection>
