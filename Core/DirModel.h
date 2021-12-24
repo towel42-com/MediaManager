@@ -149,13 +149,15 @@ namespace NMediaManager
             {
                 eUnknown,
                 eTransform,
-                eMergeSRT
+                eMergeSRT,
+                eMakeMKV
             };
             CDirModel( EModelType modelType, QObject *parent = nullptr );
             ~CDirModel();
 
             bool isMergeSRTModel() const;
             bool isTransformModel() const;
+            bool isMakeMKVModel() const;
 
             bool isDir( const QModelIndex &idx ) const;
             QFileInfo fileInfo( const QModelIndex &idx ) const;
@@ -198,6 +200,7 @@ namespace NMediaManager
         Q_SIGNALS:
             void sigDirReloaded( bool canceled );
             void sigProcessesFinished( bool status, bool cancelled, bool reloadModel );
+            void sigProcessingStarted();
         public Q_SLOTS:
             void slotTVOutputFilePatternChanged( const QString &outPattern );
             void slotTVOutputDirPatternChanged( const QString &outPattern );
@@ -259,6 +262,7 @@ namespace NMediaManager
             std::pair< bool, QStandardItem * > processItem( const QStandardItem *item, QStandardItem *parentItem, bool displayOnly ) const;
             std::pair< bool, QStandardItem * > transform( const QStandardItem *item, QStandardItem *parentItem, bool displayOnly ) const;
             std::pair< bool, QStandardItem * > mergeSRT( const QStandardItem *item, QStandardItem *parentItem, bool displayOnly ) const;
+            std::pair< bool, QStandardItem * > makeMKV( const QStandardItem * item, QStandardItem * parentItem, bool displayOnly ) const;
 
             bool checkProcessItemExists( const QString & fileName, QStandardItem * parentItem, bool scheduledForRemoval=false ) const;
 
@@ -316,7 +320,7 @@ namespace NMediaManager
             {
                 SProcessInfo(){}
                 void cleanup( CDirModel * model, bool aOK );
-                QString getProgressLabel(std::function < QString(const QString &) > dispName );
+                QString getProgressLabel(CDirModel * model, std::function < QString(const QString &) > dispName );
 
                 QString fCmd;
                 QStringList fArgs;

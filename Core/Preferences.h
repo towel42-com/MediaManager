@@ -70,6 +70,8 @@ namespace NMediaManager
             void setSubtitleExtensions( const QStringList &value );
             QStringList getSubtitleExtensions() const;
 
+            QStringList getNonMKVMediaExtensions() const;
+
             void addKnownStrings(const QStringList & value);
             void setKnownStrings( const QStringList &value );
             QStringList getKnownStrings() const;
@@ -83,6 +85,9 @@ namespace NMediaManager
             void setMKVPropEditEXE(const QString & value);
             QString getMKVPropEditEXE() const;
 
+            void setFFMpegEXE( const QString & value );
+            QString getFFMpegEXE() const;
+            
             bool isMediaFile( const QFileInfo &fi ) const;
             bool isSubtitleFile( const QFileInfo &info, bool *isLangFileFormat = nullptr ) const;
 

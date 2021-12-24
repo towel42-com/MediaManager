@@ -830,6 +830,11 @@ namespace NMediaManager
             return fModelType == EModelType::eTransform;
         }
 
+        bool CDirModel::isMakeMKVModel() const
+        {
+            return fModelType == EModelType::eMakeMKV;
+        }
+
         void CDirModel::setChecked( QStandardItem * item, bool isChecked ) const
         {
             item->setText( isChecked ? "Yes" : "No" );
@@ -1271,6 +1276,8 @@ namespace NMediaManager
                 return 5;
             else if ( isMergeSRTModel() )
                 return 1;
+            else if ( isMakeMKVModel() )
+                return 1;
             return 1;
         }
 
@@ -1582,6 +1589,65 @@ namespace NMediaManager
             return std::make_pair( aOK, myItem );
         }
 
+        std::pair< bool, QStandardItem * > CDirModel::makeMKV( const QStandardItem * item, QStandardItem * parentItem, bool displayOnly ) const
+        {
+            if (item->data( ECustomRoles::eIsDir ).toBool() )
+                return std::make_pair( true, nullptr );
+
+            SProcessInfo processInfo;
+            processInfo.fOldName = item->data( ECustomRoles::eFullPathRole ).toString();
+            auto fi = QFileInfo( processInfo.fOldName );
+            processInfo.fNewName = fi.absoluteDir().absoluteFilePath( fi.completeBaseName() + ".mkv" );
+            processInfo.fItem = new QStandardItem( QString( "Convert '%1' => '%2'" ).arg( getDispName( processInfo.fOldName ) ).arg( getDispName( processInfo.fNewName ) ) );
+            processInfo.fItem->setData( processInfo.fOldName, ECustomRoles::eOldName );
+            processInfo.fItem->setData( processInfo.fNewName, ECustomRoles::eNewName );
+            if ( parentItem )
+                parentItem->appendRow( processInfo.fItem );
+            else
+                fProcessResults.second->appendRow( processInfo.fItem );
+
+            bool aOK = true;
+            QStandardItem * myItem = nullptr;
+            fFirstProcess = true;
+            if ( !displayOnly )
+            {
+                processInfo.fCmd = CPreferences::instance()->getFFMpegEXE();
+                if ( processInfo.fCmd.isEmpty() || !QFileInfo( processInfo.fCmd ).isExecutable() )
+                {
+                    QStandardItem * errorItem = nullptr;
+                    if ( processInfo.fCmd.isEmpty() )
+                        errorItem = new QStandardItem( QString( "ERROR: ffmpeg is not set properly" ) );
+                    else
+                        errorItem = new QStandardItem( QString( "ERROR: ffmpeg '%1' is not an executable" ).arg( processInfo.fCmd ) );
+
+                    errorItem->setData( ECustomRoles::eIsErrorNode, true );
+                    appendError( processInfo.fItem, errorItem );
+
+                    QIcon icon;
+                    icon.addFile( QString::fromUtf8( ":/resources/error.png" ), QSize(), QIcon::Normal, QIcon::Off );
+                    errorItem->setIcon( icon );
+                    aOK = false;
+                }
+
+                aOK = aOK && checkProcessItemExists( processInfo.fOldName, processInfo.fItem );
+                processInfo.fTimeStamps = NFileUtils::timeStamps( processInfo.fOldName );
+
+                processInfo.fArgs = QStringList()
+                    << "-y"
+                    << "-fflags"
+                    << "+genpts"
+                    << "-i"
+                    << processInfo.fOldName
+                    << "-c:v" << "copy"
+                    << "-c:a" << "copy"
+                    << processInfo.fNewName;
+                fProcessQueue.push_back( processInfo );
+                QTimer::singleShot( 0, this, &CDirModel::slotRunNextProcessInQueue );
+            }
+            myItem = processInfo.fItem;
+            return std::make_pair( aOK, myItem );
+        }
+
         std::pair< bool, QStandardItem * > CDirModel::mergeSRT( const QStandardItem * item, QStandardItem * parentItem, bool displayOnly ) const
         {
             if ( !item->data( ECustomRoles::eIsDir ).toBool() )
@@ -1700,10 +1766,10 @@ namespace NMediaManager
                     }
                     processInfo.fArgs << "--track-order" << trackOrder.join( "," );
                     fProcessQueue.push_back( processInfo );
+                    QTimer::singleShot( 0, this, &CDirModel::slotRunNextProcessInQueue );
                 }
                 myItem = processInfo.fItem;
             }
-            QTimer::singleShot( 0, this, &CDirModel::slotRunNextProcessInQueue );
             if ( mkvFiles.count() > 1 )
                 return std::make_pair( aOK, myItem );
             else
@@ -1734,6 +1800,8 @@ namespace NMediaManager
                 return transform( item, parentItem, displayOnly );
             else if ( isMergeSRTModel() )
                 return mergeSRT( item, parentItem, displayOnly );
+            else if ( isMakeMKVModel() )
+                return makeMKV( item, parentItem, displayOnly );
             return { false, nullptr };
         }
 
@@ -1823,6 +1891,7 @@ namespace NMediaManager
             }
 
             fProgressDlg = startProgress( count * eventsPerPath() );
+            emit sigProcessingStarted();
             process( false );
             if ( !fProcessResults.first )
             {
@@ -2056,7 +2125,7 @@ namespace NMediaManager
             }
             if ( fProgressDlg )
             {
-                fProgressDlg->setLabelText( curr.getProgressLabel( [ this ]( const QString & text ) { return getDispName( text ); } ) );
+                fProgressDlg->setLabelText( curr.getProgressLabel( this, [ this ]( const QString & text ) { return getDispName( text ); } ) );
             }
             fProcessFinishedHandled = false;
             fProcess->start( curr.fCmd, curr.fArgs );
@@ -2250,19 +2319,27 @@ namespace NMediaManager
             }
         }
 
-        QString CDirModel::SProcessInfo::getProgressLabel( std::function < QString( const QString & ) > dispName )
+        QString CDirModel::SProcessInfo::getProgressLabel( CDirModel * model, std::function < QString( const QString & ) > dispName )
         {
             auto dir = QFileInfo( fNewName ).absolutePath();
             auto fname = QFileInfo( fOldName ).fileName();
-            auto retVal = QString( "Merging MKV %1<ul><li>%2</li>" ).arg( dispName( dir ) ).arg( fname );
-            for ( auto && ii : fSrtFiles )
+            QString retVal;
+            if ( model->isMergeSRTModel() )
             {
-                auto fname = QFileInfo( ii ).fileName();
-                retVal += QString( "<li>%1</li>" ).arg( fname );
+                retVal = QString( "Merging MKV %1<ul><li>%2</li>" ).arg( dispName( dir ) ).arg( fname );
+                for ( auto && ii : fSrtFiles )
+                {
+                    auto fname = QFileInfo( ii ).fileName();
+                    retVal += QString( "<li>%1</li>" ).arg( fname );
+                }
+                retVal += "</ul>";
+                fname = QFileInfo( fNewName ).fileName();
+                retVal += QString( "to create %1" ).arg( fname );
             }
-            retVal += "</ul>";
-            fname = QFileInfo( fNewName ).fileName();
-            retVal += QString( "to create %1" ).arg( fname );
+            else if ( model->isMakeMKVModel() )
+            {
+                retVal = QString( "Converting '%1' to '%2'" ).arg( dispName( fOldName ) ).arg( dispName( fNewName ) );
+            }
             return retVal;
         }
     }

@@ -27,8 +27,7 @@
 #include <QStringListModel>
 #include <QInputDialog>
 #include <QFileInfo>
-
-#include "SABUtils/ButtonEnabler.h"
+#include <QRegularExpression>
 
 #include <optional>
 #include <unordered_set>
@@ -218,7 +217,14 @@ namespace NMediaManager
         {
             QSettings settings;
             settings.beginGroup("Transform");
-            return settings.value( "MediaExtensions", QString( "*.mkv;*.mp4;*.avi;*.mov;*.wmv;*.mpg;*.mpg2" ) ).toString().split( ";" );
+            return settings.value( "MediaExtensions", QString( "*.mkv;*.mp4;*.avi;*.mov;*.wmv;*.mpg;*.mpg2" ) ).toString().toLower().split( ";" );
+        }
+
+        QStringList  CPreferences::getNonMKVMediaExtensions() const
+        {
+            auto retVal = getMediaExtensions();
+            retVal.removeAll( "*.mkv" );
+            return retVal;
         }
 
         void CPreferences::setSubtitleExtensions( const QString &value )
@@ -328,14 +334,14 @@ namespace NMediaManager
         void CPreferences::setMKVMergeEXE( const QString &value )
         {
             QSettings settings;
-            settings.beginGroup("MKVToolNix");
+            settings.beginGroup("ExternalTools");
             settings.setValue( "MKVMergeEXE", value );
         }
 
         QString CPreferences::getMKVMergeEXE() const
         {
             QSettings settings;
-            settings.beginGroup("MKVToolNix");
+            settings.beginGroup("ExternalTools");
             auto retVal = settings.value( "MKVMergeEXE", QString( "C:/Program Files/MKVToolNix/mkvmerge.exe" ) ).toString();
 
             auto fi = QFileInfo( retVal );
@@ -346,17 +352,35 @@ namespace NMediaManager
         void CPreferences::setMKVPropEditEXE(const QString & value)
         {
             QSettings settings;
-            settings.beginGroup("MKVToolNix");
+            settings.beginGroup("ExternalTools");
             settings.setValue("MKVPropEditEXE", value);
         }
 
         QString CPreferences::getMKVPropEditEXE() const
         {
             QSettings settings;
-            settings.beginGroup("MKVToolNix");
+            settings.beginGroup("ExternalTools");
             auto retVal = settings.value("MKVPropEditEXE", QString("C:/Program Files/MKVToolNix/mkvpropedit.exe")).toString();
 
             auto fi = QFileInfo(retVal);
+            bool aOK = !retVal.isEmpty() && fi.isExecutable();
+            return aOK ? retVal : QString();
+        }
+
+        void CPreferences::setFFMpegEXE( const QString & value )
+        {
+            QSettings settings;
+            settings.beginGroup( "ExternalTools" );
+            settings.setValue( "FFMpegEXE", value );
+        }
+
+        QString CPreferences::getFFMpegEXE() const
+        {
+            QSettings settings;
+            settings.beginGroup( "ExternalTools" );
+            auto retVal = settings.value( "FFMpegEXE", QString() ).toString();
+
+            auto fi = QFileInfo( retVal );
             bool aOK = !retVal.isEmpty() && fi.isExecutable();
             return aOK ? retVal : QString();
         }
