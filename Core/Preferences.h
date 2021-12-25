@@ -25,6 +25,8 @@
 
 #include <QString>
 #include <QStringList>
+#include <QVariant>
+#include <QMap>
 class QFileInfo;
 
 namespace NMediaManager
@@ -35,10 +37,10 @@ namespace NMediaManager
         {
             CPreferences();
         public:
-            static CPreferences *instance();
+            static CPreferences * instance();
             ~CPreferences();
 
-            void setDirectories( const QStringList &dirs );
+            void setDirectories( const QStringList & dirs );
             QStringList getDirectories() const;
 
             void setFileNames( const QStringList & fileNames );
@@ -50,46 +52,50 @@ namespace NMediaManager
             void setExactMatchesOnly( bool value );
             bool getExactMatchesOnly() const;
 
-            void setTVOutFilePattern( const QString &value );
+            void setTVOutFilePattern( const QString & value );
             QString getTVOutFilePattern() const;
 
-            void setTVOutDirPattern( const QString &value );
+            void setTVOutDirPattern( const QString & value );
             QString getTVOutDirPattern() const;
 
-            void setMovieOutFilePattern( const QString &value );
+            void setMovieOutFilePattern( const QString & value );
             QString getMovieOutFilePattern() const;
 
-            void setMovieOutDirPattern( const QString &value );
+            void setMovieOutDirPattern( const QString & value );
             QString getMovieOutDirPattern() const;
 
-            void setMediaExtensions( const QString &value );
-            void setMediaExtensions( const QStringList &value );
+            void setMediaExtensions( const QString & value );
+            void setMediaExtensions( const QStringList & value );
             QStringList getMediaExtensions() const;
 
-            void setSubtitleExtensions( const QString &value );
-            void setSubtitleExtensions( const QStringList &value );
+            void setSubtitleExtensions( const QString & value );
+            void setSubtitleExtensions( const QStringList & value );
             QStringList getSubtitleExtensions() const;
 
             QStringList getNonMKVMediaExtensions() const;
 
-            void addKnownStrings(const QStringList & value);
-            void setKnownStrings( const QStringList &value );
+            void addKnownStrings( const QStringList & value );
+            void setKnownStrings( const QStringList & value );
             QStringList getKnownStrings() const;
 
-            void setKnownExtendedStrings(const QStringList & value);
+            void setKnownExtendedStrings( const QStringList & value );
             QStringList getKnownExtendedStrings() const;
 
-            void setMKVMergeEXE( const QString &value );
+            void setKnownAbbreviations( const QVariantMap & value );  // needs to be QString to QString
+            void setKnownAbbreviations( const QList<QPair<QString, QString >> & value );
+            QVariantMap getKnownAbbreviations() const;
+            
+            void setMKVMergeEXE( const QString & value );
             QString getMKVMergeEXE() const;
 
-            void setMKVPropEditEXE(const QString & value);
+            void setMKVPropEditEXE( const QString & value );
             QString getMKVPropEditEXE() const;
 
             void setFFMpegEXE( const QString & value );
             QString getFFMpegEXE() const;
-            
-            bool isMediaFile( const QFileInfo &fi ) const;
-            bool isSubtitleFile( const QFileInfo &info, bool *isLangFileFormat = nullptr ) const;
+
+            bool isMediaFile( const QFileInfo & fi ) const;
+            bool isSubtitleFile( const QFileInfo & info, bool * isLangFileFormat = nullptr ) const;
 
             void setBIFPlayerSpeedMultiplier( int speed ); // 100 = "full speed" ie 1x default is 200x
             int bifPlayerSpeedMultiplier() const;
@@ -97,7 +103,7 @@ namespace NMediaManager
             void setBIFNumFramesToSkip( int numFrames );
             int bifNumFramesToSkip() const;
 
-            void setBIFLoopCount(int loopCount);
+            void setBIFLoopCount( int loopCount );
             int bifLoopCount() const;
 
             void setGIFFlipImage( bool flipImage );

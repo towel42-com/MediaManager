@@ -28,6 +28,9 @@
 #include <QInputDialog>
 #include <QFileInfo>
 #include <QRegularExpression>
+#include <QMap>
+#include <QVariant>
+#include <QString>
 
 #include <optional>
 #include <unordered_set>
@@ -330,6 +333,35 @@ namespace NMediaManager
             settings.beginGroup("Transform");
             return settings.value("KnownExtendedStrings", knownStrings).toStringList();
         }
+
+        void CPreferences::setKnownAbbreviations( const QList<QPair<QString, QString >> & value )
+        {
+            QVariantMap map;
+            for ( auto && ii : value )
+            {
+                map[ii.first] = ii.second;
+            }
+            return setKnownAbbreviations( map );
+        }
+
+        void CPreferences::setKnownAbbreviations( const QVariantMap & value )
+        {
+            QSettings settings;
+            settings.beginGroup( "Transform" );
+            settings.setValue( "KnownAbbreviations", value );
+        }
+
+        QVariantMap CPreferences::getKnownAbbreviations() const
+        {
+            QVariantMap knownAbbreviations( { { "Dont", "Don't" } }  );
+            QSettings settings;
+            settings.beginGroup( "Transform" );
+            return settings.value( "KnownAbbreviations", knownAbbreviations ).toMap();
+        };
+
+
+
+
 
         void CPreferences::setMKVMergeEXE( const QString &value )
         {

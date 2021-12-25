@@ -25,6 +25,7 @@
 
 #include <QDialog>
 
+class CKeyValuePairModel;
 class QStringListModel;
 namespace NMediaManager
 {
@@ -43,6 +44,8 @@ namespace NMediaManager
             void slotDelKnownString();
             void slotAddExtraString();
             void slotDelExtraString();
+            void slotAddAbbreviation();
+            void slotDelAbbreviation();
 
             void slotSelectMKVMergeExe();
             void slotSelectMKVPropEditExe();
@@ -53,8 +56,9 @@ namespace NMediaManager
             void loadSettings();
             void saveSettings();
 
-            QStringListModel * fKnownStringModel;
-            QStringListModel * fExtraStringModel;
+            QStringListModel * fKnownStringModel{ nullptr };
+            QStringListModel * fExtraStringModel{ nullptr };
+            CKeyValuePairModel * fAbbreviationsModel{ nullptr };
             std::unique_ptr< Ui::CPreferences > fImpl;
         };
     }

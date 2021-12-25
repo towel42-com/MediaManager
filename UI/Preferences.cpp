@@ -32,12 +32,13 @@
 #include <QMessageBox>
 
 #include "SABUtils/ButtonEnabler.h"
+#include "SABUtils/UtilityModels.h"
 
 namespace NMediaManager
 {
     namespace NUi
     {
-        CPreferences::CPreferences( QWidget *parent )
+        CPreferences::CPreferences( QWidget * parent )
             : QDialog( parent ),
             fImpl( new Ui::CPreferences )
         {
@@ -45,8 +46,10 @@ namespace NMediaManager
 
             connect( fImpl->btnAddKnownString, &QToolButton::clicked, this, &CPreferences::slotAddKnownString );
             connect( fImpl->btnDelKnownString, &QToolButton::clicked, this, &CPreferences::slotDelKnownString );
-            connect(fImpl->btnAddExtraString, &QToolButton::clicked, this, &CPreferences::slotAddExtraString);
-            connect(fImpl->btnDelExtraString, &QToolButton::clicked, this, &CPreferences::slotDelExtraString);
+            connect( fImpl->btnAddExtraString, &QToolButton::clicked, this, &CPreferences::slotAddExtraString );
+            connect( fImpl->btnDelExtraString, &QToolButton::clicked, this, &CPreferences::slotDelExtraString );
+            connect( fImpl->btnAddAbbreviation, &QToolButton::clicked, this, &CPreferences::slotAddAbbreviation );
+            connect( fImpl->btnDelAbbreviation, &QToolButton::clicked, this, &CPreferences::slotDelAbbreviation );
 
             connect( fImpl->btnSelectMKVMergeExe, &QToolButton::clicked, this, &CPreferences::slotSelectMKVMergeExe );
             fImpl->mkvMergeExe->setIsOKFunction( [ ]( const QString & fileName )
@@ -55,7 +58,7 @@ namespace NMediaManager
                 return fileName.isEmpty() || (fi.exists() && fi.isFile() && fi.isExecutable());
             }, tr( "File '%1' does not Exist or is not an Executable" ) );
 
-            connect(fImpl->btnSelectMKVPropEditExe, &QToolButton::clicked, this, &CPreferences::slotSelectMKVPropEditExe);
+            connect( fImpl->btnSelectMKVPropEditExe, &QToolButton::clicked, this, &CPreferences::slotSelectMKVPropEditExe );
             fImpl->mkvPropEditExe->setIsOKFunction( [ ]( const QString & fileName )
             {
                 auto fi = QFileInfo( fileName );
@@ -72,11 +75,15 @@ namespace NMediaManager
             fKnownStringModel = new QStringListModel( this );
             fImpl->knownStrings->setModel( fKnownStringModel );
 
-            fExtraStringModel = new QStringListModel(this);
-            fImpl->knownExtraStrings->setModel(fExtraStringModel);
+            fExtraStringModel = new QStringListModel( this );
+            fImpl->knownExtraStrings->setModel( fExtraStringModel );
+
+            fAbbreviationsModel = new CKeyValuePairModel( this );
+            fImpl->knownAbbreviations->setModel( fAbbreviationsModel );
 
             new CButtonEnabler( fImpl->knownStrings, fImpl->btnDelKnownString );
-            new CButtonEnabler(fImpl->knownExtraStrings, fImpl->btnDelExtraString);
+            new CButtonEnabler( fImpl->knownExtraStrings, fImpl->btnDelExtraString );
+            new CButtonEnabler( fImpl->knownAbbreviations, fImpl->btnDelAbbreviation );
             loadSettings();
             QSettings settings;
             fImpl->tabWidget->setCurrentIndex( settings.value( "LastPrefPage", 0 ).toInt() );
@@ -103,7 +110,7 @@ namespace NMediaManager
 
             auto words = text.split( QRegularExpression( "\\s" ), Qt::SkipEmptyParts );
             auto strings = fKnownStringModel->stringList();
-            for ( auto &&ii : words )
+            for ( auto && ii : words )
             {
                 ii = ii.trimmed();
                 strings.removeAll( ii );
@@ -122,7 +129,7 @@ namespace NMediaManager
             if ( selected.isEmpty() )
                 return;
             auto strings = fKnownStringModel->stringList();
-            for ( auto &&ii : selected )
+            for ( auto && ii : selected )
             {
                 auto text = ii.data().toString();
                 strings.removeAll( text );
@@ -133,39 +140,62 @@ namespace NMediaManager
 
         void CPreferences::slotAddExtraString()
         {
-            auto text = QInputDialog::getText(this, tr("Add Known String For Extended Information"), tr("String:"));
-            if (text.isEmpty())
+            auto text = QInputDialog::getText( this, tr( "Add Known String For Extended Information" ), tr( "String:" ) );
+            if ( text.isEmpty() )
                 return;
             text = text.trimmed();
 
-            auto words = text.split(QRegularExpression("\\s"), Qt::SkipEmptyParts);
+            auto words = text.split( QRegularExpression( "\\s" ), Qt::SkipEmptyParts );
             auto strings = fExtraStringModel->stringList();
-            for (auto && ii : words)
+            for ( auto && ii : words )
             {
                 ii = ii.trimmed();
-                strings.removeAll(ii);
+                strings.removeAll( ii );
             }
             strings << words;
-            fExtraStringModel->setStringList(strings);
-            fImpl->knownExtraStrings->scrollTo(fExtraStringModel->index(strings.count() - 1, 0));
+            fExtraStringModel->setStringList( strings );
+            fImpl->knownExtraStrings->scrollTo( fExtraStringModel->index( strings.count() - 1, 0 ) );
         }
 
         void CPreferences::slotDelExtraString()
         {
             auto model = fImpl->knownStrings->selectionModel();
-            if (!model)
+            if ( !model )
                 return;
             auto selected = model->selectedRows();
-            if (selected.isEmpty())
+            if ( selected.isEmpty() )
                 return;
             auto strings = fExtraStringModel->stringList();
-            for (auto && ii : selected)
+            for ( auto && ii : selected )
             {
                 auto text = ii.data().toString();
-                strings.removeAll(text);
+                strings.removeAll( text );
             }
-            fExtraStringModel->setStringList(strings);
-            fImpl->knownExtraStrings->scrollTo(fKnownStringModel->index(selected.front().row(), 0));
+            fExtraStringModel->setStringList( strings );
+            fImpl->knownExtraStrings->scrollTo( fKnownStringModel->index( selected.front().row(), 0 ) );
+        }
+
+        void CPreferences::slotAddAbbreviation()
+        {
+            auto text = QInputDialog::getText( this, tr( "Add Abbreviation in the form Abbreviation=FullText" ), tr( "String:" ) );
+            if ( text.isEmpty() )
+                return;
+            text = text.trimmed();
+
+            fAbbreviationsModel->addRow( text );
+            fImpl->knownAbbreviations->scrollTo( fAbbreviationsModel->index( fAbbreviationsModel->rowCount() - 1 , 0 ) );
+        }
+
+        void CPreferences::slotDelAbbreviation()
+        {
+            auto model = fImpl->knownAbbreviations->selectionModel();
+            if ( !model )
+                return;
+            auto selected = model->selectedRows();
+            if ( selected.isEmpty() )
+                return;
+            fAbbreviationsModel->removeRow( selected.front().row() );
+            fImpl->knownAbbreviations->scrollTo( fKnownStringModel->index( selected.front().row(), 0 ) );
         }
 
         void CPreferences::slotSelectMKVMergeExe()
@@ -196,15 +226,15 @@ namespace NMediaManager
 
         void CPreferences::slotSelectMKVPropEditExe()
         {
-            auto exe = QFileDialog::getOpenFileName(this, tr("Select MKVPropEdit Executable:"), fImpl->mkvPropEditExe->text(), "mkvpropedit Executable (mkvpropedit.exe);;All Executables (*.exe);;All Files (*.*)");
-            if (!exe.isEmpty() && !QFileInfo(exe).isExecutable())
+            auto exe = QFileDialog::getOpenFileName( this, tr( "Select MKVPropEdit Executable:" ), fImpl->mkvPropEditExe->text(), "mkvpropedit Executable (mkvpropedit.exe);;All Executables (*.exe);;All Files (*.*)" );
+            if ( !exe.isEmpty() && !QFileInfo( exe ).isExecutable() )
             {
-                QMessageBox::critical(this, "Not an Executable", tr("The file '%1' is not an executable").arg(exe));
+                QMessageBox::critical( this, "Not an Executable", tr( "The file '%1' is not an executable" ).arg( exe ) );
                 return;
             }
 
-            if (!exe.isEmpty())
-                fImpl->mkvPropEditExe->setText(exe);
+            if ( !exe.isEmpty() )
+                fImpl->mkvPropEditExe->setText( exe );
         }
 
         void CPreferences::loadSettings()
@@ -212,6 +242,9 @@ namespace NMediaManager
             QSettings settings;
 
             fKnownStringModel->setStringList( NCore::CPreferences::instance()->getKnownStrings() );
+            fExtraStringModel->setStringList( NCore::CPreferences::instance()->getKnownExtendedStrings() );
+            fAbbreviationsModel->setValues( NCore::CPreferences::instance()->getKnownAbbreviations() );
+
             fImpl->mediaExtensions->setText( NCore::CPreferences::instance()->getMediaExtensions().join( ";" ) );
             fImpl->subtitleExtensions->setText( NCore::CPreferences::instance()->getSubtitleExtensions().join( ";" ) );
             fImpl->treatAsTVShowByDefault->setChecked( NCore::CPreferences::instance()->getTreatAsTVShowByDefault() );
@@ -224,13 +257,16 @@ namespace NMediaManager
             fImpl->movieOutDirPattern->setText( NCore::CPreferences::instance()->getMovieOutDirPattern() );
 
             fImpl->mkvMergeExe->setText( NCore::CPreferences::instance()->getMKVMergeEXE() );
-            fImpl->mkvPropEditExe->setText(NCore::CPreferences::instance()->getMKVPropEditEXE());
+            fImpl->mkvPropEditExe->setText( NCore::CPreferences::instance()->getMKVPropEditEXE() );
             fImpl->ffmpegExe->setText( NCore::CPreferences::instance()->getFFMpegEXE() );
         }
 
         void CPreferences::saveSettings()
         {
             NCore::CPreferences::instance()->setKnownStrings( fKnownStringModel->stringList() );
+            NCore::CPreferences::instance()->setKnownExtendedStrings( fExtraStringModel->stringList() );
+            NCore::CPreferences::instance()->setKnownAbbreviations( fAbbreviationsModel->data() );
+
             NCore::CPreferences::instance()->setTreatAsTVShowByDefault( fImpl->treatAsTVShowByDefault->isChecked() );
             NCore::CPreferences::instance()->setExactMatchesOnly( fImpl->exactMatchesOnly->isChecked() );
             NCore::CPreferences::instance()->setMediaExtensions( fImpl->mediaExtensions->text() );
@@ -242,7 +278,7 @@ namespace NMediaManager
             NCore::CPreferences::instance()->setMovieOutFilePattern( fImpl->movieOutFilePattern->text() );
             NCore::CPreferences::instance()->setMovieOutDirPattern( fImpl->movieOutDirPattern->text() );
             NCore::CPreferences::instance()->setMKVMergeEXE( fImpl->mkvMergeExe->text() );
-            NCore::CPreferences::instance()->setMKVPropEditEXE(fImpl->mkvPropEditExe->text());
+            NCore::CPreferences::instance()->setMKVPropEditEXE( fImpl->mkvPropEditExe->text() );
             NCore::CPreferences::instance()->setFFMpegEXE( fImpl->ffmpegExe->text() );
         }
     }
