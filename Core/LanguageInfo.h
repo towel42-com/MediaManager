@@ -33,8 +33,8 @@ namespace NMediaManager
     {
         struct SLanguageInfo
         {
-            SLanguageInfo( const QString &path );
-            SLanguageInfo( const QFileInfo &path );
+            SLanguageInfo( const QString & path );
+            SLanguageInfo( const QFileInfo & path );
 
             QString language() const { return fLanguage; }
             QString displayName() const;
@@ -49,14 +49,14 @@ namespace NMediaManager
             // 3) the language from 1 or 2 isnt a known language or country
             void setDefaultISOCode( const QString & value );  // default is "en_US"
 
-            static bool isLangFileFormat( const QFileInfo &fi );
+            static bool isLangFileFormat( const QFileInfo & fi );
             bool usingDefault() const { return fUsingDefault; }
             bool knownLanguage() const { return !usingDefault(); }
-            static QString prettyPrintISOCode( const QString &isoCode );
+            static QString prettyPrintISOCode( const QString & isoCode );
         private:
             bool isKnownLanguage( const QString & lang ) const;
             void computeLanguage();
-            void computeLanguage( const QString &langName );
+            void computeLanguage( const QString & langName );
 
             static void setupMaps();
 

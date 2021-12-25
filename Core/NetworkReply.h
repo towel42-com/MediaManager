@@ -51,20 +51,20 @@ namespace NMediaManager
         {
         public:
             CNetworkReply();
-            CNetworkReply( ERequestType requestType, QNetworkReply *reply );
-            CNetworkReply( ERequestType requestType, const QString &urlPath, const QByteArray &data );
+            CNetworkReply( ERequestType requestType, QNetworkReply * reply );
+            CNetworkReply( ERequestType requestType, const QString & urlPath, const QByteArray & data );
 
             bool isValid() const;
             bool isCached() const { return !fReply; }
 
-            static QString key( const QUrl &url );
+            static QString key( const QUrl & url );
             // errrors only available on real requests, not cached requests
             bool hasError() const;
             QString errorString() const;
 
             bool isReply( std::shared_ptr< CNetworkReply > otherReply ) const;
-            bool isReply( const CNetworkReply *otherReply ) const;
-            bool operator==( const CNetworkReply &otherReply ) const;
+            bool isReply( const CNetworkReply * otherReply ) const;
+            bool operator==( const CNetworkReply & otherReply ) const;
 
             bool isType( ERequestType type )const { return fRequestType == type; }
 
@@ -77,16 +77,16 @@ namespace NMediaManager
             QByteArray getData() const;
 
             QString toString() const;
-            QNetworkReply *getNetworkReply() const { return fReply; }
+            QNetworkReply * getNetworkReply() const { return fReply; }
         private:
             ERequestType fRequestType{ ERequestType::eUnknownRequest };
-            QNetworkReply *fReply{ nullptr };
+            QNetworkReply * fReply{ nullptr };
             QString fURLPathKey;
             mutable QByteArray fCachedData;
         };
-        QDebug operator<<( QDebug debug, const CNetworkReply &reply );
+        QDebug operator<<( QDebug debug, const CNetworkReply & reply );
 
-        inline bool operator==( const std::shared_ptr< CNetworkReply > &lhs, const std::shared_ptr< CNetworkReply > &rhs )
+        inline bool operator==( const std::shared_ptr< CNetworkReply > & lhs, const std::shared_ptr< CNetworkReply > & rhs )
         {
             if ( !lhs || !rhs )
                 return lhs.get() == rhs.get();
@@ -100,7 +100,7 @@ namespace std
     template <>
     struct hash<NMediaManager::NCore::CNetworkReply>
     {
-        std::size_t operator()( const NMediaManager::NCore::CNetworkReply &ii ) const
+        std::size_t operator()( const NMediaManager::NCore::CNetworkReply & ii ) const
         {
             return ii.hash();
         }
