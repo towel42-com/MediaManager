@@ -24,7 +24,7 @@
 #include "MakeMKVPage.h"
 
 #include "Core/Preferences.h"
-#include "Core/DirModel.h"
+#include "Core/MakeMKVModel.h"
 #include "SABUtils/DoubleProgressDlg.h"
 
 #include <QSettings>
@@ -103,14 +103,7 @@ namespace NMediaManager
 
         void CMakeMKVPage::slotProcessingStarted()
         {
-            auto sizes = fImpl->vsplitter->sizes();
-            if ( sizes.back() == 0 )
-            {
-                sizes.front() -= 30;
-                sizes.back() = 30;
-
-                fImpl->vsplitter->setSizes( sizes );
-            }
+            showResults();
         }
 
         void CMakeMKVPage::load( const QString & dirName )
@@ -121,7 +114,7 @@ namespace NMediaManager
 
         void CMakeMKVPage::load()
         {
-            fModel.reset( new NCore::CDirModel( NCore::CDirModel::eMakeMKV ) );
+            fModel.reset( new NCore::CMakeMKVModel() );
             fImpl->files->setModel( fModel.get() );
             connect( fModel.get(), &NCore::CDirModel::sigDirReloaded, this, &CMakeMKVPage::slotLoadFinished );
             connect( fModel.get(), &NCore::CDirModel::sigProcessingStarted, this, &CMakeMKVPage::slotProcessingStarted );
@@ -163,6 +156,19 @@ namespace NMediaManager
                     [ this ]( std::shared_ptr< CDoubleProgressDlg > dlg ) { (void)dlg; }, this );
             }
         }
+
+        void CMakeMKVPage::showResults()
+        {
+            auto sizes = fImpl->vsplitter->sizes();
+            if ( sizes.back() == 0 )
+            {
+                sizes.front() -= 30;
+                sizes.back() = 30;
+
+                fImpl->vsplitter->setSizes( sizes );
+            }
+        }
+
     }
 }
 

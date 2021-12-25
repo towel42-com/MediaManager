@@ -44,7 +44,7 @@ namespace NMediaManager
     {
         struct SSearchTMDBInfo;
         struct SSearchResult;
-        class CDirModel;
+        class CTransformModel;
         class CSearchTMDB;
     }
 }
@@ -74,7 +74,10 @@ namespace NMediaManager
         public Q_SLOTS:
             void slotLoadFinished( bool canceled );
             void slotProcessingStarted();
-            void slotDoubleClicked( const QModelIndex &idx );
+
+            void showResults();
+
+            void slotDoubleClicked( const QModelIndex & idx );
             void slotAutoSearchForNewNames();
             void slotAutoSearchFinished( const QString &path, bool searchesRemaining );
         Q_SIGNALS:
@@ -83,6 +86,7 @@ namespace NMediaManager
             void sigStartStayAwake();
             void sigStopStayAwake();
         private:
+            void appendToLog( QString msg );
             [[nodiscard]] bool autoSearchForNewNames( QModelIndex rootIdx );
             void setupProgressDlg( const QString &title, const QString &cancelButtonText, int max );
             void clearProgressDlg();
@@ -96,7 +100,7 @@ namespace NMediaManager
             std::function< void() > fClearProgressFunc;
             std::shared_ptr< CDoubleProgressDlg > fProgressDlg;
             QString fDirName;
-            std::unique_ptr< NCore::CDirModel > fModel;
+            std::unique_ptr< NCore::CTransformModel > fModel;
             std::unique_ptr< Ui::CTransformMediaFileNamesPage > fImpl;
         };
     }

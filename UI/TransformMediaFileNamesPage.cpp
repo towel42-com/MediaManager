@@ -28,7 +28,7 @@
 
 
 #include "Core/Preferences.h"
-#include "Core/DirModel.h"
+#include "Core/TransformModel.h"
 #include "Core/SearchResult.h"
 #include "Core/SearchTMDBInfo.h"
 #include "Core/SearchTMDB.h"
@@ -147,7 +147,9 @@ namespace NMediaManager
                 {
                     if ( fProgressDlg )
                     {
-                        fProgressDlg->setLabelText( tr( "Adding Background Search for '%1'" ).arg( QDir( fDirName ).relativeFilePath( path ) ) );
+                        auto msg = tr( "Adding Background Search for '%1'" ).arg( QDir( fDirName ).relativeFilePath( path ) );
+                        appendToLog( msg + QString( "\n\t%1\n" ).arg( searchInfo->toString( false ) ) );
+                        fProgressDlg->setLabelText( msg );
                         fProgressDlg->setValue( fProgressDlg->value() + 1 );
                         qApp->processEvents();
                     }
@@ -171,7 +173,15 @@ namespace NMediaManager
                 {
                     fProgressDlg->setValue( fProgressDlg->value() + 1 );
                     fSearchesCompleted++;
-                    fProgressDlg->setLabelText( tr( "Search Complete for '%1'" ).arg( QDir( fDirName ).relativeFilePath( path ) ) );
+                    auto msg = tr( "Search Complete for '%1'" ).arg( QDir( fDirName ).relativeFilePath( path ) );
+                    fProgressDlg->setLabelText( msg );
+                    msg += "\n\t%1";
+                    if ( result.empty() )
+                        msg = msg.arg( "Found: <No Match>" );
+                    else
+                        msg = msg.arg( tr( "Found: %1" ).arg( result.front()->toString( false ) ) );
+                        
+                    appendToLog( msg );
                 }
             }
             else
@@ -182,22 +192,13 @@ namespace NMediaManager
             if ( fProgressDlg && fProgressDlg->wasCanceled() )
                 fSearchTMDB->clearSearchCache();
 
-            if ( result.empty() )
+            if ( !result.empty() )
             {
-                if ( !searchesRemaining )
-                {
-                    emit sigLoadFinished( false );
-                    emit sigStopStayAwake();
-                }
-                return;
+                auto item = fModel->getItemFromPath( path );
+                if ( item )
+                    fModel->setSearchResult( item, result.front(), false );
             }
-            //qDebug() << result->toString();
 
-            auto item = fModel->getItemFromPath( path );
-            if ( item && !result.empty() )
-            {
-                fModel->setSearchResult( item, result.front(), false );
-            }
             if ( !searchesRemaining )
             {
                 emit sigLoadFinished( false );
@@ -262,7 +263,7 @@ namespace NMediaManager
 
         void CTransformMediaFileNamesPage::load()
         {
-            fModel.reset( new NCore::CDirModel( NCore::CDirModel::eTransform ) );
+            fModel.reset( new NCore::CTransformModel() );
             fImpl->files->setModel( fModel.get() );
             connect( fModel.get(), &NCore::CDirModel::sigDirReloaded, this, &CTransformMediaFileNamesPage::slotLoadFinished );
             connect( fModel.get(), &NCore::CDirModel::sigProcessingStarted, this, &CTransformMediaFileNamesPage::slotProcessingStarted );
@@ -299,6 +300,11 @@ namespace NMediaManager
 
         void CTransformMediaFileNamesPage::slotProcessingStarted()
         {
+            showResults();
+        }
+        
+        void CTransformMediaFileNamesPage::showResults()
+        {
             auto sizes = fImpl->vsplitter->sizes();
             if ( sizes.back() == 0 )
             {
@@ -308,9 +314,20 @@ namespace NMediaManager
                 fImpl->vsplitter->setSizes( sizes );
             }
         }
+
         bool CTransformMediaFileNamesPage::canRun() const
         {
             return fModel && fModel->rowCount() != 0;
+        }
+
+        void CTransformMediaFileNamesPage::appendToLog( QString msg )
+        {
+            showResults();
+
+            if ( !msg.endsWith( "\n" ) )
+                msg += "\n";
+
+            NQtUtils::appendToLog( fImpl->results, msg, fModel->stdOutRemaining() );
         }
     }
 }

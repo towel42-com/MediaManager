@@ -22,6 +22,9 @@
 
 set(qtproject_SRCS
     DirModel.cpp
+    MergeSRTModel.cpp
+    MakeMKVModel.cpp
+    TransformModel.cpp
     LanguageInfo.cpp
     NetworkReply.cpp
     Preferences.cpp
@@ -33,6 +36,9 @@ set(qtproject_SRCS
 set(qtproject_H
     SearchTMDB.h
     DirModel.h
+    MergeSRTModel.h
+    MakeMKVModel.h
+    TransformModel.h
 )
 
 set(project_H

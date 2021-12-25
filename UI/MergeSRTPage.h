@@ -56,6 +56,9 @@ namespace NMediaManager
         public Q_SLOTS:
             void slotLoadFinished( bool canceled );
             void slotProcessingStarted();
+
+            void showResults();
+
         Q_SIGNALS:
             void sigLoading();
             void sigLoadFinished( bool canceled );

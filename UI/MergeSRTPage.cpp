@@ -23,7 +23,7 @@
 #include "MergeSRTPage.h"
 #include "ui_MergeSRTPage.h"
 
-#include "Core/DirModel.h"
+#include "Core/MergeSRTModel.h"
 #include "SABUtils/DoubleProgressDlg.h"
 
 #include <QSettings>
@@ -102,14 +102,7 @@ namespace NMediaManager
 
         void CMergeSRTPage::slotProcessingStarted()
         {
-            auto sizes = fImpl->vsplitter->sizes();
-            if ( sizes.back() == 0 )
-            {
-                sizes.front() -= 30;
-                sizes.back() = 30;
-
-                fImpl->vsplitter->setSizes( sizes );
-            }
+            showResults();
         }
 
         void CMergeSRTPage::load( const QString & dirName )
@@ -120,7 +113,7 @@ namespace NMediaManager
 
         void CMergeSRTPage::load()
         {
-            fModel.reset( new NCore::CDirModel( NCore::CDirModel::eMergeSRT ) );
+            fModel.reset( new NCore::CMergeSRTModel() );
             fImpl->files->setModel( fModel.get() );
             connect( fModel.get(), &NCore::CDirModel::sigDirReloaded, this, &CMergeSRTPage::slotLoadFinished );
             connect( fModel.get(), &NCore::CDirModel::sigProcessingStarted, this, &CMergeSRTPage::slotProcessingStarted );
@@ -162,6 +155,19 @@ namespace NMediaManager
                     [ this ]( std::shared_ptr< CDoubleProgressDlg > dlg ) { (void)dlg; }, this );
             }
         }
+
+        void CMergeSRTPage::showResults()
+        {
+            auto sizes = fImpl->vsplitter->sizes();
+            if ( sizes.back() == 0 )
+            {
+                sizes.front() -= 30;
+                sizes.back() = 30;
+
+                fImpl->vsplitter->setSizes( sizes );
+            }
+        }
+
     }
 }
 
