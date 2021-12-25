@@ -71,7 +71,7 @@ namespace NMediaManager
 
             void removeChild( std::shared_ptr< SSearchResult > info );
 
-            QString toString() const;
+            QString toString( bool forDebug ) const;
             [[nodiscard]] QString getMyText( ETitleInfo which ) const;
             [[nodiscard]] QString getText( ETitleInfo which, bool forceTop = false ) const;
 

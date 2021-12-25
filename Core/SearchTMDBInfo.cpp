@@ -41,26 +41,44 @@ namespace NMediaManager
             updateSearchCriteria( true );
         }
 
+        QString SSearchTMDBInfo::replaceKnownAbbreviations( const QString & string )
+        {
+            QString retVal = string;
+            auto knownAbbreviations = CPreferences::instance()->getKnownAbbreviations();
+            for ( auto &&ii = knownAbbreviations.begin(); ii != knownAbbreviations.end(); ++ii )
+            {
+                auto regExpStr = "(\\W|^)(?<word>" + QRegularExpression::escape( ii.key() ) + ")(\\W|$)";
+                auto regExp = QRegularExpression( regExpStr, QRegularExpression::CaseInsensitiveOption );
+                auto match = regExp.match( retVal );
+                if ( match.hasMatch() )
+                {
+                    retVal.replace( match.capturedStart( "word" ), match.capturedLength( "word" ), ii.value().toString() );
+                }
+            }
+            return retVal;
+        }
+
         QString SSearchTMDBInfo::stripKnownData( const QString &string )
         {
             QString retVal = string;
             auto knownStrings = CPreferences::instance()->getKnownStrings();
             for ( auto &&knownString : knownStrings )
             {
-                auto regExpStr1 = "\\W(?<word>[\\[\\(]" + QRegularExpression::escape(knownString) + "[\\]\\)])(\\W|$)";
-                auto regExpStr2 = "\\W(?<word>" + QRegularExpression::escape(knownString) + ")(\\W|$)";
+                auto regExpStr1 = "((?<prefix>\\[|\\()|\\W)(?<word>" + QRegularExpression::escape(knownString) + ")((?<suffix>\\]|\\))|\\W|$)";
 
                 auto regExp = QRegularExpression(regExpStr1, QRegularExpression::CaseInsensitiveOption);
                 auto match = regExp.match(retVal);
                 if (match.hasMatch())
                 {
-                    retVal.remove(match.capturedStart("word"), match.capturedLength("word"));
-                }
-                regExp = QRegularExpression(regExpStr2, QRegularExpression::CaseInsensitiveOption);
-                match = regExp.match(retVal);
-                if (match.hasMatch())
-                {
-                    retVal.remove(match.capturedStart("word"), match.capturedLength("word"));
+                    auto start = match.capturedStart( "prefix" );
+                    if ( start == -1 )
+                        start = match.capturedStart( "word" );
+                    auto end = match.capturedEnd( "suffix" );
+                    if ( end == -1 )
+                        end = match.capturedEnd( "word" );
+
+                    
+                    retVal.remove( start, end-start );
                 }
             }
             return retVal;
@@ -198,16 +216,21 @@ namespace NMediaManager
 
         void SSearchTMDBInfo::updateSearchCriteria( bool updateSearchBy )
         {
-            fSearchName = smartTrim( stripKnownData( fInitSearchString ) );
-
             QString extendedInfo;
+
+            fSearchName = smartTrim( stripKnownData( fInitSearchString ) );
             fSearchName = smartTrim(stripKnownExtendedData(fSearchName, extendedInfo));
-            this->fFoundExtendedInfo = extendedInfo;
+            fSearchName = smartTrim( replaceKnownAbbreviations( fSearchName ) );
+
+            fFoundExtendedInfo = extendedInfo;
 
             QString seasonStr;
             QString episodeStr;
                             //(?<fulltext>[\.\(]  (?<releaseDate>((\\d{2}){1,2}))(?:[\.\)]?|$))
-            auto regExpStr = "(?<fulltext>[\\.\\(](?<releaseDate>((\\d{2}){1,2}))(?:[\\.\\)]?|$))";
+                            //(?<!\d)
+            //(?<fulltext>[[|\(|\W|^](?<releaseDate>((\d{2}){1,2}))((?<suffix>\]|\))|\W|$))
+
+            auto regExpStr = "(?<fulltext>(?<!\\d)(?<releaseDate>\\d{2}|\\d{4})(?!\\d))";
             auto regExp = QRegularExpression( regExpStr );
             auto match = regExp.match( fSearchName );
             if ( match.hasMatch() )
@@ -274,13 +297,15 @@ namespace NMediaManager
 
         QDebug operator<<( QDebug debug, const SSearchTMDBInfo &info )
         {
-            debug << info.toString();
+            debug << info.toString( true );
             return debug;
         }
 
-        QString SSearchTMDBInfo::toString() const
+        QString SSearchTMDBInfo::toString( bool forDebug ) const
         {
-            QString retVal = QString( "SSearchTMDBInfo(%1 (%2)-S%3E%4-%5-%6-%7-%8)" ).arg( searchName() ).arg( releaseDateString() ).arg( season() ).arg( episode() ).arg( tmdbIDString() ).arg( isTVShow() ).arg( exactMatchOnly() ).arg( searchName() );
+            auto retVal = forDebug
+                ? QString( "SSearchTMDBInfo(%1 (%2)-S%3E%4-%5-%6-%7)" ).arg( searchName() ).arg( releaseDateString() ).arg( season() ).arg( episode() ).arg( tmdbIDString() ).arg( isTVShow() ).arg( exactMatchOnly() )
+                : QString( "Search Name: '%1' - Release Date: %2 - Season: %3 - Episode: %4 - TMDB ID: %5 - Is TV Show? %6 - Exact Match Only: %7" ).arg( searchName() ).arg( releaseDateString().isEmpty() ? "<Not Set>" : releaseDateString() ).arg( (season() == -1) ? "<Not Set>" : QString::number( season() ) ).arg( ( episode() == -1 ) ? "<Not Set>" : QString::number( episode() ) ).arg( tmdbIDString().isEmpty() ? "<Not Set>" : tmdbIDString() ).arg( isTVShow() ? "Yes" : "No" ).arg( exactMatchOnly() ? "Yes" : "No" );
             return retVal;
         }
 

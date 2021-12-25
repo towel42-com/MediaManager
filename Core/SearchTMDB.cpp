@@ -126,11 +126,11 @@ namespace NMediaManager
             //    retVal += QString( "Reply: 0x%1 - Title Info: %3" ).arg( reinterpret_cast<uintptr_t>( ii.first ), 0, 16 ).arg( ii.second->toString() );
             //retVal += ") Episode Found: " + QString( "%1" ).arg( fSeasonInfoReplies.second.has_value() ? fSeasonInfoReplies.second.value() : "No Value" ) + " ";
 
-            retVal += ( fSearchInfo ? fSearchInfo->toString() : "nullptr" ) + " ";
+            retVal += ( fSearchInfo ? fSearchInfo->toString( true ) : "nullptr" ) + " ";
             retVal += "CurrentQueuedSearch(";
             if ( fCurrentQueuedSearch.has_value() )
             {
-                retVal += fCurrentQueuedSearch.value().first + " " + fCurrentQueuedSearch.value().second->toString();
+                retVal += fCurrentQueuedSearch.value().first + " " + fCurrentQueuedSearch.value().second->toString( true );
             }
             else
                 retVal += "nullptr";
@@ -145,7 +145,7 @@ namespace NMediaManager
                 {
                     if ( !first )
                         retVal += " ";
-                    retVal += jj->toString();
+                    retVal += jj->toString( true );
                 }
                 retVal += ")";
             }
@@ -154,7 +154,7 @@ namespace NMediaManager
             retVal += QString( "SearchQueue( %1 -" ).arg( fSearchQueue.size() );
             for ( auto &&ii : fSearchQueue )
             {
-                retVal += QString( "(%1 - %2)" ).arg( ii.first ).arg( ii.second->toString() );
+                retVal += QString( "(%1 - %2)" ).arg( ii.first ).arg( ii.second->toString( true ) );
             }
             retVal += ") ";
             retVal += QString( "AutoSearchTimer isActive? %1 " ).arg( fAutoSearchTimer && fAutoSearchTimer->isActive() );
@@ -167,7 +167,7 @@ namespace NMediaManager
             retVal += QString( "Results( %1 -" ).arg( fResults.size() );
             for ( auto &&ii : fResults )
             {
-                retVal += QString( "(%1) " ).arg( ii->toString() );
+                retVal += QString( "(%1) " ).arg( ii->toString( true ) );
             }
             retVal += ") ";
             retVal += ")";
@@ -391,7 +391,7 @@ namespace NMediaManager
 
         QString CSearchTMDB::getSearchName() const
         {
-            return fSearchInfo->isTVShow() ? tr( "TV Show" ) : tr( "Movie" );
+            return fSearchInfo ? (fSearchInfo->isTVShow() ? tr( "TV Show" ) : tr( "Movie" )) : QString();
         }
 
         void CSearchTMDB::checkIfStillSearching()

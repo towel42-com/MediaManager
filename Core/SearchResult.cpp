@@ -96,31 +96,56 @@ namespace NMediaManager
             }
         }
 
-        QString SSearchResult::toString() const
+        QString SSearchResult::toString( bool forDebug ) const
         {
-            QString retVal = "STitleInfo( ";
             QStringList tmp;
-            tmp << "InfoType: '" + NMediaManager::NCore::toEnumString( fInfoType ) + "'"
-                << "Title: '" + fTitle + "'"
-                << "ReleaseDate: '" + fReleaseDate + "'"
-                << "TMDBID: '" + fTMDBID + "'"
-                << "SeasonTMBDID: '" + fSeasonTMDBID + "'"
-                << "EpisodeTMDBID: '" + fEpisodeTMDBID + "'"
-                << "Season: '" + fSeason + "'"
-                << QString( " Season Only? %1" ).arg( fSeasonOnly ? "Yes" : "No" )
-                << "Episode: '" + fEpisode + "'"
-                << "EpisodeTitle: '" + fEpisodeTitle + "'"
-                << "ExtraInfo: '" + fExtraInfo + "'"
-                << "Description: '" + fDescription + "'"
-                << QString( "Has Pixmap? %1" ).arg( fPixmap.isNull() ? "No" : "Yes" )
-                ;
-            QStringList children = { " - Children(" };
-            for ( auto &&ii : fChildren )
+            if ( forDebug )
             {
-                children << ii->toString();
+                QStringList tmp;
+                tmp << "InfoType: '" + NMediaManager::NCore::toEnumString( fInfoType ) + "'"
+                    << "Title: '" + fTitle + "'"
+                    << "ReleaseDate: '" + fReleaseDate + "'"
+                    << "TMDBID: '" + fTMDBID + "'"
+                    << "SeasonTMBDID: '" + fSeasonTMDBID + "'"
+                    << "EpisodeTMDBID: '" + fEpisodeTMDBID + "'"
+                    << "Season: '" + fSeason + "'"
+                    << QString( " Season Only? %1" ).arg( fSeasonOnly ? "Yes" : "No" )
+                    << "Episode: '" + fEpisode + "'"
+                    << "EpisodeTitle: '" + fEpisodeTitle + "'"
+                    << "ExtraInfo: '" + fExtraInfo + "'"
+                    << "Description: '" + fDescription + "'"
+                    << QString( "Has Pixmap? %1" ).arg( fPixmap.isNull() ? "No" : "Yes" )
+                    ;
+                QStringList children = { " - Children(" };
+                for ( auto && ii : fChildren )
+                {
+                    children << ii->toString( true );
+                }
+                tmp << children;
             }
-            tmp << children;
-            retVal += tmp.join( " " ) + ")";
+            else
+            {
+                tmp << "InfoType: '" + NMediaManager::NCore::toEnumString( fInfoType ) + "'"
+                    << "Title: '" + fTitle + "'"
+                    << "ReleaseDate: '" + fReleaseDate + "'"
+                    << "TMDBID: '" + fTMDBID + "'"
+                    ;
+
+                if ( fInfoType != EResultInfoType::eMovie )
+                {
+                    tmp << "SeasonTMBDID: '" + fSeasonTMDBID + "'"
+                        << "EpisodeTMDBID: '" + fEpisodeTMDBID + "'"
+                        << "Season: '" + fSeason + "'"
+                        << QString( " Season Only? %1" ).arg( fSeasonOnly ? "Yes" : "No" )
+                        << "Episode: '" + fEpisode + "'"
+                        << "EpisodeTitle: '" + fEpisodeTitle + "'"
+                        ;
+                }
+                
+                tmp << "ExtraInfo: '" + fExtraInfo + "'"
+                    ;
+            }
+            QString retVal = QString( forDebug ? "STitleInfo(%1)" : "%1" ).arg( tmp.join( " " ) );
             return retVal;
         }
 

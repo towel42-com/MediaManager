@@ -61,37 +61,37 @@ namespace NMediaManager
         {
             Q_OBJECT
         public:
-            CSearchTMDB( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::optional< QString > &configuration, QObject *parent = 0 );
+            CSearchTMDB( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::optional< QString > & configuration, QObject * parent = 0 );
             ~CSearchTMDB();
 
             void setSkipImages( bool value ) { fSkipImages = value; }
             bool isActive() const;
 
-            std::list < std::shared_ptr< SSearchResult > > getResult( const QString &path ) const; // uses the queued results
+            std::list < std::shared_ptr< SSearchResult > > getResult( const QString & path ) const; // uses the queued results
             std::list< std::shared_ptr< SSearchResult > > getResults() const;
             std::shared_ptr< SSearchResult > bestMatch() const;
-\
-            bool searchByName();
+            \
+                bool searchByName();
 
             void resetResults();
 
             bool hasError() const { return fErrorMessage.has_value(); }
             QString errorString() const { return fErrorMessage.value(); }
 
-            void addSearch( const QString &filePath, std::shared_ptr< SSearchTMDBInfo > searchInfo );
+            void addSearch( const QString & filePath, std::shared_ptr< SSearchTMDBInfo > searchInfo );
             void clearSearchCache();
 
             QString toString() const;
         public Q_SLOTS:
-            void slotAuthenticationRequired( QNetworkReply *reply, QAuthenticator *authenticator );
-            void slotEncrypted( QNetworkReply *reply );
-            void slotRequestFinished( QNetworkReply *reply );
+            void slotAuthenticationRequired( QNetworkReply * reply, QAuthenticator * authenticator );
+            void slotEncrypted( QNetworkReply * reply );
+            void slotRequestFinished( QNetworkReply * reply );
 
-            void slotPreSharedKeyAuthenticationRequired( QNetworkReply *reply, QSslPreSharedKeyAuthenticator *authenticator );
-            void slotProxyAuthenticationRequired( const QNetworkProxy &proxy, QAuthenticator *authenticator );
-            void slotSSlErrors( QNetworkReply *reply, const QList<QSslError> &errors );
+            void slotPreSharedKeyAuthenticationRequired( QNetworkReply * reply, QSslPreSharedKeyAuthenticator * authenticator );
+            void slotProxyAuthenticationRequired( const QNetworkProxy & proxy, QAuthenticator * authenticator );
+            void slotSSlErrors( QNetworkReply * reply, const QList<QSslError> & errors );
 
-            void slotFakeRequestFinished( ERequestType requestType, const QString &url, const QByteArray &cachedReply );
+            void slotFakeRequestFinished( ERequestType requestType, const QString & url, const QByteArray & cachedReply );
 
             void slotGetConfig();
             void slotSearch();
@@ -99,19 +99,19 @@ namespace NMediaManager
 
         Q_SIGNALS:
             void sigSearchFinished();
-            void sigAutoSearchFinished( const QString &path, bool remaining );
-            void sigMessage( const QString &msg );
-            void sigFakeRequestFinished( ERequestType requestType, const QString &url, const QByteArray &cachedReply );
+            void sigAutoSearchFinished( const QString & path, bool remaining );
+            void sigMessage( const QString & msg );
+            void sigFakeRequestFinished( ERequestType requestType, const QString & url, const QByteArray & cachedReply );
         private:
             void emitSigFinished();
             void handleRequestFinished( std::shared_ptr< CNetworkReply > networkReply );
 
             void startAutoSearchTimer();
-            std::shared_ptr< CNetworkReply > sendRequest( const QNetworkRequest &request, ERequestType requestType ); // sometimes returns the cache value
+            std::shared_ptr< CNetworkReply > sendRequest( const QNetworkRequest & request, ERequestType requestType ); // sometimes returns the cache value
 
-            void addRequestType( QNetworkReply *retVal, ERequestType requestType );
+            void addRequestType( QNetworkReply * retVal, ERequestType requestType );
             void removeRequestType( std::shared_ptr<CNetworkReply> reply );
-            ERequestType getRequestType( QNetworkReply *reply ) const;
+            ERequestType getRequestType( QNetworkReply * reply ) const;
 
             QString getSearchName() const;
             bool isBetterSeasonMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr< SSearchResult > lhs, std::shared_ptr< SSearchResult > rhs ) const;
@@ -133,15 +133,15 @@ namespace NMediaManager
 
             void searchTVDetails( std::shared_ptr< SSearchResult > info, int tmdbid, int seasonNum );
 
-            [[nodiscard]] bool loadSearchResult( const QJsonObject &resultItem );
-            [[nodiscard]] bool loadEpisodeDetails( const QJsonObject &episodeInfo, std::shared_ptr< SSearchResult > seasonItem );
+            [[nodiscard]] bool loadSearchResult( const QJsonObject & resultItem );
+            [[nodiscard]] bool loadEpisodeDetails( const QJsonObject & episodeInfo, std::shared_ptr< SSearchResult > seasonItem );
 
             void addResult( std::shared_ptr<SSearchResult> result );
-            void addResultToList( std::list< std::shared_ptr< SSearchResult > > &list, std::shared_ptr<SSearchResult> result, std::shared_ptr< SSearchTMDBInfo > searchInfo ) const;
+            void addResultToList( std::list< std::shared_ptr< SSearchResult > > & list, std::shared_ptr<SSearchResult> result, std::shared_ptr< SSearchTMDBInfo > searchInfo ) const;
 
             void checkIfStillSearching();
 
-            QNetworkAccessManager *fManager{ nullptr };
+            QNetworkAccessManager * fManager{ nullptr };
             std::shared_ptr< CNetworkReply > fConfigReply;
             std::shared_ptr< CNetworkReply > fSearchReply;
             std::shared_ptr< CNetworkReply > fGetMovieReply;
@@ -155,7 +155,7 @@ namespace NMediaManager
             std::optional< std::pair< QString, std::shared_ptr< SSearchTMDBInfo > > > fCurrentQueuedSearch;
             std::unordered_map< QString, std::list< std::shared_ptr< SSearchResult > > > fQueuedResults;
             std::list< std::pair< QString, std::shared_ptr< SSearchTMDBInfo > > > fSearchQueue;
-            QTimer *fAutoSearchTimer{ nullptr };
+            QTimer * fAutoSearchTimer{ nullptr };
 
             std::optional< QString > fErrorMessage;
 
