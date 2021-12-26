@@ -1,6 +1,6 @@
 // The MIT License( MIT )
 //
-// Copyright( c ) 2020 Scott Aron Bloom
+// Copyright( c ) 2020-2021 Scott Aron Bloom
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -93,6 +93,9 @@ namespace NMediaManager
 
             void setFFMpegEXE( const QString & value );
             QString getFFMpegEXE() const;
+
+            void setFFProbeEXE( const QString & value );
+            QString getFFProbeEXE() const;
 
             bool isMediaFile( const QFileInfo & fi ) const;
             bool isSubtitleFile( const QFileInfo & info, bool * isLangFileFormat = nullptr ) const;

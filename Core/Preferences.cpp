@@ -1,6 +1,6 @@
 // The MIT License( MIT )
 //
-// Copyright( c ) 2020 Scott Aron Bloom
+// Copyright( c ) 2020-2021 Scott Aron Bloom
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -417,6 +417,23 @@ namespace NMediaManager
             return aOK ? retVal : QString();
         }
 
+        void CPreferences::setFFProbeEXE( const QString & value )
+        {
+            QSettings settings;
+            settings.beginGroup( "ExternalTools" );
+            settings.setValue( "FFProbeEXE", value );
+        }
+
+        QString CPreferences::getFFProbeEXE() const
+        {
+            QSettings settings;
+            settings.beginGroup( "ExternalTools" );
+            auto retVal = settings.value( "FFProbeEXE", QString() ).toString();
+
+            auto fi = QFileInfo( retVal );
+            bool aOK = !retVal.isEmpty() && fi.isExecutable();
+            return aOK ? retVal : QString();
+        }
         void CPreferences::setBIFPlayerSpeedMultiplier( int interval )
         {
             QSettings settings;
