@@ -1,6 +1,6 @@
 // The MIT License( MIT )
 //
-// Copyright( c ) 2020 Scott Aron Bloom
+// Copyright( c ) 2020-2021 Scott Aron Bloom
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -151,7 +151,7 @@ namespace NMediaManager
                 extraStr->clear();
 
             bool isTV = false;
-            auto regExpStr = QString( "S(?<season>\\d+)" );
+            auto regExpStr = QString( "S(?<season>\\d{1,4})" );
             auto regExp = QRegularExpression( regExpStr, QRegularExpression::PatternOption::CaseInsensitiveOption );
             auto match = regExp.match( localRetVal );
             std::list< std::pair< int, int > > positions;
@@ -165,7 +165,7 @@ namespace NMediaManager
 
             if ( titleStr || !isTV )
             {
-                regExpStr = "E(?<episode>\\d+)";
+                regExpStr = "E(?<episode>\\d{1,4})";
                 regExp = QRegularExpression( regExpStr, QRegularExpression::PatternOption::CaseInsensitiveOption );
                 match = regExp.match( localRetVal );
                 if ( match.hasMatch() )
@@ -219,18 +219,25 @@ namespace NMediaManager
             QString extendedInfo;
 
             fSearchName = smartTrim( stripKnownData( fInitSearchString ) );
-            fSearchName = smartTrim(stripKnownExtendedData(fSearchName, extendedInfo));
+            fSearchName = smartTrim( stripKnownExtendedData( fSearchName, extendedInfo ) );
             fSearchName = smartTrim( replaceKnownAbbreviations( fSearchName ) );
 
             fFoundExtendedInfo = extendedInfo;
 
             QString seasonStr;
             QString episodeStr;
+
+            if ( fIsTVShow )
+            {
+                looksLikeTVShow( fSearchName, &fSearchName, &seasonStr, &episodeStr, &fEpisodeTitle );
+                fEpisodeTitle = smartTrim( fEpisodeTitle, true );
+            }
+
                             //(?<fulltext>[\.\(]  (?<releaseDate>((\\d{2}){1,2}))(?:[\.\)]?|$))
                             //(?<!\d)
             //(?<fulltext>[[|\(|\W|^](?<releaseDate>((\d{2}){1,2}))((?<suffix>\]|\))|\W|$))
 
-            auto regExpStr = "(?<fulltext>(?<!\\d)(?<releaseDate>\\d{2}|\\d{4})(?!\\d))";
+            auto regExpStr = "(?<fulltext>(([\\(\\[]|^)|(?<!\\d))(?<releaseDate>\\d{2}|\\d{4})(\\D|\\)|\\]|$))";
             auto regExp = QRegularExpression( regExpStr );
             auto match = regExp.match( fSearchName );
             if ( match.hasMatch() )
@@ -245,12 +252,6 @@ namespace NMediaManager
             {
                 fTMDBID = smartTrim( match.captured( "tmdbid" ) );
                 fSearchName.replace( match.capturedStart( "fulltext" ), match.capturedLength( "fulltext" ), "" );
-            }
-
-            if ( fIsTVShow )
-            {
-                looksLikeTVShow( fSearchName, &fSearchName, &seasonStr, &episodeStr, &fEpisodeTitle );
-                fEpisodeTitle = smartTrim( fEpisodeTitle, true );
             }
 
             fSearchName = smartTrim( fSearchName, true );
