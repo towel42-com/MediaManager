@@ -1,6 +1,6 @@
 // The MIT License( MIT )
 //
-// Copyright( c ) 2020 Scott Aron Bloom
+// Copyright( c ) 2020-2021 Scott Aron Bloom
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -20,155 +20,64 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "ui_MakeMKVPage.h"
 #include "MakeMKVPage.h"
 
 #include "Core/Preferences.h"
 #include "Core/MakeMKVModel.h"
-#include "SABUtils/DoubleProgressDlg.h"
-
-#include <QSettings>
 
 namespace NMediaManager
 {
     namespace NUi
     {
         CMakeMKVPage::CMakeMKVPage( QWidget * parent )
-            : QWidget( parent ),
-            fImpl( new Ui::CMakeMKVPage )
+            : CBasePage( "Make MKV", parent )
         {
-            fImpl->setupUi( this );
-
-            fImpl->files->setExpandsOnDoubleClick( false );
-
-            loadSettings();
+            postInit();
         }
 
         CMakeMKVPage::~CMakeMKVPage()
         {
-            saveSettings();
         }
 
-        void CMakeMKVPage::loadSettings()
+        NCore::CDirModel * CMakeMKVPage::createDirModel()
         {
-            fImpl->vsplitter->setSizes( QList< int >() << 100 << 0 );
+            return new NCore::CMakeMKVModel( this );
         }
 
-        void CMakeMKVPage::saveSettings()
+        QStringList CMakeMKVPage::dirModelFilter() const
         {
-            QSettings settings;
-            settings.beginGroup( "Make MKV" );
-            settings.setValue( "Splitter", fImpl->vsplitter->saveState() );
+            return NCore::CPreferences::instance()->getNonMKVMediaExtensions();
         }
 
-        void CMakeMKVPage::setSetupProgressDlgFunc( std::function< std::shared_ptr< CDoubleProgressDlg >( const QString & title, const QString & cancelButtonText, int max ) > setupFunc, std::function< void() > clearFunc )
+        QString CMakeMKVPage::secondaryProgressLabel() const
         {
-            fSetupProgressFunc = setupFunc;
-            fClearProgressFunc = clearFunc;
+            return tr( "Current Movie:" );
         }
 
-        void CMakeMKVPage::clearProgressDlg()
+        QString CMakeMKVPage::loadTitleName() const
         {
-            fProgressDlg = nullptr;
-            if ( fClearProgressFunc )
-                fClearProgressFunc();
+            return tr( "Finding Files" );
         }
 
-        void CMakeMKVPage::setupProgressDlg( const QString & title, const QString & cancelButtonText, int max )
+        QString CMakeMKVPage::loadCancelName() const
         {
-            if ( fSetupProgressFunc )
-            {
-                fProgressDlg = fSetupProgressFunc( title, cancelButtonText, max );
-                fProgressDlg->setSingleProgressBarMode( !canRun() );
-
-                if ( canRun() )
-                {
-                    fProgressDlg->setSecondaryProgressLabel( tr( "Current Movie:" ) );
-                    fProgressDlg->setSecondaryRange( 0, 100 );
-                    fProgressDlg->setSecondaryValue( 0 );
-                }
-            }
+            return tr( "Cancel" );
         }
 
-        bool CMakeMKVPage::canRun() const
+        QString CMakeMKVPage::actionTitleName() const
         {
-            return fModel && fModel->rowCount() != 0;
+            return tr( "Creating MKV..." );
         }
 
-        void CMakeMKVPage::slotLoadFinished( bool canceled )
+        QString CMakeMKVPage::actionCancelName() const
         {
-            emit sigLoadFinished( canceled );
-            emit sigStopStayAwake();
+            return tr( "Abort Creating MKV" );
         }
 
-        void CMakeMKVPage::slotProcessingStarted()
+        QString CMakeMKVPage::actionErrorName() const
         {
-            showResults();
+            return tr( "Error While Creating MKV:" );
         }
-
-        void CMakeMKVPage::load( const QString & dirName )
-        {
-            fDirName = dirName;
-            load();
-        }
-
-        void CMakeMKVPage::load()
-        {
-            fModel.reset( new NCore::CMakeMKVModel() );
-            fImpl->files->setModel( fModel.get() );
-            connect( fModel.get(), &NCore::CDirModel::sigDirReloaded, this, &CMakeMKVPage::slotLoadFinished );
-            connect( fModel.get(), &NCore::CDirModel::sigProcessingStarted, this, &CMakeMKVPage::slotProcessingStarted );
-            fModel->setNameFilters( NCore::CPreferences::instance()->getNonMKVMediaExtensions(), fImpl->files, fImpl->results );
-            setupProgressDlg( tr( "Finding Files" ), tr( "Cancel" ), 1 );
-            fModel->setRootPath( fDirName, fImpl->files, fImpl->results, fProgressDlg );
-
-            emit sigStartStayAwake();
-            emit sigLoading();
-        }
-
-        void CMakeMKVPage::run()
-        {
-            emit sigStartStayAwake();
-
-            auto actionName = tr( "Creating MKV..." );
-            auto cancelName = tr( "Abort Creating MKV" );
-
-            connect( fModel.get(), &NCore::CDirModel::sigProcessesFinished, [ this ]( bool status, bool canceled, bool reloadModel )
-            {
-                clearProgressDlg();
-                if ( !status )
-                {
-                    fModel->showProcessResults( tr( "Error While Creating MKV:" ), tr( "Issues:" ), QMessageBox::Critical, QDialogButtonBox::Ok, this );
-                }
-                if ( !canceled && reloadModel )
-                    load();
-                emit sigStopStayAwake();
-            } );
-
-            if ( fModel )
-            {
-                fModel->process(
-                    [ actionName, cancelName, this ]( int count )
-                {
-                    setupProgressDlg( actionName, cancelName, count );
-                    return fProgressDlg;
-                },
-                    [ this ]( std::shared_ptr< CDoubleProgressDlg > dlg ) { (void)dlg; }, this );
-            }
-        }
-
-        void CMakeMKVPage::showResults()
-        {
-            auto sizes = fImpl->vsplitter->sizes();
-            if ( sizes.back() == 0 )
-            {
-                sizes.front() -= 30;
-                sizes.back() = 30;
-
-                fImpl->vsplitter->setSizes( sizes );
-            }
-        }
-
     }
 }
 

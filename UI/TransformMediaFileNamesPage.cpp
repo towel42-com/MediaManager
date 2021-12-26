@@ -1,6 +1,6 @@
 // The MIT License( MIT )
 //
-// Copyright( c ) 2020 Scott Aron Bloom
+// Copyright( c ) 2020-2021 Scott Aron Bloom
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -21,12 +21,10 @@
 // SOFTWARE.
 
 #include "TransformMediaFileNamesPage.h"
-#include "ui_TransformMediaFileNamesPage.h"
-
 #include "SelectTMDB.h"
-#include "TransformConfirm.h"
-
-
+//#include "TransformConfirm.h"
+//
+//
 #include "Core/Preferences.h"
 #include "Core/TransformModel.h"
 #include "Core/SearchResult.h"
@@ -36,28 +34,24 @@
 #include "SABUtils/QtUtils.h"
 #include "SABUtils/DoubleProgressDlg.h"
 
-#include <QSettings>
+//#include <QSettings>
 #include <QTimer>
 #include <QDir>
+#include <QTreeView>
+#include <QCoreApplication>
+#include <QMenu>
+#include <optional>
 
 namespace NMediaManager
 {
     namespace NUi
     {
         CTransformMediaFileNamesPage::CTransformMediaFileNamesPage( QWidget *parent )
-            : QWidget( parent )
-            ,fImpl( new Ui::CTransformMediaFileNamesPage )
+            : CBasePage( "Transform", parent )
         {
-            fImpl->setupUi( this );
-
-            fImpl->files->setExpandsOnDoubleClick( false );
-            connect( fImpl->files, &QTreeView::doubleClicked, this, &CTransformMediaFileNamesPage::slotDoubleClicked );
-
             fSearchTMDB = new NCore::CSearchTMDB( nullptr, std::optional<QString>(), this );
             fSearchTMDB->setSkipImages( true );
             connect( fSearchTMDB, &NCore::CSearchTMDB::sigAutoSearchFinished, this, &CTransformMediaFileNamesPage::slotAutoSearchFinished );
-
-            loadSettings();
         }
 
         CTransformMediaFileNamesPage::~CTransformMediaFileNamesPage()
@@ -68,26 +62,27 @@ namespace NMediaManager
         void CTransformMediaFileNamesPage::loadSettings()
         {
             setTreatAsTVByDefault( NCore::CPreferences::instance()->getTreatAsTVShowByDefault() );
-            fImpl->vsplitter->setSizes( QList< int >() << 100 << 0 );
+            CBasePage::loadSettings();
         }
 
-        void CTransformMediaFileNamesPage::saveSettings()
+        NMediaManager::NCore::CTransformModel * CTransformMediaFileNamesPage::model()
         {
-            QSettings settings;
-            settings.beginGroup( "Transform" );
-            settings.setValue( "Splitter", fImpl->vsplitter->saveState() );
+            if ( !fModel )
+                return nullptr;
+
+            return dynamic_cast<NCore::CTransformModel *>(fModel.get());
         }
 
-        void CTransformMediaFileNamesPage::setSetupProgressDlgFunc( std::function< std::shared_ptr< CDoubleProgressDlg >( const QString &title, const QString &cancelButtonText, int max ) > setupFunc, std::function< void() > clearFunc )
+        void CTransformMediaFileNamesPage::postNonQueuedRun()
         {
-            fSetupProgressFunc = setupFunc;
-            fClearProgressFunc = clearFunc;
+            emit sigStopStayAwake();
+            load();
         }
 
         void CTransformMediaFileNamesPage::setTreatAsTVByDefault( bool value )
         {
-            if ( fModel )
-                fModel->slotTreatAsTVByDefaultChanged( value );
+            if ( model() )
+                model()->slotTreatAsTVByDefaultChanged( value );
             NCore::CPreferences::instance()->setTreatAsTVShowByDefault( value );
         }
 
@@ -96,26 +91,50 @@ namespace NMediaManager
             NCore::CPreferences::instance()->setExactMatchesOnly( value );
         }
 
+        QMenu * CTransformMediaFileNamesPage::contextMenu( const QModelIndex & idx )
+        {
+            if ( !idx.isValid() )
+                return nullptr;
+
+            auto menu = new QMenu( this );
+            menu->setObjectName( "Context Menu" );
+            menu->setTitle( tr( "Context Menu" ) );
+
+            auto nm = model()->index( idx.row(), NCore::EColumns::eFSName, idx.parent() ).data().toString();
+            menu->addAction( tr( "Search for '%1'..." ).arg( nm ), 
+                             [ idx, this ]()
+            {
+                doubleClicked( idx );
+            } );
+
+            return menu;
+        }
+
+        void CTransformMediaFileNamesPage::doubleClicked( const QModelIndex & idx )
+        {
+            search( idx );
+        }
+
         void CTransformMediaFileNamesPage::slotAutoSearchForNewNames()
         {
-            if ( !fModel || !fModel->rowCount() )
+            if ( !model() || !model()->rowCount() )
             {
                 emit sigLoadFinished( false );
                 return;
             }
 
-            Q_ASSERT( fImpl->files->model() == fModel.get() );
+            Q_ASSERT( filesView()->model() == model() );
             fSearchTMDB->resetResults();
 
             if ( fSetupProgressFunc )
             {
-                auto count = NQtUtils::itemCount( fModel.get(), true );
-                fProgressDlg = fSetupProgressFunc( tr( "Finding Results" ), tr( "Cancel" ), count );
+                auto count = NQtUtils::itemCount( model(), true );
+                fSetupProgressFunc( tr( "Finding Results" ), tr( "Cancel" ), count );
             }
 
-            auto rootIdx = fModel->index( 0, 0 );
+            auto rootIdx = model()->index( 0, 0 );
             bool somethingToSearchFor = autoSearchForNewNames( rootIdx );
-            fProgressDlg->setValue( fSearchesCompleted );
+            progressDlg()->setValue( fSearchesCompleted );
             if ( !somethingToSearchFor )
             {
                 emit sigLoadFinished( false );
@@ -126,7 +145,7 @@ namespace NMediaManager
         bool CTransformMediaFileNamesPage::autoSearchForNewNames( QModelIndex parentIdx )
         {
             bool retVal = false;
-            auto rowCount = fModel->rowCount( parentIdx );
+            auto rowCount = model()->rowCount( parentIdx );
             for ( int ii = 0; ii < rowCount; ++ii )
             {
                 if ( fProgressDlg->wasCanceled() )
@@ -136,19 +155,19 @@ namespace NMediaManager
                 }
 
                 emit sigStartStayAwake();
-                auto childIndex = fModel->index( ii, 0, parentIdx );
-                auto name = fModel->getSearchName( childIndex );
-                auto path = fModel->filePath( childIndex );
-                auto titleInfo = fModel->getSearchResultInfo( childIndex );
+                auto childIndex = model()->index( ii, 0, parentIdx );
+                auto name = model()->getSearchName( childIndex );
+                auto path = model()->filePath( childIndex );
+                auto titleInfo = model()->getSearchResultInfo( childIndex );
                 auto searchInfo = std::make_shared< NCore::SSearchTMDBInfo >( name, titleInfo );
                 searchInfo->setExactMatchOnly( NCore::CPreferences::instance()->getExactMatchesOnly() );
 
-                if ( fModel->canAutoSearch( childIndex ) )
+                if ( model()->canAutoSearch( childIndex ) )
                 {
                     if ( fProgressDlg )
                     {
                         auto msg = tr( "Adding Background Search for '%1'" ).arg( QDir( fDirName ).relativeFilePath( path ) );
-                        appendToLog( msg + QString( "\n\t%1\n" ).arg( searchInfo->toString( false ) ) );
+                        appendToLog( msg + QString( "\n\t%1\n" ).arg( searchInfo->toString( false ) ), true );
                         fProgressDlg->setLabelText( msg );
                         fProgressDlg->setValue( fProgressDlg->value() + 1 );
                         qApp->processEvents();
@@ -175,13 +194,14 @@ namespace NMediaManager
                     fSearchesCompleted++;
                     auto msg = tr( "Search Complete for '%1'" ).arg( QDir( fDirName ).relativeFilePath( path ) );
                     fProgressDlg->setLabelText( msg );
+
                     msg += "\n\t%1";
                     if ( result.empty() )
                         msg = msg.arg( "Found: <No Match>" );
                     else
                         msg = msg.arg( tr( "Found: %1" ).arg( result.front()->toString( false ) ) );
                         
-                    appendToLog( msg );
+                    appendToLog( msg, true );
                 }
             }
             else
@@ -194,9 +214,9 @@ namespace NMediaManager
 
             if ( !result.empty() )
             {
-                auto item = fModel->getItemFromPath( path );
+                auto item = model()->getItemFromPath( path );
                 if ( item )
-                    fModel->setSearchResult( item, result.front(), false );
+                    model()->setSearchResult( item, result.front(), false );
             }
 
             if ( !searchesRemaining )
@@ -206,31 +226,72 @@ namespace NMediaManager
             }
         }
 
-        void CTransformMediaFileNamesPage::clearProgressDlg()
+        void CTransformMediaFileNamesPage::postLoadFinished( bool canceled )
         {
-            fProgressDlg = nullptr;
-            if ( fClearProgressFunc )
-                fClearProgressFunc();
+            if ( !canceled )
+                QTimer::singleShot( 0, this, &CTransformMediaFileNamesPage::slotAutoSearchForNewNames );
         }
 
-        void CTransformMediaFileNamesPage::setupProgressDlg( const QString &title, const QString &cancelButtonText, int max )
+        NCore::CDirModel * CTransformMediaFileNamesPage::createDirModel()
         {
-            if ( fSetupProgressFunc )
-                fProgressDlg = fSetupProgressFunc( title, cancelButtonText, max );
+            return new NCore::CTransformModel( this );
         }
 
-        void CTransformMediaFileNamesPage::slotDoubleClicked( const QModelIndex &idx )
+        QString CTransformMediaFileNamesPage::loadTitleName() const
         {
-            auto baseIdx = fModel->index( idx.row(), NCore::EColumns::eFSName, idx.parent() );
-            auto titleInfo = fModel->getSearchResultInfo( idx );
+            return tr( "Finding Files" );
+        }
+
+        QString CTransformMediaFileNamesPage::loadCancelName() const
+        {
+            return tr( "Cancel" );
+        }
+
+        QString CTransformMediaFileNamesPage::actionTitleName() const
+        {
+            return tr( "Renaming Files..." );
+        }
+
+        QString CTransformMediaFileNamesPage::actionCancelName() const
+        {
+            return tr( "Abort Rename" );
+        }
+
+        QString CTransformMediaFileNamesPage::actionErrorName() const
+        {
+            return tr( "Error While Creating MKV:" );
+        }
+
+
+        QStringList CTransformMediaFileNamesPage::dirModelFilter() const
+        {
+            return NCore::CPreferences::instance()->getMediaExtensions() << NCore::CPreferences::instance()->getSubtitleExtensions();
+        }
+
+        void CTransformMediaFileNamesPage::setupModel()
+        {
+            model()->slotTreatAsTVByDefaultChanged( NCore::CPreferences::instance()->getTreatAsTVShowByDefault() );
+            model()->slotTVOutputFilePatternChanged( NCore::CPreferences::instance()->getTVOutFilePattern() );
+            model()->slotTVOutputDirPatternChanged( NCore::CPreferences::instance()->getTVOutDirPattern() );
+            model()->slotMovieOutputFilePatternChanged( NCore::CPreferences::instance()->getMovieOutFilePattern() );
+            model()->slotMovieOutputDirPatternChanged( NCore::CPreferences::instance()->getMovieOutDirPattern() );
+            model()->setNameFilters( NCore::CPreferences::instance()->getMediaExtensions() << NCore::CPreferences::instance()->getSubtitleExtensions() );
+
+            CBasePage::setupModel();
+        }
+
+        void CTransformMediaFileNamesPage::search( const QModelIndex & idx )
+        {
+            auto baseIdx = model()->index( idx.row(), NCore::EColumns::eFSName, idx.parent() );
+            auto titleInfo = model()->getSearchResultInfo( idx );
 
             auto isDir = baseIdx.data( NCore::ECustomRoles::eIsDir ).toBool();
             auto fullPath = baseIdx.data( NCore::ECustomRoles::eFullPathRole ).toString();
             bool isTVShow = baseIdx.data( NCore::ECustomRoles::eIsTVShowRole ).toBool();
-            auto nm = fModel->getSearchName( idx );
+            auto nm = model()->getSearchName( idx );
 
             CSelectTMDB dlg( nm, titleInfo, this );
-            dlg.setSearchForTVShows( fModel->treatAsTVShow( QFileInfo( fullPath ), isTVShow ), true );
+            dlg.setSearchForTVShows( model()->treatAsTVShow( QFileInfo( fullPath ), isTVShow ), true );
             dlg.setExactMatchOnly( NCore::CPreferences::instance()->getExactMatchesOnly(), true );
 
             if ( dlg.exec() == QDialog::Accepted )
@@ -239,96 +300,11 @@ namespace NMediaManager
                 bool setChildren = true;
                 if ( titleInfo->isTVShow() && titleInfo->isSeasonOnly() )
                     setChildren = false;
-                fModel->setSearchResult( idx, titleInfo, setChildren );
+                model()->setSearchResult( idx, titleInfo, setChildren );
             }
         }
 
-        void CTransformMediaFileNamesPage::slotLoadFinished( bool canceled )
-        {
-            if ( canceled )
-            {
-                emit sigLoadFinished( canceled );
-                emit sigStopStayAwake();
-                return;
-            }
-
-            QTimer::singleShot( 0, this, &CTransformMediaFileNamesPage::slotAutoSearchForNewNames );
-        }
-
-        void CTransformMediaFileNamesPage::load( const QString & dirName )
-        {
-            fDirName = dirName;
-            load();
-        }
-
-        void CTransformMediaFileNamesPage::load()
-        {
-            fModel.reset( new NCore::CTransformModel() );
-            fImpl->files->setModel( fModel.get() );
-            connect( fModel.get(), &NCore::CDirModel::sigDirReloaded, this, &CTransformMediaFileNamesPage::slotLoadFinished );
-            connect( fModel.get(), &NCore::CDirModel::sigProcessingStarted, this, &CTransformMediaFileNamesPage::slotProcessingStarted );
-
-            fModel->slotTreatAsTVByDefaultChanged( NCore::CPreferences::instance()->getTreatAsTVShowByDefault() );
-            fModel->slotTVOutputFilePatternChanged( NCore::CPreferences::instance()->getTVOutFilePattern() );
-            fModel->slotTVOutputDirPatternChanged( NCore::CPreferences::instance()->getTVOutDirPattern() );
-            fModel->slotMovieOutputFilePatternChanged( NCore::CPreferences::instance()->getMovieOutFilePattern() );
-            fModel->slotMovieOutputDirPatternChanged( NCore::CPreferences::instance()->getMovieOutDirPattern() );
-            fModel->setNameFilters( NCore::CPreferences::instance()->getMediaExtensions() << NCore::CPreferences::instance()->getSubtitleExtensions(), fImpl->files );
-            setupProgressDlg( tr( "Finding Files" ), tr( "Cancel" ), 1 );
-            fModel->setRootPath( fDirName, fImpl->files, nullptr, fProgressDlg );
-
-            emit sigLoading();
-        }
-
-        void CTransformMediaFileNamesPage::run()
-        {
-            NCore::CDirModel * model = nullptr;
-            auto actionName = tr( "Renaming Files..." );
-            auto cancelName = tr( "Abort Rename" );
-            model = fModel.get();
-            emit sigStartStayAwake();
-
-            if ( fModel && fModel->process(
-                [ actionName, cancelName, this ]( int count ) { setupProgressDlg( actionName, cancelName, count ); return fProgressDlg; },
-                [ this ]( std::shared_ptr< CDoubleProgressDlg >dlg ) { (void)dlg; clearProgressDlg(); },
-                this ) )
-            {
-                emit sigStopStayAwake();
-                load();
-            }
-        }
-
-        void CTransformMediaFileNamesPage::slotProcessingStarted()
-        {
-            showResults();
-        }
-        
-        void CTransformMediaFileNamesPage::showResults()
-        {
-            auto sizes = fImpl->vsplitter->sizes();
-            if ( sizes.back() == 0 )
-            {
-                sizes.front() -= 30;
-                sizes.back() = 30;
-
-                fImpl->vsplitter->setSizes( sizes );
-            }
-        }
-
-        bool CTransformMediaFileNamesPage::canRun() const
-        {
-            return fModel && fModel->rowCount() != 0;
-        }
-
-        void CTransformMediaFileNamesPage::appendToLog( QString msg )
-        {
-            showResults();
-
-            if ( !msg.endsWith( "\n" ) )
-                msg += "\n";
-
-            NQtUtils::appendToLog( fImpl->results, msg, fModel->stdOutRemaining() );
-        }
     }
 }
+
 

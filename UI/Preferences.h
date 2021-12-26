@@ -1,6 +1,6 @@
 // The MIT License( MIT )
 //
-// Copyright( c ) 2020 Scott Aron Bloom
+// Copyright( c ) 2020-2021 Scott Aron Bloom
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -27,6 +27,7 @@
 
 class CKeyValuePairModel;
 class QStringListModel;
+class QLineEdit;
 namespace NMediaManager
 {
     namespace NUi
@@ -36,7 +37,7 @@ namespace NMediaManager
         {
             Q_OBJECT
         public:
-            CPreferences( QWidget *parent = 0 );
+            CPreferences( QWidget * parent = 0 );
             ~CPreferences();
 
         public Q_SLOTS:
@@ -50,11 +51,20 @@ namespace NMediaManager
             void slotSelectMKVMergeExe();
             void slotSelectMKVPropEditExe();
             void slotSelectFFMpegExe();
+            void slotSelectFFProbeExe();
+
+            void slotFFToolChanged();
+            void slotMKVNixToolChanged();
 
             void accept() override;
         private:
+            void mkvnixToolChanged( QLineEdit * le );
+            void fftoolToolChanged( QLineEdit * le );
+
             void loadSettings();
             void saveSettings();
+
+            void updateOtherTool( QObject * sender, const std::pair< QLineEdit *, QString > & lhs, const std::pair< QLineEdit *, QString > & rhs );
 
             QStringListModel * fKnownStringModel{ nullptr };
             QStringListModel * fExtraStringModel{ nullptr };

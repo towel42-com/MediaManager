@@ -1,6 +1,6 @@
 // The MIT License( MIT )
 //
-// Copyright( c ) 2020 Scott Aron Bloom
+// Copyright( c ) 2020-2021 Scott Aron Bloom
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -23,20 +23,7 @@
 #ifndef _TRANSFORMMEDIAFILENAMESPAGE_H
 #define _TRANSFORMMEDIAFILENAMESPAGE_H
 
-#include <QWidget>
-#include <optional>
-class CDoubleProgressDlg;
-class QTreeView;
-class QLineEdit;
-class CDelayLineEdit;
-class QToolBar;
-namespace NBIF
-{
-    class CBIFFile;
-    class CBIFModel;
-    enum class EButtonsLayout;
-}
-class QSpinBox;
+#include "BasePage.h"
 
 namespace NMediaManager
 {
@@ -53,55 +40,47 @@ namespace NMediaManager
 {
     namespace NUi
     {
-        namespace Ui { class CTransformMediaFileNamesPage; };
-        class CTransformMediaFileNamesPage : public QWidget
+        class CTransformMediaFileNamesPage : public CBasePage
         {
             Q_OBJECT
         public:
             CTransformMediaFileNamesPage( QWidget *parent = 0 );
             ~CTransformMediaFileNamesPage();
 
-            void load( const QString &fileName );
-            void load();
+            virtual bool useSecondaryProgressBar() const override { return false; }
 
-            void run();
-            bool canRun() const;
+            virtual QString loadTitleName() const override;
+            virtual QString loadCancelName() const override;
+            virtual QStringList dirModelFilter() const override;
 
-            void setTreatAsTVByDefault( bool value );
+            virtual QString actionTitleName() const override;
+            virtual QString actionCancelName() const override;
+            virtual QString actionErrorName() const override;
+
+            virtual NCore::CDirModel * createDirModel() override;
+            virtual void setupModel() override;
+
+            virtual void postLoadFinished( bool canceled ) override;
+            virtual void postNonQueuedRun() override;
+
             void setExactMatchesOnly( bool value );
+            void setTreatAsTVByDefault( bool value );
 
-            void setSetupProgressDlgFunc( std::function< std::shared_ptr< CDoubleProgressDlg >( const QString &title, const QString &cancelButtonText, int max ) > setupFunc, std::function< void() > clearFunc );
+            virtual void doubleClicked( const QModelIndex & idx ) override;
+            void search( const QModelIndex & idx );
+            virtual QMenu * contextMenu( const QModelIndex & idx ) override;
+        Q_SIGNALS:
         public Q_SLOTS:
-            void slotLoadFinished( bool canceled );
-            void slotProcessingStarted();
-
-            void showResults();
-
-            void slotDoubleClicked( const QModelIndex & idx );
+        protected Q_SLOTS:
             void slotAutoSearchForNewNames();
             void slotAutoSearchFinished( const QString &path, bool searchesRemaining );
-        Q_SIGNALS:
-            void sigLoading();
-            void sigLoadFinished( bool canceled );
-            void sigStartStayAwake();
-            void sigStopStayAwake();
-        private:
-            void appendToLog( QString msg );
+        protected:
+            virtual void loadSettings() override;
             [[nodiscard]] bool autoSearchForNewNames( QModelIndex rootIdx );
-            void setupProgressDlg( const QString &title, const QString &cancelButtonText, int max );
-            void clearProgressDlg();
+            NCore::CTransformModel * model();
 
-            void loadSettings();
-            void saveSettings();
-
-            NCore::CSearchTMDB *fSearchTMDB{ nullptr };
+            NCore::CSearchTMDB * fSearchTMDB{ nullptr };
             uint64_t fSearchesCompleted{ 0 };
-            std::function< std::shared_ptr< CDoubleProgressDlg >( const QString &title, const QString &cancelButtonText, int max ) > fSetupProgressFunc;
-            std::function< void() > fClearProgressFunc;
-            std::shared_ptr< CDoubleProgressDlg > fProgressDlg;
-            QString fDirName;
-            std::unique_ptr< NCore::CTransformModel > fModel;
-            std::unique_ptr< Ui::CTransformMediaFileNamesPage > fImpl;
         };
     }
 }

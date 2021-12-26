@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2020 Scott Aron Bloom
+# Copyright (c) 2020-2021 Scott Aron Bloom
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,7 @@
 
 set(qtproject_SRCS
     BIFViewerPage.cpp
+    BasePage.cpp
     MainWindow.cpp
     MakeMKVPage.cpp
     MergeSRTPage.cpp
@@ -33,6 +34,7 @@ set(qtproject_SRCS
 
 set(qtproject_H
     BIFViewerPage.h
+    BasePage.h
     MainWindow.h
     MakeMKVPage.h
     MergeSRTPage.h
@@ -47,13 +49,11 @@ set(project_H
 
 set(qtproject_UIS
     BIFViewerPage.ui
+    BasePage.ui
     MainWindow.ui
-    MakeMKVPage.ui
-    MergeSRTPage.ui
     Preferences.ui
     SelectTMDB.ui
     TransformConfirm.ui
-    TransformMediaFileNamesPage.ui
 )
 
 set(qtproject_QRC

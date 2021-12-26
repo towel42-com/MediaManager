@@ -1,6 +1,6 @@
 // The MIT License( MIT )
 //
-// Copyright( c ) 2020 Scott Aron Bloom
+// Copyright( c ) 2020-2021 Scott Aron Bloom
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -72,6 +72,18 @@ namespace NMediaManager
                 return fileName.isEmpty() || (fi.exists() && fi.isFile() && fi.isExecutable());
             }, tr( "File '%1' does not Exist or is not an Executable" ) );
 
+            connect( fImpl->btnSelectFFProbeExe, &QToolButton::clicked, this, &CPreferences::slotSelectFFProbeExe );
+            fImpl->ffprobeExe->setIsOKFunction( [ ]( const QString & fileName )
+            {
+                auto fi = QFileInfo( fileName );
+                return fileName.isEmpty() || (fi.exists() && fi.isFile() && fi.isExecutable());
+            }, tr( "File '%1' does not Exist or is not an Executable" ) );
+
+            connect( fImpl->ffmpegExe, &CDelayLineEdit::sigTextChangedAfterDelay, this, &CPreferences::slotFFToolChanged );
+            connect( fImpl->ffprobeExe, &CDelayLineEdit::sigTextChangedAfterDelay, this, &CPreferences::slotFFToolChanged );
+            connect( fImpl->mkvMergeExe, &CDelayLineEdit::sigTextChangedAfterDelay, this, &CPreferences::slotMKVNixToolChanged );
+            connect( fImpl->mkvPropEditExe, &CDelayLineEdit::sigTextChangedAfterDelay, this, &CPreferences::slotMKVNixToolChanged );
+
             fKnownStringModel = new QStringListModel( this );
             fImpl->knownStrings->setModel( fKnownStringModel );
 
@@ -84,7 +96,14 @@ namespace NMediaManager
             new CButtonEnabler( fImpl->knownStrings, fImpl->btnDelKnownString );
             new CButtonEnabler( fImpl->knownExtraStrings, fImpl->btnDelExtraString );
             new CButtonEnabler( fImpl->knownAbbreviations, fImpl->btnDelAbbreviation );
+
             loadSettings();
+
+            fftoolToolChanged( fImpl->ffmpegExe );
+            fftoolToolChanged( fImpl->ffprobeExe );
+            mkvnixToolChanged( fImpl->mkvMergeExe );
+            mkvnixToolChanged( fImpl->mkvPropEditExe );
+
             QSettings settings;
             fImpl->tabWidget->setCurrentIndex( settings.value( "LastPrefPage", 0 ).toInt() );
         }
@@ -211,6 +230,19 @@ namespace NMediaManager
                 fImpl->mkvMergeExe->setText( exe );
         }
 
+        void CPreferences::slotSelectMKVPropEditExe()
+        {
+            auto exe = QFileDialog::getOpenFileName( this, tr( "Select MKVPropEdit Executable:" ), fImpl->mkvPropEditExe->text(), "mkvpropedit Executable (mkvpropedit.exe);;All Executables (*.exe);;All Files (*.*)" );
+            if ( !exe.isEmpty() && !QFileInfo( exe ).isExecutable() )
+            {
+                QMessageBox::critical( this, "Not an Executable", tr( "The file '%1' is not an executable" ).arg( exe ) );
+                return;
+            }
+
+            if ( !exe.isEmpty() )
+                fImpl->mkvPropEditExe->setText( exe );
+        }
+
         void CPreferences::slotSelectFFMpegExe()
         {
             auto exe = QFileDialog::getOpenFileName( this, tr( "Select ffmpeg Executable:" ), fImpl->ffmpegExe->text(), "ffmpeg Executable (ffmpeg.exe);;All Executables (*.exe);;All Files (*.*)" );
@@ -224,9 +256,9 @@ namespace NMediaManager
                 fImpl->ffmpegExe->setText( exe );
         }
 
-        void CPreferences::slotSelectMKVPropEditExe()
+        void CPreferences::slotSelectFFProbeExe()
         {
-            auto exe = QFileDialog::getOpenFileName( this, tr( "Select MKVPropEdit Executable:" ), fImpl->mkvPropEditExe->text(), "mkvpropedit Executable (mkvpropedit.exe);;All Executables (*.exe);;All Files (*.*)" );
+            auto exe = QFileDialog::getOpenFileName( this, tr( "Select ffprobe Executable:" ), fImpl->ffprobeExe->text(), "ffprobe Executable (ffprobe.exe);;All Executables (*.exe);;All Files (*.*)" );
             if ( !exe.isEmpty() && !QFileInfo( exe ).isExecutable() )
             {
                 QMessageBox::critical( this, "Not an Executable", tr( "The file '%1' is not an executable" ).arg( exe ) );
@@ -234,7 +266,63 @@ namespace NMediaManager
             }
 
             if ( !exe.isEmpty() )
-                fImpl->mkvPropEditExe->setText( exe );
+                fImpl->ffprobeExe->setText( exe );
+        }
+
+        void CPreferences::updateOtherTool( QObject * sender, const std::pair< QLineEdit *, QString > & lhs, const std::pair< QLineEdit *, QString > & rhs )
+        {
+            auto le = dynamic_cast<QLineEdit *>(sender);
+            if ( !le )
+                return;
+
+            if ( le->text().isEmpty() || !QFileInfo::exists( le->text() ) )
+                return;
+
+            QString otherExe;
+            QLineEdit * otherLE = nullptr;
+            if ( le == lhs.first )
+            {
+                otherLE = rhs.first;
+                otherExe = rhs.second;
+            }
+            else if ( le == rhs.first )
+            {
+                otherLE = lhs.first;
+                otherExe = lhs.second;
+            }
+            else
+                return;
+
+            if ( !otherLE->text().isEmpty() && QFileInfo( otherLE->text() ).exists() && QFileInfo( otherLE->text() ).isExecutable() )
+                return;
+
+            auto dir = QFileInfo( le->text() ).absoluteDir();
+            auto otherEXE = dir.absoluteFilePath( otherExe );
+            if ( QFileInfo::exists( otherEXE ) && QFileInfo( otherEXE ).isExecutable() )
+                otherLE->setText( otherEXE );
+            otherEXE += ".exe";
+            if ( QFileInfo::exists( otherEXE ) && QFileInfo( otherEXE ).isExecutable() )
+                otherLE->setText( otherEXE );
+        }
+
+        void CPreferences::slotMKVNixToolChanged()
+        {
+            mkvnixToolChanged( dynamic_cast< QLineEdit * >( sender() ) );
+        }
+
+        void CPreferences::mkvnixToolChanged( QLineEdit * le )
+        {
+            updateOtherTool( le, { fImpl->mkvPropEditExe, "mkvpropedit" }, { fImpl->mkvMergeExe, "mkvmerge" } );
+        }
+
+        void CPreferences::slotFFToolChanged()
+        {
+            fftoolToolChanged( dynamic_cast<QLineEdit *>(sender()) );
+        }
+
+        void CPreferences::fftoolToolChanged( QLineEdit * le )
+        {
+            updateOtherTool( le, { fImpl->ffprobeExe, "ffprobe" }, { fImpl->ffmpegExe, "ffmpeg" } );
         }
 
         void CPreferences::loadSettings()
@@ -259,6 +347,7 @@ namespace NMediaManager
             fImpl->mkvMergeExe->setText( NCore::CPreferences::instance()->getMKVMergeEXE() );
             fImpl->mkvPropEditExe->setText( NCore::CPreferences::instance()->getMKVPropEditEXE() );
             fImpl->ffmpegExe->setText( NCore::CPreferences::instance()->getFFMpegEXE() );
+            fImpl->ffprobeExe->setText( NCore::CPreferences::instance()->getFFProbeEXE() );
         }
 
         void CPreferences::saveSettings()
@@ -279,7 +368,7 @@ namespace NMediaManager
             NCore::CPreferences::instance()->setMovieOutDirPattern( fImpl->movieOutDirPattern->text() );
             NCore::CPreferences::instance()->setMKVMergeEXE( fImpl->mkvMergeExe->text() );
             NCore::CPreferences::instance()->setMKVPropEditEXE( fImpl->mkvPropEditExe->text() );
-            NCore::CPreferences::instance()->setFFMpegEXE( fImpl->ffmpegExe->text() );
+            NCore::CPreferences::instance()->setFFProbeEXE( fImpl->ffprobeExe->text() );
         }
     }
 }

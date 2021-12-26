@@ -1,6 +1,6 @@
 // The MIT License( MIT )
 //
-// Copyright( c ) 2020 Scott Aron Bloom
+// Copyright( c ) 2020-2021 Scott Aron Bloom
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -21,153 +21,80 @@
 // SOFTWARE.
 
 #include "MergeSRTPage.h"
-#include "ui_MergeSRTPage.h"
-
 #include "Core/MergeSRTModel.h"
 #include "SABUtils/DoubleProgressDlg.h"
-
-#include <QSettings>
 
 namespace NMediaManager
 {
     namespace NUi
     {
         CMergeSRTPage::CMergeSRTPage( QWidget * parent )
-            : QWidget( parent ),
-            fImpl( new Ui::CMergeSRTPage )
+            : CBasePage( "Merge SRT", parent )
         {
-            fImpl->setupUi( this );
-
-            fImpl->files->setExpandsOnDoubleClick( false );
-
-            loadSettings();
         }
 
         CMergeSRTPage::~CMergeSRTPage()
         {
-            saveSettings();
         }
 
-        void CMergeSRTPage::loadSettings()
+        NCore::CDirModel * CMergeSRTPage::createDirModel()
         {
-            fImpl->vsplitter->setSizes( QList< int >() << 100 << 0 );
+            return new NCore::CMergeSRTModel( this );
         }
 
-        void CMergeSRTPage::saveSettings()
+        void CMergeSRTPage::postProcessLog( const QString & string )
         {
-            QSettings settings;
-            settings.beginGroup( "Merge SRT" );
-            settings.setValue( "Splitter", fImpl->vsplitter->saveState() );
-        }
-
-        void CMergeSRTPage::setSetupProgressDlgFunc( std::function< std::shared_ptr< CDoubleProgressDlg >( const QString & title, const QString & cancelButtonText, int max ) > setupFunc, std::function< void() > clearFunc )
-        {
-            fSetupProgressFunc = setupFunc;
-            fClearProgressFunc = clearFunc;
-        }
-
-        void CMergeSRTPage::clearProgressDlg()
-        {
-            fProgressDlg = nullptr;
-            if ( fClearProgressFunc )
-                fClearProgressFunc();
-        }
-
-        void CMergeSRTPage::setupProgressDlg( const QString & title, const QString & cancelButtonText, int max )
-        {
-            if ( fSetupProgressFunc )
+            auto regEx = QRegularExpression( "[Pp]rogress\\:\\s*(?<percent>\\d+)\\%" );
+            auto match = regEx.match( string );
+            QString percent;
+            while ( match.hasMatch() )
             {
-                fProgressDlg = fSetupProgressFunc( title, cancelButtonText, max );
-                fProgressDlg->setSingleProgressBarMode( !canRun() );
-
-                if ( canRun() )
-                {
-                    fProgressDlg->setSecondaryProgressLabel( tr( "Current Movie:" ) );
-                    fProgressDlg->setSecondaryRange( 0, 100 );
-                    fProgressDlg->setSecondaryValue( 0 );
-                }
+                percent = match.captured( "percent" );
+                match = regEx.match( string, match.capturedEnd( "percent" ) + 1 );
+            }
+            if ( !percent.isEmpty() )
+            {
+                bool aOK = false;
+                int percentVal = percent.toInt( &aOK );
+                if ( aOK )
+                    progressDlg()->setSecondaryValue( percentVal );
             }
         }
 
-        bool CMergeSRTPage::canRun() const
+        QStringList CMergeSRTPage::dirModelFilter() const
         {
-            return fModel && fModel->rowCount() != 0;
+            return QStringList() << "*.mkv";
         }
 
-        void CMergeSRTPage::slotLoadFinished( bool canceled )
+        QString CMergeSRTPage::secondaryProgressLabel() const
         {
-            emit sigLoadFinished( canceled );
-            emit sigStopStayAwake();
+            return tr( "Current Movie:" );
         }
 
-        void CMergeSRTPage::slotProcessingStarted()
+        QString CMergeSRTPage::loadTitleName() const
         {
-            showResults();
+            return tr( "Finding Files" );
         }
 
-        void CMergeSRTPage::load( const QString & dirName )
+        QString CMergeSRTPage::loadCancelName() const
         {
-            fDirName = dirName;
-            load();
+            return tr( "Cancel" );
         }
 
-        void CMergeSRTPage::load()
+        QString CMergeSRTPage::actionTitleName() const
         {
-            fModel.reset( new NCore::CMergeSRTModel() );
-            fImpl->files->setModel( fModel.get() );
-            connect( fModel.get(), &NCore::CDirModel::sigDirReloaded, this, &CMergeSRTPage::slotLoadFinished );
-            connect( fModel.get(), &NCore::CDirModel::sigProcessingStarted, this, &CMergeSRTPage::slotProcessingStarted );
-            fModel->setNameFilters( QStringList() << "*.mkv", fImpl->files, fImpl->results );
-            setupProgressDlg( tr( "Finding Files" ), tr( "Cancel" ), 1 );
-            fModel->setRootPath( fDirName, fImpl->files, fImpl->results, fProgressDlg );
-
-            emit sigStartStayAwake();
-            emit sigLoading();
+            return tr( "Merging SRT Files into MKV..." );
         }
 
-        void CMergeSRTPage::run()
+        QString CMergeSRTPage::actionCancelName() const
         {
-            emit sigStartStayAwake();
-
-            auto actionName = tr( "Merging SRT Files into MKV..." );
-            auto cancelName = tr( "Abort Merge" );
-            NCore::CDirModel * model = fModel.get();
-            connect( model, &NCore::CDirModel::sigProcessesFinished, [ this ]( bool status, bool canceled, bool reloadModel )
-            {
-                clearProgressDlg();
-                if ( !status )
-                {
-                    fModel->showProcessResults( tr( "Error While Processing:" ), tr( "Issues:" ), QMessageBox::Critical, QDialogButtonBox::Ok, this );
-                }
-                if ( !canceled && reloadModel )
-                    load();
-                emit sigStopStayAwake();
-            } );
-
-            if ( fModel )
-            {
-                fModel->process(
-                    [ actionName, cancelName, this ]( int count )
-                {
-                    setupProgressDlg( actionName, cancelName, count );
-                    return fProgressDlg;
-                },
-                    [ this ]( std::shared_ptr< CDoubleProgressDlg > dlg ) { (void)dlg; }, this );
-            }
+            return tr( "Abort Merge" );
         }
 
-        void CMergeSRTPage::showResults()
+        QString CMergeSRTPage::actionErrorName() const
         {
-            auto sizes = fImpl->vsplitter->sizes();
-            if ( sizes.back() == 0 )
-            {
-                sizes.front() -= 30;
-                sizes.back() = 30;
-
-                fImpl->vsplitter->setSizes( sizes );
-            }
+            return tr( "Error While Merging SRT file into MKV:" );
         }
-
     }
 }
 

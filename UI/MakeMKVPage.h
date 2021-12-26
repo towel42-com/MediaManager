@@ -1,6 +1,6 @@
 // The MIT License( MIT )
 //
-// Copyright( c ) 2020 Scott Aron Bloom
+// Copyright( c ) 2020-2021 Scott Aron Bloom
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -23,60 +23,37 @@
 #ifndef _MAKEMKV_H
 #define _MAKEMKV_H
 
-#include <QWidget>
-class CDoubleProgressDlg;
-
-namespace NMediaManager
-{
-    namespace NCore
-    {
-        class CDirModel;
-    }
-}
+#include "BasePage.h"
 
 namespace NMediaManager
 {
     namespace NUi
     {
-        namespace Ui { class CMakeMKVPage; };
-        class CMakeMKVPage : public QWidget
+        class CMakeMKVPage : public CBasePage
         {
             Q_OBJECT
         public:
             CMakeMKVPage( QWidget *parent = 0 );
             ~CMakeMKVPage();
 
-            void load( const QString & dirName );
-            void load();
+            virtual bool useSecondaryProgressBar() const override { return true; }
+            virtual QString secondaryProgressLabel() const override;
 
-            void run();
-            bool canRun() const;
+            virtual QString loadTitleName() const override;
+            virtual QString loadCancelName() const override;
+            virtual QStringList dirModelFilter() const override;
 
-            void setSetupProgressDlgFunc( std::function< std::shared_ptr< CDoubleProgressDlg >( const QString &title, const QString &cancelButtonText, int max ) > setupFunc, std::function< void() > clearFunc );
-        public Q_SLOTS:
-            void slotLoadFinished( bool canceled );
-            void slotProcessingStarted();
+            virtual QString actionTitleName() const override;
+            virtual QString actionCancelName() const override;
+            virtual QString actionErrorName() const override;
 
-            void showResults();
+            virtual NCore::CDirModel * createDirModel() override;
 
         Q_SIGNALS:
-            void sigLoading();
-            void sigLoadFinished( bool canceled );
-            void sigStartStayAwake();
-            void sigStopStayAwake();
-        private:
-            void setupProgressDlg( const QString &title, const QString &cancelButtonText, int max );
-            void clearProgressDlg();
+        public Q_SLOTS:
+        protected Q_SLOTS:
 
-            void loadSettings();
-            void saveSettings();
-
-            std::function< std::shared_ptr< CDoubleProgressDlg >( const QString &title, const QString &cancelButtonText, int max ) > fSetupProgressFunc;
-            std::function< void() > fClearProgressFunc;
-            std::shared_ptr< CDoubleProgressDlg > fProgressDlg;
-            QString fDirName;
-            std::unique_ptr< NCore::CDirModel > fModel;
-            std::unique_ptr< Ui::CMakeMKVPage > fImpl;
+        protected:
         };
     }
 }

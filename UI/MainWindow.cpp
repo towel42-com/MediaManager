@@ -1,6 +1,6 @@
 // The MIT License( MIT )
 //
-// Copyright( c ) 2020 Scott Aron Bloom
+// Copyright( c ) 2020-2021 Scott Aron Bloom
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -85,6 +85,9 @@ namespace NMediaManager
             fImpl( new Ui::CMainWindow )
         {
             fImpl->setupUi( this );
+            fImpl->mergeSRTPage->postInit();
+            fImpl->makeMKVPage->postInit();
+
 
             fImpl->directory->setDelay( 1000 );
             fImpl->directory->setIsOKFunction( [ ]( const QString & dirName )
