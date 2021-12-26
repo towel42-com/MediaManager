@@ -1,6 +1,6 @@
 // The MIT License( MIT )
 //
-// Copyright( c ) 2020 Scott Aron Bloom
+// Copyright( c ) 2020-2021 Scott Aron Bloom
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -44,7 +44,7 @@ namespace NMediaManager
         {
             Q_OBJECT
         public:
-            CTransformModel( QObject * parent = nullptr );
+            CTransformModel( NUi::CBasePage * page, QObject * parent = nullptr );
             ~CTransformModel();
 
             void setSearchResult( const QModelIndex & idx, std::shared_ptr< SSearchResult > info, bool applyToChilren );

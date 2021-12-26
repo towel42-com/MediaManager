@@ -1,6 +1,6 @@
 // The MIT License( MIT )
 //
-// Copyright( c ) 2020 Scott Aron Bloom
+// Copyright( c ) 2020-2021 Scott Aron Bloom
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -26,6 +26,7 @@
 #include "Preferences.h"
 
 #include "UI/TransformConfirm.h"
+#include "UI/BasePage.h"
 
 #include "SABUtils/StringUtils.h"
 #include "SABUtils/QtUtils.h"
@@ -90,8 +91,9 @@ namespace NMediaManager
 {
     namespace NCore
     {
-        CDirModel::CDirModel( QObject * parent /*= 0*/ ) :
-            QStandardItemModel( parent )
+        CDirModel::CDirModel( NUi::CBasePage * page, QObject * parent /*= 0*/ ) :
+            QStandardItemModel( parent ),
+            fBasePage( page )
         {
             fIconProvider = new QFileIconProvider();
             fTimer = new QTimer( this );
@@ -116,10 +118,10 @@ namespace NMediaManager
             delete fIconProvider;
         }
 
-        void CDirModel::setRootPath( const QString & rootPath, QTreeView * view, QPlainTextEdit * resultsView, std::shared_ptr< CDoubleProgressDlg > dlg )
+        void CDirModel::setRootPath( const QString & rootPath )
         {
             fRootPath = rootPath;
-            reloadModel( view, resultsView, dlg );
+            reloadModel();
         }
 
         bool CDirModel::isAutoSetText( const QString & text )
@@ -138,18 +140,14 @@ namespace NMediaManager
             return nm;
         }
 
-        void CDirModel::setNameFilters( const QStringList & filters, QTreeView * view, QPlainTextEdit * resultsView, std::shared_ptr< CDoubleProgressDlg > dlg )
+        void CDirModel::setNameFilters( const QStringList & filters )
         {
             fNameFilter = filters;
-            reloadModel( view, resultsView, dlg );
+            reloadModel();
         }
 
-        void CDirModel::reloadModel( QTreeView * view, QPlainTextEdit * resultsView, std::shared_ptr< CDoubleProgressDlg > dlg )
+        void CDirModel::reloadModel()
         {
-            fTreeView = view;
-            fResults = resultsView;
-            fProgressDlg = dlg;
-
             fTimer->stop();
             fTimer->start();
             postReloadModel();
@@ -165,15 +163,15 @@ namespace NMediaManager
 
             QFileInfo rootFI( fRootPath );
 
-            if ( fProgressDlg )
+            if ( progressDlg() )
             {
-                fProgressDlg->setLabelText( tr( "Computing number of Files under '%1'" ).arg( fRootPath ) );
+                progressDlg()->setLabelText( tr( "Computing number of Files under '%1'" ).arg( fRootPath ) );
                 qApp->processEvents();
                 auto numFiles = computeNumberOfFiles( rootFI ).second;
-                if ( fProgressDlg && !fProgressDlg->wasCanceled() )
-                    fProgressDlg->setRange( 0, numFiles );
+                if ( !progressDlg()->wasCanceled() )
+                    progressDlg()->setRange( 0, numFiles );
             }
-            if ( fProgressDlg && fProgressDlg->wasCanceled() )
+            if ( progressDlg() && progressDlg()->wasCanceled() )
             {
                 emit sigDirReloaded( true );
                 return;
@@ -183,19 +181,19 @@ namespace NMediaManager
 
             postLoad();
 
-            emit sigDirReloaded( fProgressDlg && fProgressDlg->wasCanceled() );
+            emit sigDirReloaded( progressDlg() && progressDlg()->wasCanceled() );
         }
 
         void CDirModel::postLoad() const
         {
-            if ( !fTreeView )
+            if ( !filesView() )
                 return;
 
-            fTreeView->resizeColumnToContents( EColumns::eFSName );
-            fTreeView->resizeColumnToContents( EColumns::eFSSize );
-            fTreeView->resizeColumnToContents( EColumns::eFSType );
-            fTreeView->resizeColumnToContents( EColumns::eFSModDate );
-            postLoad( fTreeView );
+            filesView()->resizeColumnToContents( EColumns::eFSName );
+            filesView()->resizeColumnToContents( EColumns::eFSSize );
+            filesView()->resizeColumnToContents( EColumns::eFSType );
+            filesView()->resizeColumnToContents( EColumns::eFSModDate );
+            postLoad( filesView() );
         }
 
         void CDirModel::postReloadModel()
@@ -218,7 +216,7 @@ namespace NMediaManager
             if ( !fileInfo.exists() )
                 return;
 
-            if ( fProgressDlg && fProgressDlg->wasCanceled() )
+            if ( progressDlg() && progressDlg()->wasCanceled() )
                 return;
 
             if ( fileInfo.isDir() )
@@ -242,7 +240,7 @@ namespace NMediaManager
                         ii->next();
                         auto fi = ii->fileInfo();
                         iterateEveryFile( fi, iterInfo, lastUpdateUI );
-                        if ( fProgressDlg && (!lastUpdateUI.has_value() || (lastUpdateUI.value().msecsTo( QDateTime::currentDateTime() ) > 250)) )
+                        if ( progressDlg() && (!lastUpdateUI.has_value() || (lastUpdateUI.value().msecsTo( QDateTime::currentDateTime() ) > 250)) )
                         {
                             qApp->processEvents();
                             lastUpdateUI = QDateTime::currentDateTime();
@@ -265,8 +263,8 @@ namespace NMediaManager
 
         std::pair< uint64_t, uint64_t > CDirModel::computeNumberOfFiles( const QFileInfo & fileInfo ) const
         {
-            if ( fProgressDlg )
-                fProgressDlg->setRange( 0, 0 );
+            if ( progressDlg() )
+                progressDlg()->setRange( 0, 0 );
 
             uint64_t numDirs = 0;
             uint64_t numFiles = 0;
@@ -294,8 +292,8 @@ namespace NMediaManager
                 auto row = getItemRow( dirInfo );
                 tree.push_back( std::move( row ) );
 
-                if ( fProgressDlg )
-                    fProgressDlg->setLabelText( tr( "Searching Directory '%1'" ).arg( QDir( fRootPath ).relativeFilePath( dirInfo.absoluteFilePath() ) ) );
+                if ( progressDlg() )
+                    progressDlg()->setLabelText( tr( "Searching Directory '%1'" ).arg( QDir( fRootPath ).relativeFilePath( dirInfo.absoluteFilePath() ) ) );
 
                 if ( isExcludedDirName( dirInfo ) )
                 {
@@ -324,8 +322,8 @@ namespace NMediaManager
 
                 //qDebug().noquote().nospace() << "Pre File B: " << fileInfo.absoluteFilePath() << tree;
 
-                if ( fProgressDlg )
-                    fProgressDlg->setValue( fProgressDlg->value() + 1 );
+                if ( progressDlg() )
+                    progressDlg()->setValue( progressDlg()->value() + 1 );
                 return true;
             };
 
@@ -336,8 +334,8 @@ namespace NMediaManager
                 //qDebug().noquote().nospace() << "Post Dir A: " << dirInfo.absoluteFilePath() << tree << "AOK? " << aOK;  
                 tree.pop_back();
                 //qDebug().noquote().nospace() << "Post Dir B: " << dirInfo.absoluteFilePath() << tree;
-                if ( fTreeView )
-                    fTreeView->resizeColumnToContents( EColumns::eFSName );
+                if ( filesView() )
+                    filesView()->resizeColumnToContents( EColumns::eFSName );
             };
 
             info.fPostFileFunction = [ this, &tree ]( const QFileInfo & fileInfo, bool aOK )
@@ -386,8 +384,8 @@ namespace NMediaManager
                 prevParent = nextParent;
                 fPathMapping[nextParent->data( ECustomRoles::eFullPathRole ).toString()] = nextParent;
 
-                if ( fTreeView && prevParent )
-                    fTreeView->setExpanded( prevParent->index(), true );
+                if ( filesView() && prevParent )
+                    filesView()->setExpanded( prevParent->index(), true );
             }
             return prevParent;
         }
@@ -693,7 +691,7 @@ namespace NMediaManager
                 if ( !child )
                     continue;
 
-                if ( fProgressDlg && fProgressDlg->wasCanceled() )
+                if ( progressDlg() && progressDlg()->wasCanceled() )
                     break;
 
                 aOK = process( child, displayOnly, myItem ) && aOK;
@@ -705,10 +703,10 @@ namespace NMediaManager
         {
             CAutoWaitCursor awc;
             fProcessResults.second = std::make_shared< QStandardItemModel >();
-            if ( fProgressDlg )
+            if ( progressDlg() )
             {
-                disconnect( fProgressDlg.get(), &CDoubleProgressDlg::canceled, this, &CDirModel::slotProgressCanceled );
-                connect( fProgressDlg.get(), &CDoubleProgressDlg::canceled, this, &CDirModel::slotProgressCanceled );
+                disconnect( progressDlg().get(), &CDoubleProgressDlg::canceled, this, &CDirModel::slotProgressCanceled );
+                connect( progressDlg().get(), &CDoubleProgressDlg::canceled, this, &CDirModel::slotProgressCanceled );
             }
 
             fProcessResults.first = process( invisibleRootItem(), displayOnly, nullptr );
@@ -717,8 +715,8 @@ namespace NMediaManager
 
         void CDirModel::postProcess( bool /*displayOnly*/ )
         {
-            if ( fProgressDlg )
-                fProgressDlg->setValue( fProcessResults.second->rowCount() );
+            if ( progressDlg() )
+                progressDlg()->setValue( fProcessResults.second->rowCount() );
         }
 
         bool CDirModel::postExtProcess( const SProcessInfo & info, QStringList & msgList )
@@ -751,17 +749,17 @@ namespace NMediaManager
 
         bool CDirModel::process( const std::function< std::shared_ptr< CDoubleProgressDlg >( int count ) > & startProgress, const std::function< void( std::shared_ptr< CDoubleProgressDlg > ) > & endProgress, QWidget * parent )
         {
-            fProgressDlg = startProgress( 0 );
+            progressDlg() = startProgress( 0 );
             process( true );
             if ( fProcessResults.second && fProcessResults.second->rowCount() == 0 )
             {
                 QMessageBox::information( parent, tr( "Nothing to change" ), tr( "No files or directories could be processed" ) );
-                endProgress( fProgressDlg );
+                endProgress( progressDlg() );
                 return false;
             }
 
             bool continueOn = showProcessResults( tr( "Process:" ), tr( "Proceed?" ), QMessageBox::Information, QDialogButtonBox::Yes | QDialogButtonBox::No, parent );
-            endProgress( fProgressDlg );
+            endProgress( progressDlg() );
             if ( !continueOn )
             {
                 emit sigProcessesFinished( false, true, false );
@@ -770,14 +768,14 @@ namespace NMediaManager
 
             int count = computeNumberOfItems();
 
-            fProgressDlg = startProgress( count * eventsPerPath() );
+            progressDlg() = startProgress( count * eventsPerPath() );
             emit sigProcessingStarted();
             process( false );
             if ( !fProcessResults.first )
             {
                 showProcessResults( tr( "Error While Processing:" ), tr( "Issues:" ), QMessageBox::Critical, QDialogButtonBox::Ok, parent );
             }
-            endProgress( fProgressDlg );
+            endProgress( progressDlg() );
             return fProcessResults.first;
         }
 
@@ -895,8 +893,8 @@ namespace NMediaManager
             if ( fProcess->state() != QProcess::NotRunning )
                 return;
 
-            if ( fProgressDlg && !fFirstProcess )
-                fProgressDlg->setValue( fProgressDlg->value() + 1 );
+            if ( progressDlg() && !fFirstProcess )
+                progressDlg()->setValue( progressDlg()->value() + 1 );
             fFirstProcess = false;
             if ( fProcessQueue.empty() )
             {
@@ -906,7 +904,7 @@ namespace NMediaManager
 
             auto && curr = fProcessQueue.front();
 
-            if ( fResults )
+            if ( log() )
             {
                 auto tmp = QStringList() << curr.fCmd << curr.fArgs;
                 for ( auto && ii : tmp )
@@ -914,11 +912,11 @@ namespace NMediaManager
                     if ( ii.contains( " " ) )
                         ii = "\"" + ii + "\"";
                 }
-                fResults->appendPlainText( "Running Command:" + tmp.join( " " ) );
+                log()->appendPlainText( "Running Command:" + tmp.join( " " ) );
             }
-            if ( fProgressDlg )
+            if ( progressDlg() )
             {
-                fProgressDlg->setLabelText( getProgressLabel( curr ) );
+                progressDlg()->setLabelText( getProgressLabel( curr ) );
             }
             fProcessFinishedHandled = false;
             fProcess->start( curr.fCmd, curr.fArgs );
@@ -969,15 +967,15 @@ namespace NMediaManager
             if ( fProcessQueue.empty() )
                 return;
 
-            if ( fResults )
-                fResults->appendPlainText( (error ? tr( "Error: " ) : QString()) + msg );
+            if ( log() )
+                log()->appendPlainText( (error ? tr( "Error: " ) : QString()) + msg );
             else
                 qDebug() << (error ? tr( "Error: " ) : QString()) + msg;
 
             if ( error )
                 addProcessError( msg );
 
-            bool wasCanceled = fProgressDlg && fProgressDlg->wasCanceled();
+            bool wasCanceled = progressDlg() && progressDlg()->wasCanceled();
             fProcessResults.first = !error && !wasCanceled;
             fProcessQueue.front().cleanup( this, !error && !wasCanceled );
 
@@ -1004,37 +1002,6 @@ namespace NMediaManager
 
             auto msg = tr( "Running Finished: %1 Exit Code: %2" ).arg( statusString( exitStatus ) ).arg( exitCode );
             processFinished( msg, (exitStatus != QProcess::NormalExit) );
-        }
-
-
-        void CDirModel::slotProcessStandardError()
-        {
-            NQtUtils::appendToLog( fResults, fProcess->readAllStandardError(), fStdErrRemaining );
-        }
-
-        void CDirModel::slotProcessStandardOutput()
-        {
-            auto string = fProcess->readAllStandardOutput();
-            NQtUtils::appendToLog( fResults, string, stdOutRemaining() );
-
-            if ( fProgressDlg )
-            {
-                auto regEx = QRegularExpression( "[Pp]rogress\\:\\s*(?<percent>\\d+)\\%" );
-                auto match = regEx.match( string );
-                QString percent;
-                while ( match.hasMatch() )
-                {
-                    percent = match.captured( "percent" );
-                    match = regEx.match( string, match.capturedEnd( "percent" ) + 1 );
-                }
-                if ( !percent.isEmpty() )
-                {
-                    bool aOK = false;
-                    int percentVal = percent.toInt( &aOK );
-                    if ( aOK )
-                        fProgressDlg->setSecondaryValue( percentVal );
-                }
-            }
         }
 
         void CDirModel::slotProcessStarted()
@@ -1120,7 +1087,32 @@ namespace NMediaManager
                 errorItem->setIcon( icon );
                 model->fProcessResults.first = false;
             }
+        }
 
+        QPlainTextEdit * CDirModel::log() const
+        {
+            return fBasePage->log();
+        }
+        
+        std::shared_ptr< CDoubleProgressDlg > CDirModel::progressDlg() const
+        {
+            return fBasePage->progressDlg();
+        }
+
+        QTreeView * CDirModel::filesView() const
+        {
+            return fBasePage->filesView();
+        }
+
+
+        void CDirModel::slotProcessStandardError()
+        {
+            fBasePage->appendToLog( fProcess->readAllStandardError(), stdErrRemaining(), false );
+        }
+
+        void CDirModel::slotProcessStandardOutput()
+        {
+            fBasePage->appendToLog( fProcess->readAllStandardOutput(), stdOutRemaining(), true );
         }
     }
 }

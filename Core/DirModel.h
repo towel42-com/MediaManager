@@ -1,6 +1,6 @@
 // The MIT License( MIT )
 //
-// Copyright( c ) 2020 Scott Aron Bloom
+// Copyright( c ) 2020-2021 Scott Aron Bloom
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -49,6 +49,11 @@ namespace NUtils
 
 namespace NMediaManager
 {
+    namespace NUi
+    {
+        class CBasePage;
+    }
+
     namespace NCore
     {
         struct SSearchResult;
@@ -148,7 +153,7 @@ namespace NMediaManager
             friend struct SProcessInfo;
             Q_OBJECT
         public:
-            CDirModel( QObject * parent = nullptr );
+            CDirModel( NUi::CBasePage * page, QObject * parent = nullptr );
             ~CDirModel();
 
             bool isDir( const QModelIndex & idx ) const;
@@ -164,9 +169,9 @@ namespace NMediaManager
 
             bool process( const std::function< std::shared_ptr< CDoubleProgressDlg >( int count ) > & startProgress, const std::function< void( std::shared_ptr< CDoubleProgressDlg > ) > & endProgress, QWidget * parent );
 
-            void setNameFilters( const QStringList & filters, QTreeView * view = nullptr, QPlainTextEdit * resultsView = nullptr, std::shared_ptr< CDoubleProgressDlg >progress = {} );
-            void reloadModel( QTreeView * view, QPlainTextEdit * resultsView, std::shared_ptr< CDoubleProgressDlg > dlg );
-            void setRootPath( const QString & path, QTreeView * view = nullptr, QPlainTextEdit * resultsView = nullptr, std::shared_ptr< CDoubleProgressDlg > dlg = {} );
+            void setNameFilters( const QStringList & filters );
+            void reloadModel();
+            void setRootPath( const QString & path );
 
             QString getSearchName( const QModelIndex & idx ) const;
             virtual bool setData( const QModelIndex & idx, const QVariant & value, int role ) override;
@@ -187,22 +192,27 @@ namespace NMediaManager
             bool showProcessResults( const QString & title, const QString & label, const QMessageBox::Icon & icon, const QDialogButtonBox::StandardButtons & buttons, QWidget * parent ) const;
 
             std::pair<QString, bool> & stdOutRemaining() { return fStdOutRemaining; }
+            std::pair<QString, bool> & stdErrRemaining() { return fStdErrRemaining; }
         Q_SIGNALS:
             void sigDirReloaded( bool canceled );
             void sigProcessesFinished( bool status, bool cancelled, bool reloadModel );
             void sigProcessingStarted();
         public Q_SLOTS:
             void slotLoadRootDirectory();
-
             void slotRunNextProcessInQueue();
             void slotProcessErrorOccured( QProcess::ProcessError error );
             void slotProcessFinished( int exitCode, QProcess::ExitStatus exitStatus );
             void slotProcessStandardError();
             void slotProcessStandardOutput();
+
             void slotProcessStarted();
             void slotProcesssStateChanged( QProcess::ProcessState newState );
             void slotProgressCanceled();
         protected:
+            QPlainTextEdit * log() const;
+            QTreeView * filesView() const;
+            std::shared_ptr< CDoubleProgressDlg > progressDlg() const;
+
             virtual std::pair< bool, QStandardItem * > processItem( const QStandardItem * item, QStandardItem * parentItem, bool displayOnly ) const = 0;
             virtual void preAddItems( const QFileInfo & fileInfo, std::list< NMediaManager::NCore::STreeNodeItem > & currItems ) const = 0;
             virtual std::list< NMediaManager::NCore::STreeNodeItem > addItems( const QFileInfo & fileInfo ) const = 0;
@@ -214,7 +224,6 @@ namespace NMediaManager
             virtual int computeNumberOfItems() const = 0;
             virtual void postProcess( bool /*displayOnly*/ );
             virtual bool postExtProcess( const SProcessInfo & info, QStringList & msgList );
-
             virtual QString getProgressLabel( const SProcessInfo & processInfo ) const;
 
             // model overrides during iteration
@@ -280,15 +289,13 @@ namespace NMediaManager
             std::map< QString, QStandardItem * > fPathMapping;
 
             QTimer * fTimer{ nullptr };
-            QTreeView * fTreeView{ nullptr };
-            QPlainTextEdit * fResults{ nullptr };
+            NUi::CBasePage * fBasePage{ nullptr };
             QProcess * fProcess{ nullptr };
             std::pair< bool, std::shared_ptr< QStandardItemModel > > fProcessResults;
 
             mutable std::list< SProcessInfo > fProcessQueue;
             std::pair< QString, bool > fStdOutRemaining{ QString(),false };
             std::pair< QString, bool > fStdErrRemaining{ QString(),false };
-            mutable std::shared_ptr< CDoubleProgressDlg > fProgressDlg;
 
             bool fProcessFinishedHandled{ false };
             mutable bool fFirstProcess{ true };

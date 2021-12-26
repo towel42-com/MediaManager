@@ -1,6 +1,6 @@
 // The MIT License( MIT )
 //
-// Copyright( c ) 2020 Scott Aron Bloom
+// Copyright( c ) 2020-2021 Scott Aron Bloom
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -41,8 +41,8 @@ namespace NMediaManager
 {
     namespace NCore
     {
-        CTransformModel::CTransformModel( QObject * parent /*= 0*/ ) :
-            CDirModel( parent )
+        CTransformModel::CTransformModel( NUi::CBasePage * page, QObject * parent /*= 0*/ ) :
+            CDirModel( page, parent )
         {
             fPatternTimer = new QTimer( this );
             fPatternTimer->setInterval( 50 );
@@ -413,12 +413,12 @@ namespace NMediaManager
                 if ( !displayOnly )
                 {
                     bool removeIt = newName == "<DELETE THIS>";
-                    if ( fProgressDlg )
+                    if ( progressDlg() )
                     {
                         if ( removeIt )
-                            fProgressDlg->setLabelText( tr( "Removing '%1'" ).arg( getDispName( oldName ) ) );
+                            progressDlg()->setLabelText( tr( "Removing '%1'" ).arg( getDispName( oldName ) ) );
                         else
-                            fProgressDlg->setLabelText( tr( "Renaming '%1' => '%2'" ).arg( getDispName( oldName ) ).arg( getDispName( newName ) ) );
+                            progressDlg()->setLabelText( tr( "Renaming '%1' => '%2'" ).arg( getDispName( oldName ) ).arg( getDispName( newName ) ) );
                     }
 
                     bool dirAlreadyExisted = (oldFileInfo.exists() && oldFileInfo.isDir() && newFileInfo.exists() && newFileInfo.isDir());
@@ -457,7 +457,7 @@ namespace NMediaManager
                                 appendError( myItem, errorItem );
                             }
                         }
-                        fProgressDlg->setValue( fProgressDlg->value() + 4 );
+                        progressDlg()->setValue( progressDlg()->value() + 4 );
                     }
                     else
                     {
@@ -478,9 +478,9 @@ namespace NMediaManager
                         else
                         {
                             auto timeStamps = NFileUtils::timeStamps( oldName );
-                            if ( fProgressDlg )
+                            if ( progressDlg() )
                             {
-                                fProgressDlg->setValue( fProgressDlg->value() + 1 );
+                                progressDlg()->setValue( progressDlg()->value() + 1 );
                                 qApp->processEvents();
                             }
 
@@ -508,9 +508,9 @@ namespace NMediaManager
                                     }
                                 }
                             }
-                            if ( fProgressDlg )
+                            if ( progressDlg() )
                             {
-                                fProgressDlg->setValue( fProgressDlg->value() + 1 );
+                                progressDlg()->setValue( progressDlg()->value() + 1 );
                                 qApp->processEvents();
                             }
 
@@ -546,9 +546,9 @@ namespace NMediaManager
                             }
                             else
                                 aOK = false;
-                            if ( fProgressDlg )
+                            if ( progressDlg() )
                             {
-                                fProgressDlg->setValue( fProgressDlg->value() + 1 );
+                                progressDlg()->setValue( progressDlg()->value() + 1 );
                                 qApp->processEvents();
                             }
 
@@ -568,9 +568,9 @@ namespace NMediaManager
                                 auto searchInfo = (pos == fSearchResultMap.end()) ? std::shared_ptr< SSearchResult >() : (*pos).second;
                                 QString msg;
                                 auto aOK = SetMKVTags( newName, searchInfo, msg );
-                                if ( fProgressDlg )
+                                if ( progressDlg() )
                                 {
-                                    fProgressDlg->setValue( fProgressDlg->value() + 1 );
+                                    progressDlg()->setValue( progressDlg()->value() + 1 );
                                     qApp->processEvents();
                                 }
 
@@ -587,9 +587,9 @@ namespace NMediaManager
                                 else
                                 {
                                     aOK = NFileUtils::setTimeStamps( newName, timeStamps );
-                                    if ( fProgressDlg )
+                                    if ( progressDlg() )
                                     {
-                                        fProgressDlg->setValue( fProgressDlg->value() + 1 );
+                                        progressDlg()->setValue( progressDlg()->value() + 1 );
                                         qApp->processEvents();
                                     }
                                     if ( !aOK )
@@ -612,9 +612,9 @@ namespace NMediaManager
                     QIcon icon;
                     icon.addFile( aOK ? QString::fromUtf8( ":/resources/ok.png" ) : QString::fromUtf8( ":/resources/error.png" ), QSize(), QIcon::Normal, QIcon::Off );
                     myItem->setIcon( icon );
-                    if ( fProgressDlg )
+                    if ( progressDlg() )
                     {
-                        fProgressDlg->setValue( fProgressDlg->value() + 1 );
+                        progressDlg()->setValue( progressDlg()->value() + 1 );
                         qApp->processEvents();
                     }
                 }
