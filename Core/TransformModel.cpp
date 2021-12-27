@@ -389,6 +389,11 @@ namespace NMediaManager
             return (*pos).second;
         }
 
+        void CTransformModel::clearSearchResult( const QModelIndex & idx )
+        {
+            setSearchResult( idx, {}, false );
+        }
+
         std::pair< bool, QStandardItem * > CTransformModel::processItem( const QStandardItem * item, QStandardItem * parentItem, bool displayOnly ) const
         {
             QStandardItem * myItem = nullptr;
@@ -725,7 +730,7 @@ namespace NMediaManager
         {
             if ( nodeItem.fType == EColumns::eIsTVShow )
                 setChecked( item, nodeItem.fIsTVShow );
-            else if ( nodeItem.fText == EColumns::eTransformName )
+            else if ( nodeItem.fType == EColumns::eTransformName )
             {
                 if ( nameItem && item )
                 {

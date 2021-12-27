@@ -167,7 +167,7 @@ namespace NMediaManager
             QStandardItem * getItemFromindex( QModelIndex idx ) const;
             QStandardItem * getItemFromPath( const QFileInfo & fi ) const;
 
-            bool process( const std::function< std::shared_ptr< CDoubleProgressDlg >( int count ) > & startProgress, const std::function< void( std::shared_ptr< CDoubleProgressDlg > ) > & endProgress, QWidget * parent );
+            bool process( const std::function< void( int count ) > & startProgress, const std::function< void( bool finalStep ) > & endProgress, QWidget * parent );
 
             void setNameFilters( const QStringList & filters );
             void reloadModel();
@@ -193,6 +193,8 @@ namespace NMediaManager
 
             std::pair<QString, bool> & stdOutRemaining() { return fStdOutRemaining; }
             std::pair<QString, bool> & stdErrRemaining() { return fStdErrRemaining; }
+
+            void clear();
         Q_SIGNALS:
             void sigDirReloaded( bool canceled );
             void sigProcessesFinished( bool status, bool cancelled, bool reloadModel );
@@ -211,7 +213,7 @@ namespace NMediaManager
         protected:
             QPlainTextEdit * log() const;
             QTreeView * filesView() const;
-            std::shared_ptr< CDoubleProgressDlg > progressDlg() const;
+            CDoubleProgressDlg * progressDlg() const;
 
             virtual std::pair< bool, QStandardItem * > processItem( const QStandardItem * item, QStandardItem * parentItem, bool displayOnly ) const = 0;
             virtual void preAddItems( const QFileInfo & fileInfo, std::list< NMediaManager::NCore::STreeNodeItem > & currItems ) const = 0;
@@ -225,6 +227,7 @@ namespace NMediaManager
             virtual void postProcess( bool /*displayOnly*/ );
             virtual bool postExtProcess( const SProcessInfo & info, QStringList & msgList );
             virtual QString getProgressLabel( const SProcessInfo & processInfo ) const;
+            virtual bool usesQueuedProcessing() const = 0;
 
             // model overrides during iteration
             virtual void postFileFunction( bool aOK, const QFileInfo & fileInfo ) = 0;

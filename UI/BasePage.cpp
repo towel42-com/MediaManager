@@ -46,11 +46,21 @@ namespace NMediaManager
             fImpl->filesView->setContextMenuPolicy( Qt::CustomContextMenu );
             connect( fImpl->filesView, &QTreeView::doubleClicked, this, &CBasePage::slotDoubleClicked );
             connect( fImpl->filesView, &QTreeView::customContextMenuRequested, this, &CBasePage::slotContextMenu );
-        }
+       }
 
         void CBasePage::postInit()
         {
             loadSettings();
+        }
+
+        void CBasePage::setProgressDlg( CDoubleProgressDlg * progressDlg )
+        {
+            fProgressDlg = progressDlg;
+            connect( fProgressDlg, &CDoubleProgressDlg::canceled,
+                     [ this ]()
+            {
+                clearProgressDlg();
+            } );
         }
 
         CBasePage::~CBasePage()
@@ -70,13 +80,7 @@ namespace NMediaManager
             settings.setValue( "Splitter", fImpl->vsplitter->saveState() );
         }
 
-        void CBasePage::setSetupProgressDlgFunc( std::function< std::shared_ptr< CDoubleProgressDlg >( const QString & title, const QString & cancelButtonText, int max ) > setupFunc, std::function< void() > clearFunc )
-        {
-            fSetupProgressFunc = setupFunc;
-            fClearProgressFunc = clearFunc;
-        }
-
-        std::shared_ptr< CDoubleProgressDlg > CBasePage::progressDlg() const
+        CDoubleProgressDlg * CBasePage::progressDlg() const
         {
             return fProgressDlg;
         }
@@ -93,25 +97,32 @@ namespace NMediaManager
 
         void CBasePage::clearProgressDlg()
         {
-            fProgressDlg = nullptr;
-            if ( fClearProgressFunc )
-                fClearProgressFunc();
+            fProgressDlg->reset();
+            fProgressDlg->hide();
         }
 
         void CBasePage::setupProgressDlg( const QString & title, const QString & cancelButtonText, int max )
         {
-            if ( fSetupProgressFunc )
-            {
-                fProgressDlg = fSetupProgressFunc( title, cancelButtonText, max );
-                fProgressDlg->setSingleProgressBarMode( !canRun() && !useSecondaryProgressBar() );
+            fProgressDlg->reset();
 
-                if ( canRun() && useSecondaryProgressBar() )
-                {
-                    fProgressDlg->setSecondaryProgressLabel( secondaryProgressLabel() );
-                    fProgressDlg->setSecondaryRange( 0, 100 );
-                    fProgressDlg->setSecondaryValue( 0 );
-                }
+            fProgressDlg->setSingleProgressBarMode( !canRun() || !useSecondaryProgressBar() );
+            if ( canRun() && useSecondaryProgressBar() )
+            {
+                fProgressDlg->setSecondaryProgressLabel( secondaryProgressLabel() );
+                fProgressDlg->setSecondaryRange( 0, 100 );
+                fProgressDlg->setSecondaryValue( 0 );
             }
+
+            fProgressDlg->setWindowModality( Qt::WindowModal );
+            fProgressDlg->setMinimumDuration( 0 );
+            fProgressDlg->setAutoClose( false );
+            fProgressDlg->setAutoReset( false );
+
+            fProgressDlg->setValue( 0 );
+            fProgressDlg->setWindowTitle( title );
+            fProgressDlg->setCancelButtonText( cancelButtonText );
+            fProgressDlg->setRange( 0, max );
+            fProgressDlg->show();
         }
 
         bool CBasePage::canRun() const
@@ -125,6 +136,7 @@ namespace NMediaManager
             emit sigStopStayAwake();
 
             postLoadFinished( canceled );
+            clearProgressDlg();
         }
 
         void CBasePage::slotProcessingStarted()
@@ -140,7 +152,9 @@ namespace NMediaManager
 
         void CBasePage::load()
         {
-            fModel.reset( createDirModel() );
+            if ( !fModel )
+                fModel.reset( createDirModel() );
+            fModel->clear();
             fImpl->filesView->setModel( fModel.get() );
             connect( fModel.get(), &NCore::CDirModel::sigDirReloaded, this, &CBasePage::slotLoadFinished );
             connect( fModel.get(), &NCore::CDirModel::sigProcessingStarted, this, &CBasePage::slotProcessingStarted );
@@ -162,7 +176,7 @@ namespace NMediaManager
             return QString();
         }
 
-        void CBasePage::postNonQueuedRun()
+        void CBasePage::postNonQueuedRun( bool /*finalStep*/ )
         {
 
         }
@@ -192,11 +206,10 @@ namespace NMediaManager
                     [ actionName, cancelName, this ]( int count )
                 {
                     setupProgressDlg( actionName, cancelName, count );
-                    return fProgressDlg;
                 },
-                    [ this ]( std::shared_ptr< CDoubleProgressDlg > dlg ) 
+                    [ this ]( bool finalStep )
                 { 
-                    postNonQueuedRun();
+                    postNonQueuedRun( finalStep );
                 }, this );
             }
         }

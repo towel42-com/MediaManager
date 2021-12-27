@@ -22,9 +22,6 @@
 
 #include "TransformMediaFileNamesPage.h"
 #include "SelectTMDB.h"
-//#include "TransformConfirm.h"
-//
-//
 #include "Core/Preferences.h"
 #include "Core/TransformModel.h"
 #include "Core/SearchResult.h"
@@ -34,7 +31,6 @@
 #include "SABUtils/QtUtils.h"
 #include "SABUtils/DoubleProgressDlg.h"
 
-//#include <QSettings>
 #include <QTimer>
 #include <QDir>
 #include <QTreeView>
@@ -73,10 +69,11 @@ namespace NMediaManager
             return dynamic_cast<NCore::CTransformModel *>(fModel.get());
         }
 
-        void CTransformMediaFileNamesPage::postNonQueuedRun()
+        void CTransformMediaFileNamesPage::postNonQueuedRun( bool finalStep )
         {
             emit sigStopStayAwake();
-            load();
+            if ( finalStep )
+                load();
         }
 
         void CTransformMediaFileNamesPage::setTreatAsTVByDefault( bool value )
@@ -101,12 +98,22 @@ namespace NMediaManager
             menu->setTitle( tr( "Context Menu" ) );
 
             auto nm = model()->index( idx.row(), NCore::EColumns::eFSName, idx.parent() ).data().toString();
-            menu->addAction( tr( "Search for '%1'..." ).arg( nm ), 
+            auto action = menu->addAction( tr( "Search for '%1'..." ).arg( nm ), 
                              [ idx, this ]()
             {
                 doubleClicked( idx );
             } );
+            menu->setDefaultAction( action );
 
+            auto searchResult = model()->getSearchResultInfo( idx );
+            if ( searchResult )
+            {
+                menu->addAction( tr( "Clear Search Result" ),
+                                 [ idx, this ]()
+                {
+                    model()->clearSearchResult( idx );
+                } );
+            }
             return menu;
         }
 
@@ -126,11 +133,8 @@ namespace NMediaManager
             Q_ASSERT( filesView()->model() == model() );
             fSearchTMDB->resetResults();
 
-            if ( fSetupProgressFunc )
-            {
-                auto count = NQtUtils::itemCount( model(), true );
-                fSetupProgressFunc( tr( "Finding Results" ), tr( "Cancel" ), count );
-            }
+            auto count = NQtUtils::itemCount( model(), true );
+            setupProgressDlg( tr( "Finding Results" ), tr( "Cancel" ), count );
 
             auto rootIdx = model()->index( 0, 0 );
             bool somethingToSearchFor = autoSearchForNewNames( rootIdx );
@@ -185,7 +189,6 @@ namespace NMediaManager
         {
             auto result = fSearchTMDB->getResult( path );
 
-            //qDebug().noquote().nospace() << "Search results for path " << path << " Has Result? " << ( ( results.size() == 1 ) ? "Yes" : "No" );
             if ( searchesRemaining )
             {
                 if ( fProgressDlg )

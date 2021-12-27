@@ -705,8 +705,8 @@ namespace NMediaManager
             fProcessResults.second = std::make_shared< QStandardItemModel >();
             if ( progressDlg() )
             {
-                disconnect( progressDlg().get(), &CDoubleProgressDlg::canceled, this, &CDirModel::slotProgressCanceled );
-                connect( progressDlg().get(), &CDoubleProgressDlg::canceled, this, &CDirModel::slotProgressCanceled );
+                disconnect( progressDlg(), &CDoubleProgressDlg::canceled, this, &CDirModel::slotProgressCanceled );
+                connect( progressDlg(), &CDoubleProgressDlg::canceled, this, &CDirModel::slotProgressCanceled );
             }
 
             fProcessResults.first = process( invisibleRootItem(), displayOnly, nullptr );
@@ -747,19 +747,25 @@ namespace NMediaManager
             return dlg.exec() == QDialog::Accepted;
         }
 
-        bool CDirModel::process( const std::function< std::shared_ptr< CDoubleProgressDlg >( int count ) > & startProgress, const std::function< void( std::shared_ptr< CDoubleProgressDlg > ) > & endProgress, QWidget * parent )
+        void CDirModel::clear()
         {
-            progressDlg() = startProgress( 0 );
+            fPathMapping.clear();
+            QStandardItemModel::clear();
+        }
+
+        bool CDirModel::process( const std::function< void( int count ) > & startProgress, const std::function< void( bool finalStep ) > & endProgress, QWidget * parent )
+        {
+            startProgress( 0 );
             process( true );
             if ( fProcessResults.second && fProcessResults.second->rowCount() == 0 )
             {
                 QMessageBox::information( parent, tr( "Nothing to change" ), tr( "No files or directories could be processed" ) );
-                endProgress( progressDlg() );
+                endProgress( true );
                 return false;
             }
 
             bool continueOn = showProcessResults( tr( "Process:" ), tr( "Proceed?" ), QMessageBox::Information, QDialogButtonBox::Yes | QDialogButtonBox::No, parent );
-            endProgress( progressDlg() );
+            endProgress( false );
             if ( !continueOn )
             {
                 emit sigProcessesFinished( false, true, false );
@@ -768,14 +774,14 @@ namespace NMediaManager
 
             int count = computeNumberOfItems();
 
-            progressDlg() = startProgress( count * eventsPerPath() );
+            startProgress( count * eventsPerPath() );
             emit sigProcessingStarted();
             process( false );
             if ( !fProcessResults.first )
             {
                 showProcessResults( tr( "Error While Processing:" ), tr( "Issues:" ), QMessageBox::Critical, QDialogButtonBox::Ok, parent );
             }
-            endProgress( progressDlg() );
+            endProgress( !usesQueuedProcessing() );
             return fProcessResults.first;
         }
 
@@ -1094,7 +1100,7 @@ namespace NMediaManager
             return fBasePage->log();
         }
         
-        std::shared_ptr< CDoubleProgressDlg > CDirModel::progressDlg() const
+        CDoubleProgressDlg * CDirModel::progressDlg() const
         {
             return fBasePage->progressDlg();
         }

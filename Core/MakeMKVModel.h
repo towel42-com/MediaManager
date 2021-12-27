@@ -49,6 +49,10 @@ namespace NMediaManager
             virtual bool preFileFunction( const QFileInfo & fileInfo, std::unordered_set<QString> & alreadyAdded, TParentTree & tree );
 
             virtual void attachTreeNodes( QStandardItem * /*nextParent*/, QStandardItem * /*prevParent*/, const STreeNode & /*treeNode*/ );
+
+            virtual bool usesQueuedProcessing() const { return true; }
+
+            int64_t getNumberOfSeconds( const QString & fileName ) const;
         };
     }
 }

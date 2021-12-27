@@ -50,6 +50,7 @@ namespace NMediaManager
             void setSearchResult( const QModelIndex & idx, std::shared_ptr< SSearchResult > info, bool applyToChilren );
             void setSearchResult( QStandardItem * item, std::shared_ptr< SSearchResult > info, bool applyToChilren );
             std::shared_ptr< SSearchResult > getSearchResultInfo( const QModelIndex & idx ) const;
+            void clearSearchResult( const QModelIndex & idx );
 
             bool treatAsTVShow( const QFileInfo & fileInfo, bool defaultValue ) const;
             virtual bool setData( const QModelIndex & idx, const QVariant & value, int role ) override;
@@ -79,6 +80,8 @@ namespace NMediaManager
             // model overrides during iteration
             virtual void postFileFunction( bool /*aOK*/, const QFileInfo & /*fileInfo*/ );
             virtual bool preFileFunction( const QFileInfo & /*fileInfo*/, std::unordered_set<QString> & /*alreadyAdded*/, TParentTree & /*tree*/ );
+
+            virtual bool usesQueuedProcessing() const { return false; }
 
             std::pair< bool, QStandardItem * > processItem( const QStandardItem * item, QStandardItem * parentItem, bool displayOnly ) const override;
             QStandardItem * getTransformItem( const QStandardItem * parent ) const;

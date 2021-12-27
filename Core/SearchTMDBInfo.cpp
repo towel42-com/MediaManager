@@ -242,8 +242,18 @@ namespace NMediaManager
             auto match = regExp.match( fSearchName );
             if ( match.hasMatch() )
             {
+                bool tooOld = false;
                 fReleaseDate = smartTrim( match.captured( "releaseDate" ) );
-                fSearchName.replace( match.capturedStart( "fulltext" ), match.capturedLength( "fulltext" ), "" );
+                bool aOK = false;
+                int tmp = fReleaseDate.toInt( &aOK );
+                if ( aOK )
+                {
+                    tooOld = (fReleaseDate.length() == 4) && (tmp < 1900);
+                }
+                if ( !tooOld )
+                    fSearchName.replace( match.capturedStart( "fulltext" ), match.capturedLength( "fulltext" ), "" );
+                else
+                    fReleaseDate.clear();
             }
 
             regExp = QRegularExpression( "(?<fulltext>\\[tmdbid=(?<tmdbid>\\d+)\\])" );

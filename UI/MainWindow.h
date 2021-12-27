@@ -86,16 +86,13 @@ namespace NMediaManager
             bool isMakeMKVActive() const;
             bool isBIFViewerActive() const;
 
-            void setupProgressDlg( const QString &title, const QString &cancelButtonText, int max );
-            void clearProgressDlg();
-
             void loadSettings();
             void saveSettings();
 
             std::unique_ptr< Ui::CMainWindow > fImpl;
             CCompleterFileSystemModel * fDirModel{ nullptr };
             CCompleterFileSystemModel * fFileModel{ nullptr };
-            std::shared_ptr< CDoubleProgressDlg > fProgressDlg;
+            CDoubleProgressDlg * fProgressDlg{ nullptr };
             NUtils::CStayAwake * fStayAwake{ nullptr };
         };
     }

@@ -24,6 +24,7 @@
 
 #include "Core/Preferences.h"
 #include "Core/MakeMKVModel.h"
+#include "SABUtils/DoubleProgressDlg.h"
 
 namespace NMediaManager
 {
@@ -32,7 +33,6 @@ namespace NMediaManager
         CMakeMKVPage::CMakeMKVPage( QWidget * parent )
             : CBasePage( "Make MKV", parent )
         {
-            postInit();
         }
 
         CMakeMKVPage::~CMakeMKVPage()
@@ -51,7 +51,7 @@ namespace NMediaManager
 
         QString CMakeMKVPage::secondaryProgressLabel() const
         {
-            return tr( "Current Movie:" );
+            return tr( "Current Times (seconds):" );
         }
 
         QString CMakeMKVPage::loadTitleName() const
@@ -77,6 +77,50 @@ namespace NMediaManager
         QString CMakeMKVPage::actionErrorName() const
         {
             return tr( "Error While Creating MKV:" );
+        }
+
+        void CMakeMKVPage::postProcessLog( const QString & string )
+        {
+            // time=00:00:00.00
+            auto regEx = QRegularExpression( "[Tt]ime\\=\\s*(?<hours>\\d{2}):(?<mins>\\d{2}):(?<secs>\\d{2})" );
+            auto match = regEx.match( string );
+            QString hours;
+            QString mins;
+            QString secs;
+            while ( match.hasMatch() )
+            {
+                hours = match.captured( "hours" );
+                mins = match.captured( "mins" );
+                secs = match.captured( "secs" );
+                match = regEx.match( string, match.capturedEnd() + 1 );
+            }
+
+            int numSeconds = 0;
+            if ( !hours.isEmpty() )
+            {
+                bool aOK;
+                int curr = hours.toInt( &aOK );
+                if ( aOK )
+                    numSeconds += curr * 60 * 60;
+            }
+            
+            if ( !mins.isEmpty() )
+            {
+                bool aOK;
+                int curr = mins.toInt( &aOK );
+                if ( aOK )
+                    numSeconds += curr * 60;
+            }
+
+            if ( !secs.isEmpty() )
+            {
+                bool aOK;
+                int curr = secs.toInt( &aOK );
+                if ( aOK )
+                    numSeconds += curr;
+            }
+        
+            progressDlg()->setSecondaryValue( numSeconds );
         }
     }
 }

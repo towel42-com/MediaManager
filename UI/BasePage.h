@@ -55,11 +55,10 @@ namespace NMediaManager
             virtual void run();
             virtual bool canRun() const;
 
+            virtual void setProgressDlg( CDoubleProgressDlg * progressDlg );
             virtual void postInit();
 
-            void setSetupProgressDlgFunc( std::function< std::shared_ptr< CDoubleProgressDlg >( const QString &title, const QString &cancelButtonText, int max ) > setupFunc, std::function< void() > clearFunc );
-
-            std::shared_ptr< CDoubleProgressDlg > progressDlg() const;
+            CDoubleProgressDlg * progressDlg() const;
             QTreeView * filesView() const;
             QPlainTextEdit * log() const;
 
@@ -95,11 +94,13 @@ namespace NMediaManager
             virtual QString actionTitleName() const = 0;
             virtual QString actionCancelName() const = 0;
             virtual QString actionErrorName() const = 0;
-            virtual void postNonQueuedRun();
+            virtual void postNonQueuedRun( bool finalStep );
             virtual void postLoadFinished( bool /*canceled*/ ) {}
             virtual void setupModel();
 
-            void setupProgressDlg( const QString &title, const QString &cancelButtonText, int max );
+            void setupProgressDlg( const QString & title, const QString & cancelButtonText, int max );
+
+
             void clearProgressDlg();
 
             virtual void loadSettings();
@@ -108,10 +109,7 @@ namespace NMediaManager
             QString fPageName;
             QString fDirName;
             
-            std::function< std::shared_ptr< CDoubleProgressDlg >( const QString & title, const QString & cancelButtonText, int max ) > fSetupProgressFunc;
-            std::function< void() > fClearProgressFunc;
-
-            std::shared_ptr< CDoubleProgressDlg > fProgressDlg;
+            CDoubleProgressDlg * fProgressDlg{ nullptr };
             std::unique_ptr< NCore::CDirModel > fModel;
             std::unique_ptr< Ui::CBasePage > fImpl;
         };

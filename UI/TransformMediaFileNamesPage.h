@@ -61,7 +61,7 @@ namespace NMediaManager
             virtual void setupModel() override;
 
             virtual void postLoadFinished( bool canceled ) override;
-            virtual void postNonQueuedRun() override;
+            virtual void postNonQueuedRun( bool finalStep ) override;
 
             void setExactMatchesOnly( bool value );
             void setTreatAsTVByDefault( bool value );

@@ -85,8 +85,15 @@ namespace NMediaManager
             fImpl( new Ui::CMainWindow )
         {
             fImpl->setupUi( this );
+            fProgressDlg = new CDoubleProgressDlg( this );
+
+            fImpl->mergeSRTPage->setProgressDlg( fProgressDlg );
+            fImpl->makeMKVPage->setProgressDlg( fProgressDlg );
+            fImpl->transformMediaFileNamesPage->setProgressDlg( fProgressDlg );
+
             fImpl->mergeSRTPage->postInit();
             fImpl->makeMKVPage->postInit();
+            fImpl->transformMediaFileNamesPage->postInit();
 
 
             fImpl->directory->setDelay( 1000 );
@@ -145,48 +152,15 @@ namespace NMediaManager
             connect( fImpl->tabWidget, &QTabWidget::currentChanged, this, &CMainWindow::slotWindowChanged );
 
             loadSettings();
-
-            fImpl->transformMediaFileNamesPage->setSetupProgressDlgFunc(
-                [ this ]( const QString & title, const QString & cancelButtonText, int max )
-            {
-                setupProgressDlg( title, cancelButtonText, max );
-                return fProgressDlg;
-            },
-                [ this ]()
-            {
-                clearProgressDlg();
-            }
-            );
+            
             connect( fImpl->transformMediaFileNamesPage, &CTransformMediaFileNamesPage::sigLoadFinished, this, &CMainWindow::slotLoadFinished );
             connect( fImpl->transformMediaFileNamesPage, &CTransformMediaFileNamesPage::sigStartStayAwake, this, &CMainWindow::slotStartStayAwake );
             connect( fImpl->transformMediaFileNamesPage, &CTransformMediaFileNamesPage::sigStopStayAwake, this, &CMainWindow::slotStopStayAwake );
 
-            fImpl->makeMKVPage->setSetupProgressDlgFunc(
-                [ this ]( const QString & title, const QString & cancelButtonText, int max )
-            {
-                setupProgressDlg( title, cancelButtonText, max );
-                return fProgressDlg;
-            },
-                [ this ]()
-            {
-                clearProgressDlg();
-            }
-            );
             connect( fImpl->makeMKVPage, &CMakeMKVPage::sigLoadFinished, this, &CMainWindow::slotLoadFinished );
             connect( fImpl->makeMKVPage, &CMakeMKVPage::sigStartStayAwake, this, &CMainWindow::slotStartStayAwake );
             connect( fImpl->makeMKVPage, &CMakeMKVPage::sigStopStayAwake, this, &CMainWindow::slotStopStayAwake );
 
-            fImpl->mergeSRTPage->setSetupProgressDlgFunc(
-                [ this ]( const QString & title, const QString & cancelButtonText, int max )
-            {
-                setupProgressDlg( title, cancelButtonText, max );
-                return fProgressDlg;
-            },
-                [ this ]()
-            {
-                clearProgressDlg();
-            }
-            );
             connect( fImpl->mergeSRTPage, &CMergeSRTPage::sigLoadFinished, this, &CMainWindow::slotLoadFinished );
             connect( fImpl->mergeSRTPage, &CMergeSRTPage::sigStartStayAwake, this, &CMainWindow::slotStartStayAwake );
             connect( fImpl->mergeSRTPage, &CMergeSRTPage::sigStopStayAwake, this, &CMainWindow::slotStopStayAwake );
@@ -345,42 +319,6 @@ namespace NMediaManager
             }
         }
 
-        void CMainWindow::clearProgressDlg()
-        {
-            fProgressDlg->close();
-            fProgressDlg->reset();
-            fImpl->actionOpen->setEnabled( true );
-        }
-
-        void CMainWindow::setupProgressDlg( const QString & title, const QString & cancelButtonText, int max )
-        {
-            fImpl->actionOpen->setEnabled( false );
-            if ( fProgressDlg )
-                fProgressDlg->reset();
-
-            if ( !fProgressDlg )
-            {
-                fProgressDlg = std::make_shared< CDoubleProgressDlg >();
-            }
-            fProgressDlg->setWindowModality( Qt::WindowModal );
-            fProgressDlg->setMinimumDuration( 0 );
-            fProgressDlg->setAutoClose( false );
-            fProgressDlg->setAutoReset( false );
-            fProgressDlg->setSingleProgressBarMode( true );
-
-            fProgressDlg->setValue( 0 );
-            fProgressDlg->setWindowTitle( title );
-            fProgressDlg->setCancelButtonText( cancelButtonText );
-            fProgressDlg->setRange( 0, max );
-            fProgressDlg->show();
-
-            connect( fProgressDlg.get(), &CDoubleProgressDlg::canceled,
-                     [ this ]()
-            {
-                fImpl->actionOpen->setEnabled( true );
-            } );
-        }
-
         void CMainWindow::slotExactMatchesOnly()
         {
             fImpl->transformMediaFileNamesPage->setExactMatchesOnly( fImpl->actionExactMatchesOnly->isChecked() );
@@ -426,7 +364,6 @@ namespace NMediaManager
         {
             (void)canceled;
             validateRunAction();
-            clearProgressDlg();
         }
 
         void CMainWindow::slotLoad()

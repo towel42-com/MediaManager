@@ -22,7 +22,10 @@
 
 #include "MakeMKVModel.h"
 #include "Preferences.h"
+#include "SABUtils/DoubleProgressDlg.h"
 #include "SABUtils/FileUtils.h"
+#include "SABUtils/QtUtils.h"
+
 #include <QDir>
 #include <QTimer>
 
@@ -38,6 +41,43 @@ namespace NMediaManager
         CMakeMKVModel::~CMakeMKVModel()
         {
         }
+
+        int64_t CMakeMKVModel::getNumberOfSeconds( const QString & fileName ) const
+        {
+            QFileInfo fi( fileName );
+            if ( !fi.exists() || !fi.isReadable() || !fi.isFile() )
+                return 0;
+
+            auto ffprobe = NCore::CPreferences::instance()->getFFProbeEXE();
+
+            fi = QFileInfo( ffprobe );
+            if ( !fi.exists() || !fi.isReadable() || !fi.isExecutable() || !fi.isFile() )
+                return 0;
+
+            auto args = QStringList()
+                << "-v" << "error"
+                << "-show_entries"  << "format=duration"
+                << "-of" << "default=noprint_wrappers=1:nokey=1"
+                << fileName
+                ;
+
+            QProcess process;
+            process.start( ffprobe, args );
+
+            if ( !process.waitForFinished( -1 ) || (process.exitStatus() != QProcess::NormalExit) || (process.exitCode() != 0) )
+            {
+                return 0;
+            }
+            auto out = process.readAllStandardOutput();
+            auto pos = out.indexOf( '.' );
+            out = out.left( pos );
+            bool aOK;
+            int retVal = out.toInt( &aOK );
+            if ( !aOK )
+                return 0;
+            return retVal;
+        }
+
 
 
         std::pair< bool, QStandardItem * > CMakeMKVModel::processItem( const QStandardItem * item, QStandardItem * parentItem, bool displayOnly ) const
@@ -62,6 +102,9 @@ namespace NMediaManager
             fFirstProcess = true;
             if ( !displayOnly )
             {
+                int numSeconds = getNumberOfSeconds( processInfo.fOldName );
+                progressDlg()->setSecondaryMaximum( numSeconds );
+
                 processInfo.fCmd = CPreferences::instance()->getFFMpegEXE();
                 if ( processInfo.fCmd.isEmpty() || !QFileInfo( processInfo.fCmd ).isExecutable() )
                 {
@@ -127,7 +170,7 @@ namespace NMediaManager
 
         int CMakeMKVModel::computeNumberOfItems() const
         {
-            return 0;
+            return NQtUtils::itemCount( fProcessResults.second.get(), true );
         }
 
         void CMakeMKVModel::postFileFunction( bool /*aOK*/, const QFileInfo & /*fileInfo*/ )
