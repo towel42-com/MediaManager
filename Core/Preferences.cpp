@@ -22,6 +22,7 @@
 
 #include "Preferences.h"
 #include "LanguageInfo.h"
+#include "SABUtils/QtUtils.h"
 
 #include <QSettings>
 #include <QStringListModel>
@@ -29,6 +30,7 @@
 #include <QFileInfo>
 #include <QRegularExpression>
 #include <QMap>
+#include <QDir>
 #include <QVariant>
 #include <QString>
 
@@ -40,19 +42,17 @@ namespace NMediaManager
     namespace NCore
     {
 
-        CPreferences *CPreferences::instance()
+        CPreferences * CPreferences::instance()
         {
             static CPreferences retVal;
             return &retVal;
         }
 
         CPreferences::CPreferences()
-        {
-        }
+        {}
 
         CPreferences::~CPreferences()
-        {
-        }
+        {}
 
         //QString CPreferences::getDefaultInPattern( bool forTV ) const
         //{
@@ -82,32 +82,32 @@ namespace NMediaManager
         void CPreferences::setTreatAsTVShowByDefault( bool value )
         {
             QSettings settings;
-            settings.beginGroup("Transform");
+            settings.beginGroup( "Transform" );
             return settings.setValue( "TreatAsTVShowByDefault", value );
         }
 
         bool CPreferences::getTreatAsTVShowByDefault() const
         {
             QSettings settings;
-            settings.beginGroup("Transform");
+            settings.beginGroup( "Transform" );
             return settings.value( "TreatAsTVShowByDefault", false ).toBool();
         }
 
         void CPreferences::setExactMatchesOnly( bool value )
         {
             QSettings settings;
-            settings.beginGroup("Transform");
+            settings.beginGroup( "Transform" );
             return settings.setValue( "ExactMatchesOnly", value );
         }
 
         bool CPreferences::getExactMatchesOnly() const
         {
             QSettings settings;
-            settings.beginGroup("Transform");
+            settings.beginGroup( "Transform" );
             return settings.value( "ExactMatchesOnly", true ).toBool();
         }
 
-        void CPreferences::setDirectories( const QStringList &dir )
+        void CPreferences::setDirectories( const QStringList & dir )
         {
             QSettings settings;
             settings.setValue( "Directories", dir );
@@ -121,7 +121,7 @@ namespace NMediaManager
             return retVal;
         }
 
-        void CPreferences::setFileNames( const QStringList &dir )
+        void CPreferences::setFileNames( const QStringList & dir )
         {
             QSettings settings;
             settings.setValue( "FileNames", dir );
@@ -135,80 +135,156 @@ namespace NMediaManager
             return retVal;
         }
 
-        void CPreferences::setTVOutFilePattern( const QString &value )
+        void CPreferences::setTVOutFilePattern( const QString & value )
         {
             QSettings settings;
-            settings.beginGroup("Transform");
-            settings.beginGroup("ForTV");
+            settings.beginGroup( "Transform" );
+            settings.beginGroup( "ForTV" );
             settings.setValue( "OutFilePattern", value );
         }
 
         QString CPreferences::getTVOutFilePattern() const
         {
             QSettings settings;
-            settings.beginGroup("Transform");
+            settings.beginGroup( "Transform" );
             settings.beginGroup( "ForTV" );
 
             return settings.value( "OutFilePattern", getDefaultOutFilePattern( true ) ).toString();
         }
 
-        void CPreferences::setTVOutDirPattern( const QString &value )
+        void CPreferences::setTVOutDirPattern( const QString & value )
         {
             QSettings settings;
-            settings.beginGroup("Transform");
-            settings.beginGroup("ForTV");
+            settings.beginGroup( "Transform" );
+            settings.beginGroup( "ForTV" );
             settings.setValue( "OutDirPattern", value );
         }
 
         QString CPreferences::getTVOutDirPattern() const
         {
             QSettings settings;
-            settings.beginGroup("Transform");
+            settings.beginGroup( "Transform" );
             settings.beginGroup( "ForTV" );
 
             return settings.value( "OutDirPattern", getDefaultOutDirPattern( true ) ).toString();
         }
 
-        void CPreferences::setMovieOutFilePattern( const QString &value )
+        void CPreferences::setMovieOutFilePattern( const QString & value )
         {
             QSettings settings;
-            settings.beginGroup("Transform");
-            settings.beginGroup("ForMovies");
+            settings.beginGroup( "Transform" );
+            settings.beginGroup( "ForMovies" );
             settings.setValue( "OutFilePattern", value );
         }
 
         QString CPreferences::getMovieOutFilePattern() const
         {
             QSettings settings;
-            settings.beginGroup("Transform");
+            settings.beginGroup( "Transform" );
             settings.beginGroup( "ForMovies" );
 
             return settings.value( "OutFilePattern", getDefaultOutFilePattern( false ) ).toString();
         }
 
-        void CPreferences::setMovieOutDirPattern( const QString &value )
+        void CPreferences::setMovieOutDirPattern( const QString & value )
         {
             QSettings settings;
-            settings.beginGroup("Transform");
-            settings.beginGroup("ForMovies");
+            settings.beginGroup( "Transform" );
+            settings.beginGroup( "ForMovies" );
             settings.setValue( "OutDirPattern", value );
         }
 
         QString CPreferences::getMovieOutDirPattern() const
         {
             QSettings settings;
-            settings.beginGroup("Transform");
+            settings.beginGroup( "Transform" );
             settings.beginGroup( "ForMovies" );
 
             return settings.value( "OutDirPattern", getDefaultOutDirPattern( false ) ).toString();
         }
 
+        bool CPreferences::isIgnoredPath( const QFileInfo & fileInfo )
+        {
+            if ( fileInfo.isDir() )
+                return isIgnoredDirName( fileInfo );
+            else if ( fileInfo.isFile() )
+                return isIgnoredFileName( fileInfo );
+            else
+                return isIgnoredDirName( fileInfo ) || isIgnoredFileName( fileInfo );
+        }
+
+        bool CPreferences::isIgnoredDirName( const QFileInfo & fileInfo )
+        {
+            QString dirName;
+            if ( fileInfo.isDir() )
+                dirName = fileInfo.fileName();
+            else
+                dirName = fileInfo.absoluteDir().dirName();
+
+#ifdef Q_OS_WINDOWS
+            dirName = dirName.toLower();
+#endif
+
+            auto values = getIgnoredDirectories();
+            auto ignoredDirs = NSABUtils::hashFromList( values );
+            return ignoredDirs.find( dirName ) != ignoredDirs.end();
+        }
+
+        bool CPreferences::isIgnoredFileName( const QFileInfo & fileInfo )
+        {
+            QString fileName = fileInfo.fileName();
+#ifdef Q_OS_WINDOWS
+            fileName = fileName.toLower();
+#endif
+            auto values = getIgnoredFileNames();
+            auto ignoredFileNames = NSABUtils::hashFromList( values );
+            return ignoredFileNames.find( fileName ) != ignoredFileNames.end();
+        }
+
+        void CPreferences::setIgnoredDirectories( const QStringList & values )
+        {
+            QSettings settings;
+            settings.beginGroup( "Transform" );
+            QStringList realValues = values;
+#ifdef Q_OS_WINDOWS
+            for ( auto && ii : realValues )
+                ii = ii.toLower();
+#endif
+            settings.setValue( "IgnoredDirs", realValues );
+        }
+
+        QStringList CPreferences::getIgnoredDirectories() const
+        {
+            QSettings settings;
+            settings.beginGroup( "Transform" );
+            static auto defaultValues = QStringList( { "#recycle", "#recycler", "extras", "sub", "subs" } );
+            return settings.value( "IgnoredDirs", defaultValues ).toStringList();
+        }
+
+        void CPreferences::setIgnoredFileNames( const QStringList & values )
+        {
+            QSettings settings;
+            settings.beginGroup( "Transform" );
+            QStringList realValues = values;
+#ifdef Q_OS_WINDOWS
+            for ( auto && ii : realValues )
+                ii = ii.toLower();
+#endif
+            settings.setValue( "IgnoredFileNames", realValues );
+        }
+
+        QStringList CPreferences::getIgnoredFileNames() const
+        {
+            QSettings settings;
+            settings.beginGroup( "Transform" );
+            static auto defaultValues = QStringList( { "sub", "subs" } );
+            return settings.value( "IgnoredFileNames", defaultValues ).toStringList();
+        }
         void CPreferences::setMediaExtensions( const QString &value )
         {
             QSettings settings;
             settings.beginGroup("Transform");
             settings.setValue( "MediaExtensions", value );
-
         }
 
         void CPreferences::setMediaExtensions( const QStringList &value )
@@ -565,42 +641,34 @@ namespace NMediaManager
 
         bool CPreferences::isMediaFile( const QFileInfo &fi ) const
         {
-            static std::optional< std::unordered_set< QString > > extensions;
-            if ( !extensions.has_value() )
+            auto suffixes = getMediaExtensions();
+            for ( auto && ii : suffixes )
             {
-                auto suffixes = getMediaExtensions();
-                for ( auto &&ii : suffixes )
-                {
-                    auto pos = ii.lastIndexOf( '.' );
-                    ii = ii.mid( pos + 1 );
-                }
-                extensions = { suffixes.begin(), suffixes.end() };
+                auto pos = ii.lastIndexOf( '.' );
+                ii = ii.mid( pos + 1 );
             }
+            auto extensions = NSABUtils::hashFromList( suffixes );
 
             auto suffix = fi.suffix();
-            return ( extensions.value().find( suffix ) != extensions.value().end() );
+            return (extensions.find( suffix ) != extensions.end());
         }
 
         // only return true for X_Lang.srt files or subs directories
-        bool CPreferences::isSubtitleFile( const QFileInfo &fi, bool *isLangFileFormat ) const
+        bool CPreferences::isSubtitleFile( const QFileInfo & fi, bool * isLangFileFormat ) const
         {
             if ( isLangFileFormat )
                 *isLangFileFormat = false;
 
-            static std::optional< std::unordered_set< QString > > extensions;
-            if ( !extensions.has_value() )
+            auto exts = CPreferences::instance()->getSubtitleExtensions();
+            for ( auto && ii : exts )
             {
-                auto exts = CPreferences::instance()->getSubtitleExtensions();
-                for ( auto &&ii : exts )
-                {
-                    auto pos = ii.lastIndexOf( '.' );
-                    ii = ii.mid( pos + 1 );
-                }
-                extensions = { exts.begin(), exts.end() };
+                auto pos = ii.lastIndexOf( '.' );
+                ii = ii.mid( pos + 1 );
             }
+            auto extensions = NSABUtils::hashFromList( exts );
 
             auto suffix = fi.suffix();
-            if ( extensions.value().find( suffix ) == extensions.value().end() )
+            if ( extensions.find( suffix ) == extensions.end() )
                 return false;
 
             if ( isLangFileFormat )

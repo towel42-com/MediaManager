@@ -31,6 +31,8 @@ namespace NSABUtils
 }
 class QStringListModel;
 class QLineEdit;
+class QListView;
+class QTreeWidgetItem;
 namespace NMediaManager
 {
     namespace NUi
@@ -50,6 +52,10 @@ namespace NMediaManager
             void slotDelExtraString();
             void slotAddAbbreviation();
             void slotDelAbbreviation();
+            void slotAddIgnoreFileName();
+            void slotDelIgnoreFileName();
+            void slotAddIgnoreDir();
+            void slotDelIgnoreDir();
 
             void slotSelectMKVMergeExe();
             void slotSelectMKVPropEditExe();
@@ -59,6 +65,9 @@ namespace NMediaManager
             void slotFFToolChanged();
             void slotMKVNixToolChanged();
 
+            void slotPageSelectorCurrChanged( QTreeWidgetItem * current, QTreeWidgetItem * previous );
+            void slotPageSelectorItemActived( QTreeWidgetItem * item );
+            void slotPageSelectorSelectionChanged();
             void accept() override;
         private:
             void mkvnixToolChanged( QLineEdit * le );
@@ -68,10 +77,15 @@ namespace NMediaManager
             void saveSettings();
 
             void updateOtherTool( QObject * sender, const std::pair< QLineEdit *, QString > & lhs, const std::pair< QLineEdit *, QString > & rhs );
+            void addString( const QString & title, const QString & label, QStringListModel * model, QListView * listView );
+            void delString( QStringListModel * listModel, QListView * listView );
 
             QStringListModel * fKnownStringModel{ nullptr };
             QStringListModel * fExtraStringModel{ nullptr };
             NSABUtils::CKeyValuePairModel * fAbbreviationsModel{ nullptr };
+            QStringListModel * fIgnoreDirNamesModel{ nullptr };
+            QStringListModel * fIgnoreFileNamesModel{ nullptr };
+            std::unordered_map< QString, QWidget * > fPageMap;
             std::unique_ptr< Ui::CPreferences > fImpl;
         };
     }

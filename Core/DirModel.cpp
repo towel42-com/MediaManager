@@ -101,9 +101,6 @@ namespace NMediaManager
             fTimer->setSingleShot( true );
             connect( fTimer, &QTimer::timeout, this, &CDirModel::slotLoadRootDirectory );
 
-            fExcludedDirNames = { "#recycle", "#recycler", "extras" };
-            fIgnoredNames = { "sub", "subs" };
-
             fProcess = new QProcess( this );
             connect( fProcess, &QProcess::errorOccurred, this, &CDirModel::slotProcessErrorOccured );
             connect( fProcess, qOverload< int, QProcess::ExitStatus >( &QProcess::finished ), this, &CDirModel::slotProcessFinished );
@@ -394,20 +391,19 @@ namespace NMediaManager
         {
             auto fn = ii.fileName().toLower();
 
-            return fn.endsWith( "-ignore" ) || (fExcludedDirNames.find( fn ) != fExcludedDirNames.end());
+            return fn.endsWith( "-ignore" ) || NCore::CPreferences::instance()->isIgnoredPath( ii );
         }
 
         bool CDirModel::isIgnoredPathName( const QFileInfo & ii ) const
         {
             auto fn = ii.fileName().toLower();
-            return fn.contains( "-ignore" ) || (fIgnoredNames.find( fn ) != fIgnoredNames.end());
+            return fn.contains( "-ignore" ) || NCore::CPreferences::instance()->isIgnoredPath( ii );
         }
 
         STreeNode CDirModel::getItemRow( const QFileInfo & fileInfo ) const
         {
             return STreeNode( fileInfo, this );
         }
-
 
         QStandardItem * STreeNodeItem::createStandardItem() const
         {

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>880</width>
+    <width>710</width>
     <height>594</height>
    </rect>
   </property>
@@ -14,7 +14,85 @@
    <string>Preferences</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
-   <item row="1" column="0" colspan="2">
+   <item row="0" column="0">
+    <widget class="QTreeWidget" name="pageSelector">
+     <property name="alternatingRowColors">
+      <bool>true</bool>
+     </property>
+     <property name="itemsExpandable">
+      <bool>true</bool>
+     </property>
+     <attribute name="headerVisible">
+      <bool>false</bool>
+     </attribute>
+     <column>
+      <property name="text">
+       <string>Name</string>
+      </property>
+     </column>
+     <item>
+      <property name="text">
+       <string>Extensions</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Known Strings</string>
+      </property>
+      <item>
+       <property name="text">
+        <string>Remove from Paths</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Extended/Extra Information</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Known Abbreviations</string>
+       </property>
+      </item>
+     </item>
+     <item>
+      <property name="text">
+       <string>Ignored</string>
+      </property>
+      <item>
+       <property name="text">
+        <string>Directory Names</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>File Names</string>
+       </property>
+      </item>
+     </item>
+     <item>
+      <property name="text">
+       <string>Transformation Settings</string>
+      </property>
+      <item>
+       <property name="text">
+        <string>TV Shows</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Movies</string>
+       </property>
+      </item>
+     </item>
+     <item>
+      <property name="text">
+       <string>External Tools</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="1" column="1" colspan="2">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -24,18 +102,19 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="0">
-    <widget class="QTabWidget" name="tabWidget">
+   <item row="0" column="1">
+    <widget class="QStackedWidget" name="stackedWidget">
      <property name="currentIndex">
-      <number>5</number>
+      <number>0</number>
      </property>
-     <widget class="QWidget" name="tab_5">
-      <attribute name="title">
-       <string>General</string>
-      </attribute>
+     <widget class="QWidget" name="extensionsPage">
       <layout class="QGridLayout" name="gridLayout_8">
-       <item row="1" column="1">
-        <widget class="QLineEdit" name="subtitleExtensions"/>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Subtitle Extensions:</string>
+         </property>
+        </widget>
        </item>
        <item row="0" column="1">
         <widget class="QLineEdit" name="mediaExtensions">
@@ -47,20 +126,6 @@
          </property>
          <property name="text">
           <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_5">
-         <property name="text">
-          <string>Media Extensions:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="label_2">
-         <property name="text">
-          <string>Subtitle Extensions:</string>
          </property>
         </widget>
        </item>
@@ -77,12 +142,19 @@
          </property>
         </spacer>
        </item>
+       <item row="1" column="1">
+        <widget class="QLineEdit" name="subtitleExtensions"/>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>Media Extensions:</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab_6">
-      <attribute name="title">
-       <string>Known Strings</string>
-      </attribute>
+     <widget class="QWidget" name="removeFromPathsPage">
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
         <widget class="QGroupBox" name="groupBox">
@@ -131,6 +203,10 @@
          </layout>
         </widget>
        </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="extendedInfoPage">
+      <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
         <widget class="QGroupBox" name="groupBox_2">
          <property name="title">
@@ -178,6 +254,10 @@
          </layout>
         </widget>
        </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="abbreviationsPage">
+      <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
         <widget class="QGroupBox" name="groupBox_3">
          <property name="title">
@@ -227,10 +307,109 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab">
-      <attribute name="title">
-       <string>Transformation Settings</string>
-      </attribute>
+     <widget class="QWidget" name="ignoreDirPage">
+      <layout class="QVBoxLayout" name="verticalLayout_5">
+       <item>
+        <widget class="QGroupBox" name="groupBox_4">
+         <property name="title">
+          <string>Directory Names to Ignore</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_10">
+          <item row="0" column="0" rowspan="3">
+           <widget class="QListView" name="dirNamesToIgnore"/>
+          </item>
+          <item row="0" column="1">
+           <widget class="QToolButton" name="btnAddIgnoreDir">
+            <property name="text">
+             <string>...</string>
+            </property>
+            <property name="icon">
+             <iconset resource="../SABUtils/resources/SABUtils.qrc">
+              <normaloff>:/SABUtilsResources/add.png</normaloff>:/SABUtilsResources/add.png</iconset>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <spacer name="verticalSpacer_9">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>174</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="1" column="1">
+           <widget class="QToolButton" name="btnDelIgnoreDir">
+            <property name="text">
+             <string>...</string>
+            </property>
+            <property name="icon">
+             <iconset resource="../SABUtils/resources/SABUtils.qrc">
+              <normaloff>:/SABUtilsResources/delete.png</normaloff>:/SABUtilsResources/delete.png</iconset>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="ignoreFilesPage">
+      <layout class="QVBoxLayout" name="verticalLayout_4">
+       <item>
+        <widget class="QGroupBox" name="groupBox_5">
+         <property name="title">
+          <string>File Names to Ignore</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_11">
+          <item row="1" column="1">
+           <widget class="QToolButton" name="btnDelIgnoreFileName">
+            <property name="text">
+             <string>...</string>
+            </property>
+            <property name="icon">
+             <iconset resource="../SABUtils/resources/SABUtils.qrc">
+              <normaloff>:/SABUtilsResources/delete.png</normaloff>:/SABUtilsResources/delete.png</iconset>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QToolButton" name="btnAddIgnoreFileName">
+            <property name="text">
+             <string>...</string>
+            </property>
+            <property name="icon">
+             <iconset resource="../SABUtils/resources/SABUtils.qrc">
+              <normaloff>:/SABUtilsResources/add.png</normaloff>:/SABUtilsResources/add.png</iconset>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <spacer name="verticalSpacer_10">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>174</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="0" column="0" rowspan="3">
+           <widget class="QListView" name="fileNamesToIgnore"/>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="transformationPage">
       <layout class="QGridLayout" name="gridLayout_7">
        <item row="0" column="0" colspan="2">
         <widget class="QCheckBox" name="treatAsTVShowByDefault">
@@ -261,10 +440,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab_2">
-      <attribute name="title">
-       <string>TV Show Settings</string>
-      </attribute>
+     <widget class="QWidget" name="tvShowPage">
       <layout class="QGridLayout" name="gridLayout_4">
        <item row="0" column="1">
         <widget class="QLineEdit" name="tvOutDirPattern">
@@ -321,10 +497,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab_3">
-      <attribute name="title">
-       <string>Movie Settings</string>
-      </attribute>
+     <widget class="QWidget" name="moviesPage">
       <layout class="QGridLayout" name="gridLayout_5">
        <item row="1" column="1">
         <widget class="QLineEdit" name="movieOutFilePattern"/>
@@ -381,10 +554,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab_4">
-      <attribute name="title">
-       <string>External Tool Settings</string>
-      </attribute>
+     <widget class="QWidget" name="externalToolsPage">
       <layout class="QGridLayout" name="gridLayout_6">
        <item row="4" column="0">
         <spacer name="verticalSpacer_4">
@@ -528,12 +698,6 @@
   <tabstop>knownStrings</tabstop>
   <tabstop>btnAddKnownString</tabstop>
   <tabstop>btnDelKnownString</tabstop>
-  <tabstop>knownExtraStrings</tabstop>
-  <tabstop>btnAddExtraString</tabstop>
-  <tabstop>btnDelExtraString</tabstop>
-  <tabstop>knownAbbreviations</tabstop>
-  <tabstop>btnAddAbbreviation</tabstop>
-  <tabstop>btnDelAbbreviation</tabstop>
   <tabstop>treatAsTVShowByDefault</tabstop>
   <tabstop>exactMatchesOnly</tabstop>
   <tabstop>tvOutDirPattern</tabstop>
@@ -548,7 +712,7 @@
   <tabstop>btnSelectFFMpegExe</tabstop>
   <tabstop>ffprobeExe</tabstop>
   <tabstop>btnSelectFFProbeExe</tabstop>
-  <tabstop>tabWidget</tabstop>
+  <tabstop>stackedWidget</tabstop>
  </tabstops>
  <resources>
   <include location="application.qrc"/>

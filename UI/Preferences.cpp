@@ -50,6 +50,14 @@ namespace NMediaManager
             connect( fImpl->btnDelExtraString, &QToolButton::clicked, this, &CPreferences::slotDelExtraString );
             connect( fImpl->btnAddAbbreviation, &QToolButton::clicked, this, &CPreferences::slotAddAbbreviation );
             connect( fImpl->btnDelAbbreviation, &QToolButton::clicked, this, &CPreferences::slotDelAbbreviation );
+            connect( fImpl->btnAddIgnoreFileName, &QToolButton::clicked, this, &CPreferences::slotAddIgnoreFileName );
+            connect( fImpl->btnDelIgnoreFileName, &QToolButton::clicked, this, &CPreferences::slotDelIgnoreFileName );
+            connect( fImpl->btnAddIgnoreDir, &QToolButton::clicked, this, &CPreferences::slotAddIgnoreDir );
+            connect( fImpl->btnDelIgnoreDir, &QToolButton::clicked, this, &CPreferences::slotDelIgnoreDir );
+
+            connect( fImpl->pageSelector, &QTreeWidget::currentItemChanged,   this, &CPreferences::slotPageSelectorCurrChanged );
+            connect( fImpl->pageSelector, &QTreeWidget::itemActivated, this, &CPreferences::slotPageSelectorItemActived );
+            connect( fImpl->pageSelector, &QTreeWidget::itemSelectionChanged, this, &CPreferences::slotPageSelectorSelectionChanged );
 
             connect( fImpl->btnSelectMKVMergeExe, &QToolButton::clicked, this, &CPreferences::slotSelectMKVMergeExe );
             fImpl->mkvMergeExe->setIsOKFunction( [ ]( const QString & fileName )
@@ -93,9 +101,17 @@ namespace NMediaManager
             fAbbreviationsModel = new NSABUtils::CKeyValuePairModel( this );
             fImpl->knownAbbreviations->setModel( fAbbreviationsModel );
 
+            fIgnoreDirNamesModel = new QStringListModel( this );
+            fImpl->dirNamesToIgnore->setModel( fIgnoreDirNamesModel );
+
+            fIgnoreFileNamesModel = new QStringListModel( this );
+            fImpl->fileNamesToIgnore->setModel( fIgnoreFileNamesModel );
+
             new NSABUtils::CButtonEnabler( fImpl->knownStrings, fImpl->btnDelKnownString );
             new NSABUtils::CButtonEnabler( fImpl->knownExtraStrings, fImpl->btnDelExtraString );
             new NSABUtils::CButtonEnabler( fImpl->knownAbbreviations, fImpl->btnDelAbbreviation );
+            new NSABUtils::CButtonEnabler( fImpl->dirNamesToIgnore, fImpl->btnDelIgnoreDir );
+            new NSABUtils::CButtonEnabler( fImpl->fileNamesToIgnore, fImpl->btnDelIgnoreFileName );
 
             loadSettings();
 
@@ -104,14 +120,35 @@ namespace NMediaManager
             mkvnixToolChanged( fImpl->mkvMergeExe );
             mkvnixToolChanged( fImpl->mkvPropEditExe );
 
+            fPageMap =
+            {
+                 { "Extensions", fImpl->extensionsPage }
+                ,{ "Known Strings", fImpl->removeFromPathsPage }
+                ,{ "Remove from Paths", fImpl->removeFromPathsPage }
+                ,{ "Extended/Extra Information", fImpl->extendedInfoPage }
+                ,{ "Known Abbreviations", fImpl->abbreviationsPage }
+                ,{ "Ignored", fImpl->ignoreDirPage }
+                ,{ "Directory Names", fImpl->ignoreDirPage }
+                ,{ "File Names", fImpl->ignoreFilesPage }
+                ,{ "Transformation Settings", fImpl->transformationPage }
+                ,{ "TV Shows", fImpl->tvShowPage }
+                ,{ "Movies", fImpl->moviesPage }
+                ,{ "External Tools", fImpl->externalToolsPage }
+            };
+
+            fImpl->pageSelector->expandAll();
+
             QSettings settings;
-            fImpl->tabWidget->setCurrentIndex( settings.value( "LastPrefPage", 0 ).toInt() );
+            auto items = fImpl->pageSelector->findItems( settings.value( "LastPrefPage", "Extensions" ).toString(), Qt::MatchExactly );
+            if ( !items.empty() )
+                fImpl->pageSelector->setCurrentItem( items.front() );
         }
 
         CPreferences::~CPreferences()
         {
             QSettings settings;
-            settings.setValue( "LastPrefPage", fImpl->tabWidget->currentIndex() );
+            auto currItem = fImpl->pageSelector->currentItem();
+            settings.setValue( "LastPrefPage", currItem ? currItem->text( 0 ) : QString() );
         }
 
         void CPreferences::accept()
@@ -120,78 +157,65 @@ namespace NMediaManager
             QDialog::accept();
         }
 
-        void CPreferences::slotAddKnownString()
+        void CPreferences::addString( const QString & title, const QString & label, QStringListModel * model, QListView * listView )
         {
-            auto text = QInputDialog::getText( this, tr( "Add Known String" ), tr( "String:" ) );
+            auto text = QInputDialog::getText( this, title, label ).trimmed();
             if ( text.isEmpty() )
                 return;
-            text = text.trimmed();
 
             auto words = text.split( QRegularExpression( "\\s" ), Qt::SkipEmptyParts );
-            auto strings = fKnownStringModel->stringList();
+            auto strings = model->stringList();
+
             for ( auto && ii : words )
             {
                 ii = ii.trimmed();
                 strings.removeAll( ii );
             }
+
             strings << words;
-            fKnownStringModel->setStringList( strings );
-            fImpl->knownStrings->scrollTo( fKnownStringModel->index( strings.count() - 1, 0 ) );
+            model->setStringList( strings );
+            listView->scrollTo( model->index( strings.count() - 1, 0 ) );
+        }
+
+        void CPreferences::delString( QStringListModel * listModel, QListView * listView )
+        {
+            auto model = listView->selectionModel();
+            if ( !model )
+                return;
+
+            auto selected = model->selectedRows();
+            if ( selected.isEmpty() )
+                return;
+
+            auto strings = listModel->stringList();
+            for ( auto && ii : selected )
+            {
+                auto text = ii.data().toString();
+                strings.removeAll( text );
+            }
+
+            listModel->setStringList( strings );
+            listView->scrollTo( listModel->index( selected.front().row(), 0 ) );
+        }
+
+        void CPreferences::slotAddKnownString()
+        {
+            addString( tr( "Add Known String" ), tr( "String:" ), fKnownStringModel, fImpl->knownStrings );
         }
 
         void CPreferences::slotDelKnownString()
         {
-            auto model = fImpl->knownStrings->selectionModel();
-            if ( !model )
-                return;
-            auto selected = model->selectedRows();
-            if ( selected.isEmpty() )
-                return;
-            auto strings = fKnownStringModel->stringList();
-            for ( auto && ii : selected )
-            {
-                auto text = ii.data().toString();
-                strings.removeAll( text );
-            }
-            fKnownStringModel->setStringList( strings );
-            fImpl->knownStrings->scrollTo( fKnownStringModel->index( selected.front().row(), 0 ) );
+            delString( fKnownStringModel, fImpl->knownStrings );
         }
 
         void CPreferences::slotAddExtraString()
         {
-            auto text = QInputDialog::getText( this, tr( "Add Known String For Extended Information" ), tr( "String:" ) );
-            if ( text.isEmpty() )
-                return;
-            text = text.trimmed();
-
-            auto words = text.split( QRegularExpression( "\\s" ), Qt::SkipEmptyParts );
-            auto strings = fExtraStringModel->stringList();
-            for ( auto && ii : words )
-            {
-                ii = ii.trimmed();
-                strings.removeAll( ii );
-            }
-            strings << words;
-            fExtraStringModel->setStringList( strings );
-            fImpl->knownExtraStrings->scrollTo( fExtraStringModel->index( strings.count() - 1, 0 ) );
+            addString( tr( "Add Known String For Extended Information" ), tr( "String:" ), fExtraStringModel, fImpl->knownExtraStrings );
         }
 
         void CPreferences::slotDelExtraString()
         {
-            auto model = fImpl->knownStrings->selectionModel();
-            if ( !model )
-                return;
-            auto selected = model->selectedRows();
-            if ( selected.isEmpty() )
-                return;
-            auto strings = fExtraStringModel->stringList();
-            for ( auto && ii : selected )
-            {
-                auto text = ii.data().toString();
-                strings.removeAll( text );
-            }
-            fExtraStringModel->setStringList( strings );
-            fImpl->knownExtraStrings->scrollTo( fKnownStringModel->index( selected.front().row(), 0 ) );
+            delString( fExtraStringModel, fImpl->knownExtraStrings );
         }
 
         void CPreferences::slotAddAbbreviation()
@@ -215,6 +239,26 @@ namespace NMediaManager
                 return;
             fAbbreviationsModel->removeRow( selected.front().row() );
             fImpl->knownAbbreviations->scrollTo( fKnownStringModel->index( selected.front().row(), 0 ) );
+        }
+
+        void CPreferences::slotAddIgnoreFileName()
+        {
+            addString( tr( "Add File Name to Ignore" ), tr( "File Name:" ), fIgnoreFileNamesModel, fImpl->fileNamesToIgnore );
+        }
+
+        void CPreferences::slotDelIgnoreFileName()
+        {
+            delString( fIgnoreFileNamesModel, fImpl->fileNamesToIgnore );
+        }
+
+        void CPreferences::slotAddIgnoreDir()
+        {
+            addString( tr( "Add Directory Name to Ignore" ), tr( "Directory Name:" ), fIgnoreDirNamesModel, fImpl->dirNamesToIgnore );
+        }
+
+        void CPreferences::slotDelIgnoreDir()
+        {
+            delString( fIgnoreDirNamesModel, fImpl->dirNamesToIgnore );
         }
 
         void CPreferences::slotSelectMKVMergeExe()
@@ -332,6 +376,8 @@ namespace NMediaManager
             fKnownStringModel->setStringList( NCore::CPreferences::instance()->getKnownStrings() );
             fExtraStringModel->setStringList( NCore::CPreferences::instance()->getKnownExtendedStrings() );
             fAbbreviationsModel->setValues( NCore::CPreferences::instance()->getKnownAbbreviations() );
+            fIgnoreDirNamesModel->setStringList( NCore::CPreferences::instance()->getIgnoredDirectories() );
+            fIgnoreFileNamesModel->setStringList( NCore::CPreferences::instance()->getIgnoredFileNames() );
 
             fImpl->mediaExtensions->setText( NCore::CPreferences::instance()->getMediaExtensions().join( ";" ) );
             fImpl->subtitleExtensions->setText( NCore::CPreferences::instance()->getSubtitleExtensions().join( ";" ) );
@@ -355,6 +401,8 @@ namespace NMediaManager
             NCore::CPreferences::instance()->setKnownStrings( fKnownStringModel->stringList() );
             NCore::CPreferences::instance()->setKnownExtendedStrings( fExtraStringModel->stringList() );
             NCore::CPreferences::instance()->setKnownAbbreviations( fAbbreviationsModel->data() );
+            NCore::CPreferences::instance()->setIgnoredDirectories( fIgnoreDirNamesModel->stringList() );
+            NCore::CPreferences::instance()->setIgnoredFileNames( fIgnoreFileNamesModel->stringList() );
 
             NCore::CPreferences::instance()->setTreatAsTVShowByDefault( fImpl->treatAsTVShowByDefault->isChecked() );
             NCore::CPreferences::instance()->setExactMatchesOnly( fImpl->exactMatchesOnly->isChecked() );
@@ -369,6 +417,27 @@ namespace NMediaManager
             NCore::CPreferences::instance()->setMKVMergeEXE( fImpl->mkvMergeExe->text() );
             NCore::CPreferences::instance()->setMKVPropEditEXE( fImpl->mkvPropEditExe->text() );
             NCore::CPreferences::instance()->setFFProbeEXE( fImpl->ffprobeExe->text() );
+        }
+
+        void CPreferences::slotPageSelectorCurrChanged( QTreeWidgetItem * /*current*/, QTreeWidgetItem * /*previous*/ )
+        {
+            slotPageSelectorSelectionChanged();
+        }
+
+        void CPreferences::slotPageSelectorItemActived( QTreeWidgetItem * /*item*/ )
+        {
+            slotPageSelectorSelectionChanged();
+        }
+
+        void CPreferences::slotPageSelectorSelectionChanged()
+        {
+            auto curr = fImpl->pageSelector->currentItem();
+            if ( !curr )
+                return;
+            auto ii = fPageMap.find( curr->text( 0 ) );
+            if ( ii == fPageMap.end() )
+                return;
+            fImpl->stackedWidget->setCurrentWidget( (*ii).second );
         }
     }
 }

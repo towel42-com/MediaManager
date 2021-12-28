@@ -285,8 +285,6 @@ namespace NMediaManager
             QString fRootPath;
             QStringList fNameFilter;
 
-            std::unordered_set< QString > fExcludedDirNames;
-            std::unordered_set< QString > fIgnoredNames;
             QFileIconProvider * fIconProvider{ nullptr };
 
             std::map< QString, QStandardItem * > fPathMapping;

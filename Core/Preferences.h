@@ -27,6 +27,7 @@
 #include <QStringList>
 #include <QVariant>
 #include <QMap>
+#include <QHash>
 class QFileInfo;
 
 namespace NMediaManager
@@ -63,6 +64,16 @@ namespace NMediaManager
 
             void setMovieOutDirPattern( const QString & value );
             QString getMovieOutDirPattern() const;
+
+            bool isIgnoredDirName( const QFileInfo & fileInfo );
+            bool isIgnoredFileName( const QFileInfo & fileInfo );
+            bool isIgnoredPath( const QFileInfo & fileInfo );
+
+            QStringList getIgnoredDirectories() const;
+            void setIgnoredDirectories( const QStringList & dirs );
+
+            QStringList getIgnoredFileNames() const;
+            void setIgnoredFileNames( const QStringList & fileNames );
 
             void setMediaExtensions( const QString & value );
             void setMediaExtensions( const QStringList & value );
