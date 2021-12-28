@@ -39,7 +39,7 @@
       <widget class="QWidget" name="layoutWidget">
        <layout class="QVBoxLayout" name="verticalLayout_4">
         <item>
-         <widget class="NBIF::CBIFWidget" name="bifWidget">
+         <widget class="NSABUtils::NBIF::CWidget" name="bifWidget">
           <property name="minimumSize">
            <size>
             <width>50</width>
@@ -90,7 +90,7 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>NBIF::CBIFWidget</class>
+   <class>NSABUtils::NBIF::CWidget</class>
    <extends>QFrame</extends>
    <header>SABUtils/BIFWidget.h</header>
    <container>1</container>

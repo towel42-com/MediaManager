@@ -30,11 +30,15 @@ class QLabel;
 class QSpinBox;
 class QMenu;
 class QToolBar;
-namespace NBIF
+namespace NSABUtils
 {
-    class CBIFFile;
-    class CBIFModel;
-    enum class EButtonsLayout;
+    namespace NBIF
+    {
+        class CFile;
+        class CModel;
+        class CScrollBar;
+        enum class EButtonsLayout;
+    }
 }
 class QSpinBox;
 
@@ -72,8 +76,8 @@ namespace NMediaManager
             QAction *actionNext();
             QAction *actionSkipForward();
 
-            void setButtonsLayout( NBIF::EButtonsLayout style );
-            NBIF::EButtonsLayout buttonsLayout()const;
+            void setButtonsLayout(NSABUtils::NBIF::EButtonsLayout style );
+            NSABUtils::NBIF::EButtonsLayout buttonsLayout()const;
 
             virtual bool eventFilter( QObject *obj, QEvent *event ) override;
 
@@ -93,9 +97,9 @@ namespace NMediaManager
             void saveSettings();
         
             QTimer *fResizeTimer{ nullptr };
-            std::shared_ptr< NBIF::CBIFFile > fBIF;
-            NBIF::CBIFModel *fBIFModel{ nullptr };
-
+            std::shared_ptr< NSABUtils::NBIF::CFile > fBIF;
+            NSABUtils::NBIF::CModel *fBIFModel{ nullptr };
+            NSABUtils::NBIF::CScrollBar * fBIFScrollBar{ nullptr };
             std::unique_ptr< Ui::CBIFViewerPage > fImpl;
             QString fFileName;
         };
