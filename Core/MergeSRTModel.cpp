@@ -320,7 +320,7 @@ namespace NMediaManager
                         }
                     }
                     // aOK = the MKV and SRT exist and the cmd is an executable
-                    processInfo.fTimeStamps = NFileUtils::timeStamps( processInfo.fOldName );
+                    processInfo.fTimeStamps = NSABUtils::NFileUtils::timeStamps( processInfo.fOldName );
 
 
                     processInfo.fArgs = QStringList()

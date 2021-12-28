@@ -51,10 +51,10 @@
      </property>
      <layout class="QGridLayout" name="gridLayout">
       <item row="1" column="1">
-       <widget class="CDelayLineEdit" name="searchName"/>
+       <widget class="NSABUtils::CDelayLineEdit" name="searchName"/>
       </item>
       <item row="1" column="4">
-       <widget class="CDelayLineEdit" name="searchReleaseYear"/>
+       <widget class="NSABUtils::CDelayLineEdit" name="searchReleaseYear"/>
       </item>
       <item row="2" column="0">
        <widget class="QLabel" name="label_7">
@@ -85,7 +85,7 @@
        </widget>
       </item>
       <item row="0" column="1" colspan="4">
-       <widget class="CDelayLineEdit" name="searchTMDBID"/>
+       <widget class="NSABUtils::CDelayLineEdit" name="searchTMDBID"/>
       </item>
       <item row="1" column="0">
        <widget class="QLabel" name="label_5">
@@ -95,7 +95,7 @@
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="CDelaySpinBox" name="searchSeason">
+       <widget class="NSABUtils::CDelaySpinBox" name="searchSeason">
         <property name="specialValueText">
          <string>&lt;ignored&gt;</string>
         </property>
@@ -111,7 +111,7 @@
        </widget>
       </item>
       <item row="2" column="4">
-       <widget class="CDelaySpinBox" name="searchEpisode">
+       <widget class="NSABUtils::CDelaySpinBox" name="searchEpisode">
         <property name="specialValueText">
          <string>&lt;ignored&gt;</string>
         </property>
@@ -220,12 +220,12 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>CDelayLineEdit</class>
+   <class>NSABUtils::CDelayLineEdit</class>
    <extends>QLineEdit</extends>
    <header>SABUtils/DelayLineEdit.h</header>
   </customwidget>
   <customwidget>
-   <class>CDelaySpinBox</class>
+   <class>NSABUtils::CDelaySpinBox</class>
    <extends>QSpinBox</extends>
    <header>SABUtils/DelaySpinBox.h</header>
   </customwidget>

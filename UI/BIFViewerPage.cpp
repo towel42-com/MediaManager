@@ -36,6 +36,8 @@
 #include "SABUtils/AutoWaitCursor.h"
 #include "SABUtils/BIFFile.h"
 #include "SABUtils/BIFModel.h"
+#define BIF_SCROLLBAR_SUPPORT
+#include "SABUtils/ImageScrollBar.h"
 #include "SABUtils/DelayLineEdit.h"
 
 #include <QSettings>
@@ -58,9 +60,15 @@ namespace NMediaManager
             fImpl( new Ui::CBIFViewerPage )
         {
             fImpl->setupUi( this );
+            fBIFScrollBar = new NSABUtils::CImageScrollBar(Qt::Vertical);
+            fImpl->bifImages->setVerticalScrollBar( fBIFScrollBar );
+            fBIFScrollBar->setRange(0, 0);
+            QObject::connect(fBIFScrollBar, SIGNAL(actionTriggered(int)), fImpl->bifImages, SLOT(verticalScrollbarAction(int)));
+            QObject::connect(fBIFScrollBar, SIGNAL(valueChanged(int)), fImpl->bifImages, SLOT(verticalScrollbarValueChanged(int)));
+
             clear();
 
-            connect( fImpl->bifWidget, &NBIF::CBIFWidget::sigPlayingStarted, this, &CBIFViewerPage::slotPlayingStarted );
+            connect( fImpl->bifWidget, &NSABUtils::NBIF::CWidget::sigPlayingStarted, this, &CBIFViewerPage::slotPlayingStarted );
 
             loadSettings( true );
 
@@ -100,7 +108,7 @@ namespace NMediaManager
                     fImpl->bifViewerVSplitter->setSizes( QList< int >() << 100 << 100 );
 
                 fImpl->bifViewerHSplitter->setSizes( QList< int >() << 100 << 0 );
-                setButtonsLayout( static_cast<NBIF::EButtonsLayout>( settings.value( "bifPlayerButtonLayout", static_cast<int>( NBIF::EButtonsLayout::eTogglePlayPause ) ).toInt() ) );
+                setButtonsLayout( static_cast<NSABUtils::NBIF::EButtonsLayout>( settings.value( "bifPlayerButtonLayout", static_cast<int>(NSABUtils::NBIF::EButtonsLayout::eTogglePlayPause ) ).toInt() ) );
             }
 
             fImpl->bifWidget->setSpeedMultiplier( NCore::CPreferences::instance()->bifPlayerSpeedMultiplier() );
@@ -208,7 +216,7 @@ namespace NMediaManager
 
         void CBIFViewerPage::fileNameChanged()
         {
-            CAutoWaitCursor awc;
+            NSABUtils::CAutoWaitCursor awc;
             if ( !outOfDate() )
             {
                 return;
@@ -243,17 +251,18 @@ namespace NMediaManager
             new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "Magic Number" ) << tr( "00-07" ) << QString() << fBIF->magicNumber() );
             new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "Version" ) << tr( "08-11" ) << QString::number( std::get< 2 >( fBIF->version() ) ) << std::get< 1 >( fBIF->version() ) );
             new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "Number of BIF Images" ) << tr( "12-15" ) << QString::number( std::get< 2 >( fBIF->numImages() ) ) << std::get< 1 >( fBIF->numImages() ) );
-            new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "milliseconds/Frame" ) << tr( "16-19" ) << QString( "%1s (%2ms)" ).arg( NUtils::CTimeString( std::get< 2 >( fBIF->tsMultiplier() ) ).toString( "ss.zzz" ) ).arg( std::get< 2 >( fBIF->tsMultiplier() ) ) << std::get< 1 >( fBIF->tsMultiplier() ) );
+            new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "milliseconds/Frame" ) << tr( "16-19" ) << QString( "%1s (%2ms)" ).arg(NSABUtils::CTimeString( std::get< 2 >( fBIF->tsMultiplier() ) ).toString( "ss.zzz" ) ).arg( std::get< 2 >( fBIF->tsMultiplier() ) ) << std::get< 1 >( fBIF->tsMultiplier() ) );
             new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "Reserved" ) << tr( "20-64" ) << QString() << fBIF->reserved() );
 
             formatBIFTable();
 
             fBIFModel->setBIFFile( fBIF );
+            fBIFScrollBar->setBIFFile(fBIF);
         }
 
         bool CBIFViewerPage::canLoad() const
         {
-            CAutoWaitCursor awc;
+            NSABUtils::CAutoWaitCursor awc;
 
             auto bifFile = fFileName;
             auto fi = QFileInfo( bifFile );
@@ -270,16 +279,16 @@ namespace NMediaManager
 
             formatBIFTable();
             delete fBIFModel;
-            fBIFModel = new NBIF::CBIFModel( this );
+            fBIFModel = new NSABUtils::NBIF::CModel( this );
             fImpl->bifImages->setModel( fBIFModel );
         }
 
-        void CBIFViewerPage::setButtonsLayout( NBIF::EButtonsLayout layout )
+        void CBIFViewerPage::setButtonsLayout(NSABUtils::NBIF::EButtonsLayout layout )
         {
             fImpl->bifWidget->setButtonsLayout( layout );
         }
 
-        NBIF::EButtonsLayout CBIFViewerPage::buttonsLayout() const
+        NSABUtils::NBIF::EButtonsLayout CBIFViewerPage::buttonsLayout() const
         {
             return fImpl->bifWidget->buttonsLayout();
         }

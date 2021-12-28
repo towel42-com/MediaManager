@@ -31,10 +31,10 @@
 #include <QFileInfo>
 
 QFile * gOutFile{ nullptr };
-void myMessageOutput( QtMsgType type, const QMessageLogContext & /*context*/, const QString & msg )
+void myMessageOutput( QtMsgType type, const QMessageLogContext & context, const QString & msg )
 {
     QByteArray localMsg = msg.toLocal8Bit();
-    QString realMsg = QString( "%1 (%2:%3, %4)" ).arg( localMsg.constData() ).trimmed(); // .arg( (QFileInfo( context.file ).fileName()) ).arg( context.line ).arg( context.function );
+    QString realMsg = QString( "%1 (%2:%3, %4)" ).arg( localMsg.constData() ).arg( (QFileInfo( context.file ).fileName()) ).arg( context.line ).arg( context.function );
 
     QString typeString;
     switch ( type )
@@ -59,21 +59,21 @@ void myMessageOutput( QtMsgType type, const QMessageLogContext & /*context*/, co
     realMsg = QString( "%1: %2" ).arg( typeString ).arg( realMsg ).trimmed();
 
 #ifdef Q_OS_WINDOWS
-    //OutputDebugString( qPrintable( realMsg ) );
+    OutputDebugString( qPrintable( realMsg + "\n" ) );
 #else
     fprintf( "%s\n", qPrintable( realMsg ) );
 #endif
-    if ( !gOutFile )
-    {
-        gOutFile = new QFile( "log.txt" );
-        gOutFile->open( QFile::WriteOnly | QFile::Truncate );
-        QString tmp = QFileInfo( gOutFile->fileName() ).absoluteFilePath();
-        int xzy = 0;
-    }
+    //if ( !gOutFile )
+    //{
+    //    gOutFile = new QFile( "log.txt" );
+    //    gOutFile->open( QFile::WriteOnly | QFile::Truncate );
+    //    QString tmp = QFileInfo( gOutFile->fileName() ).absoluteFilePath();
+    //    int xzy = 0;
+    //}
 
-    QTextStream ts( gOutFile );
-    ts << realMsg << "\n";
-    gOutFile->flush();
+    //QTextStream ts( gOutFile );
+    //ts << realMsg << "\n";
+    //gOutFile->flush();
 
 }
 

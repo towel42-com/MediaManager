@@ -21,8 +21,6 @@
 // SOFTWARE.
 
 #include "MainWindow.h"
-#include "SelectTMDB.h"
-#include "TransformConfirm.h"
 #include "Preferences.h"
 
 #include "ui_MainWindow.h"
@@ -85,7 +83,7 @@ namespace NMediaManager
             fImpl( new Ui::CMainWindow )
         {
             fImpl->setupUi( this );
-            fProgressDlg = new CDoubleProgressDlg( this );
+            fProgressDlg = new NSABUtils::CDoubleProgressDlg( this );
 
             fImpl->mergeSRTPage->setProgressDlg( fProgressDlg );
             fImpl->makeMKVPage->setProgressDlg( fProgressDlg );
@@ -111,9 +109,9 @@ namespace NMediaManager
             completer->setCaseSensitivity( Qt::CaseInsensitive );
 
             fImpl->directory->setCompleter( completer );
-            connect( fImpl->directory, &CDelayComboBox::sigEditTextChangedAfterDelay, this, &CMainWindow::slotDirectoryChanged );
-            connect( fImpl->directory, &CDelayComboBox::editTextChanged, this, &CMainWindow::slotDirectoryChangedImmediate );
-            connect( fImpl->directory->lineEdit(), &CDelayLineEdit::sigFinishedEditingAfterDelay, this, &CMainWindow::slotLoad );
+            connect( fImpl->directory, &NSABUtils::CDelayComboBox::sigEditTextChangedAfterDelay, this, &CMainWindow::slotDirectoryChanged );
+            connect( fImpl->directory, &NSABUtils::CDelayComboBox::editTextChanged, this, &CMainWindow::slotDirectoryChangedImmediate );
+            connect( fImpl->directory->lineEdit(), &NSABUtils::CDelayLineEdit::sigFinishedEditingAfterDelay, this, &CMainWindow::slotLoad );
 
             completer = new QCompleter( this );
             fFileModel = new CCompleterFileSystemModel( completer );
@@ -130,8 +128,8 @@ namespace NMediaManager
                 auto fi = QFileInfo( fileName );
                 return fileName.isEmpty() || (fi.exists() && fi.isFile() && fi.isReadable());
             }, tr( "File '%1' does not Exist or is not Readable" ) );
-            connect( fImpl->fileName, &CDelayComboBox::sigEditTextChangedAfterDelay, this, &CMainWindow::slotFileChanged );
-            connect( fImpl->fileName->lineEdit(), &CDelayLineEdit::sigFinishedEditingAfterDelay, this, &CMainWindow::slotFileFinishedEditing );
+            connect( fImpl->fileName, &NSABUtils::CDelayComboBox::sigEditTextChangedAfterDelay, this, &CMainWindow::slotFileChanged );
+            connect( fImpl->fileName->lineEdit(), &NSABUtils::CDelayLineEdit::sigFinishedEditingAfterDelay, this, &CMainWindow::slotFileFinishedEditing );
 
             auto menu = fImpl->bifViewerPage->menu();
             if ( menu )
@@ -194,11 +192,11 @@ namespace NMediaManager
 
             fImpl->tabWidget->setCurrentWidget( fImpl->bifViewerTab );
 
-            disconnect( fImpl->fileName, &CDelayComboBox::sigEditTextChangedAfterDelay, this, &CMainWindow::slotFileChanged );
-            disconnect( fImpl->fileName->lineEdit(), &CDelayLineEdit::sigFinishedEditingAfterDelay, this, &CMainWindow::slotFileFinishedEditing );
+            disconnect( fImpl->fileName, &NSABUtils::CDelayComboBox::sigEditTextChangedAfterDelay, this, &CMainWindow::slotFileChanged );
+            disconnect( fImpl->fileName->lineEdit(), &NSABUtils::CDelayLineEdit::sigFinishedEditingAfterDelay, this, &CMainWindow::slotFileFinishedEditing );
             fImpl->fileName->setCurrentText( name );
-            connect( fImpl->fileName, &CDelayComboBox::sigEditTextChangedAfterDelay, this, &CMainWindow::slotFileChanged );
-            connect( fImpl->fileName->lineEdit(), &CDelayLineEdit::sigFinishedEditingAfterDelay, this, &CMainWindow::slotFileFinishedEditing );
+            connect( fImpl->fileName, &NSABUtils::CDelayComboBox::sigEditTextChangedAfterDelay, this, &CMainWindow::slotFileChanged );
+            connect( fImpl->fileName->lineEdit(), &NSABUtils::CDelayLineEdit::sigFinishedEditingAfterDelay, this, &CMainWindow::slotFileFinishedEditing );
 
             slotFileFinishedEditing();
             return true;
@@ -252,7 +250,7 @@ namespace NMediaManager
             slotDirectoryChangedImmediate();
             fImpl->actionRun->setEnabled( false );
 
-            CAutoWaitCursor awc;
+            NSABUtils::CAutoWaitCursor awc;
             qApp->processEvents();
 
             validateLoadAction();
@@ -260,7 +258,7 @@ namespace NMediaManager
 
         void CMainWindow::validateLoadAction()
         {
-            CAutoWaitCursor awc;
+            NSABUtils::CAutoWaitCursor awc;
             auto dirName = fImpl->directory->currentText();
 
             QFileInfo fi( dirName );
@@ -285,9 +283,9 @@ namespace NMediaManager
 
         void CMainWindow::fileNameChanged( bool andExecute )
         {
-            connect( fImpl->fileName, &CDelayComboBox::sigEditTextChangedAfterDelay, this, &CMainWindow::slotFileChanged );
+            connect( fImpl->fileName, &NSABUtils::CDelayComboBox::sigEditTextChangedAfterDelay, this, &CMainWindow::slotFileChanged );
             fImpl->fileName->addCurrentItem();
-            connect( fImpl->fileName, &CDelayComboBox::sigEditTextChangedAfterDelay, this, &CMainWindow::slotFileChanged );
+            connect( fImpl->fileName, &NSABUtils::CDelayComboBox::sigEditTextChangedAfterDelay, this, &CMainWindow::slotFileChanged );
 
             fImpl->bifViewerPage->setFileName( fImpl->fileName->currentText(), isBIFViewerActive() && andExecute );
         }
@@ -406,7 +404,7 @@ namespace NMediaManager
         void CMainWindow::slotStartStayAwake()
         {
             if ( !fStayAwake )
-                fStayAwake = new NUtils::CStayAwake( true );
+                fStayAwake = new NSABUtils::CStayAwake( true );
 
             QThreadPool::globalInstance()->start( fStayAwake );
         }

@@ -25,12 +25,15 @@
 
 #include <QMainWindow>
 #include <optional>
-class CDoubleProgressDlg;
-namespace NBIF
+namespace NSABUtils 
 {
-    enum class EButtonsLayout;
+    class CDoubleProgressDlg;
+    class CStayAwake;
+    namespace NBIF
+    {
+        enum class EButtonsLayout;
+    }
 }
-namespace NUtils { class CStayAwake; }
 
 namespace NMediaManager
 {
@@ -92,8 +95,8 @@ namespace NMediaManager
             std::unique_ptr< Ui::CMainWindow > fImpl;
             CCompleterFileSystemModel * fDirModel{ nullptr };
             CCompleterFileSystemModel * fFileModel{ nullptr };
-            CDoubleProgressDlg * fProgressDlg{ nullptr };
-            NUtils::CStayAwake * fStayAwake{ nullptr };
+            NSABUtils::CDoubleProgressDlg * fProgressDlg{ nullptr };
+            NSABUtils::CStayAwake * fStayAwake{ nullptr };
         };
     }
 }

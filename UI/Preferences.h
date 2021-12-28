@@ -25,7 +25,10 @@
 
 #include <QDialog>
 
-class CKeyValuePairModel;
+namespace NSABUtils
+{
+    class CKeyValuePairModel;
+}
 class QStringListModel;
 class QLineEdit;
 namespace NMediaManager
@@ -68,7 +71,7 @@ namespace NMediaManager
 
             QStringListModel * fKnownStringModel{ nullptr };
             QStringListModel * fExtraStringModel{ nullptr };
-            CKeyValuePairModel * fAbbreviationsModel{ nullptr };
+            NSABUtils::CKeyValuePairModel * fAbbreviationsModel{ nullptr };
             std::unique_ptr< Ui::CPreferences > fImpl;
         };
     }

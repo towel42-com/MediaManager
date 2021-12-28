@@ -33,7 +33,10 @@ class QNetworkAccessManager;
 class QNetworkReply;
 class QJsonObject;
 class QTreeWidgetItem;
-class CButtonEnabler;
+namespace NSABUtils
+{
+    class CButtonEnabler;
+}
 
 namespace NMediaManager
 {
@@ -101,7 +104,7 @@ namespace NMediaManager
 
             std::unique_ptr< Ui::CSelectTMDB > fImpl;
 
-            CButtonEnabler *fButtonEnabler{ nullptr };
+            NSABUtils::CButtonEnabler *fButtonEnabler{ nullptr };
             NCore::CSearchTMDB *fSearchTMDB{ nullptr };
             std::shared_ptr< NCore::SSearchTMDBInfo > fSearchInfo;
 

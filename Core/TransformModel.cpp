@@ -482,7 +482,7 @@ namespace NMediaManager
                         }
                         else
                         {
-                            auto timeStamps = NFileUtils::timeStamps( oldName );
+                            auto timeStamps = NSABUtils::NFileUtils::timeStamps( oldName );
                             if ( progressDlg() )
                             {
                                 progressDlg()->setValue( progressDlg()->value() + 1 );
@@ -526,7 +526,7 @@ namespace NMediaManager
                                 {
                                     if ( newFileInfo.isFile() && oldFileInfo.isFile() )
                                     {
-                                        if ( NFileUtils::CFileCompare( oldFileInfo, newFileInfo ).compare() )
+                                        if ( NSABUtils::NFileUtils::CFileCompare( oldFileInfo, newFileInfo ).compare() )
                                         {
                                             aOK = QFile( oldName ).remove();
                                             if ( !aOK )
@@ -535,7 +535,7 @@ namespace NMediaManager
                                         else
                                         {
                                             aOK = false;
-                                            errorMsg = QString( "Destination file Exists - Old Size: %1 New Size: %2" ).arg( NFileUtils::fileSizeString( oldName, false ) ).arg( NFileUtils::fileSizeString( newName, false ) );
+                                            errorMsg = QString( "Destination file Exists - Old Size: %1 New Size: %2" ).arg( NSABUtils::NFileUtils::fileSizeString( oldName, false ) ).arg( NSABUtils::NFileUtils::fileSizeString( newName, false ) );
                                         }
                                     }
                                     else
@@ -591,7 +591,7 @@ namespace NMediaManager
                                 }
                                 else
                                 {
-                                    aOK = NFileUtils::setTimeStamps( newName, timeStamps );
+                                    aOK = NSABUtils::NFileUtils::setTimeStamps( newName, timeStamps );
                                     if ( progressDlg() )
                                     {
                                         progressDlg()->setValue( progressDlg()->value() + 1 );
@@ -768,7 +768,7 @@ namespace NMediaManager
 
         int CTransformModel::computeNumberOfItems() const
         {
-            return NQtUtils::itemCount( fProcessResults.second.get(), true );
+            return NSABUtils::itemCount( fProcessResults.second.get(), true );
         }
 
         void CTransformModel::postReloadModel()

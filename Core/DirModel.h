@@ -35,17 +35,17 @@
 #include <QDialogButtonBox>
 #include "SABUtils/HashUtils.h"
 
-class CDoubleProgressDlg;
+namespace NSABUtils
+{
+    class CDoubleProgressDlg;
+}
+
 class QTreeView;
 class QMediaPlaylist;
 class QFileIconProvider;
 class QDirIterator;
 class QPlainTextEdit;
 class QProcess;
-namespace NUtils
-{
-    class CStayAwake;
-}
 
 namespace NMediaManager
 {
@@ -213,7 +213,7 @@ namespace NMediaManager
         protected:
             QPlainTextEdit * log() const;
             QTreeView * filesView() const;
-            CDoubleProgressDlg * progressDlg() const;
+            NSABUtils::CDoubleProgressDlg * progressDlg() const;
 
             virtual std::pair< bool, QStandardItem * > processItem( const QStandardItem * item, QStandardItem * parentItem, bool displayOnly ) const = 0;
             virtual void preAddItems( const QFileInfo & fileInfo, std::list< NMediaManager::NCore::STreeNodeItem > & currItems ) const = 0;

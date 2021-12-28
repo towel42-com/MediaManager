@@ -75,7 +75,7 @@ namespace NMediaManager
         void CTransformConfirm::setModel( QAbstractItemModel *model )
         {
             fImpl->transformations->setModel( model );
-            NQtUtils::expandAll( model, QModelIndex(), fImpl->transformations );
+            NSABUtils::expandAll( model, QModelIndex(), fImpl->transformations );
         }
 
         void CTransformConfirm::setIconLabel( const QMessageBox::Icon &icon )

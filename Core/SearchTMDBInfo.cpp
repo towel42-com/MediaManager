@@ -96,7 +96,7 @@ namespace NMediaManager
                 if (match.hasMatch())
                 {
                     retVal.remove(match.capturedStart("word"), match.capturedLength("word"));
-                    extendedData = NStringUtils::transformTitle( match.captured("word"),true );
+                    extendedData = NSABUtils::NStringUtils::transformTitle( match.captured("word"),true );
                     break;
                 }
             }
@@ -402,7 +402,7 @@ namespace NMediaManager
             {
                 return name.compare( fSearchName, Qt::CaseInsensitive ) == 0;
             }
-            return NStringUtils::isSimilar( name, fSearchName ); // if every word we are searching for is covered by name, we match
+            return NSABUtils::NStringUtils::isSimilar( name, fSearchName ); // if every word we are searching for is covered by name, we match
         }
 
         bool SSearchTMDBInfo::isMatchingDate( const QString &releaseDate ) const
@@ -411,7 +411,7 @@ namespace NMediaManager
             int releaseYear = this->releaseDate( &aOK );
             if ( aOK && searchByName() && releaseDateSet() && !releaseDate.isEmpty() )
             {
-                auto dt = NQtUtils::findDate( releaseDate );
+                auto dt = NSABUtils::findDate( releaseDate );
 
                 if ( dt.isValid() && dt.year() != releaseYear )
                 {

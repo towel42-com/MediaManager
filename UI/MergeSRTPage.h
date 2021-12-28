@@ -25,6 +25,11 @@
 
 #include "BasePage.h"
 
+namespace NSABUtils
+{
+    class CDoubleProgressDlg;
+}
+
 namespace NMediaManager
 {
     namespace NUi
@@ -52,7 +57,6 @@ namespace NMediaManager
         Q_SIGNALS:
         public Q_SLOTS:
         protected Q_SLOTS:
-
         protected:
         };
     }

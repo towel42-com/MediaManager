@@ -124,7 +124,7 @@ namespace NMediaManager
                 }
 
                 aOK = aOK && checkProcessItemExists( processInfo.fOldName, processInfo.fItem );
-                processInfo.fTimeStamps = NFileUtils::timeStamps( processInfo.fOldName );
+                processInfo.fTimeStamps = NSABUtils::NFileUtils::timeStamps( processInfo.fOldName );
 
                 processInfo.fArgs = QStringList()
                     << "-y"
@@ -170,7 +170,7 @@ namespace NMediaManager
 
         int CMakeMKVModel::computeNumberOfItems() const
         {
-            return NQtUtils::itemCount( fProcessResults.second.get(), true );
+            return NSABUtils::itemCount( fProcessResults.second.get(), true );
         }
 
         void CMakeMKVModel::postFileFunction( bool /*aOK*/, const QFileInfo & /*fileInfo*/ )

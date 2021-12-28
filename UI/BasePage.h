@@ -24,7 +24,10 @@
 #define _BASEPAGE_H
 
 #include <QWidget>
-class CDoubleProgressDlg;
+namespace NSABUtils
+{
+    class CDoubleProgressDlg;
+}
 class QTreeView;
 class QPlainTextEdit;
 class QMenu;
@@ -55,10 +58,10 @@ namespace NMediaManager
             virtual void run();
             virtual bool canRun() const;
 
-            virtual void setProgressDlg( CDoubleProgressDlg * progressDlg );
+            virtual void setProgressDlg( NSABUtils::CDoubleProgressDlg * progressDlg );
             virtual void postInit();
 
-            CDoubleProgressDlg * progressDlg() const;
+            NSABUtils::CDoubleProgressDlg * progressDlg() const;
             QTreeView * filesView() const;
             QPlainTextEdit * log() const;
 
@@ -109,7 +112,7 @@ namespace NMediaManager
             QString fPageName;
             QString fDirName;
             
-            CDoubleProgressDlg * fProgressDlg{ nullptr };
+            NSABUtils::CDoubleProgressDlg * fProgressDlg{ nullptr };
             std::unique_ptr< NCore::CDirModel > fModel;
             std::unique_ptr< Ui::CBasePage > fImpl;
         };

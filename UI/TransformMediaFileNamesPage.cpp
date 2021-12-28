@@ -133,7 +133,7 @@ namespace NMediaManager
             Q_ASSERT( filesView()->model() == model() );
             fSearchTMDB->resetResults();
 
-            auto count = NQtUtils::itemCount( model(), true );
+            auto count = NSABUtils::itemCount( model(), true );
             setupProgressDlg( tr( "Finding Results" ), tr( "Cancel" ), count );
 
             auto rootIdx = model()->index( 0, 0 );
@@ -306,7 +306,6 @@ namespace NMediaManager
                 model()->setSearchResult( idx, titleInfo, setChildren );
             }
         }
-
     }
 }
 

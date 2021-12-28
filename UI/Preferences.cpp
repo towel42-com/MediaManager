@@ -79,10 +79,10 @@ namespace NMediaManager
                 return fileName.isEmpty() || (fi.exists() && fi.isFile() && fi.isExecutable());
             }, tr( "File '%1' does not Exist or is not an Executable" ) );
 
-            connect( fImpl->ffmpegExe, &CDelayLineEdit::sigTextChangedAfterDelay, this, &CPreferences::slotFFToolChanged );
-            connect( fImpl->ffprobeExe, &CDelayLineEdit::sigTextChangedAfterDelay, this, &CPreferences::slotFFToolChanged );
-            connect( fImpl->mkvMergeExe, &CDelayLineEdit::sigTextChangedAfterDelay, this, &CPreferences::slotMKVNixToolChanged );
-            connect( fImpl->mkvPropEditExe, &CDelayLineEdit::sigTextChangedAfterDelay, this, &CPreferences::slotMKVNixToolChanged );
+            connect( fImpl->ffmpegExe, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CPreferences::slotFFToolChanged );
+            connect( fImpl->ffprobeExe, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CPreferences::slotFFToolChanged );
+            connect( fImpl->mkvMergeExe, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CPreferences::slotMKVNixToolChanged );
+            connect( fImpl->mkvPropEditExe, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CPreferences::slotMKVNixToolChanged );
 
             fKnownStringModel = new QStringListModel( this );
             fImpl->knownStrings->setModel( fKnownStringModel );
@@ -90,12 +90,12 @@ namespace NMediaManager
             fExtraStringModel = new QStringListModel( this );
             fImpl->knownExtraStrings->setModel( fExtraStringModel );
 
-            fAbbreviationsModel = new CKeyValuePairModel( this );
+            fAbbreviationsModel = new NSABUtils::CKeyValuePairModel( this );
             fImpl->knownAbbreviations->setModel( fAbbreviationsModel );
 
-            new CButtonEnabler( fImpl->knownStrings, fImpl->btnDelKnownString );
-            new CButtonEnabler( fImpl->knownExtraStrings, fImpl->btnDelExtraString );
-            new CButtonEnabler( fImpl->knownAbbreviations, fImpl->btnDelAbbreviation );
+            new NSABUtils::CButtonEnabler( fImpl->knownStrings, fImpl->btnDelKnownString );
+            new NSABUtils::CButtonEnabler( fImpl->knownExtraStrings, fImpl->btnDelExtraString );
+            new NSABUtils::CButtonEnabler( fImpl->knownAbbreviations, fImpl->btnDelAbbreviation );
 
             loadSettings();
 

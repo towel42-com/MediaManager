@@ -53,10 +53,10 @@ namespace NMediaManager
             loadSettings();
         }
 
-        void CBasePage::setProgressDlg( CDoubleProgressDlg * progressDlg )
+        void CBasePage::setProgressDlg( NSABUtils::CDoubleProgressDlg * progressDlg )
         {
             fProgressDlg = progressDlg;
-            connect( fProgressDlg, &CDoubleProgressDlg::canceled,
+            connect( fProgressDlg, &NSABUtils::CDoubleProgressDlg::canceled,
                      [ this ]()
             {
                 clearProgressDlg();
@@ -80,7 +80,7 @@ namespace NMediaManager
             settings.setValue( "Splitter", fImpl->vsplitter->saveState() );
         }
 
-        CDoubleProgressDlg * CBasePage::progressDlg() const
+        NSABUtils::CDoubleProgressDlg * CBasePage::progressDlg() const
         {
             return fProgressDlg;
         }
@@ -259,7 +259,7 @@ namespace NMediaManager
             if ( !realMessage.endsWith( "\n" ) )
                 realMessage += "\n";
 
-            NQtUtils::appendToLog( fImpl->log, realMessage, previousText );
+            NSABUtils::appendToLog( fImpl->log, realMessage, previousText );
             postProcessLog( realMessage );
         }
 

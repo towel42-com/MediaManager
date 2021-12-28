@@ -155,7 +155,7 @@ namespace NMediaManager
 
         void CDirModel::slotLoadRootDirectory()
         {
-            CAutoWaitCursor awc;
+            NSABUtils::CAutoWaitCursor awc;
 
             clear();
 
@@ -433,7 +433,7 @@ namespace NMediaManager
             nameItem.setData( fileInfo.absoluteFilePath(), ECustomRoles::eFullPathRole );
             nameItem.setData( fileInfo.isDir(), ECustomRoles::eIsDir );
             fItems.push_back( nameItem );
-            fItems.push_back( STreeNodeItem( fileInfo.isFile() ? NFileUtils::fileSizeString( fileInfo ) : QString(), EColumns::eFSSize ) );
+            fItems.push_back( STreeNodeItem( fileInfo.isFile() ? NSABUtils::NFileUtils::fileSizeString( fileInfo ) : QString(), EColumns::eFSSize ) );
             if ( fileInfo.isFile() )
             {
                 fItems.back().fAlignment = Qt::AlignRight | Qt::AlignVCenter;
@@ -655,7 +655,7 @@ namespace NMediaManager
 
             parent->insertRow( pos, errorNode );
         }
-        
+
         bool CDirModel::checkProcessItemExists( const QString & fileName, QStandardItem * parentItem, bool scheduledForRemoval ) const
         {
             QFileInfo fi( fileName );
@@ -701,12 +701,12 @@ namespace NMediaManager
 
         void CDirModel::process( bool displayOnly )
         {
-            CAutoWaitCursor awc;
+            NSABUtils::CAutoWaitCursor awc;
             fProcessResults.second = std::make_shared< QStandardItemModel >();
             if ( progressDlg() )
             {
-                disconnect( progressDlg(), &CDoubleProgressDlg::canceled, this, &CDirModel::slotProgressCanceled );
-                connect( progressDlg(), &CDoubleProgressDlg::canceled, this, &CDirModel::slotProgressCanceled );
+                disconnect( progressDlg(), &NSABUtils::CDoubleProgressDlg::canceled, this, &CDirModel::slotProgressCanceled );
+                connect( progressDlg(), &NSABUtils::CDoubleProgressDlg::canceled, this, &CDirModel::slotProgressCanceled );
             }
 
             fProcessResults.first = process( invisibleRootItem(), displayOnly, nullptr );
@@ -773,7 +773,6 @@ namespace NMediaManager
             }
 
             int count = computeNumberOfItems();
-
             startProgress( count * eventsPerPath() );
             emit sigProcessingStarted();
             process( false );
@@ -1011,7 +1010,8 @@ namespace NMediaManager
         }
 
         void CDirModel::slotProcessStarted()
-        {}
+        {
+        }
 
         void CDirModel::slotProcesssStateChanged( QProcess::ProcessState newState )
         {
@@ -1070,7 +1070,7 @@ namespace NMediaManager
                 model->fProcessResults.first = false;
             }
 
-            if ( QFileInfo::exists( fNewName ) && !NFileUtils::setTimeStamps( fNewName, fTimeStamps ) )
+            if ( QFileInfo::exists( fNewName ) && !NSABUtils::NFileUtils::setTimeStamps( fNewName, fTimeStamps ) )
             {
                 auto errorItem = new QStandardItem( QString( "ERROR: %1: FAILED TO MODIFY TIMESTAMP" ).arg( model->getDispName( fOldName ) ) );
                 errorItem->setData( ECustomRoles::eIsErrorNode, true );
@@ -1082,7 +1082,7 @@ namespace NMediaManager
                 model->fProcessResults.first = false;
             }
 
-            if ( QFileInfo::exists( fOldName ) && !NFileUtils::setTimeStamps( fOldName, fTimeStamps ) )
+            if ( QFileInfo::exists( fOldName ) && !NSABUtils::NFileUtils::setTimeStamps( fOldName, fTimeStamps ) )
             {
                 auto errorItem = new QStandardItem( QString( "ERROR: %1: FAILED TO MODIFY TIMESTAMP" ).arg( model->getDispName( fOldName ) ) );
                 errorItem->setData( ECustomRoles::eIsErrorNode, true );
@@ -1100,7 +1100,7 @@ namespace NMediaManager
             return fBasePage->log();
         }
         
-        CDoubleProgressDlg * CDirModel::progressDlg() const
+        NSABUtils::CDoubleProgressDlg * CDirModel::progressDlg() const
         {
             return fBasePage->progressDlg();
         }

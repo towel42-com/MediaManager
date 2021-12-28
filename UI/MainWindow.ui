@@ -29,7 +29,7 @@
        </widget>
       </item>
       <item>
-       <widget class="CDelayComboBox" name="directory">
+       <widget class="NSABUtils::CDelayComboBox" name="directory">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -59,7 +59,7 @@
        </widget>
       </item>
       <item>
-       <widget class="CDelayComboBox" name="fileName">
+       <widget class="NSABUtils::CDelayComboBox" name="fileName">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -306,7 +306,7 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>CDelayComboBox</class>
+   <class>NSABUtils::CDelayComboBox</class>
    <extends>QComboBox</extends>
    <header>SABUtils/DelayComboBox.h</header>
   </customwidget>
