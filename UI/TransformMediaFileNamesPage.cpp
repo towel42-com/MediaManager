@@ -78,7 +78,7 @@ namespace NMediaManager
             settings.setValue( "Splitter", fImpl->vsplitter->saveState() );
         }
 
-        void CTransformMediaFileNamesPage::setSetupProgressDlgFunc( std::function< std::shared_ptr< CDoubleProgressDlg >( const QString &title, const QString &cancelButtonText, int max ) > setupFunc, std::function< void() > clearFunc )
+        void CTransformMediaFileNamesPage::setSetupProgressDlgFunc( std::function< std::shared_ptr< NSABUtils::CDoubleProgressDlg >( const QString &title, const QString &cancelButtonText, int max ) > setupFunc, std::function< void() > clearFunc )
         {
             fSetupProgressFunc = setupFunc;
             fClearProgressFunc = clearFunc;
@@ -109,7 +109,7 @@ namespace NMediaManager
 
             if ( fSetupProgressFunc )
             {
-                auto count = NQtUtils::itemCount( fModel.get(), true );
+                auto count = NSABUtils::itemCount( fModel.get(), true );
                 fProgressDlg = fSetupProgressFunc( tr( "Finding Results" ), tr( "Cancel" ), count );
             }
 
@@ -289,7 +289,7 @@ namespace NMediaManager
 
             if ( fModel && fModel->process(
                 [ actionName, cancelName, this ]( int count ) { setupProgressDlg( actionName, cancelName, count ); return fProgressDlg; },
-                [ this ]( std::shared_ptr< CDoubleProgressDlg >dlg ) { (void)dlg; clearProgressDlg(); },
+                [ this ]( std::shared_ptr< NSABUtils::CDoubleProgressDlg >dlg ) { (void)dlg; clearProgressDlg(); },
                 this ) )
             {
                 emit sigStopStayAwake();

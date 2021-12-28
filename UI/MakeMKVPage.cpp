@@ -61,7 +61,7 @@ namespace NMediaManager
             settings.setValue( "Splitter", fImpl->vsplitter->saveState() );
         }
 
-        void CMakeMKVPage::setSetupProgressDlgFunc( std::function< std::shared_ptr< CDoubleProgressDlg >( const QString & title, const QString & cancelButtonText, int max ) > setupFunc, std::function< void() > clearFunc )
+        void CMakeMKVPage::setSetupProgressDlgFunc( std::function< std::shared_ptr< NSABUtils::CDoubleProgressDlg >( const QString & title, const QString & cancelButtonText, int max ) > setupFunc, std::function< void() > clearFunc )
         {
             fSetupProgressFunc = setupFunc;
             fClearProgressFunc = clearFunc;
@@ -160,7 +160,7 @@ namespace NMediaManager
                     setupProgressDlg( actionName, cancelName, count );
                     return fProgressDlg;
                 },
-                    [ this ]( std::shared_ptr< CDoubleProgressDlg > dlg ) { (void)dlg; }, this );
+                    [ this ]( std::shared_ptr< NSABUtils::CDoubleProgressDlg > dlg ) { (void)dlg; }, this );
             }
         }
     }

@@ -35,17 +35,17 @@
 #include <QDialogButtonBox>
 #include "SABUtils/HashUtils.h"
 
-class CDoubleProgressDlg;
+namespace NSABUtils
+{
+    class CDoubleProgressDlg;
+}
+
 class QTreeView;
 class QMediaPlaylist;
 class QFileIconProvider;
 class QDirIterator;
 class QPlainTextEdit;
 class QProcess;
-namespace NUtils
-{
-    class CStayAwake;
-}
 
 namespace NMediaManager
 {
@@ -170,14 +170,14 @@ namespace NMediaManager
             QStandardItem *getItemFromindex( QModelIndex idx ) const;
             QStandardItem *getItemFromPath( const QFileInfo &fi ) const;
 
-            bool process( const std::function< std::shared_ptr< CDoubleProgressDlg >( int count ) > &startProgress, const std::function< void( std::shared_ptr< CDoubleProgressDlg > ) > &endProgress, QWidget *parent );
+            bool process( const std::function< std::shared_ptr< NSABUtils::CDoubleProgressDlg >( int count ) > &startProgress, const std::function< void( std::shared_ptr< NSABUtils::CDoubleProgressDlg > ) > &endProgress, QWidget *parent );
             void setSearchResult( const QModelIndex &idx, std::shared_ptr< SSearchResult > info, bool applyToChilren );
             void setSearchResult( QStandardItem *item, std::shared_ptr< SSearchResult > info, bool applyToChilren );
             std::shared_ptr< SSearchResult > getSearchResultInfo( const QModelIndex &idx ) const;
 
-            void setNameFilters( const QStringList & filters, QTreeView * view = nullptr, QPlainTextEdit * resultsView = nullptr, std::shared_ptr< CDoubleProgressDlg >progress = {} );
-            void reloadModel( QTreeView *view, QPlainTextEdit *resultsView, std::shared_ptr< CDoubleProgressDlg > dlg );
-            void setRootPath( const QString & path, QTreeView * view = nullptr, QPlainTextEdit * resultsView = nullptr, std::shared_ptr< CDoubleProgressDlg > dlg = {} );
+            void setNameFilters( const QStringList & filters, QTreeView * view = nullptr, QPlainTextEdit * resultsView = nullptr, std::shared_ptr< NSABUtils::CDoubleProgressDlg >progress = {} );
+            void reloadModel( QTreeView *view, QPlainTextEdit *resultsView, std::shared_ptr< NSABUtils::CDoubleProgressDlg > dlg );
+            void setRootPath( const QString & path, QTreeView * view = nullptr, QPlainTextEdit * resultsView = nullptr, std::shared_ptr< NSABUtils::CDoubleProgressDlg > dlg = {} );
 
             QString getSearchName( const QModelIndex &idx ) const;
             bool treatAsTVShow( const QFileInfo &fileInfo, bool defaultValue ) const;
@@ -333,7 +333,7 @@ namespace NMediaManager
             mutable std::list< SProcessInfo > fProcessQueue;
             std::pair< QString, bool > fStdOutRemaining{ QString(),false };
             std::pair< QString, bool > fStdErrRemaining{ QString(),false };
-            mutable std::shared_ptr< CDoubleProgressDlg > fProgressDlg;
+            mutable std::shared_ptr< NSABUtils::CDoubleProgressDlg > fProgressDlg;
 
             bool fProcessFinishedHandled{ false };
             mutable bool fFirstProcess{ true };

@@ -24,14 +24,17 @@
 #define _MERGESRTPAGE_H
 
 #include <QWidget>
-class CDoubleProgressDlg;
-
 namespace NMediaManager
 {
     namespace NCore
     {
         class CDirModel;
     }
+}
+
+namespace NSABUtils
+{
+    class CDoubleProgressDlg;
 }
 
 namespace NMediaManager
@@ -52,7 +55,7 @@ namespace NMediaManager
             void run();
             bool canRun() const;
 
-            void setSetupProgressDlgFunc( std::function< std::shared_ptr< CDoubleProgressDlg >( const QString &title, const QString &cancelButtonText, int max ) > setupFunc, std::function< void() > clearFunc );
+            void setSetupProgressDlgFunc( std::function< std::shared_ptr< NSABUtils::CDoubleProgressDlg >( const QString &title, const QString &cancelButtonText, int max ) > setupFunc, std::function< void() > clearFunc );
         public Q_SLOTS:
             void slotLoadFinished( bool canceled );
             void slotProcessingStarted();
@@ -68,9 +71,9 @@ namespace NMediaManager
             void loadSettings();
             void saveSettings();
 
-            std::function< std::shared_ptr< CDoubleProgressDlg >( const QString &title, const QString &cancelButtonText, int max ) > fSetupProgressFunc;
+            std::function< std::shared_ptr< NSABUtils::CDoubleProgressDlg >( const QString &title, const QString &cancelButtonText, int max ) > fSetupProgressFunc;
             std::function< void() > fClearProgressFunc;
-            std::shared_ptr< CDoubleProgressDlg > fProgressDlg;
+            std::shared_ptr< NSABUtils::CDoubleProgressDlg > fProgressDlg;
             QString fDirName;
             std::unique_ptr< NCore::CDirModel > fModel;
             std::unique_ptr< Ui::CMergeSRTPage > fImpl;

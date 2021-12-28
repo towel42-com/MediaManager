@@ -71,11 +71,11 @@ namespace NMediaManager
             connect( fImpl->exactMatchesOnly, &QCheckBox::clicked, this, &CSelectTMDB::slotExactOrForTVShowsChanged );
             connect( fImpl->searchForTVShows, &QCheckBox::clicked, this, &CSelectTMDB::slotExactOrForTVShowsChanged );
 
-            connect( fImpl->searchName, &CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchTextChanged );
-            connect( fImpl->searchSeason, &CDelaySpinBox::sigValueChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
-            connect( fImpl->searchEpisode, &CDelaySpinBox::sigValueChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
-            connect( fImpl->searchReleaseYear, &CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
-            connect( fImpl->searchTMDBID, &CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
+            connect( fImpl->searchName, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchTextChanged );
+            connect( fImpl->searchSeason, &NSABUtils::CDelaySpinBox::sigValueChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
+            connect( fImpl->searchEpisode, &NSABUtils::CDelaySpinBox::sigValueChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
+            connect( fImpl->searchReleaseYear, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
+            connect( fImpl->searchTMDBID, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
             connect( fImpl->results->selectionModel(), &QItemSelectionModel::selectionChanged, this, &CSelectTMDB::slotItemChanged );
             connect( fImpl->results, &QTreeWidget::itemDoubleClicked, this, &CSelectTMDB::slotAcceptItem );
 
@@ -93,11 +93,11 @@ namespace NMediaManager
             disconnect( fImpl->exactMatchesOnly, &QCheckBox::clicked, this, &CSelectTMDB::slotExactOrForTVShowsChanged );
             disconnect( fImpl->searchForTVShows, &QCheckBox::clicked, this, &CSelectTMDB::slotExactOrForTVShowsChanged );
 
-            disconnect( fImpl->searchName, &CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchTextChanged);
-            disconnect( fImpl->searchSeason, &CDelaySpinBox::sigValueChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
-            disconnect( fImpl->searchEpisode, &CDelaySpinBox::sigValueChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
-            disconnect( fImpl->searchReleaseYear, &CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
-            disconnect( fImpl->searchTMDBID, &CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
+            disconnect( fImpl->searchName, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchTextChanged);
+            disconnect( fImpl->searchSeason, &NSABUtils::CDelaySpinBox::sigValueChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
+            disconnect( fImpl->searchEpisode, &NSABUtils::CDelaySpinBox::sigValueChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
+            disconnect( fImpl->searchReleaseYear, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
+            disconnect( fImpl->searchTMDBID, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
 
             fImpl->resultExtraInfo->setText(searchInfo->getExtendedInfo());
 
@@ -116,11 +116,11 @@ namespace NMediaManager
             connect( fImpl->exactMatchesOnly, &QCheckBox::clicked, this, &CSelectTMDB::slotExactOrForTVShowsChanged );
             connect( fImpl->searchForTVShows, &QCheckBox::clicked, this, &CSelectTMDB::slotExactOrForTVShowsChanged );
 
-            connect( fImpl->searchName, &CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchTextChanged);
-            connect( fImpl->searchSeason, &CDelaySpinBox::sigValueChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
-            connect( fImpl->searchEpisode, &CDelaySpinBox::sigValueChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
-            connect( fImpl->searchReleaseYear, &CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
-            connect( fImpl->searchTMDBID, &CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
+            connect( fImpl->searchName, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchTextChanged);
+            connect( fImpl->searchSeason, &NSABUtils::CDelaySpinBox::sigValueChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
+            connect( fImpl->searchEpisode, &NSABUtils::CDelaySpinBox::sigValueChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
+            connect( fImpl->searchReleaseYear, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
+            connect( fImpl->searchTMDBID, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
         }
 
         void CSelectTMDB::slotReset()
@@ -208,7 +208,7 @@ namespace NMediaManager
             if ( fCurrentResults.empty() )
             {
                 delete fButtonEnabler;
-                fButtonEnabler = new CButtonEnabler( fImpl->results, fImpl->buttonBox->button( QDialogButtonBox::Ok ) );
+                fButtonEnabler = new NSABUtils::CButtonEnabler( fImpl->results, fImpl->buttonBox->button( QDialogButtonBox::Ok ) );
 
                 fLoading = false;
                 fSearchTMDB->resetResults();

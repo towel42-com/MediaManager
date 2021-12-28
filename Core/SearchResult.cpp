@@ -38,12 +38,12 @@ namespace NMediaManager
 
         QString SSearchResult::getTitle() const
         {
-            return NStringUtils::transformTitle( fTitle );
+            return NSABUtils::NStringUtils::transformTitle( fTitle );
         }
 
         QString SSearchResult::getYear() const
         {
-            auto dt = NQtUtils::findDate( fReleaseDate );
+            auto dt = NSABUtils::findDate( fReleaseDate );
             if ( !dt.isValid() )
                 return QString();
             return QString::number( dt.year() );
@@ -51,7 +51,7 @@ namespace NMediaManager
 
         QString SSearchResult::getEpisodeTitle() const
         {
-            return NStringUtils::transformTitle( fEpisodeTitle );
+            return NSABUtils::NStringUtils::transformTitle( fEpisodeTitle );
         }
 
         QString SSearchResult::getTMDBID() const

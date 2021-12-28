@@ -75,8 +75,8 @@ namespace NMediaManager
             fExtraStringModel = new QStringListModel(this);
             fImpl->knownExtraStrings->setModel(fExtraStringModel);
 
-            new CButtonEnabler( fImpl->knownStrings, fImpl->btnDelKnownString );
-            new CButtonEnabler(fImpl->knownExtraStrings, fImpl->btnDelExtraString);
+            new NSABUtils::CButtonEnabler( fImpl->knownStrings, fImpl->btnDelKnownString );
+            new NSABUtils::CButtonEnabler(fImpl->knownExtraStrings, fImpl->btnDelExtraString);
             loadSettings();
             QSettings settings;
             fImpl->tabWidget->setCurrentIndex( settings.value( "LastPrefPage", 0 ).toInt() );

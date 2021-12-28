@@ -123,7 +123,7 @@ namespace NMediaManager
             delete fIconProvider;
         }
 
-        void CDirModel::setRootPath( const QString & rootPath, QTreeView * view, QPlainTextEdit * resultsView, std::shared_ptr< CDoubleProgressDlg > dlg )
+        void CDirModel::setRootPath( const QString & rootPath, QTreeView * view, QPlainTextEdit * resultsView, std::shared_ptr< NSABUtils::CDoubleProgressDlg > dlg )
         {
             fRootPath = rootPath;
             reloadModel( view, resultsView, dlg );
@@ -145,13 +145,13 @@ namespace NMediaManager
             return nm;
         }
 
-        void CDirModel::setNameFilters( const QStringList & filters, QTreeView * view, QPlainTextEdit * resultsView, std::shared_ptr< CDoubleProgressDlg > dlg )
+        void CDirModel::setNameFilters( const QStringList & filters, QTreeView * view, QPlainTextEdit * resultsView, std::shared_ptr< NSABUtils::CDoubleProgressDlg > dlg )
         {
             fNameFilter = filters;
             reloadModel( view, resultsView, dlg );
         }
 
-        void CDirModel::reloadModel( QTreeView * view, QPlainTextEdit * resultsView, std::shared_ptr< CDoubleProgressDlg > dlg )
+        void CDirModel::reloadModel( QTreeView * view, QPlainTextEdit * resultsView, std::shared_ptr< NSABUtils::CDoubleProgressDlg > dlg )
         {
             fTreeView = view;
             fResults = resultsView;
@@ -164,7 +164,7 @@ namespace NMediaManager
 
         void CDirModel::slotLoadRootDirectory()
         {
-            CAutoWaitCursor awc;
+            NSABUtils::CAutoWaitCursor awc;
 
             clear();
             auto headers = QStringList() << tr( "Name" ) << tr( "Size" ) << tr( "Type" ) << tr( "Date Modified" );
@@ -719,7 +719,7 @@ namespace NMediaManager
             nameItem.setData( fileInfo.absoluteFilePath(), ECustomRoles::eFullPathRole );
             nameItem.setData( fileInfo.isDir(), ECustomRoles::eIsDir );
             fItems.push_back( nameItem );
-            fItems.push_back( STreeNodeItem( fileInfo.isFile() ? NFileUtils::fileSizeString( fileInfo ) : QString(), EColumns::eFSSize ) );
+            fItems.push_back( STreeNodeItem( fileInfo.isFile() ? NSABUtils::NFileUtils::fileSizeString( fileInfo ) : QString(), EColumns::eFSSize ) );
             if ( fileInfo.isFile() )
             {
                 fItems.back().fAlignment = Qt::AlignRight | Qt::AlignVCenter;
@@ -1444,7 +1444,7 @@ namespace NMediaManager
                         }
                         else
                         {
-                            auto timeStamps = NFileUtils::timeStamps( oldName );
+                            auto timeStamps = NSABUtils::NFileUtils::timeStamps( oldName );
                             if ( fProgressDlg )
                             {
                                 fProgressDlg->setValue( fProgressDlg->value() + 1 );
@@ -1488,7 +1488,7 @@ namespace NMediaManager
                                 {
                                     if ( newFileInfo.isFile() && oldFileInfo.isFile() )
                                     {
-                                        if ( NFileUtils::CFileCompare( oldFileInfo, newFileInfo ).compare() )
+                                        if (NSABUtils::NFileUtils::CFileCompare( oldFileInfo, newFileInfo ).compare() )
                                         {
                                             aOK = QFile( oldName ).remove();
                                             if ( !aOK )
@@ -1497,7 +1497,7 @@ namespace NMediaManager
                                         else
                                         {
                                             aOK = false;
-                                            errorMsg = QString( "Destination file Exists - Old Size: %1 New Size: %2" ).arg( NFileUtils::fileSizeString( oldName, false ) ).arg( NFileUtils::fileSizeString( newName, false ) );
+                                            errorMsg = QString( "Destination file Exists - Old Size: %1 New Size: %2" ).arg(NSABUtils::NFileUtils::fileSizeString( oldName, false ) ).arg(NSABUtils::NFileUtils::fileSizeString( newName, false ) );
                                         }
                                     }
                                     else
@@ -1553,7 +1553,7 @@ namespace NMediaManager
                                 }
                                 else
                                 {
-                                    aOK = NFileUtils::setTimeStamps( newName, timeStamps );
+                                    aOK = NSABUtils::NFileUtils::setTimeStamps( newName, timeStamps );
                                     if ( fProgressDlg )
                                     {
                                         fProgressDlg->setValue( fProgressDlg->value() + 1 );
@@ -1630,7 +1630,7 @@ namespace NMediaManager
                 }
 
                 aOK = aOK && checkProcessItemExists( processInfo.fOldName, processInfo.fItem );
-                processInfo.fTimeStamps = NFileUtils::timeStamps( processInfo.fOldName );
+                processInfo.fTimeStamps = NSABUtils::NFileUtils::timeStamps( processInfo.fOldName );
 
                 processInfo.fArgs = QStringList()
                     << "-y"
@@ -1728,7 +1728,7 @@ namespace NMediaManager
                         }
                     }
                     // aOK = the MKV and SRT exist and the cmd is an executable
-                    processInfo.fTimeStamps = NFileUtils::timeStamps( processInfo.fOldName );
+                    processInfo.fTimeStamps = NSABUtils::NFileUtils::timeStamps( processInfo.fOldName );
 
 
                     processInfo.fArgs = QStringList()
@@ -1832,12 +1832,12 @@ namespace NMediaManager
 
         void CDirModel::process( bool displayOnly )
         {
-            CAutoWaitCursor awc;
+            NSABUtils::CAutoWaitCursor awc;
             fProcessResults.second = std::make_shared< QStandardItemModel >();
             if ( fProgressDlg )
             {
-                disconnect( fProgressDlg.get(), &CDoubleProgressDlg::canceled, this, &CDirModel::slotProgressCanceled );
-                connect( fProgressDlg.get(), &CDoubleProgressDlg::canceled, this, &CDirModel::slotProgressCanceled );
+                disconnect( fProgressDlg.get(), &NSABUtils::CDoubleProgressDlg::canceled, this, &CDirModel::slotProgressCanceled );
+                connect( fProgressDlg.get(), &NSABUtils::CDoubleProgressDlg::canceled, this, &CDirModel::slotProgressCanceled );
             }
 
             fProcessResults.first = process( invisibleRootItem(), displayOnly, nullptr );
@@ -1862,7 +1862,7 @@ namespace NMediaManager
             return dlg.exec() == QDialog::Accepted;
         }
 
-        bool CDirModel::process( const std::function< std::shared_ptr< CDoubleProgressDlg >( int count ) > & startProgress, const std::function< void( std::shared_ptr< CDoubleProgressDlg > ) > & endProgress, QWidget * parent )
+        bool CDirModel::process( const std::function< std::shared_ptr< NSABUtils::CDoubleProgressDlg >( int count ) > & startProgress, const std::function< void( std::shared_ptr< NSABUtils::CDoubleProgressDlg > ) > & endProgress, QWidget * parent )
         {
             fProgressDlg = startProgress( 0 );
             process( true );
@@ -1883,7 +1883,7 @@ namespace NMediaManager
 
             int count = 0;
             if ( isTransformModel() )
-                count = NQtUtils::itemCount( fProcessResults.second.get(), true );
+                count = NSABUtils::itemCount( fProcessResults.second.get(), true );
             else if ( isMergeSRTModel() )
             {
                 auto mkvFiles = getChildMKVFiles( invisibleRootItem(), true );
@@ -2206,13 +2206,13 @@ namespace NMediaManager
 
         void CDirModel::slotProcessStandardError()
         {
-            NQtUtils::appendToLog( fResults, fProcess->readAllStandardError(), fStdErrRemaining );
+            NSABUtils::appendToLog( fResults, fProcess->readAllStandardError(), fStdErrRemaining );
         }
 
         void CDirModel::slotProcessStandardOutput()
         {
             auto string = fProcess->readAllStandardOutput();
-            NQtUtils::appendToLog( fResults, string, fStdOutRemaining );
+            NSABUtils::appendToLog( fResults, string, fStdOutRemaining );
 
             if ( fProgressDlg )
             {
@@ -2294,7 +2294,7 @@ namespace NMediaManager
                 return;
             }
 
-            if ( !NFileUtils::setTimeStamps( fOldName, fTimeStamps ) )
+            if ( !NSABUtils::NFileUtils::setTimeStamps( fOldName, fTimeStamps ) )
             {
                 auto errorItem = new QStandardItem( QString( "ERROR: %1: FAILED TO MODIFY TIMESTAMP" ).arg( model->getDispName( fOldName ) ) );
                 errorItem->setData( ECustomRoles::eIsErrorNode, true );

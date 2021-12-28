@@ -135,7 +135,7 @@ namespace NMediaManager
         {
             auto h1 = std::hash<ERequestType>()( fRequestType );
             auto h2 = std::hash<QString>()( fURLPathKey );
-            return HashCombine( h1, h2 ); // as a key, it only depends on the URL and type
+            return NSABUtils::HashCombine( h1, h2 ); // as a key, it only depends on the URL and type
         }
 
         void CNetworkReply::reportUnhandled() const

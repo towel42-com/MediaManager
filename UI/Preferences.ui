@@ -320,7 +320,7 @@
       </attribute>
       <layout class="QGridLayout" name="gridLayout_6">
        <item row="0" column="1">
-        <widget class="CDelayLineEdit" name="mkvMergeExe">
+        <widget class="NSABUtils::CDelayLineEdit" name="mkvMergeExe">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -330,7 +330,7 @@
         </widget>
        </item>
        <item row="1" column="1">
-        <widget class="CDelayLineEdit" name="mkvPropEditExe">
+        <widget class="NSABUtils::CDelayLineEdit" name="mkvPropEditExe">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -396,7 +396,7 @@
         </widget>
        </item>
        <item row="2" column="1">
-        <widget class="CDelayLineEdit" name="ffmpegExe"/>
+        <widget class="NSABUtils::CDelayLineEdit" name="ffmpegExe"/>
        </item>
        <item row="2" column="2">
         <widget class="QToolButton" name="btnSelectFFMpegExe">
@@ -417,7 +417,7 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>CDelayLineEdit</class>
+   <class>NSABUtils::CDelayLineEdit</class>
    <extends>QLineEdit</extends>
    <header>SABUtils/DelayLineEdit.h</header>
   </customwidget>

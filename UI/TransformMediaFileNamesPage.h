@@ -25,18 +25,21 @@
 
 #include <QWidget>
 #include <optional>
-class CDoubleProgressDlg;
 class QTreeView;
 class QLineEdit;
 class CDelayLineEdit;
 class QToolBar;
-namespace NBIF
-{
-    class CBIFFile;
-    class CBIFModel;
-    enum class EButtonsLayout;
-}
 class QSpinBox;
+namespace NSABUtils
+{
+    class CDoubleProgressDlg;
+    namespace NBIF
+    {
+        class CFile;
+        class CModel;
+        enum class EButtonsLayout;
+    }
+}
 
 namespace NMediaManager
 {
@@ -70,7 +73,7 @@ namespace NMediaManager
             void setTreatAsTVByDefault( bool value );
             void setExactMatchesOnly( bool value );
 
-            void setSetupProgressDlgFunc( std::function< std::shared_ptr< CDoubleProgressDlg >( const QString &title, const QString &cancelButtonText, int max ) > setupFunc, std::function< void() > clearFunc );
+            void setSetupProgressDlgFunc( std::function< std::shared_ptr< NSABUtils::CDoubleProgressDlg >( const QString &title, const QString &cancelButtonText, int max ) > setupFunc, std::function< void() > clearFunc );
         public Q_SLOTS:
             void slotLoadFinished( bool canceled );
             void slotProcessingStarted();
@@ -92,9 +95,9 @@ namespace NMediaManager
 
             NCore::CSearchTMDB *fSearchTMDB{ nullptr };
             uint64_t fSearchesCompleted{ 0 };
-            std::function< std::shared_ptr< CDoubleProgressDlg >( const QString &title, const QString &cancelButtonText, int max ) > fSetupProgressFunc;
+            std::function< std::shared_ptr< NSABUtils::CDoubleProgressDlg >( const QString &title, const QString &cancelButtonText, int max ) > fSetupProgressFunc;
             std::function< void() > fClearProgressFunc;
-            std::shared_ptr< CDoubleProgressDlg > fProgressDlg;
+            std::shared_ptr< NSABUtils::CDoubleProgressDlg > fProgressDlg;
             QString fDirName;
             std::unique_ptr< NCore::CDirModel > fModel;
             std::unique_ptr< Ui::CTransformMediaFileNamesPage > fImpl;
