@@ -50,10 +50,10 @@ namespace NMediaManager
             connect( fImpl->btnDelExtraString, &QToolButton::clicked, this, &CPreferences::slotDelExtraString );
             connect( fImpl->btnAddAbbreviation, &QToolButton::clicked, this, &CPreferences::slotAddAbbreviation );
             connect( fImpl->btnDelAbbreviation, &QToolButton::clicked, this, &CPreferences::slotDelAbbreviation );
-            connect( fImpl->btnAddIgnoreFileName, &QToolButton::clicked, this, &CPreferences::slotAddIgnoreFileName );
-            connect( fImpl->btnDelIgnoreFileName, &QToolButton::clicked, this, &CPreferences::slotDelIgnoreFileName );
-            connect( fImpl->btnAddIgnoreDir, &QToolButton::clicked, this, &CPreferences::slotAddIgnoreDir );
-            connect( fImpl->btnDelIgnoreDir, &QToolButton::clicked, this, &CPreferences::slotDelIgnoreDir );
+            connect( fImpl->btnAddIgnorePathName, &QToolButton::clicked, this, &CPreferences::slotAddIgnorePathName );
+            connect( fImpl->btnDelIgnorePathName, &QToolButton::clicked, this, &CPreferences::slotDelIgnorePathName );
+            connect( fImpl->btnAddSkipPathName, &QToolButton::clicked, this, &CPreferences::slotAddSkipPathName );
+            connect( fImpl->btnDelSkipPathName, &QToolButton::clicked, this, &CPreferences::slotDelSkipPathName );
 
             connect( fImpl->pageSelector, &QTreeWidget::currentItemChanged,   this, &CPreferences::slotPageSelectorCurrChanged );
             connect( fImpl->pageSelector, &QTreeWidget::itemActivated, this, &CPreferences::slotPageSelectorItemActived );
@@ -101,17 +101,17 @@ namespace NMediaManager
             fAbbreviationsModel = new NSABUtils::CKeyValuePairModel( this );
             fImpl->knownAbbreviations->setModel( fAbbreviationsModel );
 
-            fIgnoreDirNamesModel = new QStringListModel( this );
-            fImpl->dirNamesToIgnore->setModel( fIgnoreDirNamesModel );
+            fSkipPathNamesModel = new QStringListModel( this );
+            fImpl->pathNamesToSkip->setModel( fSkipPathNamesModel );
 
-            fIgnoreFileNamesModel = new QStringListModel( this );
-            fImpl->fileNamesToIgnore->setModel( fIgnoreFileNamesModel );
+            fIgnorePathNamesModel = new QStringListModel( this );
+            fImpl->pathNamesToIgnore->setModel( fIgnorePathNamesModel );
 
             new NSABUtils::CButtonEnabler( fImpl->knownStrings, fImpl->btnDelKnownString );
             new NSABUtils::CButtonEnabler( fImpl->knownExtraStrings, fImpl->btnDelExtraString );
             new NSABUtils::CButtonEnabler( fImpl->knownAbbreviations, fImpl->btnDelAbbreviation );
-            new NSABUtils::CButtonEnabler( fImpl->dirNamesToIgnore, fImpl->btnDelIgnoreDir );
-            new NSABUtils::CButtonEnabler( fImpl->fileNamesToIgnore, fImpl->btnDelIgnoreFileName );
+            new NSABUtils::CButtonEnabler( fImpl->pathNamesToSkip, fImpl->btnDelSkipPathName );
+            new NSABUtils::CButtonEnabler( fImpl->pathNamesToIgnore, fImpl->btnDelIgnorePathName );
 
             loadSettings();
 
@@ -157,13 +157,18 @@ namespace NMediaManager
             QDialog::accept();
         }
 
-        void CPreferences::addString( const QString & title, const QString & label, QStringListModel * model, QListView * listView )
+        void CPreferences::addString( const QString & title, const QString & label, QStringListModel * model, QListView * listView, bool splitWords )
         {
             auto text = QInputDialog::getText( this, title, label ).trimmed();
             if ( text.isEmpty() )
                 return;
 
-            auto words = text.split( QRegularExpression( "\\s" ), Qt::SkipEmptyParts );
+            QStringList words;
+            if ( splitWords )
+                words = text.split( QRegularExpression( "\\s" ), Qt::SkipEmptyParts );
+            else
+                words.push_back( text );
+
             auto strings = model->stringList();
 
             for ( auto && ii : words )
@@ -200,7 +205,7 @@ namespace NMediaManager
 
         void CPreferences::slotAddKnownString()
         {
-            addString( tr( "Add Known String" ), tr( "String:" ), fKnownStringModel, fImpl->knownStrings );
+            addString( tr( "Add Known String" ), tr( "String:" ), fKnownStringModel, fImpl->knownStrings, true );
         }
 
         void CPreferences::slotDelKnownString()
@@ -210,7 +215,7 @@ namespace NMediaManager
 
         void CPreferences::slotAddExtraString()
         {
-            addString( tr( "Add Known String For Extended Information" ), tr( "String:" ), fExtraStringModel, fImpl->knownExtraStrings );
+            addString( tr( "Add Known String For Extended Information" ), tr( "String:" ), fExtraStringModel, fImpl->knownExtraStrings, true );
         }
 
         void CPreferences::slotDelExtraString()
@@ -241,24 +246,24 @@ namespace NMediaManager
             fImpl->knownAbbreviations->scrollTo( fKnownStringModel->index( selected.front().row(), 0 ) );
         }
 
-        void CPreferences::slotAddIgnoreFileName()
+        void CPreferences::slotAddSkipPathName()
         {
-            addString( tr( "Add File Name to Ignore" ), tr( "File Name:" ), fIgnoreFileNamesModel, fImpl->fileNamesToIgnore );
+            addString( tr( "Add Path Name to Skip" ), tr( "Path Name:" ), fSkipPathNamesModel, fImpl->pathNamesToSkip, false );
         }
 
-        void CPreferences::slotDelIgnoreFileName()
+        void CPreferences::slotDelSkipPathName()
         {
-            delString( fIgnoreFileNamesModel, fImpl->fileNamesToIgnore );
+            delString( fSkipPathNamesModel, fImpl->pathNamesToSkip );
         }
 
-        void CPreferences::slotAddIgnoreDir()
+        void CPreferences::slotAddIgnorePathName()
         {
-            addString( tr( "Add Directory Name to Ignore" ), tr( "Directory Name:" ), fIgnoreDirNamesModel, fImpl->dirNamesToIgnore );
+            addString( tr( "Add Path Name to Ignore" ), tr( "Path Name:" ), fIgnorePathNamesModel, fImpl->pathNamesToIgnore, false );
         }
 
-        void CPreferences::slotDelIgnoreDir()
+        void CPreferences::slotDelIgnorePathName()
         {
-            delString( fIgnoreDirNamesModel, fImpl->dirNamesToIgnore );
+            delString( fIgnorePathNamesModel, fImpl->pathNamesToIgnore );
         }
 
         void CPreferences::slotSelectMKVMergeExe()
@@ -376,8 +381,8 @@ namespace NMediaManager
             fKnownStringModel->setStringList( NCore::CPreferences::instance()->getKnownStrings() );
             fExtraStringModel->setStringList( NCore::CPreferences::instance()->getKnownExtendedStrings() );
             fAbbreviationsModel->setValues( NCore::CPreferences::instance()->getKnownAbbreviations() );
-            fIgnoreDirNamesModel->setStringList( NCore::CPreferences::instance()->getIgnoredDirectories() );
-            fIgnoreFileNamesModel->setStringList( NCore::CPreferences::instance()->getIgnoredFileNames() );
+            fIgnorePathNamesModel->setStringList( NCore::CPreferences::instance()->getIgnoredPaths() );
+            fSkipPathNamesModel->setStringList( NCore::CPreferences::instance()->getSkippedPaths() );
 
             fImpl->mediaExtensions->setText( NCore::CPreferences::instance()->getMediaExtensions().join( ";" ) );
             fImpl->subtitleExtensions->setText( NCore::CPreferences::instance()->getSubtitleExtensions().join( ";" ) );
@@ -401,8 +406,8 @@ namespace NMediaManager
             NCore::CPreferences::instance()->setKnownStrings( fKnownStringModel->stringList() );
             NCore::CPreferences::instance()->setKnownExtendedStrings( fExtraStringModel->stringList() );
             NCore::CPreferences::instance()->setKnownAbbreviations( fAbbreviationsModel->data() );
-            NCore::CPreferences::instance()->setIgnoredDirectories( fIgnoreDirNamesModel->stringList() );
-            NCore::CPreferences::instance()->setIgnoredFileNames( fIgnoreFileNamesModel->stringList() );
+            NCore::CPreferences::instance()->setSkippedPaths( fSkipPathNamesModel->stringList() );
+            NCore::CPreferences::instance()->setIgnoredPaths( fIgnorePathNamesModel->stringList() );
 
             NCore::CPreferences::instance()->setTreatAsTVShowByDefault( fImpl->treatAsTVShowByDefault->isChecked() );
             NCore::CPreferences::instance()->setExactMatchesOnly( fImpl->exactMatchesOnly->isChecked() );

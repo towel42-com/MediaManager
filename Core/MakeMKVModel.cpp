@@ -86,6 +86,7 @@ namespace NMediaManager
                 return std::make_pair( true, nullptr );
 
             SProcessInfo processInfo;
+            processInfo.fSetMKVTagsOnSuccess = true;
             processInfo.fOldName = item->data( ECustomRoles::eFullPathRole ).toString();
             auto fi = QFileInfo( processInfo.fOldName );
             processInfo.fNewName = fi.absoluteDir().absoluteFilePath( fi.completeBaseName() + ".mkv" );

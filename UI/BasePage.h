@@ -101,7 +101,7 @@ namespace NMediaManager
             virtual void postLoadFinished( bool /*canceled*/ ) {}
             virtual void setupModel();
 
-            void setupProgressDlg( const QString & title, const QString & cancelButtonText, int max );
+            void setupProgressDlg( const QString & title, const QString & cancelButtonText, int max, int eventsPerPath=1);
             void clearProgressDlg();
 
             virtual void loadSettings();

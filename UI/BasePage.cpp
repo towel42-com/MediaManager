@@ -93,7 +93,7 @@ namespace NMediaManager
             fProgressDlg->hide();
         }
 
-        void CBasePage::setupProgressDlg( const QString & title, const QString & cancelButtonText, int max )
+        void CBasePage::setupProgressDlg( const QString & title, const QString & cancelButtonText, int max, int eventsPerPath )
         {
             fProgressDlg->reset();
 
@@ -113,7 +113,8 @@ namespace NMediaManager
             fProgressDlg->setValue( 0 );
             fProgressDlg->setWindowTitle( title );
             fProgressDlg->setCancelButtonText( cancelButtonText );
-            fProgressDlg->setRange( 0, max );
+            fProgressDlg->setRange( 0, max*eventsPerPath );
+            fProgressDlg->setPrimaryEventsPerIncrement( eventsPerPath );
             fProgressDlg->show();
         }
 
@@ -151,7 +152,7 @@ namespace NMediaManager
             connect( fModel.get(), &NCore::CDirModel::sigDirReloaded, this, &CBasePage::slotLoadFinished );
             connect( fModel.get(), &NCore::CDirModel::sigProcessingStarted, this, &CBasePage::slotProcessingStarted );
             setupModel();
-            setupProgressDlg( loadTitleName(), loadCancelName(), 1 );
+            setupProgressDlg( loadTitleName(), loadCancelName(), 1, 1 );
 
             emit sigStartStayAwake();
             emit sigLoading();
@@ -195,9 +196,9 @@ namespace NMediaManager
             if ( fModel )
             {
                 fModel->process(
-                    [ actionName, cancelName, this ]( int count )
+                    [ actionName, cancelName, this ]( int count, int eventsPerPath )
                 {
-                    setupProgressDlg( actionName, cancelName, count );
+                    setupProgressDlg( actionName, cancelName, count, eventsPerPath );
                 },
                     [ this ]( bool finalStep )
                 { 

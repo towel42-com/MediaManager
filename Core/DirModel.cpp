@@ -292,7 +292,7 @@ namespace NMediaManager
                 if ( progressDlg() )
                     progressDlg()->setLabelText( tr( "Searching Directory '%1'" ).arg( QDir( fRootPath ).relativeFilePath( dirInfo.absoluteFilePath() ) ) );
 
-                if ( isExcludedDirName( dirInfo ) )
+                if ( isSkippedDirName( dirInfo ) )
                 {
                     //qDebug().noquote().nospace() << "Pre Directory B: returning false" << dirInfo.absoluteFilePath() << tree;
                     return false;
@@ -387,17 +387,14 @@ namespace NMediaManager
             return prevParent;
         }
 
-        bool CDirModel::isExcludedDirName( const QFileInfo & ii ) const
+        bool CDirModel::isSkippedDirName( const QFileInfo & ii ) const
         {
-            auto fn = ii.fileName().toLower();
-
-            return fn.endsWith( "-ignore" ) || NCore::CPreferences::instance()->isIgnoredPath( ii );
+            return NCore::CPreferences::instance()->isSkippedPath( ii );
         }
 
         bool CDirModel::isIgnoredPathName( const QFileInfo & ii ) const
         {
-            auto fn = ii.fileName().toLower();
-            return fn.contains( "-ignore" ) || NCore::CPreferences::instance()->isIgnoredPath( ii );
+            return NCore::CPreferences::instance()->isIgnoredPath( ii );
         }
 
         STreeNode CDirModel::getItemRow( const QFileInfo & fileInfo ) const
@@ -579,9 +576,13 @@ namespace NMediaManager
 
         bool CDirModel::canAutoSearch( const QFileInfo & fileInfo ) const
         {
+            if ( CPreferences::instance()->isIgnoredPath( fileInfo ) || CPreferences::instance()->isSkippedPath( fileInfo ) )
+                return false;
+
             bool isLangFormat;
             if ( CPreferences::instance()->isSubtitleFile( fileInfo, &isLangFormat ) && !isLangFormat )
                 return false;
+
             if ( !fileInfo.isDir() )
                 return true;
 
@@ -749,9 +750,9 @@ namespace NMediaManager
             QStandardItemModel::clear();
         }
 
-        bool CDirModel::process( const std::function< void( int count ) > & startProgress, const std::function< void( bool finalStep ) > & endProgress, QWidget * parent )
+        bool CDirModel::process( const std::function< void( int count, int eventsPerPath ) > & startProgress, const std::function< void( bool finalStep ) > & endProgress, QWidget * parent )
         {
-            startProgress( 0 );
+            startProgress( 0, 1 );
             process( true );
             if ( fProcessResults.second && fProcessResults.second->rowCount() == 0 )
             {
@@ -769,7 +770,7 @@ namespace NMediaManager
             }
 
             int count = computeNumberOfItems();
-            startProgress( count * eventsPerPath() );
+            startProgress( count, eventsPerPath() );
             emit sigProcessingStarted();
             process( false );
             if ( !fProcessResults.first )
@@ -804,7 +805,7 @@ namespace NMediaManager
             return item->checkState() != Qt::Unchecked;
         }
 
-        bool CDirModel::SetMKVTags( const QString & fileName, std::shared_ptr< SSearchResult > & searchResults, QString & msg ) const
+        bool CDirModel::SetMKVTags( const QString & fileName, QString title, const QString & year, QString * msg ) const
         {
             Q_INIT_RESOURCE( core );
             if ( !QFileInfo( fileName ).isFile() )
@@ -813,21 +814,22 @@ namespace NMediaManager
             auto mkvpropedit = CPreferences::instance()->getMKVPropEditEXE();
             if ( !QFileInfo( mkvpropedit ).isExecutable() )
             {
-                msg = tr( "MKV PropEdit not found or is not an executable" );
+                if ( msg )
+                    *msg = tr( "MKVPropEdit not found or is not an executable" );
                 return false;
             }
-            QString year;
-            QString title = QFileInfo( fileName ).completeBaseName();
-            if ( searchResults )
-            {
-                year = searchResults->getYear();
-            }
+
             auto file = QFile( ":/resources/BlankTags.xml" );
             if ( !file.open( QFile::ReadOnly ) )
             {
-                msg = tr( "Internal error, could not open blank tags file" );
+                if ( msg )
+                    *msg = tr( "Internal error, could not open blank tags file" );
                 return false;
             }
+
+            if ( title.isEmpty() )
+                title = QFileInfo( fileName ).completeBaseName();
+
             auto xml = file.readAll();
             xml.replace( QByteArray( "%TITLE%" ), title.toUtf8() );
             xml.replace( QByteArray( "%YEAR%" ), year.toUtf8() );
@@ -837,7 +839,8 @@ namespace NMediaManager
             auto tmplate = tmpFile.fileTemplate();
             if ( !tmpFile.open() )
             {
-                msg = tr( "Internal error, could not open blank tags file" );
+                if ( msg )
+                    *msg = tr( "Internal error, could not open blank tags file" );
                 return false;
             }
 
@@ -858,15 +861,18 @@ namespace NMediaManager
 
             if ( retVal == -1 )
             {
-                msg = "MKV Prop Edit crashed";
+                if ( msg )
+                    *msg = "MKVPropEdit crashed";
             }
             else if ( retVal == -2 )
             {
-                msg = "MKV Prop Edit could not be started";
+                if ( msg )
+                    *msg = "MKVPropEdit could not be started";
             }
             else if ( retVal != 0 )
             {
-                msg = "MKV Prop Edit returned with an unknown error";
+                if ( msg )
+                    *msg = "MKVPropEdit returned with an unknown error";
             }
 
             return retVal == 0;
@@ -905,6 +911,11 @@ namespace NMediaManager
 
             auto && curr = fProcessQueue.front();
 
+            fProcessFinishedHandled = false;
+            if ( progressDlg() )
+            {
+                progressDlg()->setLabelText( getProgressLabel( curr ) );
+            }
             if ( log() )
             {
                 auto tmp = QStringList() << curr.fCmd << curr.fArgs;
@@ -915,11 +926,7 @@ namespace NMediaManager
                 }
                 log()->appendPlainText( "Running Command:" + tmp.join( " " ) );
             }
-            if ( progressDlg() )
-            {
-                progressDlg()->setLabelText( getProgressLabel( curr ) );
-            }
-            fProcessFinishedHandled = false;
+
             fProcess->start( curr.fCmd, curr.fArgs );
         }
 
@@ -981,7 +988,9 @@ namespace NMediaManager
             fProcessQueue.front().cleanup( this, !error && !wasCanceled );
 
             if ( !fProcessQueue.empty() )
+            {
                 fProcessQueue.pop_front();
+            }
 
             if ( wasCanceled )
                 fProcessQueue.clear();
@@ -1043,6 +1052,19 @@ namespace NMediaManager
             if ( !QFile::rename( fOldName, backupName ) )
             {
                 auto errorItem = new QStandardItem( QString( "ERROR: %1: FAILED TO MOVE ITEM TO %2" ).arg( model->getDispName( fOldName ) ).arg( model->getDispName( backupName ) ) );
+                errorItem->setData( ECustomRoles::eIsErrorNode, true );
+                CDirModel::appendError( fItem, errorItem );
+
+                QIcon icon;
+                icon.addFile( QString::fromUtf8( ":/resources/error.png" ), QSize(), QIcon::Normal, QIcon::Off );
+                errorItem->setIcon( icon );
+                model->fProcessResults.first = false;
+                return;
+            }
+
+            if ( fSetMKVTagsOnSuccess && !model->SetMKVTags( fNewName ) )
+            {
+                auto errorItem = new QStandardItem( QString( "ERROR: %1: FAILED TO SET MKV Tags" ).arg( model->getDispName( fNewName ) ) );
                 errorItem->setData( ECustomRoles::eIsErrorNode, true );
                 CDirModel::appendError( fItem, errorItem );
 

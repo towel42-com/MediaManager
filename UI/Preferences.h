@@ -52,10 +52,10 @@ namespace NMediaManager
             void slotDelExtraString();
             void slotAddAbbreviation();
             void slotDelAbbreviation();
-            void slotAddIgnoreFileName();
-            void slotDelIgnoreFileName();
-            void slotAddIgnoreDir();
-            void slotDelIgnoreDir();
+            void slotAddIgnorePathName();
+            void slotDelIgnorePathName();
+            void slotAddSkipPathName();
+            void slotDelSkipPathName();
 
             void slotSelectMKVMergeExe();
             void slotSelectMKVPropEditExe();
@@ -77,14 +77,14 @@ namespace NMediaManager
             void saveSettings();
 
             void updateOtherTool( QObject * sender, const std::pair< QLineEdit *, QString > & lhs, const std::pair< QLineEdit *, QString > & rhs );
-            void addString( const QString & title, const QString & label, QStringListModel * model, QListView * listView );
+            void addString( const QString & title, const QString & label, QStringListModel * model, QListView * listView, bool splitWords );
             void delString( QStringListModel * listModel, QListView * listView );
 
             QStringListModel * fKnownStringModel{ nullptr };
             QStringListModel * fExtraStringModel{ nullptr };
             NSABUtils::CKeyValuePairModel * fAbbreviationsModel{ nullptr };
-            QStringListModel * fIgnoreDirNamesModel{ nullptr };
-            QStringListModel * fIgnoreFileNamesModel{ nullptr };
+            QStringListModel * fSkipPathNamesModel{ nullptr };
+            QStringListModel * fIgnorePathNamesModel{ nullptr };
             std::unordered_map< QString, QWidget * > fPageMap;
             std::unique_ptr< Ui::CPreferences > fImpl;
         };

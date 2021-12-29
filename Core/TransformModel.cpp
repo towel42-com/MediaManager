@@ -796,5 +796,17 @@ namespace NMediaManager
         {
 
         }
+
+        bool CTransformModel::SetMKVTags( const QString & fileName, std::shared_ptr< SSearchResult > & searchResults, QString & msg ) const
+        {
+            QString year;
+            QString title = QFileInfo( fileName ).completeBaseName();
+            if ( searchResults )
+            {
+                year = searchResults->getYear();
+                title = searchResults->getTitle();
+            }
+            return CDirModel::SetMKVTags( fileName, title, year, &msg );
+        }
     }
 }

@@ -137,6 +137,7 @@ namespace NMediaManager
             SProcessInfo() {}
             void cleanup( CDirModel * model, bool aOK );
 
+            bool fSetMKVTagsOnSuccess{ false };
             QString fCmd;
             QStringList fArgs;
             QStandardItem * fItem{ nullptr };
@@ -167,7 +168,7 @@ namespace NMediaManager
             QStandardItem * getItemFromindex( QModelIndex idx ) const;
             QStandardItem * getItemFromPath( const QFileInfo & fi ) const;
 
-            bool process( const std::function< void( int count ) > & startProgress, const std::function< void( bool finalStep ) > & endProgress, QWidget * parent );
+            bool process( const std::function< void( int count, int eventsPerPath ) > & startProgress, const std::function< void( bool finalStep ) > & endProgress, QWidget * parent );
 
             void setNameFilters( const QStringList & filters );
             void reloadModel();
@@ -239,7 +240,7 @@ namespace NMediaManager
             virtual QString getMyTransformedName( const QStandardItem * item, bool parentsOnly ) const;
 
             void processFinished( const QString & msg, bool withError );
-            bool SetMKVTags( const QString & fileName, std::shared_ptr< SSearchResult > & searchResults, QString & msg ) const;
+            bool SetMKVTags( const QString & fileName, QString title=QString(), const QString & year=QString(), QString * msg =nullptr ) const;
 
             void appendRow( QStandardItem * parent, QList< QStandardItem * > & items );
             static void appendError( QStandardItem * parent, QStandardItem * errorNode );
@@ -261,7 +262,7 @@ namespace NMediaManager
             QStandardItem * attachTreeNodes( TParentTree & parentTree ); // returns the root item (col 0) of the leaf node
 
             bool isIgnoredPathName( const QFileInfo & ii ) const;
-            bool isExcludedDirName( const QFileInfo & ii ) const;
+            bool isSkippedDirName( const QFileInfo & ii ) const;
 
             STreeNode getItemRow( const QFileInfo & path ) const;
 

@@ -134,7 +134,7 @@ namespace NMediaManager
             fSearchTMDB->resetResults();
 
             auto count = NSABUtils::itemCount( model(), true );
-            setupProgressDlg( tr( "Finding Results" ), tr( "Cancel" ), count );
+            setupProgressDlg( tr( "Finding Results" ), tr( "Cancel" ), count, 1 );
 
             auto rootIdx = model()->index( 0, 0 );
             bool somethingToSearchFor = autoSearchForNewNames( rootIdx );

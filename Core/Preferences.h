@@ -65,15 +65,14 @@ namespace NMediaManager
             void setMovieOutDirPattern( const QString & value );
             QString getMovieOutDirPattern() const;
 
-            bool isIgnoredDirName( const QFileInfo & fileInfo );
-            bool isIgnoredFileName( const QFileInfo & fileInfo );
-            bool isIgnoredPath( const QFileInfo & fileInfo );
+            bool isSkippedPath( const QFileInfo & fileInfo ) const;
+            bool isIgnoredPath( const QFileInfo & fileInfo ) const;
 
-            QStringList getIgnoredDirectories() const;
-            void setIgnoredDirectories( const QStringList & dirs );
+            QStringList getSkippedPaths() const;
+            void setSkippedPaths( const QStringList & paths );
 
-            QStringList getIgnoredFileNames() const;
-            void setIgnoredFileNames( const QStringList & fileNames );
+            QStringList getIgnoredPaths() const;
+            void setIgnoredPaths( const QStringList & paths );
 
             void setMediaExtensions( const QString & value );
             void setMediaExtensions( const QStringList & value );
@@ -138,6 +137,8 @@ namespace NMediaManager
             int gifDelay() const;
             void setGIFDelay( int delay );
         private:
+            bool pathMatches( const QFileInfo & fileInfo, const QStringList & values ) const;
+            bool containsValue( const QString & value, const QStringList & values ) const;
             //QString getDefaultInPattern( bool forTV ) const;
             QString getDefaultOutDirPattern( bool forTV ) const;
             QString getDefaultOutFilePattern( bool forTV ) const;

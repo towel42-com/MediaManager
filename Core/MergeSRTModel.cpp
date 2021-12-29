@@ -259,6 +259,7 @@ namespace NMediaManager
                     return std::make_pair( true, nullptr );
 
                 SProcessInfo processInfo;
+                processInfo.fSetMKVTagsOnSuccess = true;
                 processInfo.fOldName = computeTransformPath( mkvFile, true );
                 auto oldFI = QFileInfo( processInfo.fOldName );
 
@@ -380,15 +381,15 @@ namespace NMediaManager
 
         bool CMergeSRTModel::postExtProcess( const SProcessInfo & info, QStringList & msgList )
         {
+            bool aOK = CDirModel::postExtProcess( info, msgList );
             QStringList retVal;
-            bool aOK = true;
-            if ( !QFile::rename( info.fNewName, info.fOldName ) )
+            if ( aOK && !QFile::rename( info.fNewName, info.fOldName ) )
             {
                 msgList << QString( "ERROR: %1: FAILED TO MOVE ITEM TO %2" ).arg( getDispName( info.fNewName ) ).arg( getDispName( info.fOldName ) );
                 aOK = false;
             }
 
-            return CDirModel::postExtProcess( info, msgList ) && aOK;
+            return aOK;
         }
 
         std::list< NMediaManager::NCore::STreeNodeItem > CMergeSRTModel::addItems( const QFileInfo & fileInfo )const

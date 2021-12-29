@@ -86,6 +86,8 @@ namespace NMediaManager
             std::pair< bool, QStandardItem * > processItem( const QStandardItem * item, QStandardItem * parentItem, bool displayOnly ) const override;
             QStandardItem * getTransformItem( const QStandardItem * parent ) const;
 
+            bool SetMKVTags( const QString & fileName, std::shared_ptr< SSearchResult > & searchResults, QString & msg ) const;
+
             bool isValidName( const QFileInfo & fi ) const;
             bool isValidName( const QString & absPath, bool isDir, std::optional< bool > isTVShow ) const;
 

@@ -33,6 +33,7 @@
 #include <QDir>
 #include <QVariant>
 #include <QString>
+#include <QRegularExpression>
 
 #include <optional>
 #include <unordered_set>
@@ -203,45 +204,47 @@ namespace NMediaManager
             return settings.value( "OutDirPattern", getDefaultOutDirPattern( false ) ).toString();
         }
 
-        bool CPreferences::isIgnoredPath( const QFileInfo & fileInfo )
+        bool CPreferences::containsValue( const QString & value, const QStringList & values ) const
         {
-            if ( fileInfo.isDir() )
-                return isIgnoredDirName( fileInfo );
-            else if ( fileInfo.isFile() )
-                return isIgnoredFileName( fileInfo );
-            else
-                return isIgnoredDirName( fileInfo ) || isIgnoredFileName( fileInfo );
+            for ( auto && ii : values )
+            {
+                QRegularExpression::PatternOption option = QRegularExpression::NoPatternOption;
+#ifdef Q_OS_WINDOWS
+                option = QRegularExpression::CaseInsensitiveOption;
+#endif
+                auto regExp = QRegularExpression( "^" + ii + "$", option );
+                if ( regExp.match( value ).hasMatch() )
+                    return true;
+            }
+            return false;
         }
 
-        bool CPreferences::isIgnoredDirName( const QFileInfo & fileInfo )
+        bool CPreferences::pathMatches( const QFileInfo & fileInfo, const QStringList & values ) const
         {
-            QString dirName;
-            if ( fileInfo.isDir() )
-                dirName = fileInfo.fileName();
-            else
-                dirName = fileInfo.absoluteDir().dirName();
+            auto fn = fileInfo.fileName().toLower();
+            if ( fn.endsWith( "-ignore" ) )
+                return true;
+
+            auto pathName = fileInfo.fileName();
 
 #ifdef Q_OS_WINDOWS
-            dirName = dirName.toLower();
+            pathName = pathName.toLower();
 #endif
 
-            auto values = getIgnoredDirectories();
-            auto ignoredDirs = NSABUtils::hashFromList( values );
-            return ignoredDirs.find( dirName ) != ignoredDirs.end();
+            return containsValue( pathName, values );
         }
 
-        bool CPreferences::isIgnoredFileName( const QFileInfo & fileInfo )
+        bool CPreferences::isIgnoredPath( const QFileInfo & fileInfo ) const
         {
-            QString fileName = fileInfo.fileName();
-#ifdef Q_OS_WINDOWS
-            fileName = fileName.toLower();
-#endif
-            auto values = getIgnoredFileNames();
-            auto ignoredFileNames = NSABUtils::hashFromList( values );
-            return ignoredFileNames.find( fileName ) != ignoredFileNames.end();
+            return pathMatches( fileInfo, getIgnoredPaths() );
         }
 
-        void CPreferences::setIgnoredDirectories( const QStringList & values )
+        bool CPreferences::isSkippedPath( const QFileInfo & fileInfo ) const
+        {
+            return pathMatches( fileInfo, getSkippedPaths() );
+        }
+
+        void CPreferences::setSkippedPaths( const QStringList & values )
         {
             QSettings settings;
             settings.beginGroup( "Transform" );
@@ -250,18 +253,18 @@ namespace NMediaManager
             for ( auto && ii : realValues )
                 ii = ii.toLower();
 #endif
-            settings.setValue( "IgnoredDirs", realValues );
+            settings.setValue( "SkippedDirs", realValues );
         }
 
-        QStringList CPreferences::getIgnoredDirectories() const
+        QStringList CPreferences::getSkippedPaths() const
         {
             QSettings settings;
             settings.beginGroup( "Transform" );
             static auto defaultValues = QStringList( { "#recycle", "#recycler", "extras" } );
-            return settings.value( "IgnoredDirs", defaultValues ).toStringList();
+            return settings.value( "SkippedDirs", defaultValues ).toStringList();
         }
 
-        void CPreferences::setIgnoredFileNames( const QStringList & values )
+        void CPreferences::setIgnoredPaths( const QStringList & values )
         {
             QSettings settings;
             settings.beginGroup( "Transform" );
@@ -273,11 +276,11 @@ namespace NMediaManager
             settings.setValue( "IgnoredFileNames", realValues );
         }
 
-        QStringList CPreferences::getIgnoredFileNames() const
+        QStringList CPreferences::getIgnoredPaths() const
         {
             QSettings settings;
             settings.beginGroup( "Transform" );
-            static auto defaultValues = QStringList( { "sub", "subs" } );
+            static auto defaultValues = QStringList( { "sub", "subs", "season \\d+" } );
             return settings.value( "IgnoredFileNames", defaultValues ).toStringList();
         }
         void CPreferences::setMediaExtensions( const QString &value )
