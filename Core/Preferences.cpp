@@ -257,7 +257,7 @@ namespace NMediaManager
         {
             QSettings settings;
             settings.beginGroup( "Transform" );
-            static auto defaultValues = QStringList( { "#recycle", "#recycler", "extras", "sub", "subs" } );
+            static auto defaultValues = QStringList( { "#recycle", "#recycler", "extras" } );
             return settings.value( "IgnoredDirs", defaultValues ).toStringList();
         }
 
