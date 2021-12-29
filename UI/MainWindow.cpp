@@ -83,11 +83,6 @@ namespace NMediaManager
             fImpl( new Ui::CMainWindow )
         {
             fImpl->setupUi( this );
-            fProgressDlg = new NSABUtils::CDoubleProgressDlg( this );
-
-            fImpl->mergeSRTPage->setProgressDlg( fProgressDlg );
-            fImpl->makeMKVPage->setProgressDlg( fProgressDlg );
-            fImpl->transformMediaFileNamesPage->setProgressDlg( fProgressDlg );
 
             fImpl->mergeSRTPage->postInit();
             fImpl->makeMKVPage->postInit();

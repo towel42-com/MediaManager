@@ -58,10 +58,8 @@ namespace NMediaManager
             virtual void run();
             virtual bool canRun() const;
 
-            virtual void setProgressDlg( NSABUtils::CDoubleProgressDlg * progressDlg );
             virtual void postInit();
 
-            NSABUtils::CDoubleProgressDlg * progressDlg() const;
             QTreeView * filesView() const;
             QPlainTextEdit * log() const;
 
@@ -71,6 +69,8 @@ namespace NMediaManager
             virtual void postProcessLog( const QString & string );
             virtual void doubleClicked( const QModelIndex & idx );
             virtual QMenu * contextMenu( const QModelIndex & idx );
+
+            NSABUtils::CDoubleProgressDlg * progressDlg() const { return fProgressDlg; }
         public Q_SLOTS:
             void slotLoadFinished( bool canceled );
             void slotProcessingStarted();
@@ -102,8 +102,6 @@ namespace NMediaManager
             virtual void setupModel();
 
             void setupProgressDlg( const QString & title, const QString & cancelButtonText, int max );
-
-
             void clearProgressDlg();
 
             virtual void loadSettings();

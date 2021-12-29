@@ -41,6 +41,13 @@ namespace NMediaManager
             fImpl( new Ui::CBasePage )
         {
             fImpl->setupUi( this );
+            fProgressDlg = new NSABUtils::CDoubleProgressDlg( this );
+            connect( fProgressDlg, &NSABUtils::CDoubleProgressDlg::canceled,
+                        [ this ]()
+            {
+                clearProgressDlg();
+            } );
+            fProgressDlg->setMinimumDuration( -1 );
 
             fImpl->filesView->setExpandsOnDoubleClick( false );
             fImpl->filesView->setContextMenuPolicy( Qt::CustomContextMenu );
@@ -51,16 +58,6 @@ namespace NMediaManager
         void CBasePage::postInit()
         {
             loadSettings();
-        }
-
-        void CBasePage::setProgressDlg( NSABUtils::CDoubleProgressDlg * progressDlg )
-        {
-            fProgressDlg = progressDlg;
-            connect( fProgressDlg, &NSABUtils::CDoubleProgressDlg::canceled,
-                     [ this ]()
-            {
-                clearProgressDlg();
-            } );
         }
 
         CBasePage::~CBasePage()
@@ -78,11 +75,6 @@ namespace NMediaManager
             QSettings settings;
             settings.beginGroup( getPageName() );
             settings.setValue( "Splitter", fImpl->vsplitter->saveState() );
-        }
-
-        NSABUtils::CDoubleProgressDlg * CBasePage::progressDlg() const
-        {
-            return fProgressDlg;
         }
 
         QTreeView * CBasePage::filesView() const

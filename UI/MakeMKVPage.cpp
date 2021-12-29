@@ -120,7 +120,7 @@ namespace NMediaManager
                     numSeconds += curr;
             }
         
-            progressDlg()->setSecondaryValue( numSeconds );
+            fProgressDlg->setSecondaryValue( numSeconds );
         }
     }
 }

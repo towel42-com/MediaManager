@@ -138,7 +138,7 @@ namespace NMediaManager
 
             auto rootIdx = model()->index( 0, 0 );
             bool somethingToSearchFor = autoSearchForNewNames( rootIdx );
-            progressDlg()->setValue( fSearchesCompleted );
+            fProgressDlg->setValue( fSearchesCompleted );
             if ( !somethingToSearchFor )
             {
                 emit sigLoadFinished( false );
@@ -168,14 +168,12 @@ namespace NMediaManager
 
                 if ( model()->canAutoSearch( childIndex ) )
                 {
-                    if ( fProgressDlg )
-                    {
-                        auto msg = tr( "Adding Background Search for '%1'" ).arg( QDir( fDirName ).relativeFilePath( path ) );
-                        appendToLog( msg + QString( "\n\t%1\n" ).arg( searchInfo->toString( false ) ), true );
-                        fProgressDlg->setLabelText( msg );
-                        fProgressDlg->setValue( fProgressDlg->value() + 1 );
-                        qApp->processEvents();
-                    }
+                    auto msg = tr( "Adding Background Search for '%1'" ).arg( QDir( fDirName ).relativeFilePath( path ) );
+                    appendToLog( msg + QString( "\n\t%1\n" ).arg( searchInfo->toString( false ) ), true );
+                    fProgressDlg->setLabelText( msg );
+                    fProgressDlg->setValue( fProgressDlg->value() + 1 );
+                    qApp->processEvents();
+
                     fSearchTMDB->addSearch( path, searchInfo );
                     retVal = true;
                 }
@@ -191,28 +189,25 @@ namespace NMediaManager
 
             if ( searchesRemaining )
             {
-                if ( fProgressDlg )
-                {
-                    fProgressDlg->setValue( fProgressDlg->value() + 1 );
-                    fSearchesCompleted++;
-                    auto msg = tr( "Search Complete for '%1'" ).arg( QDir( fDirName ).relativeFilePath( path ) );
-                    fProgressDlg->setLabelText( msg );
+                fProgressDlg->setValue( fProgressDlg->value() + 1 );
+                fSearchesCompleted++;
+                auto msg = tr( "Search Complete for '%1'" ).arg( QDir( fDirName ).relativeFilePath( path ) );
+                fProgressDlg->setLabelText( msg );
 
-                    msg += "\n\t%1";
-                    if ( result.empty() )
-                        msg = msg.arg( "Found: <No Match>" );
-                    else
-                        msg = msg.arg( tr( "Found: %1" ).arg( result.front()->toString( false ) ) );
+                msg += "\n\t%1";
+                if ( result.empty() )
+                    msg = msg.arg( "Found: <No Match>" );
+                else
+                    msg = msg.arg( tr( "Found: %1" ).arg( result.front()->toString( false ) ) );
                         
-                    appendToLog( msg, true );
-                }
+                appendToLog( msg, true );
             }
             else
             {
                 clearProgressDlg();
             }
 
-            if ( fProgressDlg && fProgressDlg->wasCanceled() )
+            if ( fProgressDlg->wasCanceled() )
                 fSearchTMDB->clearSearchCache();
 
             if ( !result.empty() )

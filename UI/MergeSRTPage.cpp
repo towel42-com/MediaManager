@@ -57,7 +57,7 @@ namespace NMediaManager
                 bool aOK = false;
                 int percentVal = percent.toInt( &aOK );
                 if ( aOK )
-                    progressDlg()->setSecondaryValue( percentVal );
+                    fProgressDlg->setSecondaryValue( percentVal );
             }
         }
 

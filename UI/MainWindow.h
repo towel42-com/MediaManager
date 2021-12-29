@@ -27,7 +27,6 @@
 #include <optional>
 namespace NSABUtils 
 {
-    class CDoubleProgressDlg;
     class CStayAwake;
     namespace NBIF
     {
@@ -95,7 +94,6 @@ namespace NMediaManager
             std::unique_ptr< Ui::CMainWindow > fImpl;
             CCompleterFileSystemModel * fDirModel{ nullptr };
             CCompleterFileSystemModel * fFileModel{ nullptr };
-            NSABUtils::CDoubleProgressDlg * fProgressDlg{ nullptr };
             NSABUtils::CStayAwake * fStayAwake{ nullptr };
         };
     }
