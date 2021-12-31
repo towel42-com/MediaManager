@@ -25,6 +25,8 @@
 
 #include "BasePage.h"
 
+#include <unordered_map>
+
 namespace NMediaManager
 {
     namespace NCore
@@ -77,13 +79,14 @@ namespace NMediaManager
         public Q_SLOTS:
         protected Q_SLOTS:
             void slotAutoSearchForNewNames();
-            void slotAutoSearchFinished( const QString &path, bool searchesRemaining );
+            void slotAutoSearchFinished( const QString & path, bool searchesRemaining );
             void slotTreatAsTVShowByDefault();
             void slotExactMatchesOnly();
             void slotMenuAboutToShow();
         protected:
             virtual void loadSettings() override;
-            [[nodiscard]] bool autoSearchForNewNames( QModelIndex rootIdx );
+            [[nodiscard]] bool autoSearchForNewNames( const QModelIndex & rootIdx );
+            
             NCore::CTransformModel * model();
 
             NCore::CSearchTMDB * fSearchTMDB{ nullptr };

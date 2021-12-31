@@ -319,6 +319,83 @@ namespace NMediaManager
             return retVal;
         }
 
+        void CTransformModel::computeEpisodesForDiskNumbers()
+        {
+            TTitleMap titleMap;
+            findTitlesPerDiskNumbers( index( 0, 0 ), titleMap );
+
+            for ( auto && ii : titleMap )
+            {
+                NCore::SSearchTMDBInfo info( ii.first, {} );
+                auto seasonNum = info.season();
+                auto title = info.searchName();
+                auto episodeNum = 1;
+                for ( auto && jj : ii.second )
+                {
+                    for ( auto && kk : jj.second )
+                    {
+                        auto searchName = QString( "%1 - S%2E%3" ).arg( title ).arg( seasonNum, 2, 10, QChar( '0' ) ).arg( episodeNum, 2, 10, QChar( '0' ) );
+                        //qDebug() << kk.second << " = " << searchName;
+                        episodeNum++;
+                        fDiskRipSearchMap[kk.second] = searchName;
+                    }
+                }
+            }
+        }
+
+        void CTransformModel::findTitlesPerDiskNumbers( const QModelIndex & parentIdx, TTitleMap & retVal )
+        {
+            if ( !isDir( parentIdx ) )
+                return;
+
+            auto name = parentIdx.data().toString();
+            int diskNumber;
+            if ( NCore::SSearchTMDBInfo::hasDiskNumber( name, diskNumber, {} ) )
+            {
+                auto childPaths = getDiskTitles( parentIdx );
+                if ( !childPaths.empty() )
+                {
+                    retVal[name][diskNumber] = childPaths;
+                }
+            }
+
+            auto rowCount = this->rowCount( parentIdx );
+            for ( int ii = 0; ii < rowCount; ++ii )
+            {
+                auto childIndex = index( ii, 0, parentIdx );
+                findTitlesPerDiskNumbers( childIndex, retVal );
+            }
+        }
+
+        std::map< int, QString > CTransformModel::getDiskTitles( const QModelIndex & parentIdx )
+        {
+            auto rowCount = this->rowCount( parentIdx );
+            std::map< int, QString > retVal;
+            for ( int ii = 0; ii < rowCount; ++ii )
+            {
+                auto childIndex = index( ii, 0, parentIdx );
+                if ( !isDir( childIndex ) )
+                {
+                    auto name = childIndex.data().toString();
+                    int titleNum = -1;
+                    if ( NCore::SSearchTMDBInfo::isDiskTitle( name, titleNum ) )
+                    {
+                        retVal[titleNum] = childIndex.data( NCore::ECustomRoles::eFullPathRole ).toString();
+                    }
+                }
+            }
+            return retVal;
+        }
+
+        QString CTransformModel::getSearchName( const QModelIndex & idx ) const
+        {
+            auto path = idx.data( ECustomRoles::eFullPathRole ).toString();
+            auto pos = fDiskRipSearchMap.find( path );
+            if ( pos != fDiskRipSearchMap.end() )
+                return (*pos).second;
+            return CDirModel::getSearchName( idx );
+        }
+
         bool CTransformModel::treatAsTVShow( const QFileInfo & fileInfo, bool defaultValue ) const
         {
             bool asTVShow = defaultValue;
@@ -638,10 +715,23 @@ namespace NMediaManager
             fPatternTimer->start();
         }
 
-        void CTransformModel::slotPatternChanged()
+        void CTransformModel::clear()
+        {
+            clearResults();
+            CDirModel::clear();
+        }
+
+        void CTransformModel::clearResults()
         {
             fFileMapping.clear();
             fDirMapping.clear();
+            fSearchResultMap.clear();
+            fDiskRipSearchMap.clear();
+        }
+
+        void CTransformModel::slotPatternChanged()
+        {
+            clearResults();
             transformPatternChanged( invisibleRootItem() );
         }
 

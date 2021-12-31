@@ -46,9 +46,16 @@ namespace NMediaManager
             SSearchTMDBInfo() {};
             SSearchTMDBInfo( const QString & searchString, std::shared_ptr< SSearchResult > titleInfo );
 
+            static bool hasDiskNumber( QString & searchString, int & diskNum, std::shared_ptr< SSearchResult > searchResult );
             static bool looksLikeTVShow( const QString & searchString, QString * titleStr, QString * seasonStr = nullptr, QString * episodeStr = nullptr, QString * extraStr = nullptr );
+            static bool isDiskTitle( const QString & name, int & titleNum );
 
             void updateSearchCriteria( bool updateSearchBy );
+
+            void extractTVInfo();
+            void extractTMDBID();
+            void extractDiskNum();
+            void extractReleaseDate();
 
             std::optional< std::pair< QUrl, ESearchType > > getSearchURL() const;
 
@@ -121,13 +128,14 @@ namespace NMediaManager
             static QString stripKnownData( const QString & string );
             static QString replaceKnownAbbreviations( const QString & string );
 
-            static QString smartTrim( const QString & string, bool stripInnerPeriods = false );
+            static QString smartTrim( const QString & string, bool stripInnerSeparators = false );
             static QStringList stripOutPositions( const QString & inString, const std::list< std::pair< int, int > > & positions );
 
             QString fSearchName;
             QString fReleaseDate;
             int fSeason{ -1 };
             int fEpisode{ -1 };
+            int fDiskNum{ -1 };
             QString fTMDBID;
             bool fIsTVShow{ false };
             bool fExactMatchOnly{ false };

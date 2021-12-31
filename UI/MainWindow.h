@@ -66,20 +66,20 @@ namespace NMediaManager
 
             bool setBIFFileName( const QString &name );
         public Q_SLOTS:
-            void slotOpen();
-            void slotDirectoryChanged();
+            virtual void slotOpen();
+            virtual void slotDirectoryChanged();
 
-            void slotDirectoryChangedImmediate();
-            void slotLoad();
-            void slotRun();
-            void slotPreferences();
-            void slotWindowChanged();
-            void slotFileChanged();
-            void slotFileFinishedEditing();
+            virtual void slotDirectoryChangedImmediate();
+            virtual void slotLoad();
+            virtual void slotRun();
+            virtual void slotPreferences();
+            virtual void slotWindowChanged();
+            virtual void slotFileChanged();
+            virtual void slotFileFinishedEditing();
 
-            void slotLoadFinished( bool canceled );
-            void slotStopStayAwake();
-            void slotStartStayAwake();
+            virtual void slotLoadFinished( bool canceled );
+            virtual void slotStopStayAwake();
+            virtual void slotStartStayAwake();
         private:
             bool isActivePageFileBased() const;
             bool isActivePageDirBased() const;

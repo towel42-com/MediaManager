@@ -70,8 +70,8 @@ namespace NMediaManager
             std::list < std::shared_ptr< SSearchResult > > getResult( const QString & path ) const; // uses the queued results
             std::list< std::shared_ptr< SSearchResult > > getResults() const;
             std::shared_ptr< SSearchResult > bestMatch() const;
-            \
-                bool searchByName();
+
+            bool searchByName();
 
             void resetResults();
 

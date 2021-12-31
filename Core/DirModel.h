@@ -174,7 +174,7 @@ namespace NMediaManager
             void reloadModel();
             void setRootPath( const QString & path );
 
-            QString getSearchName( const QModelIndex & idx ) const;
+            virtual QString getSearchName( const QModelIndex & idx ) const;
             virtual bool setData( const QModelIndex & idx, const QVariant & value, int role ) override;
 
             bool isMediaFile( const QStandardItem * item ) const;
@@ -195,7 +195,7 @@ namespace NMediaManager
             std::pair<QString, bool> & stdOutRemaining() { return fStdOutRemaining; }
             std::pair<QString, bool> & stdErrRemaining() { return fStdErrRemaining; }
 
-            void clear();
+            virtual void clear();
         Q_SIGNALS:
             void sigDirReloaded( bool canceled );
             void sigProcessesFinished( bool status, bool cancelled, bool reloadModel );

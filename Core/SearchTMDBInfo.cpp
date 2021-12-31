@@ -103,7 +103,7 @@ namespace NMediaManager
             return retVal;
         }
 
-        QString SSearchTMDBInfo::smartTrim( const QString &string, bool stripInnerPeriods )
+        QString SSearchTMDBInfo::smartTrim( const QString &string, bool stripInnerSeparators )
         {
             auto retVal = string;
             auto pos = retVal.indexOf( QRegularExpression( "[^\\.\\s\\-]" ) );
@@ -113,9 +113,9 @@ namespace NMediaManager
             pos = retVal.lastIndexOf( QRegularExpression( "[^\\.\\s\\-]" ) );
             if ( pos != -1 )
                 retVal = retVal.left( pos + 1 );
-            if ( stripInnerPeriods )
+            if ( stripInnerSeparators )
             {
-                retVal.replace( QRegularExpression( "\\.|(\\s{2,})|-|\\:" ), " " );
+                retVal.replace( QRegularExpression( "\\.|(\\s{2,})|-|\\:|_" ), " " );
                 retVal = retVal.trimmed();
             }
             return retVal;
@@ -224,79 +224,23 @@ namespace NMediaManager
 
             fFoundExtendedInfo = extendedInfo;
 
-            QString seasonStr;
-            QString episodeStr;
-
-            if ( fIsTVShow )
-            {
-                looksLikeTVShow( fSearchName, &fSearchName, &seasonStr, &episodeStr, &fEpisodeTitle );
-                fEpisodeTitle = smartTrim( fEpisodeTitle, true );
-            }
-
-                            //(?<fulltext>[\.\(]  (?<releaseDate>((\\d{2}){1,2}))(?:[\.\)]?|$))
-                            //(?<!\d)
-            //(?<fulltext>[[|\(|\W|^](?<releaseDate>((\d{2}){1,2}))((?<suffix>\]|\))|\W|$))
-
-            auto regExpStr = "(?<fulltext>(([\\(\\[]|^)|(?<!\\d))(?<releaseDate>\\d{2}|\\d{4})(\\D|\\)|\\]|$))";
-            auto regExp = QRegularExpression( regExpStr );
-            auto match = regExp.match( fSearchName );
-            if ( match.hasMatch() )
-            {
-                bool tooOld = false;
-                fReleaseDate = smartTrim( match.captured( "releaseDate" ) );
-                bool aOK = false;
-                int tmp = fReleaseDate.toInt( &aOK );
-                if ( aOK )
-                {
-                    tooOld = (fReleaseDate.length() == 4) && (tmp < 1900);
-                }
-                if ( !tooOld )
-                    fSearchName.replace( match.capturedStart( "fulltext" ), match.capturedLength( "fulltext" ), "" );
-                else
-                    fReleaseDate.clear();
-            }
-
-            regExp = QRegularExpression( "(?<fulltext>\\[tmdbid=(?<tmdbid>\\d+)\\])" );
-            match = regExp.match( fSearchName );
-            if ( match.hasMatch() )
-            {
-                fTMDBID = smartTrim( match.captured( "tmdbid" ) );
-                fSearchName.replace( match.capturedStart( "fulltext" ), match.capturedLength( "fulltext" ), "" );
-            }
+            extractDiskNum();
+            extractTVInfo();
+            extractReleaseDate();
+            extractTMDBID();
 
             fSearchName = smartTrim( fSearchName, true );
 
             if ( fSearchResultInfo )
             {
                 fSearchName = fSearchResultInfo->fTitle;
-                episodeStr = fSearchResultInfo->fEpisode;
-                seasonStr = fSearchResultInfo->fSeason;
-                fReleaseDate = fSearchResultInfo->fReleaseDate;
-                fTMDBID = fSearchResultInfo->fTMDBID;// always get the main one
-                fEpisodeTitle = fSearchResultInfo->fEpisodeTitle;
-            }
-
-            if ( !episodeStr.isEmpty() )
-            {
-                bool aOK;
-                fEpisode = episodeStr.toInt( &aOK );
-                if ( !aOK )
-                    fEpisode = -1;
-            }
-
-            if ( !seasonStr.isEmpty() )
-            {
-                bool aOK;
-                fSeason = seasonStr.toInt( &aOK );
-                if ( !aOK )
-                    fSeason = -1;
             }
 
             if ( updateSearchBy )
                 fSearchByName = fTMDBID.isEmpty();
         }
 
-        int SSearchTMDBInfo::releaseDate( bool *aOK ) const
+        int SSearchTMDBInfo::releaseDate( bool * aOK ) const
         {
             return fReleaseDate.toInt( aOK );
         }
@@ -419,6 +363,125 @@ namespace NMediaManager
                 }
             }
             return true;
+        }
+
+        void SSearchTMDBInfo::extractReleaseDate()
+        {
+            //(?<fulltext>[\.\(]  (?<releaseDate>((\\d{2}){1,2}))(?:[\.\)]?|$))
+            //(?<!\d)
+            //(?<fulltext>[[|\(|\W|^](?<releaseDate>((\d{2}){1,2}))((?<suffix>\]|\))|\W|$))
+
+            auto regExpStr = "(?<fulltext>(([\\(\\[]|^)|(?<!\\d))(?<releaseDate>\\d{2}|\\d{4})(\\D|\\)|\\]|$))";
+            auto regExp = QRegularExpression( regExpStr );
+            auto match = regExp.match( fSearchName );
+            if ( match.hasMatch() )
+            {
+                bool tooOld = false;
+                fReleaseDate = smartTrim( match.captured( "releaseDate" ) );
+                bool aOK = false;
+                int tmp = fReleaseDate.toInt( &aOK );
+                if ( aOK )
+                {
+                    tooOld = (fReleaseDate.length() == 4) && (tmp < 1900);
+                }
+                if ( !tooOld )
+                    fSearchName.replace( match.capturedStart( "fulltext" ), match.capturedLength( "fulltext" ), "" );
+                else
+                    fReleaseDate.clear();
+            }
+            if ( fSearchResultInfo )
+                fReleaseDate = fSearchResultInfo->fReleaseDate;
+        }
+
+        bool SSearchTMDBInfo::isDiskTitle( const QString & name, int & titleNum )
+        {
+            auto regExpStr = "^title_t(?<num>\\d+)\\.mkv$";
+            auto regExp = QRegularExpression( regExpStr );
+            auto match = regExp.match( name );
+            bool aOK = false;
+            if ( match.hasMatch() )
+            {
+                auto titleNumStr = match.captured( "num" );
+                titleNum = titleNumStr.toInt( &aOK );
+                if ( !aOK )
+                    titleNum = -1;
+            }
+            return aOK;
+        }
+
+        bool SSearchTMDBInfo::hasDiskNumber( QString & searchString, int & diskNum, std::shared_ptr< SSearchResult > searchResultInfo )
+        {
+            QString diskStr;
+            auto regExpStr = "[^A-Za-z](?<fulltext>D(?<num>\\d+))(\\D|$)";
+            auto regExp = QRegularExpression( regExpStr );
+            auto match = regExp.match( searchString );
+            if ( match.hasMatch() )
+            {
+                diskStr = match.captured( "num" );
+                searchString.replace( match.capturedStart( "fulltext" ), match.capturedLength( "fulltext" ), "" );
+            }
+            if ( searchResultInfo && !searchResultInfo->fDiskNum.isEmpty() )
+                diskStr = searchResultInfo->fDiskNum;
+            if ( !diskStr.isEmpty() )
+            {
+                bool aOK;
+                diskNum = diskStr.toInt( &aOK );
+                if ( !aOK )
+                    diskNum = -1;
+                return aOK;
+            }
+            return false;
+        }
+
+        void SSearchTMDBInfo::extractDiskNum()
+        {
+            hasDiskNumber( fSearchName, fDiskNum, fSearchResultInfo );
+        }
+
+        void SSearchTMDBInfo::extractTVInfo()
+        {
+            QString seasonStr;
+            QString episodeStr;
+            if ( fIsTVShow )
+            {
+                looksLikeTVShow( fSearchName, &fSearchName, &seasonStr, &episodeStr, &fEpisodeTitle );
+                fEpisodeTitle = smartTrim( fEpisodeTitle, true );
+            }
+            if ( fSearchResultInfo )
+            {
+                episodeStr = fSearchResultInfo->fEpisode;
+                seasonStr = fSearchResultInfo->fSeason;
+                fEpisodeTitle = fSearchResultInfo->fEpisodeTitle;
+            }
+
+            if ( !episodeStr.isEmpty() )
+            {
+                bool aOK;
+                fEpisode = episodeStr.toInt( &aOK );
+                if ( !aOK )
+                    fEpisode = -1;
+            }
+
+            if ( !seasonStr.isEmpty() )
+            {
+                bool aOK;
+                fSeason = seasonStr.toInt( &aOK );
+                if ( !aOK )
+                    fSeason = -1;
+            }
+        }
+
+        void SSearchTMDBInfo::extractTMDBID()
+        {
+            auto regExp = QRegularExpression( "(?<fulltext>\\[tmdbid=(?<tmdbid>\\d+)\\])" );
+            auto match = regExp.match( fSearchName );
+            if ( match.hasMatch() )
+            {
+                fTMDBID = smartTrim( match.captured( "tmdbid" ) );
+                fSearchName.replace( match.capturedStart( "fulltext" ), match.capturedLength( "fulltext" ), "" );
+            }
+            if ( fSearchResultInfo )
+                fTMDBID = fSearchResultInfo->fTMDBID;
         }
     }
 }

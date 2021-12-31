@@ -87,6 +87,7 @@ namespace NMediaManager
             QString fEpisode;
             QString fEpisodeTitle;
             QString fExtraInfo;
+            QString fDiskNum;
 
             QString fDescription;
             QPixmap fPixmap;

@@ -136,6 +136,8 @@ namespace NMediaManager
             auto count = NSABUtils::itemCount( model(), true );
             setupProgressDlg( tr( "Finding Results" ), tr( "Cancel" ), count, 1 );
 
+            model()->computeEpisodesForDiskNumbers();
+
             auto rootIdx = model()->index( 0, 0 );
             bool somethingToSearchFor = autoSearchForNewNames( rootIdx );
             fProgressDlg->setValue( fSearchesCompleted );
@@ -146,7 +148,7 @@ namespace NMediaManager
             }
         }
 
-        bool CTransformMediaFileNamesPage::autoSearchForNewNames( QModelIndex parentIdx )
+        bool CTransformMediaFileNamesPage::autoSearchForNewNames( const QModelIndex & parentIdx )
         {
             bool retVal = false;
             auto rowCount = model()->rowCount( parentIdx );
@@ -159,6 +161,8 @@ namespace NMediaManager
                 }
 
                 emit sigStartStayAwake();
+                auto parentName = model()->getSearchName( parentIdx );
+
                 auto childIndex = model()->index( ii, 0, parentIdx );
                 auto name = model()->getSearchName( childIndex );
                 auto path = model()->filePath( childIndex );

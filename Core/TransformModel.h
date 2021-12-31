@@ -40,6 +40,8 @@ namespace NMediaManager
             QString fOutDirPattern;
         };
 
+        using TTitleMap = std::unordered_map< QString, std::map< int, std::map< int, QString > > >;
+
         class CTransformModel : public CDirModel
         {
             Q_OBJECT
@@ -56,6 +58,11 @@ namespace NMediaManager
             virtual bool setData( const QModelIndex & idx, const QVariant & value, int role ) override;
 
             virtual int eventsPerPath() const override { return 5; }// get timestamp, create parent paths, rename, setting tag info, settimestamp}
+            virtual void clear() override;
+
+            void computeEpisodesForDiskNumbers();
+            virtual QString getSearchName( const QModelIndex & idx ) const override;
+
         public Q_SLOTS:
             void slotPatternChanged();
 
@@ -91,6 +98,7 @@ namespace NMediaManager
             bool isValidName( const QFileInfo & fi ) const;
             bool isValidName( const QString & absPath, bool isDir, std::optional< bool > isTVShow ) const;
 
+            void clearResults();
             void transformPatternChanged();
             void transformPatternChanged( const QStandardItem * parent );
 
@@ -100,12 +108,17 @@ namespace NMediaManager
             [[nodiscard]] std::pair< bool, QString > transformItem( const QFileInfo & path ) const;
             [[nodiscard]] std::pair< bool, QString > transformItem( const QFileInfo & fileInfo, const SPatternInfo & patternInfo ) const;
 
+            // title_season -> disk number -> titleNumber -> fullPath
+            void findTitlesPerDiskNumbers( const QModelIndex & parentIdx, TTitleMap & retVal );
+            std::map< int, QString > getDiskTitles( const QModelIndex & parentIdx );
+
             SPatternInfo fTVPatterns;
             SPatternInfo fMoviePatterns;
 
             mutable std::map< QString, std::pair< bool, QString > > fFileMapping;
             mutable std::map< QString, std::pair< bool, QString > > fDirMapping;
             std::map< QString, std::shared_ptr< SSearchResult > > fSearchResultMap;
+            std::unordered_map< QString, QString > fDiskRipSearchMap;
 
             bool fTreatAsTVShowByDefault{ false };
             QTimer * fPatternTimer{ nullptr };
