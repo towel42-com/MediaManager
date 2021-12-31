@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 SET( MAJOR_VERSION 0 )
-SET( MINOR_VERSION 16 )
+SET( MINOR_VERSION 17 )
 SET( APP_NAME "Media Manager" )
 SET( VENDOR   "Scott Aron Bloom" )
 SET( HOMEPAGE "www.towel42.com" )
