@@ -126,20 +126,10 @@ namespace NMediaManager
             connect( fImpl->fileName, &NSABUtils::CDelayComboBox::sigEditTextChangedAfterDelay, this, &CMainWindow::slotFileChanged );
             connect( fImpl->fileName->lineEdit(), &NSABUtils::CDelayLineEdit::sigFinishedEditingAfterDelay, this, &CMainWindow::slotFileFinishedEditing );
 
-            auto menu = fImpl->bifViewerPage->menu();
-            if ( menu )
-                menuBar()->addMenu( menu );
-
-            auto toolBar = fImpl->bifViewerPage->toolBar();
-            if ( toolBar )
-                addToolBar( toolBar );
-
             connect( fImpl->actionOpen, &QAction::triggered, this, &CMainWindow::slotOpen );
             connect( fImpl->actionLoad, &QAction::triggered, this, &CMainWindow::slotLoad );
             connect( fImpl->actionRun, &QAction::triggered, this, &CMainWindow::slotRun );
 
-            connect( fImpl->actionTreatAsTVShowByDefault, &QAction::triggered, this, &CMainWindow::slotTreatAsTVShowByDefault );
-            connect( fImpl->actionExactMatchesOnly, &QAction::triggered, this, &CMainWindow::slotExactMatchesOnly );
             connect( fImpl->actionPreferences, &QAction::triggered, this, &CMainWindow::slotPreferences );
 
             connect( fImpl->tabWidget, &QTabWidget::currentChanged, this, &CMainWindow::slotWindowChanged );
@@ -158,6 +148,11 @@ namespace NMediaManager
             connect( fImpl->mergeSRTPage, &CMergeSRTPage::sigStartStayAwake, this, &CMainWindow::slotStartStayAwake );
             connect( fImpl->mergeSRTPage, &CMergeSRTPage::sigStopStayAwake, this, &CMainWindow::slotStopStayAwake );
 
+            addUIComponents( fImpl->bifViewerTab, fImpl->bifViewerPage, fImpl->bifViewerPage->menu(), fImpl->bifViewerPage->toolBar() );
+            addUIComponents( fImpl->transformMediaFileNamesTab, fImpl->transformMediaFileNamesPage );
+            addUIComponents( fImpl->makeMKVTab, fImpl->makeMKVPage );
+            addUIComponents( fImpl->mergeSRTTab, fImpl->mergeSRTPage );
+
             QSettings settings;
             fImpl->tabWidget->setCurrentIndex( settings.value( "LastFunctionalityPage", 0 ).toInt() );
 
@@ -173,6 +168,46 @@ namespace NMediaManager
             saveSettings();
             QSettings settings;
             settings.setValue( "LastFunctionalityPage", fImpl->tabWidget->currentIndex() );
+        }
+
+        bool CMainWindow::isActivePageFileBased() const
+        {
+            if ( isBIFViewerActive() )
+                return true;
+            auto currWidget = fImpl->tabWidget->currentWidget();
+            auto basePage = currWidget->findChild< CBasePage * >();
+            if ( !basePage )
+                return false;
+            return basePage->isFileBased();
+        }
+
+        bool CMainWindow::isActivePageDirBased() const
+        {
+            if ( isBIFViewerActive() )
+                return false;
+            auto currWidget = fImpl->tabWidget->currentWidget();
+            auto basePage = currWidget->findChild< CBasePage * >();
+            if ( !basePage )
+                return false;
+            return basePage->isDirBased();
+        }
+
+
+        void CMainWindow::addUIComponents( QWidget * tab, CBasePage * page )
+        {
+            auto menu = page->menu();
+            auto toolBar = page->toolBar();
+            addUIComponents( tab, page, menu, toolBar );
+        }
+
+        void CMainWindow::addUIComponents( QWidget * tab, QWidget * page, QMenu * menu, QToolBar * toolbar )
+        {
+            QAction * menuAction = nullptr;
+            if ( menu )
+                menuAction = menuBar()->addMenu( menu );
+            if ( toolbar )
+                addToolBar( toolbar );
+            fUIComponentMap[tab] = std::make_tuple( page, menuAction, toolbar );
         }
 
         bool CMainWindow::setBIFFileName( const QString & name )
@@ -201,37 +236,53 @@ namespace NMediaManager
         {
             fImpl->directory->addItems( NCore::CPreferences::instance()->getDirectories(), true );
             fImpl->fileName->addItems( NCore::CPreferences::instance()->getFileNames(), true );
-            fImpl->actionTreatAsTVShowByDefault->setChecked( NCore::CPreferences::instance()->getTreatAsTVShowByDefault() );
-            fImpl->actionExactMatchesOnly->setChecked( NCore::CPreferences::instance()->getExactMatchesOnly() );
-
-            slotTreatAsTVShowByDefault();
         }
 
         void CMainWindow::saveSettings()
         {
             NCore::CPreferences::instance()->setDirectories( fImpl->directory->getAllText() );
             NCore::CPreferences::instance()->setFileNames( fImpl->fileName->getAllText() );
-            NCore::CPreferences::instance()->setTreatAsTVShowByDefault( fImpl->actionTreatAsTVShowByDefault->isChecked() );
-            NCore::CPreferences::instance()->setExactMatchesOnly( fImpl->actionExactMatchesOnly->isChecked() );
         }
 
         void CMainWindow::slotWindowChanged()
         {
-            fImpl->dirLabel->setVisible( !isBIFViewerActive() );
-            fImpl->directory->setVisible( !isBIFViewerActive() );
+            fImpl->dirLabel->setVisible( isActivePageDirBased() );
+            fImpl->directory->setVisible( isActivePageDirBased() );
 
-            fImpl->fileNameLabel->setVisible( isBIFViewerActive() );
-            fImpl->fileName->setVisible( isBIFViewerActive() );
+            fImpl->fileNameLabel->setVisible( isActivePageFileBased() );
+            fImpl->fileName->setVisible( isActivePageFileBased() );
+
+            if ( isActivePageFileBased() )
+                fImpl->actionOpen->setText( tr( "Open File..." ) );
+            else if ( isActivePageDirBased() )
+                fImpl->actionOpen->setText( tr( "Set Directory..." ) );
 
             validateRunAction();
             validateLoadAction();
 
-            if ( isBIFViewerActive() )
-                fImpl->actionOpen->setText( tr( "Open File..." ) );
-            else
-                fImpl->actionOpen->setText( tr( "Set Directory..." ) );
-
             fImpl->bifViewerPage->setActive( isBIFViewerActive() );
+
+            auto activePage = fImpl->tabWidget->currentWidget();
+            for ( auto && ii : fUIComponentMap )
+            {
+                if ( std::get< 1 >( ii.second ) )
+                    std::get< 1 >( ii.second )->setVisible( false );
+                if ( std::get< 2 >( ii.second ) )
+                    std::get< 2 >( ii.second )->setVisible( false );
+
+                auto currBasePage = dynamic_cast<CBasePage *>(std::get< 0 >( ii.second ));
+                if ( currBasePage )
+                    currBasePage->setActive( currBasePage == activePage );
+            }
+
+            auto pos = fUIComponentMap.find( activePage );
+            if ( pos != fUIComponentMap.end() )
+            {
+                if ( std::get< 1 >( (*pos).second ) )
+                    std::get< 1 >( (*pos).second )->setVisible( true );
+                if ( std::get< 2 >( (*pos).second ) )
+                    std::get< 2 >( (*pos).second )->setVisible( true );
+            }
         }
 
         void CMainWindow::slotDirectoryChangedImmediate()
@@ -306,20 +357,7 @@ namespace NMediaManager
             CPreferences dlg;
             if ( dlg.exec() == QDialog::Accepted )
             {
-                fImpl->actionTreatAsTVShowByDefault->setChecked( NCore::CPreferences::instance()->getTreatAsTVShowByDefault() );
-                fImpl->actionExactMatchesOnly->setChecked( NCore::CPreferences::instance()->getExactMatchesOnly() );
-                slotTreatAsTVShowByDefault();
             }
-        }
-
-        void CMainWindow::slotExactMatchesOnly()
-        {
-            fImpl->transformMediaFileNamesPage->setExactMatchesOnly( fImpl->actionExactMatchesOnly->isChecked() );
-        }
-
-        void CMainWindow::slotTreatAsTVShowByDefault()
-        {
-            fImpl->transformMediaFileNamesPage->setTreatAsTVByDefault( fImpl->actionTreatAsTVShowByDefault->isChecked() );
         }
 
         bool CMainWindow::isMergeSRTActive() const

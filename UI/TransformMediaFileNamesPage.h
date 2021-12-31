@@ -69,11 +69,18 @@ namespace NMediaManager
             virtual void doubleClicked( const QModelIndex & idx ) override;
             void search( const QModelIndex & idx );
             virtual QMenu * contextMenu( const QModelIndex & idx ) override;
+
+            virtual QMenu * menu() override;
+            virtual void setActive( bool isActive ) override;
+
         Q_SIGNALS:
         public Q_SLOTS:
         protected Q_SLOTS:
             void slotAutoSearchForNewNames();
             void slotAutoSearchFinished( const QString &path, bool searchesRemaining );
+            void slotTreatAsTVShowByDefault();
+            void slotExactMatchesOnly();
+            void slotMenuAboutToShow();
         protected:
             virtual void loadSettings() override;
             [[nodiscard]] bool autoSearchForNewNames( QModelIndex rootIdx );
@@ -81,6 +88,9 @@ namespace NMediaManager
 
             NCore::CSearchTMDB * fSearchTMDB{ nullptr };
             uint64_t fSearchesCompleted{ 0 };
+            QMenu * fMenu{ nullptr };
+            QAction * fTreatAsTVShowByDefaultAction{ nullptr };
+            QAction * fExactMatchesOnlyAction{ nullptr };
         };
     }
 }

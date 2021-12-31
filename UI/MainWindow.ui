@@ -82,7 +82,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="transformMediaFileNamesTab">
        <attribute name="icon">
@@ -224,9 +224,6 @@
     <property name="title">
      <string>Settings</string>
     </property>
-    <addaction name="actionExactMatchesOnly"/>
-    <addaction name="actionTreatAsTVShowByDefault"/>
-    <addaction name="separator"/>
     <addaction name="actionPreferences"/>
    </widget>
    <addaction name="menuFile"/>
@@ -259,22 +256,6 @@
   <action name="actionExit">
    <property name="text">
     <string>E&amp;xit</string>
-   </property>
-  </action>
-  <action name="actionExactMatchesOnly">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Exact Matches Only?</string>
-   </property>
-  </action>
-  <action name="actionTreatAsTVShowByDefault">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Treat as TV Show by Default?</string>
    </property>
   </action>
   <action name="actionPreferences">

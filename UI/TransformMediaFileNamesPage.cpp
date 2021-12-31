@@ -301,6 +301,71 @@ namespace NMediaManager
                 model()->setSearchResult( idx, titleInfo, setChildren );
             }
         }
+
+        QMenu * CTransformMediaFileNamesPage::menu()
+        {
+            if ( !fMenu )
+            {
+                fMenu = new QMenu( this );
+                fMenu->setObjectName( "Media Namer Menu " );
+                fMenu->setTitle( tr( "Media Namer" ) );
+                connect( fMenu, &QMenu::aboutToShow, this, &CTransformMediaFileNamesPage::slotMenuAboutToShow );
+
+                fExactMatchesOnlyAction = new QAction( this );
+                fExactMatchesOnlyAction->setObjectName( QString::fromUtf8( "actionExactMatchesOnly" ) );
+                fExactMatchesOnlyAction->setCheckable( true );
+                fExactMatchesOnlyAction->setText( QCoreApplication::translate( "NMediaManager::NUi::CMainWindow", "Exact Matches Only?", nullptr ) );
+                connect( fExactMatchesOnlyAction, &QAction::triggered, this, &CTransformMediaFileNamesPage::slotExactMatchesOnly );
+
+                fTreatAsTVShowByDefaultAction = new QAction( this );
+                fTreatAsTVShowByDefaultAction->setObjectName( QString::fromUtf8( "actionTreatAsTVShowByDefault" ) );
+                fTreatAsTVShowByDefaultAction->setCheckable( true );
+                fTreatAsTVShowByDefaultAction->setText( QCoreApplication::translate( "NMediaManager::NUi::CMainWindow", "Treat as TV Show by Default?", nullptr ) );
+                connect( fTreatAsTVShowByDefaultAction, &QAction::triggered, this, &CTransformMediaFileNamesPage::slotTreatAsTVShowByDefault );
+
+                fMenu->addAction( fExactMatchesOnlyAction );
+                fMenu->addAction( fTreatAsTVShowByDefaultAction );
+
+                setActive( true );
+            }
+            return fMenu;
+        }
+
+        void CTransformMediaFileNamesPage::setActive( bool isActive )
+        {
+            if ( isActive )
+            {
+                if ( fTreatAsTVShowByDefaultAction )
+                    fTreatAsTVShowByDefaultAction->setChecked( NCore::CPreferences::instance()->getTreatAsTVShowByDefault() );
+                if ( fExactMatchesOnlyAction )
+                    fExactMatchesOnlyAction->setChecked( NCore::CPreferences::instance()->getExactMatchesOnly() );
+            }
+            else
+            {
+                if ( fTreatAsTVShowByDefaultAction )
+                    NCore::CPreferences::instance()->setTreatAsTVShowByDefault( fTreatAsTVShowByDefaultAction->isChecked() );
+                if ( fExactMatchesOnlyAction )
+                    NCore::CPreferences::instance()->setExactMatchesOnly( fExactMatchesOnlyAction->isChecked() );
+            }
+        }
+
+        void CTransformMediaFileNamesPage::slotMenuAboutToShow()
+        {
+            fTreatAsTVShowByDefaultAction->setChecked( NCore::CPreferences::instance()->getTreatAsTVShowByDefault() );
+            fExactMatchesOnlyAction->setChecked( NCore::CPreferences::instance()->getExactMatchesOnly() );
+        }
+
+        void CTransformMediaFileNamesPage::slotExactMatchesOnly()
+        {
+            NCore::CPreferences::instance()->setExactMatchesOnly( fExactMatchesOnlyAction->isChecked() );
+            setExactMatchesOnly( NCore::CPreferences::instance()->getExactMatchesOnly() );
+        }
+
+        void CTransformMediaFileNamesPage::slotTreatAsTVShowByDefault()
+        {
+            NCore::CPreferences::instance()->setTreatAsTVShowByDefault( fTreatAsTVShowByDefaultAction->isChecked() );
+            setTreatAsTVByDefault( NCore::CPreferences::instance()->getTreatAsTVShowByDefault() );
+        }
     }
 }
 

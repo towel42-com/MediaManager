@@ -31,6 +31,7 @@ namespace NSABUtils
 class QTreeView;
 class QPlainTextEdit;
 class QMenu;
+class QToolBar;
 
 namespace NMediaManager
 {
@@ -71,6 +72,12 @@ namespace NMediaManager
             virtual QMenu * contextMenu( const QModelIndex & idx );
 
             NSABUtils::CDoubleProgressDlg * progressDlg() const { return fProgressDlg; }
+
+            virtual QMenu * menu() { return nullptr; }
+            virtual QToolBar * toolBar() { return nullptr; }
+            virtual void setActive( bool isActive ) { (void)isActive; }
+            virtual bool isFileBased() const { return false; }
+            virtual bool isDirBased() const { return true; }
         public Q_SLOTS:
             void slotLoadFinished( bool canceled );
             void slotProcessingStarted();

@@ -23,8 +23,13 @@
 #ifndef _MAINWINDOW_H
 #define _MAINWINDOW_H
 
+class QMenu;
+class QToolBar;
+
 #include <QMainWindow>
 #include <optional>
+#include <tuple>
+
 namespace NSABUtils 
 {
     class CStayAwake;
@@ -49,6 +54,7 @@ namespace NMediaManager
 {
     namespace NUi
     {
+        class CBasePage;
         class CCompleterFileSystemModel;
         namespace Ui { class CMainWindow; };
         class CMainWindow : public QMainWindow
@@ -66,8 +72,6 @@ namespace NMediaManager
             void slotDirectoryChangedImmediate();
             void slotLoad();
             void slotRun();
-            void slotTreatAsTVShowByDefault();
-            void slotExactMatchesOnly();
             void slotPreferences();
             void slotWindowChanged();
             void slotFileChanged();
@@ -77,6 +81,12 @@ namespace NMediaManager
             void slotStopStayAwake();
             void slotStartStayAwake();
         private:
+            bool isActivePageFileBased() const;
+            bool isActivePageDirBased() const;
+
+            void addUIComponents( QWidget * tab, CBasePage * page );
+            void addUIComponents( QWidget * tab, QWidget * page, QMenu * menu, QToolBar * toolbar );
+
             void validateLoadAction();
             void validateRunAction();
 
@@ -95,6 +105,7 @@ namespace NMediaManager
             CCompleterFileSystemModel * fDirModel{ nullptr };
             CCompleterFileSystemModel * fFileModel{ nullptr };
             NSABUtils::CStayAwake * fStayAwake{ nullptr };
+            std::map< QWidget *, std::tuple< QWidget *, QAction *, QToolBar * > > fUIComponentMap;
         };
     }
 }
