@@ -395,7 +395,7 @@ namespace NMediaManager
 
         bool SSearchTMDBInfo::isDiskTitle( const QString & name, int & titleNum )
         {
-            auto regExpStr = "^title_t(?<num>\\d+)\\.mkv$";
+            auto regExpStr = "^.*_t(?<num>\\d+)\\.mkv$";
             auto regExp = QRegularExpression( regExpStr );
             auto match = regExp.match( name );
             bool aOK = false;
