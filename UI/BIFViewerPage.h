@@ -23,7 +23,8 @@
 #ifndef _BIFVIEWERPAGE_H
 #define _BIFVIEWERPAGE_H
 
-#include <QWidget>
+#include "BasePage.h"
+
 #include <optional>
 #include <memory>
 class QLabel;
@@ -39,6 +40,7 @@ namespace NSABUtils
         enum class EButtonsLayout;
     }
     class CImageScrollBar;
+    class CDelayComboBox;
 }
 class QSpinBox;
 
@@ -58,15 +60,15 @@ namespace NMediaManager
     namespace NUi
     {
         namespace Ui { class CBIFViewerPage; }
-        class CBIFViewerPage : public QWidget
+        class CBIFViewerPage : public CBasePage
         {
             Q_OBJECT
         public:
             CBIFViewerPage( QWidget *parent = 0 );
             ~CBIFViewerPage();
 
-            void setActive( bool isActive );
-            bool setFileName( const QString &fileName, bool andExecute );
+            virtual void setActive( bool isActive ) override;
+            bool setFileName( NSABUtils::CDelayComboBox * comboBox, const QString &fileName, bool andExecute );
 
             QAction *actionSkipBackward();
             QAction *actionPrev();
@@ -83,14 +85,32 @@ namespace NMediaManager
 
             QMenu * menu();
             QToolBar *toolBar();
+
+            virtual QString selectFileFilter() const override;
         public Q_SLOTS:
             void slotPlayingStarted();
             void slotResize();
+
+            void slotFileChanged( const QString & text );
+            void slotFileFinishedEditing( const QString & text );
+        private Q_SLOTS:
+            virtual void slotPostInit() override;
         private:
+            void connectToCB( NSABUtils::CDelayComboBox * comboBox, bool connect );
+            virtual NCore::CDirModel * createDirModel() override { return nullptr; }
+            virtual QStringList dirModelFilter() const override { return {}; }
+            virtual QString loadTitleName() const override { return {}; }
+            virtual QString loadCancelName() const override { return {}; }
+
+            virtual QString actionTitleName() const override { return {}; }
+            virtual QString actionCancelName() const override { return {}; }
+            virtual QString actionErrorName() const override { return {}; }
+
             bool outOfDate() const;
+            void fileNameChanged( NSABUtils::CDelayComboBox * comboBox, const QString & text, bool andExecute );
             void fileNameChanged();
             bool canLoad() const;
-            void load();
+            virtual void load() override;
             void clear();
             void formatBIFTable();
             void loadSettings( bool init );

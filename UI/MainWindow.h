@@ -75,8 +75,6 @@ namespace NMediaManager
             virtual void slotRun();
             virtual void slotPreferences();
             virtual void slotWindowChanged();
-            virtual void slotFileChanged();
-            virtual void slotFileFinishedEditing();
 
             virtual void slotLoadFinished( bool canceled );
             virtual void slotStopStayAwake();
@@ -93,8 +91,6 @@ namespace NMediaManager
 
             void validateLoadAction();
             void validateRunAction();
-
-            void fileNameChanged( bool andExecute );
 
             bool canRun() const;
             bool isTransformActive() const;

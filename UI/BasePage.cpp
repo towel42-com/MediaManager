@@ -30,6 +30,7 @@
 
 #include <QSettings>
 #include <QMenu>
+#include <QTimer>
 
 namespace NMediaManager
 {
@@ -53,9 +54,10 @@ namespace NMediaManager
             fImpl->filesView->setContextMenuPolicy( Qt::CustomContextMenu );
             connect( fImpl->filesView, &QTreeView::doubleClicked, this, &CBasePage::slotDoubleClicked );
             connect( fImpl->filesView, &QTreeView::customContextMenuRequested, this, &CBasePage::slotContextMenu );
+            QTimer::singleShot( 0, this, &CBasePage::slotPostInit );
        }
 
-        void CBasePage::postInit()
+        void CBasePage::slotPostInit()
         {
             loadSettings();
         }
@@ -67,11 +69,15 @@ namespace NMediaManager
 
         void CBasePage::loadSettings()
         {
-            fImpl->vsplitter->setSizes( QList< int >() << 100 << 0 );
+            if ( fImpl )
+                fImpl->vsplitter->setSizes( QList< int >() << 100 << 0 );
         }
 
         void CBasePage::saveSettings()
         {
+            if ( !fImpl )
+                return;
+
             QSettings settings;
             settings.beginGroup( getPageName() );
             settings.setValue( "Splitter", fImpl->vsplitter->saveState() );
@@ -79,12 +85,16 @@ namespace NMediaManager
 
         QTreeView * CBasePage::filesView() const
         {
-            return fImpl->filesView;
+            if ( fImpl )
+                return fImpl->filesView;
+            return nullptr;
         }
 
         QPlainTextEdit * CBasePage::log() const
         {
-            return fImpl->log;
+            if ( fImpl )
+                return fImpl->log;
+            return nullptr;
         }
 
         void CBasePage::clearProgressDlg()
@@ -145,10 +155,12 @@ namespace NMediaManager
 
         void CBasePage::load()
         {
+            if ( !fImpl )
+                return;
             if ( !fModel )
                 fModel.reset( createDirModel() );
             fModel->clear();
-            fImpl->filesView->setModel( fModel.get() );
+            filesView()->setModel( fModel.get() );
             connect( fModel.get(), &NCore::CDirModel::sigDirReloaded, this, &CBasePage::slotLoadFinished );
             connect( fModel.get(), &NCore::CDirModel::sigProcessingStarted, this, &CBasePage::slotProcessingStarted );
             setupModel();
@@ -234,6 +246,9 @@ namespace NMediaManager
 
         void CBasePage::slotContextMenu( const QPoint & pt )
         {
+            if ( !fImpl )
+                return;
+
             auto idx = fImpl->filesView->indexAt( pt );
             if ( idx.isValid() )
             {

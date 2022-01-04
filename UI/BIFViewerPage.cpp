@@ -23,6 +23,7 @@
 #include "BIFViewerPage.h"
 
 #include "ui_BIFViewerPage.h"
+#include "ui_BasePage.h"
 
 #include "Core/Preferences.h"
 #include "Core/DirModel.h"
@@ -36,6 +37,7 @@
 #include "SABUtils/AutoWaitCursor.h"
 #include "SABUtils/BIFFile.h"
 #include "SABUtils/BIFModel.h"
+#include "SABUtils/DelayComboBox.h"
 #define BIF_SCROLLBAR_SUPPORT
 #include "SABUtils/ImageScrollBar.h"
 #include "SABUtils/DelayLineEdit.h"
@@ -56,9 +58,15 @@ namespace NMediaManager
     namespace NUi
     {
         CBIFViewerPage::CBIFViewerPage( QWidget *parent )
-            : QWidget( parent ),
+            : CBasePage( "BIF Viewer", parent ),
             fImpl( new Ui::CBIFViewerPage )
         {
+            CBasePage::fImpl.reset();
+            auto children = CBasePage::findChildren< QObject * >( QString(), Qt::FindDirectChildrenOnly );
+            for ( auto && ii : children )
+                delete ii;
+            CBasePage::fImpl.reset();
+
             fImpl->setupUi( this );
             fBIFScrollBar = new NSABUtils::CImageScrollBar(Qt::Vertical);
             fImpl->bifImages->setVerticalScrollBar( fBIFScrollBar );
@@ -70,8 +78,6 @@ namespace NMediaManager
 
             connect( fImpl->bifWidget, &NSABUtils::NBIF::CWidget::sigPlayingStarted, this, &CBIFViewerPage::slotPlayingStarted );
 
-            loadSettings( true );
-
             fResizeTimer = new QTimer( this );
             fResizeTimer->setSingleShot( true );
             fResizeTimer->setInterval( 250 );
@@ -80,12 +86,10 @@ namespace NMediaManager
             fImpl->bifImages->installEventFilter( this );
         }
 
-
         CBIFViewerPage::~CBIFViewerPage()
         {
             saveSettings();
         }
-
 
         void CBIFViewerPage::formatBIFTable()
         {
@@ -154,7 +158,13 @@ namespace NMediaManager
             return fImpl->bifWidget->toolBar();
         }
 
-        QMenu *CBIFViewerPage::menu()
+        void CBIFViewerPage::slotPostInit()
+        {
+            loadSettings( true );
+            CBasePage::slotPostInit();
+        }
+
+        QMenu * CBIFViewerPage::menu()
         {
             return fImpl->bifWidget->menu();
         }
@@ -194,6 +204,8 @@ namespace NMediaManager
 
         void CBIFViewerPage::setActive( bool isActive )
         {
+            CBasePage::setActive( isActive );
+
             if ( !isActive )
                 fImpl->bifWidget->slotPause();
             else
@@ -202,10 +214,44 @@ namespace NMediaManager
             fImpl->bifWidget->setActive( isActive );
         }
 
-        bool CBIFViewerPage::setFileName( const QString &fileName, bool andExecute )
+        void CBIFViewerPage::slotFileFinishedEditing( const QString & text )
         {
-            if ( fileName.isEmpty() || !QFileInfo( fileName ).exists() )
-                return false;
+            fileNameChanged( dynamic_cast<NSABUtils::CDelayComboBox * >( sender() ), text, true );
+        }
+
+        void CBIFViewerPage::slotFileChanged( const QString & text )
+        {
+            fileNameChanged( dynamic_cast<NSABUtils::CDelayComboBox *>(sender()), text, false );
+        }
+
+        void CBIFViewerPage::fileNameChanged( NSABUtils::CDelayComboBox * comboBox, const QString & text, bool andExecute )
+        {
+            if ( comboBox )
+            {
+                connectToCB( comboBox, false );
+                comboBox->addCurrentItem();
+                connectToCB( comboBox, true );
+            }
+
+            setFileName( comboBox, text, isActive() && andExecute );
+        }
+
+        QString CBIFViewerPage::selectFileFilter() const
+        {
+            return tr( "BIF Files (*.bif);;All Files (*.*)" );
+        }
+
+        bool CBIFViewerPage::setFileName( NSABUtils::CDelayComboBox * comboBox, const QString &fileName, bool andExecute )
+        {
+            if ( fileName.isEmpty() )
+                return true;
+
+            if ( comboBox )
+            {
+                connectToCB( comboBox, false );
+                comboBox->setCurrentText( fileName );
+                connectToCB( comboBox, true );
+            }
 
             fFileName = fileName;
             fileNameChanged();
@@ -326,6 +372,24 @@ namespace NMediaManager
         {
             return fImpl->bifWidget->actionSkipForward();
         }
+
+        void CBIFViewerPage::connectToCB( NSABUtils::CDelayComboBox * comboBox, bool connect )
+        {
+            if ( !comboBox )
+                return;
+
+            if ( connect )
+            {
+                this->connect( comboBox, &NSABUtils::CDelayComboBox::sigEditTextChangedAfterDelay, this, &CBIFViewerPage::slotFileChanged );
+                this->connect( comboBox->lineEdit(), &NSABUtils::CDelayLineEdit::sigFinishedEditingAfterDelay, this, &CBIFViewerPage::slotFileFinishedEditing );
+            }
+            else
+            {
+                disconnect( comboBox, &NSABUtils::CDelayComboBox::sigEditTextChangedAfterDelay, this, &CBIFViewerPage::slotFileChanged );
+                disconnect( comboBox->lineEdit(), &NSABUtils::CDelayLineEdit::sigFinishedEditingAfterDelay, this, &CBIFViewerPage::slotFileFinishedEditing );
+            }
+        }
+
     }
 }
 

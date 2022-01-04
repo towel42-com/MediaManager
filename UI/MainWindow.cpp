@@ -88,11 +88,6 @@ namespace NMediaManager
             fFileChecker = new NSABUtils::CBackgroundFileCheck( this );
             connect( fFileChecker, &NSABUtils::CBackgroundFileCheck::sigFinished, this, &CMainWindow::slotFileCheckFinished );
 
-            fImpl->mergeSRTPage->postInit();
-            fImpl->makeMKVPage->postInit();
-            fImpl->transformMediaFileNamesPage->postInit();
-
-
             fImpl->directory->setDelay( 1000 );
             auto delayLE = new NSABUtils::CPathBasedDelayLineEdit;
             delayLE->setCheckExists( true );
@@ -127,8 +122,8 @@ namespace NMediaManager
             delayLE->setCheckIsFile( true );
             delayLE->setCheckIsReadable( true );
             fImpl->fileName->setDelayLineEdit( delayLE );
-            connect( fImpl->fileName, &NSABUtils::CDelayComboBox::sigEditTextChangedAfterDelay, this, &CMainWindow::slotFileChanged );
-            connect( fImpl->fileName->lineEdit(), &NSABUtils::CDelayLineEdit::sigFinishedEditingAfterDelay, this, &CMainWindow::slotFileFinishedEditing );
+            connect( fImpl->fileName, &NSABUtils::CDelayComboBox::sigEditTextChangedAfterDelay, fImpl->bifViewerPage, &CBIFViewerPage::slotFileChanged );
+            connect( fImpl->fileName->lineEdit(), &NSABUtils::CDelayLineEdit::sigFinishedEditingAfterDelay, fImpl->bifViewerPage, &CBIFViewerPage::slotFileFinishedEditing );
 
             connect( fImpl->actionOpen, &QAction::triggered, this, &CMainWindow::slotOpen );
             connect( fImpl->actionLoad, &QAction::triggered, this, &CMainWindow::slotLoad );
@@ -180,9 +175,6 @@ namespace NMediaManager
             if ( basePage )
                 return basePage->isFileBased();
             
-            if ( isBIFViewerActive() )
-                return true;
-            
             return false;
         }
 
@@ -191,9 +183,6 @@ namespace NMediaManager
             auto basePage = getCurrentBasePage();
             if ( basePage )
                 return basePage->isDirBased();
-
-            if ( isBIFViewerActive() )
-                return false;
 
             return false;
         }
@@ -217,24 +206,8 @@ namespace NMediaManager
 
         bool CMainWindow::setBIFFileName( const QString & name )
         {
-            if ( name.isEmpty() )
-                return true;
-            if ( !QFileInfo( name ).exists() )
-            {
-                QMessageBox::critical( this, tr( "Could not View BIF File" ), tr( "'%1' does not exist" ).arg( name ) );
-                return false;
-            }
-
             fImpl->tabWidget->setCurrentWidget( fImpl->bifViewerTab );
-
-            disconnect( fImpl->fileName, &NSABUtils::CDelayComboBox::sigEditTextChangedAfterDelay, this, &CMainWindow::slotFileChanged );
-            disconnect( fImpl->fileName->lineEdit(), &NSABUtils::CDelayLineEdit::sigFinishedEditingAfterDelay, this, &CMainWindow::slotFileFinishedEditing );
-            fImpl->fileName->setCurrentText( name );
-            connect( fImpl->fileName, &NSABUtils::CDelayComboBox::sigEditTextChangedAfterDelay, this, &CMainWindow::slotFileChanged );
-            connect( fImpl->fileName->lineEdit(), &NSABUtils::CDelayLineEdit::sigFinishedEditingAfterDelay, this, &CMainWindow::slotFileFinishedEditing );
-
-            slotFileFinishedEditing();
-            return true;
+            return fImpl->bifViewerPage->setFileName( fImpl->fileName, name, true );
         }
 
         void CMainWindow::loadSettings()
@@ -265,8 +238,8 @@ namespace NMediaManager
             validateRunAction();
             validateLoadAction();
 
-            fImpl->bifViewerPage->setActive( isBIFViewerActive() );
-
+            auto tmp = fImpl->bifViewerPage->parentWidget();
+            auto index = fImpl->tabWidget->indexOf( fImpl->bifViewerPage );
             auto activePage = fImpl->tabWidget->currentWidget();
             for ( auto && ii : fUIComponentMap )
             {
@@ -275,9 +248,11 @@ namespace NMediaManager
                 if ( std::get< 2 >( ii.second ) )
                     std::get< 2 >( ii.second )->setVisible( false );
 
+                auto tabWidget = ii.first;
                 auto currBasePage = dynamic_cast<CBasePage *>(std::get< 0 >( ii.second ));
-                if ( currBasePage )
-                    currBasePage->setActive( currBasePage == activePage );
+
+                bool isActive = (activePage == tabWidget) ;
+                currBasePage->setActive( isActive );
             }
 
             auto pos = fUIComponentMap.find( activePage );
@@ -324,30 +299,11 @@ namespace NMediaManager
             fImpl->actionRun->setEnabled( canRun() );
         }
 
-        void CMainWindow::slotFileFinishedEditing()
-        {
-            fileNameChanged( true );
-        }
-
-        void CMainWindow::slotFileChanged()
-        {
-            fileNameChanged( false );
-        }
-
-        void CMainWindow::fileNameChanged( bool andExecute )
-        {
-            connect( fImpl->fileName, &NSABUtils::CDelayComboBox::sigEditTextChangedAfterDelay, this, &CMainWindow::slotFileChanged );
-            fImpl->fileName->addCurrentItem();
-            connect( fImpl->fileName, &NSABUtils::CDelayComboBox::sigEditTextChangedAfterDelay, this, &CMainWindow::slotFileChanged );
-
-            fImpl->bifViewerPage->setFileName( fImpl->fileName->currentText(), isBIFViewerActive() && andExecute );
-        }
-
         void CMainWindow::slotOpen()
         {
             if ( isActivePageFileBased() )
             {
-                auto fileName = QFileDialog::getOpenFileName( this, tr( "Select BIF File:" ), fImpl->fileName->currentText(), tr( "BIF Files (*.bif);;All Files (*.*)" ) );
+                auto fileName = QFileDialog::getOpenFileName( this, tr( "Select File:" ), fImpl->fileName->currentText(), getCurrentBasePage()->selectFileFilter() );
                 if ( !fileName.isEmpty() )
                     fImpl->fileName->setCurrentText( fileName );
             }

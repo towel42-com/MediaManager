@@ -59,8 +59,6 @@ namespace NMediaManager
             virtual void run();
             virtual bool canRun() const;
 
-            virtual void postInit();
-
             QTreeView * filesView() const;
             QPlainTextEdit * log() const;
 
@@ -75,9 +73,12 @@ namespace NMediaManager
 
             virtual QMenu * menu() { return nullptr; }
             virtual QToolBar * toolBar() { return nullptr; }
-            virtual void setActive( bool isActive ) { (void)isActive; }
+            virtual void setActive( bool isActive ) { fIsActive = isActive; }
+            virtual bool isActive() const { return fIsActive; }
             virtual bool isFileBased() const { return false; }
             virtual bool isDirBased() const { return true; }
+
+            virtual QString selectFileFilter() const { return QString(); }
         public Q_SLOTS:
             void slotLoadFinished( bool canceled );
             void slotProcessingStarted();
@@ -85,6 +86,8 @@ namespace NMediaManager
             void showResults();
             virtual void slotDoubleClicked( const QModelIndex & idx ) final;
             virtual void slotContextMenu( const QPoint & pt ) final;
+        protected Q_SLOTS:
+            virtual void slotPostInit();
         Q_SIGNALS:
             void sigLoading();
             void sigLoadFinished( bool canceled );
@@ -116,6 +119,8 @@ namespace NMediaManager
 
             QString fPageName;
             QString fDirName;
+
+            bool fIsActive{ false };
             
             NSABUtils::CDoubleProgressDlg * fProgressDlg{ nullptr };
             std::unique_ptr< NCore::CDirModel > fModel;

@@ -363,6 +363,7 @@ namespace NMediaManager
 
         void CTransformMediaFileNamesPage::setActive( bool isActive )
         {
+            CBasePage::setActive( isActive );
             if ( isActive )
             {
                 if ( fTreatAsTVShowByDefaultAction )
