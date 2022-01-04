@@ -113,6 +113,11 @@ namespace NMediaManager
                 {
                     model()->clearSearchResult( idx );
                 } );
+                menu->addAction( tr( "Transform Item..." ),
+                                 [ idx, this ]()
+                {
+                    //model()->transformItem( idx );
+                } );
             }
             return menu;
         }
@@ -165,7 +170,7 @@ namespace NMediaManager
 
                 auto childIndex = model()->index( ii, 0, parentIdx );
                 auto name = model()->getSearchName( childIndex );
-                if ( isPathToDelete( childIndex.data( NCore::ECustomRoles::eFullPathRole ).toString() ) )
+                if ( NCore::CPreferences::instance()->isPathToDelete( childIndex.data( NCore::ECustomRoles::eFullPathRole ).toString() ) )
                 {
                     appendToLog( QString( "Deleting file '%1'" ).arg( childIndex.data( NCore::ECustomRoles::eFullPathRole ).toString() ), true );
                     model()->setDeleteItem( childIndex );
@@ -194,25 +199,6 @@ namespace NMediaManager
             return retVal;
         }
 
-        bool CTransformMediaFileNamesPage::isPathToDelete( const QString & path ) const
-        {
-            auto fn = QFileInfo( path ).fileName();
-            auto toDelete = NCore::CPreferences::instance()->getPathsToDelete();
-            for ( auto && ii : toDelete )
-            {
-                auto regExStr = QRegularExpression::wildcardToRegularExpression( ii );
-                QRegularExpression::PatternOptions options = QRegularExpression::PatternOption::NoPatternOption;
-#ifdef Q_OS_WINDOWS
-                options |= QRegularExpression::PatternOption::CaseInsensitiveOption;
-#endif;
-                auto regExp = QRegularExpression( regExStr, options );
-
-                if ( regExp.match( fn ).hasMatch() )
-                    return true;
-            }
-            return false;
-
-        }
         void CTransformMediaFileNamesPage::slotAutoSearchFinished( const QString &path, bool searchesRemaining )
         {
             auto result = fSearchTMDB->getResult( path );
@@ -293,7 +279,10 @@ namespace NMediaManager
 
         QStringList CTransformMediaFileNamesPage::dirModelFilter() const
         {
-            return NCore::CPreferences::instance()->getMediaExtensions() << NCore::CPreferences::instance()->getSubtitleExtensions() << NCore::CPreferences::instance()->getPathsToDelete();
+            auto retVal = NCore::CPreferences::instance()->getMediaExtensions() << NCore::CPreferences::instance()->getSubtitleExtensions();
+            if ( NCore::CPreferences::instance()->deleteKnownPaths() )
+                retVal << NCore::CPreferences::instance()->getPathsToDelete();
+            return retVal;
         }
 
         void CTransformMediaFileNamesPage::setupModel()
@@ -352,9 +341,21 @@ namespace NMediaManager
                 fTreatAsTVShowByDefaultAction->setText( QCoreApplication::translate( "NMediaManager::NUi::CMainWindow", "Treat as TV Show by Default?", nullptr ) );
                 connect( fTreatAsTVShowByDefaultAction, &QAction::triggered, this, &CTransformMediaFileNamesPage::slotTreatAsTVShowByDefault );
 
+                fDeleteKnownPaths = new QAction( this );
+                fDeleteKnownPaths->setObjectName( QString::fromUtf8( "actionDeleteKnownPaths" ) );
+                fDeleteKnownPaths->setCheckable( true );
+                fDeleteKnownPaths->setChecked( NCore::CPreferences::instance()->deleteKnownPaths() );
+                fDeleteKnownPaths->setText( QCoreApplication::translate( "NMediaManager::NUi::CMainWindow", "Delete Known Paths?", nullptr ) );
+                connect( fDeleteKnownPaths, &QAction::triggered, [ this ]()
+                {
+                    fDeleteKnownPaths->setChecked( !fDeleteKnownPaths->isChecked() );
+                    NCore::CPreferences::instance()->setDeleteKnownPaths( fDeleteKnownPaths->isChecked() );
+                }
+                );
+
                 fMenu->addAction( fExactMatchesOnlyAction );
                 fMenu->addAction( fTreatAsTVShowByDefaultAction );
-
+                fMenu->addAction( fDeleteKnownPaths );
                 setActive( true );
             }
             return fMenu;

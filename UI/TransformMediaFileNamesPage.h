@@ -84,7 +84,6 @@ namespace NMediaManager
             void slotExactMatchesOnly();
             void slotMenuAboutToShow();
         protected:
-            bool isPathToDelete( const QString & path ) const;
             virtual void loadSettings() override;
             [[nodiscard]] bool autoSearchForNewNames( const QModelIndex & rootIdx );
             
@@ -95,6 +94,7 @@ namespace NMediaManager
             QMenu * fMenu{ nullptr };
             QAction * fTreatAsTVShowByDefaultAction{ nullptr };
             QAction * fExactMatchesOnlyAction{ nullptr };
+            QAction * fDeleteKnownPaths{ nullptr };
         };
     }
 }

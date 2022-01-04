@@ -176,26 +176,27 @@ namespace NMediaManager
 
         bool CMainWindow::isActivePageFileBased() const
         {
+            auto basePage = getCurrentBasePage();
+            if ( basePage )
+                return basePage->isFileBased();
+            
             if ( isBIFViewerActive() )
                 return true;
-            auto currWidget = fImpl->tabWidget->currentWidget();
-            auto basePage = currWidget->findChild< CBasePage * >();
-            if ( !basePage )
-                return false;
-            return basePage->isFileBased();
+            
+            return false;
         }
 
         bool CMainWindow::isActivePageDirBased() const
         {
+            auto basePage = getCurrentBasePage();
+            if ( basePage )
+                return basePage->isDirBased();
+
             if ( isBIFViewerActive() )
                 return false;
-            auto currWidget = fImpl->tabWidget->currentWidget();
-            auto basePage = currWidget->findChild< CBasePage * >();
-            if ( !basePage )
-                return false;
-            return basePage->isDirBased();
-        }
 
+            return false;
+        }
 
         void CMainWindow::addUIComponents( QWidget * tab, CBasePage * page )
         {
@@ -344,13 +345,13 @@ namespace NMediaManager
 
         void CMainWindow::slotOpen()
         {
-            if ( isBIFViewerActive() )
+            if ( isActivePageFileBased() )
             {
                 auto fileName = QFileDialog::getOpenFileName( this, tr( "Select BIF File:" ), fImpl->fileName->currentText(), tr( "BIF Files (*.bif);;All Files (*.*)" ) );
                 if ( !fileName.isEmpty() )
                     fImpl->fileName->setCurrentText( fileName );
             }
-            else if ( isMergeSRTActive() || isTransformActive() || isMakeMKVActive() )
+            else if ( isActivePageDirBased() )
             {
                 auto dir = QFileDialog::getExistingDirectory( this, tr( "Select Directory:" ), fImpl->directory->currentText() );
                 if ( !dir.isEmpty() )
@@ -388,12 +389,9 @@ namespace NMediaManager
 
         bool CMainWindow::canRun() const
         {
-            if ( isTransformActive() )
-                return fImpl->transformMediaFileNamesPage->canRun();
-            else if ( isMergeSRTActive() )
-                return fImpl->mergeSRTPage->canRun();
-            else if ( isMakeMKVActive() )
-                return fImpl->makeMKVPage->canRun();
+            auto basePage = getCurrentBasePage();
+            if ( basePage )
+                return basePage->canRun();
             return false;
         }
 
@@ -407,37 +405,26 @@ namespace NMediaManager
         {
             bool aOK = true;
             fImpl->directory->addCurrentItem();
-            if ( isTransformActive() )
+            auto basePage = getCurrentBasePage();
+            if ( basePage )
             {
-                fImpl->transformMediaFileNamesPage->load( fImpl->directory->currentText() );
+                basePage->load( fImpl->directory->currentText() );
+                fImpl->actionRun->setEnabled( false );
             }
-            else if ( isMergeSRTActive() )
-            {
-                fImpl->mergeSRTPage->load( fImpl->directory->currentText() );
-            }
-            else if ( isMakeMKVActive() )
-            {
-                fImpl->makeMKVPage->load( fImpl->directory->currentText() );
-            }
-            fImpl->actionRun->setEnabled( false );
+        }
+
+        CBasePage * CMainWindow::getCurrentBasePage() const
+        {
+            auto currWidget = fImpl->tabWidget->currentWidget();
+            auto basePage = currWidget->findChild< CBasePage * >();
+            return basePage;
         }
 
         void CMainWindow::slotRun()
         {
-            if ( isTransformActive() )
-            {
-                fImpl->transformMediaFileNamesPage->run();
-            }
-            else if ( isMergeSRTActive() )
-            {
-                fImpl->mergeSRTPage->run();
-            }
-            else if ( isMakeMKVActive() )
-            {
-                fImpl->makeMKVPage->run();
-            }
-            else
-                return;
+            auto basePage = getCurrentBasePage();
+            if ( basePage )
+                basePage->run();
         }
 
         void CMainWindow::slotStartStayAwake()

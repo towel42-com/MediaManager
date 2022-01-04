@@ -83,6 +83,8 @@ namespace NMediaManager
             virtual void slotStartStayAwake();
             virtual void slotFileCheckFinished( bool aOK, const QString & msg );
         private:
+            CBasePage * getCurrentBasePage() const;
+   
             bool isActivePageFileBased() const;
             bool isActivePageDirBased() const;
 
