@@ -165,10 +165,10 @@ namespace NMediaManager
             QFileInfo fileInfo( const QStandardItem * item ) const;
             QString filePath( const QStandardItem * item ) const;
 
-            QStandardItem * getItemFromindex( QModelIndex idx ) const;
+            QStandardItem * getPathItemFromIndex( QModelIndex idx ) const;
             QStandardItem * getItemFromPath( const QFileInfo & fi ) const;
 
-            bool process( const std::function< void( int count, int eventsPerPath ) > & startProgress, const std::function< void( bool finalStep ) > & endProgress, QWidget * parent );
+            bool process( const QModelIndex & idx, const std::function< void( int count, int eventsPerPath ) > & startProgress, const std::function< void( bool finalStep ) > & endProgress, QWidget * parent );
 
             void setNameFilters( const QStringList & filters );
             void reloadModel();
@@ -268,7 +268,7 @@ namespace NMediaManager
 
             QString getDispName( const QString & absPath ) const;
             QString getDispName( const QFileInfo & absPath ) const;
-            void process( bool displayOnly );
+            void process( const QModelIndex & idx, bool displayOnly );
             bool process( const QStandardItem * item, bool displayOnly, QStandardItem * resultsParentItem );
 
             bool checkProcessItemExists( const QString & fileName, QStandardItem * parentItem, bool scheduledForRemoval = false ) const;

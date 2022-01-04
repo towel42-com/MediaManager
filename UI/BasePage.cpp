@@ -46,7 +46,7 @@ namespace NMediaManager
             connect( fProgressDlg, &NSABUtils::CDoubleProgressDlg::canceled,
                         [ this ]()
             {
-                clearProgressDlg();
+                clearProgressDlg( true );
             } );
             fProgressDlg->setMinimumDuration( -1 );
 
@@ -97,15 +97,15 @@ namespace NMediaManager
             return nullptr;
         }
 
-        void CBasePage::clearProgressDlg()
+        void CBasePage::clearProgressDlg( bool canceled )
         {
-            fProgressDlg->reset();
+            fProgressDlg->reset( canceled );
             fProgressDlg->hide();
         }
 
         void CBasePage::setupProgressDlg( const QString & title, const QString & cancelButtonText, int max, int eventsPerPath )
         {
-            fProgressDlg->reset();
+            fProgressDlg->reset( false );
 
             fProgressDlg->setSingleProgressBarMode( !canRun() || !useSecondaryProgressBar() );
             if ( canRun() && useSecondaryProgressBar() )
@@ -139,7 +139,7 @@ namespace NMediaManager
             emit sigStopStayAwake();
 
             postLoadFinished( canceled );
-            clearProgressDlg();
+            clearProgressDlg( canceled );
         }
 
         void CBasePage::slotProcessingStarted()
@@ -186,7 +186,7 @@ namespace NMediaManager
 
         }
 
-        void CBasePage::run()
+        void CBasePage::run( const QModelIndex & idx )
         {
             emit sigStartStayAwake();
 
@@ -195,7 +195,7 @@ namespace NMediaManager
 
             connect( fModel.get(), &NCore::CDirModel::sigProcessesFinished, [ this ]( bool status, bool canceled, bool reloadModel )
             {
-                clearProgressDlg();
+                clearProgressDlg( false );
                 if ( !status )
                 {
                     fModel->showProcessResults( actionErrorName(), tr( "Issues:" ), QMessageBox::Critical, QDialogButtonBox::Ok, this );
@@ -207,7 +207,7 @@ namespace NMediaManager
 
             if ( fModel )
             {
-                fModel->process(
+                fModel->process( idx,
                     [ actionName, cancelName, this ]( int count, int eventsPerPath )
                 {
                     setupProgressDlg( actionName, cancelName, count, eventsPerPath );

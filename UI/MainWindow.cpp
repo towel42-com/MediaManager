@@ -380,7 +380,7 @@ namespace NMediaManager
         {
             auto basePage = getCurrentBasePage();
             if ( basePage )
-                basePage->run();
+                basePage->run( QModelIndex() );
         }
 
         void CMainWindow::slotStartStayAwake()

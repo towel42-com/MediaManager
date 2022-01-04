@@ -56,7 +56,7 @@ namespace NMediaManager
             virtual void load( const QString & dirName );
             virtual void load();
 
-            virtual void run();
+            virtual void run( const QModelIndex & idx );
             virtual bool canRun() const;
 
             QTreeView * filesView() const;
@@ -112,7 +112,7 @@ namespace NMediaManager
             virtual void setupModel();
 
             void setupProgressDlg( const QString & title, const QString & cancelButtonText, int max, int eventsPerPath=1);
-            void clearProgressDlg();
+            void clearProgressDlg( bool canceled );
 
             virtual void loadSettings();
             virtual void saveSettings();

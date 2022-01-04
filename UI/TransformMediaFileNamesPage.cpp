@@ -116,7 +116,7 @@ namespace NMediaManager
                 menu->addAction( tr( "Transform Item..." ),
                                  [ idx, this ]()
                 {
-                    //model()->transformItem( idx );
+                    run( idx );
                 } );
             }
             return menu;
@@ -203,6 +203,8 @@ namespace NMediaManager
         {
             auto result = fSearchTMDB->getResult( path );
 
+            searchesRemaining = searchesRemaining && !fProgressDlg->wasCanceled();
+
             if ( searchesRemaining )
             {
                 fProgressDlg->setValue( fProgressDlg->value() + 1 );
@@ -220,19 +222,20 @@ namespace NMediaManager
             }
             else
             {
-                clearProgressDlg();
+                clearProgressDlg( fProgressDlg->wasCanceled() );
             }
 
             if ( fProgressDlg->wasCanceled() )
                 fSearchTMDB->clearSearchCache();
-
-            if ( !result.empty() )
+            else
             {
-                auto item = model()->getItemFromPath( path );
-                if ( item )
-                    model()->setSearchResult( item, result.front(), false );
+                if ( !result.empty() )
+                {
+                    auto item = model()->getItemFromPath( path );
+                    if ( item )
+                        model()->setSearchResult( item, result.front(), false );
+                }
             }
-
             if ( !searchesRemaining )
             {
                 emit sigLoadFinished( false );

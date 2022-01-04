@@ -58,7 +58,7 @@ namespace NMediaManager
             if ( role == Qt::CheckStateRole )
             {
                 auto isTVShow = value.toInt() == Qt::Checked;
-                auto baseItem = getItemFromindex( idx );
+                auto baseItem = getPathItemFromIndex( idx );
                 if ( baseItem && idx.column() == EColumns::eIsTVShow )
                     baseItem->setData( isTVShow, eIsTVShowRole );
                 auto item = itemFromIndex( idx );
@@ -444,7 +444,7 @@ namespace NMediaManager
                 else
                     fFileMapping.erase( fi.absoluteFilePath() );
 
-                updateTransformPattern( getItemFromindex( idx ) );
+                updateTransformPattern( getPathItemFromIndex( idx ) );
             }
             if ( applyToChildren )
             {

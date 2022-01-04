@@ -501,7 +501,7 @@ namespace NMediaManager
             return QFileInfo( item->data( ECustomRoles::eFullPathRole ).toString() );
         }
 
-        QStandardItem * CDirModel::getItemFromindex( QModelIndex idx ) const
+        QStandardItem * CDirModel::getPathItemFromIndex( QModelIndex idx ) const
         {
             if ( idx.column() != EColumns::eFSName )
             {
@@ -522,19 +522,19 @@ namespace NMediaManager
 
         QString CDirModel::filePath( const QModelIndex & idx ) const
         {
-            auto item = getItemFromindex( idx );
+            auto item = getPathItemFromIndex( idx );
             return filePath( item );
         }
 
         QFileInfo CDirModel::fileInfo( const QModelIndex & idx ) const
         {
-            auto item = getItemFromindex( idx );
+            auto item = getPathItemFromIndex( idx );
             return fileInfo( item );
         }
 
         bool CDirModel::isDir( const QModelIndex & idx ) const
         {
-            auto item = getItemFromindex( idx );
+            auto item = getPathItemFromIndex( idx );
             return isDir( item );
         }
 
@@ -701,7 +701,7 @@ namespace NMediaManager
             return aOK;
         }
 
-        void CDirModel::process( bool displayOnly )
+        void CDirModel::process( const QModelIndex & idx, bool displayOnly )
         {
             NSABUtils::CAutoWaitCursor awc;
             fProcessResults.second = std::make_shared< QStandardItemModel >();
@@ -711,7 +711,10 @@ namespace NMediaManager
                 connect( progressDlg(), &NSABUtils::CDoubleProgressDlg::canceled, this, &CDirModel::slotProgressCanceled );
             }
 
-            fProcessResults.first = process( invisibleRootItem(), displayOnly, nullptr );
+            auto item = invisibleRootItem();
+            if ( idx.isValid() )
+                item = getPathItemFromIndex( idx );
+            fProcessResults.first = process( item, displayOnly, nullptr );
             postProcess( displayOnly );
         }
 
@@ -755,10 +758,10 @@ namespace NMediaManager
             QStandardItemModel::clear();
         }
 
-        bool CDirModel::process( const std::function< void( int count, int eventsPerPath ) > & startProgress, const std::function< void( bool finalStep ) > & endProgress, QWidget * parent )
+        bool CDirModel::process( const QModelIndex & idx, const std::function< void( int count, int eventsPerPath ) > & startProgress, const std::function< void( bool finalStep ) > & endProgress, QWidget * parent )
         {
             startProgress( 0, 1 );
-            process( true );
+            process( idx, true );
             if ( fProcessResults.second && fProcessResults.second->rowCount() == 0 )
             {
                 QMessageBox::information( parent, tr( "Nothing to change" ), tr( "No files or directories could be processed" ) );
@@ -777,7 +780,7 @@ namespace NMediaManager
             int count = computeNumberOfItems();
             startProgress( count, eventsPerPath() );
             emit sigProcessingStarted();
-            process( false );
+            process( idx, false );
             if ( !fProcessResults.first )
             {
                 showProcessResults( tr( "Error While Processing:" ), tr( "Issues:" ), QMessageBox::Critical, QDialogButtonBox::Ok, parent );
