@@ -300,6 +300,42 @@ namespace NMediaManager
             return settings.value( "PathsToDelete", defaultValues ).toStringList();
         }
 
+        void CPreferences::setDeleteKnownPaths( bool value )
+        {
+            QSettings settings;
+            settings.beginGroup( "Transform" );
+            settings.setValue( "DeleteKnownPaths", value );
+        }
+
+        bool CPreferences::isPathToDelete( const QString & path ) const
+        {
+            if ( !deleteKnownPaths() )
+                return false;
+
+            auto fn = QFileInfo( path ).fileName();
+            auto toDelete = getPathsToDelete();
+            for ( auto && ii : toDelete )
+            {
+                auto regExStr = QRegularExpression::wildcardToRegularExpression( ii );
+                QRegularExpression::PatternOptions options = QRegularExpression::PatternOption::NoPatternOption;
+#ifdef Q_OS_WINDOWS
+                options |= QRegularExpression::PatternOption::CaseInsensitiveOption;
+#endif;
+                auto regExp = QRegularExpression( regExStr, options );
+
+                if ( regExp.match( fn ).hasMatch() )
+                    return true;
+            }
+            return false;
+        }
+
+        bool CPreferences::deleteKnownPaths() const
+        {
+            QSettings settings;
+            settings.beginGroup( "Transform" );
+            return settings.value( "DeleteKnownPaths", true ).toBool();
+        }
+
         void CPreferences::setMediaExtensions( const QString &value )
         {
             QSettings settings;
