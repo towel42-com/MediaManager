@@ -165,28 +165,54 @@ namespace NMediaManager
 
                 auto childIndex = model()->index( ii, 0, parentIdx );
                 auto name = model()->getSearchName( childIndex );
-                auto path = model()->filePath( childIndex );
-                auto titleInfo = model()->getSearchResultInfo( childIndex );
-                auto searchInfo = std::make_shared< NCore::SSearchTMDBInfo >( name, titleInfo );
-                searchInfo->setExactMatchOnly( NCore::CPreferences::instance()->getExactMatchesOnly() );
-
-                if ( model()->canAutoSearch( childIndex ) )
+                if ( isPathToDelete( childIndex.data( NCore::ECustomRoles::eFullPathRole ).toString() ) )
                 {
-                    auto msg = tr( "Adding Background Search for '%1'" ).arg( QDir( fDirName ).relativeFilePath( path ) );
-                    appendToLog( msg + QString( "\n\t%1\n" ).arg( searchInfo->toString( false ) ), true );
-                    fProgressDlg->setLabelText( msg );
-                    fProgressDlg->setValue( fProgressDlg->value() + 1 );
-                    qApp->processEvents();
-
-                    fSearchTMDB->addSearch( path, searchInfo );
-                    retVal = true;
+                    appendToLog( QString( "Deleting file '%1'" ).arg( childIndex.data( NCore::ECustomRoles::eFullPathRole ).toString() ), true );
+                    model()->setDeleteItem( childIndex );
                 }
+                else
+                {
+                    auto path = model()->filePath( childIndex );
+                    auto titleInfo = model()->getSearchResultInfo( childIndex );
+                    auto searchInfo = std::make_shared< NCore::SSearchTMDBInfo >( name, titleInfo );
+                    searchInfo->setExactMatchOnly( NCore::CPreferences::instance()->getExactMatchesOnly() );
 
+                    if ( model()->canAutoSearch( childIndex ) )
+                    {
+                        auto msg = tr( "Adding Background Search for '%1'" ).arg( QDir( fDirName ).relativeFilePath( path ) );
+                        appendToLog( msg + QString( "\n\t%1\n" ).arg( searchInfo->toString( false ) ), true );
+                        fProgressDlg->setLabelText( msg );
+                        fProgressDlg->setValue( fProgressDlg->value() + 1 );
+                        qApp->processEvents();
+
+                        fSearchTMDB->addSearch( path, searchInfo );
+                        retVal = true;
+                    }
+                }
                 retVal = autoSearchForNewNames( childIndex ) || retVal;
             }
             return retVal;
         }
 
+        bool CTransformMediaFileNamesPage::isPathToDelete( const QString & path ) const
+        {
+            auto fn = QFileInfo( path ).fileName();
+            auto toDelete = NCore::CPreferences::instance()->getPathsToDelete();
+            for ( auto && ii : toDelete )
+            {
+                auto regExStr = QRegularExpression::wildcardToRegularExpression( ii );
+                QRegularExpression::PatternOptions options = QRegularExpression::PatternOption::NoPatternOption;
+#ifdef Q_OS_WINDOWS
+                options |= QRegularExpression::PatternOption::CaseInsensitiveOption;
+#endif;
+                auto regExp = QRegularExpression( regExStr, options );
+
+                if ( regExp.match( fn ).hasMatch() )
+                    return true;
+            }
+            return false;
+
+        }
         void CTransformMediaFileNamesPage::slotAutoSearchFinished( const QString &path, bool searchesRemaining )
         {
             auto result = fSearchTMDB->getResult( path );
@@ -267,7 +293,7 @@ namespace NMediaManager
 
         QStringList CTransformMediaFileNamesPage::dirModelFilter() const
         {
-            return NCore::CPreferences::instance()->getMediaExtensions() << NCore::CPreferences::instance()->getSubtitleExtensions();
+            return NCore::CPreferences::instance()->getMediaExtensions() << NCore::CPreferences::instance()->getSubtitleExtensions() << NCore::CPreferences::instance()->getPathsToDelete();
         }
 
         void CTransformMediaFileNamesPage::setupModel()
@@ -277,7 +303,6 @@ namespace NMediaManager
             model()->slotTVOutputDirPatternChanged( NCore::CPreferences::instance()->getTVOutDirPattern() );
             model()->slotMovieOutputFilePatternChanged( NCore::CPreferences::instance()->getMovieOutFilePattern() );
             model()->slotMovieOutputDirPatternChanged( NCore::CPreferences::instance()->getMovieOutDirPattern() );
-            model()->setNameFilters( NCore::CPreferences::instance()->getMediaExtensions() << NCore::CPreferences::instance()->getSubtitleExtensions() );
 
             CBasePage::setupModel();
         }

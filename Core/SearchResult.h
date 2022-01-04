@@ -47,6 +47,7 @@ namespace NMediaManager
 
         enum class EResultInfoType
         {
+            eDeleteFileType,
             eMovie,
             eTVShow,
             eTVSeason,
@@ -60,6 +61,7 @@ namespace NMediaManager
             SSearchResult( EResultInfoType type );
 
             bool isTVShow() const { return fInfoType != EResultInfoType::eMovie; } // tvshow, season or episode are all not movie
+            bool isDeleteResult() const { return fInfoType == EResultInfoType::eDeleteFileType; } // tvshow, season or episode are all not movie
             QString getTitle() const;
             QString getYear() const;
             QString getEpisodeTitle() const;

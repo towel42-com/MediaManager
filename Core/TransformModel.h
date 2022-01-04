@@ -63,6 +63,7 @@ namespace NMediaManager
             void computeEpisodesForDiskNumbers();
             virtual QString getSearchName( const QModelIndex & idx ) const override;
 
+            void setDeleteItem( const QModelIndex & idx );
         public Q_SLOTS:
             void slotPatternChanged();
 

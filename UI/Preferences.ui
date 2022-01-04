@@ -69,6 +69,11 @@
         <string>Skipped Paths</string>
        </property>
       </item>
+      <item>
+       <property name="text">
+        <string>Paths to Delete</string>
+       </property>
+      </item>
      </item>
      <item>
       <property name="text">
@@ -105,7 +110,7 @@
    <item row="0" column="1">
     <widget class="QStackedWidget" name="stackedWidget">
      <property name="currentIndex">
-      <number>4</number>
+      <number>6</number>
      </property>
      <widget class="QWidget" name="extensionsPage">
       <layout class="QGridLayout" name="gridLayout_8">
@@ -307,7 +312,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="ignoreDirPage">
+     <widget class="QWidget" name="ignoredPathsPage">
       <layout class="QVBoxLayout" name="verticalLayout_5">
        <item>
         <widget class="QGroupBox" name="groupBox_4">
@@ -358,7 +363,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="ignoreFilesPage">
+     <widget class="QWidget" name="skippedPathsPage">
       <layout class="QVBoxLayout" name="verticalLayout_4">
        <item>
         <widget class="QGroupBox" name="groupBox_5">
@@ -403,6 +408,64 @@
           </item>
           <item row="0" column="0" rowspan="3">
            <widget class="QListView" name="pathNamesToSkip"/>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="pathsToDeletePage">
+      <layout class="QVBoxLayout" name="verticalLayout_6">
+       <item>
+        <widget class="QGroupBox" name="groupBox_6">
+         <property name="title">
+          <string>Paths to Delete</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_12">
+          <item row="2" column="1">
+           <spacer name="verticalSpacer_11">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>174</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="1" column="1">
+           <widget class="QToolButton" name="btnDelPathToDelete">
+            <property name="text">
+             <string>...</string>
+            </property>
+            <property name="icon">
+             <iconset resource="../SABUtils/resources/SABUtils.qrc">
+              <normaloff>:/SABUtilsResources/delete.png</normaloff>:/SABUtilsResources/delete.png</iconset>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0" rowspan="3">
+           <widget class="QListView" name="pathsToDelete"/>
+          </item>
+          <item row="0" column="1">
+           <widget class="QToolButton" name="btnAddPathToDelete">
+            <property name="text">
+             <string>...</string>
+            </property>
+            <property name="icon">
+             <iconset resource="../SABUtils/resources/SABUtils.qrc">
+              <normaloff>:/SABUtilsResources/add.png</normaloff>:/SABUtilsResources/add.png</iconset>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="label_13">
+            <property name="text">
+             <string>glob expressions (*,? etc are acceptable)</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -570,7 +633,7 @@
         </spacer>
        </item>
        <item row="1" column="1">
-        <widget class="NSABUtils::CDelayLineEdit" name="mkvPropEditExe">
+        <widget class="NSABUtils::CPathBasedDelayLineEdit" name="mkvPropEditExe">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -601,7 +664,7 @@
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="NSABUtils::CDelayLineEdit" name="mkvMergeExe">
+        <widget class="NSABUtils::CPathBasedDelayLineEdit" name="mkvMergeExe">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -611,7 +674,7 @@
         </widget>
        </item>
        <item row="2" column="1">
-        <widget class="NSABUtils::CDelayLineEdit" name="ffmpegExe"/>
+        <widget class="NSABUtils::CPathBasedDelayLineEdit" name="ffmpegExe"/>
        </item>
        <item row="1" column="0">
         <widget class="QLabel" name="label_8">
@@ -666,7 +729,7 @@
         </widget>
        </item>
        <item row="3" column="1">
-        <widget class="NSABUtils::CDelayLineEdit" name="ffprobeExe"/>
+        <widget class="NSABUtils::CPathBasedDelayLineEdit" name="ffprobeExe"/>
        </item>
        <item row="3" column="2">
         <widget class="QToolButton" name="btnSelectFFProbeExe">
@@ -687,7 +750,7 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>NSABUtils::CDelayLineEdit</class>
+   <class>NSABUtils::CPathBasedDelayLineEdit</class>
    <extends>QLineEdit</extends>
    <header>SABUtils/DelayLineEdit.h</header>
   </customwidget>

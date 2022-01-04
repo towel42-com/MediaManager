@@ -84,6 +84,7 @@ namespace NMediaManager
             void slotExactMatchesOnly();
             void slotMenuAboutToShow();
         protected:
+            bool isPathToDelete( const QString & path ) const;
             virtual void loadSettings() override;
             [[nodiscard]] bool autoSearchForNewNames( const QModelIndex & rootIdx );
             

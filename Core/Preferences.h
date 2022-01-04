@@ -74,6 +74,9 @@ namespace NMediaManager
             QStringList getIgnoredPaths() const;
             void setIgnoredPaths( const QStringList & paths );
 
+            QStringList getPathsToDelete() const;
+            void setPathsToDelete( const QStringList & paths );
+
             void setMediaExtensions( const QString & value );
             void setMediaExtensions( const QStringList & value );
             QStringList getMediaExtensions() const;

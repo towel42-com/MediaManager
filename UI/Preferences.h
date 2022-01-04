@@ -56,6 +56,8 @@ namespace NMediaManager
             void slotDelIgnorePathName();
             void slotAddSkipPathName();
             void slotDelSkipPathName();
+            void slotAddPathToDelete();
+            void slotDelPathToDelete();
 
             void slotSelectMKVMergeExe();
             void slotSelectMKVPropEditExe();
@@ -85,6 +87,7 @@ namespace NMediaManager
             NSABUtils::CKeyValuePairModel * fAbbreviationsModel{ nullptr };
             QStringListModel * fSkipPathNamesModel{ nullptr };
             QStringListModel * fIgnorePathNamesModel{ nullptr };
+            QStringListModel * fPathsToDeleteModel{ nullptr };
             std::unordered_map< QString, QWidget * > fPageMap;
             std::unique_ptr< Ui::CPreferences > fImpl;
         };

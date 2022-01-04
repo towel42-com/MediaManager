@@ -283,6 +283,23 @@ namespace NMediaManager
             static auto defaultValues = QStringList( { "sub", "subs", "season \\d+" } );
             return settings.value( "IgnoredFileNames", defaultValues ).toStringList();
         }
+
+        void CPreferences::setPathsToDelete( const QStringList & values )
+        {
+            QSettings settings;
+            settings.beginGroup( "Transform" );
+            QStringList realValues = values;
+            settings.setValue( "PathsToDelete", realValues );
+        }
+
+        QStringList CPreferences::getPathsToDelete() const
+        {
+            QSettings settings;
+            settings.beginGroup( "Transform" );
+            static auto defaultValues = QStringList( { "*.txt", "*.exe", "*.nfo" } );
+            return settings.value( "PathsToDelete", defaultValues ).toStringList();
+        }
+
         void CPreferences::setMediaExtensions( const QString &value )
         {
             QSettings settings;

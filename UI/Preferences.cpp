@@ -54,38 +54,32 @@ namespace NMediaManager
             connect( fImpl->btnDelIgnorePathName, &QToolButton::clicked, this, &CPreferences::slotDelIgnorePathName );
             connect( fImpl->btnAddSkipPathName, &QToolButton::clicked, this, &CPreferences::slotAddSkipPathName );
             connect( fImpl->btnDelSkipPathName, &QToolButton::clicked, this, &CPreferences::slotDelSkipPathName );
+            connect( fImpl->btnAddPathToDelete, &QToolButton::clicked, this, &CPreferences::slotAddPathToDelete );
+            connect( fImpl->btnDelPathToDelete, &QToolButton::clicked, this, &CPreferences::slotDelPathToDelete );
 
             connect( fImpl->pageSelector, &QTreeWidget::currentItemChanged,   this, &CPreferences::slotPageSelectorCurrChanged );
             connect( fImpl->pageSelector, &QTreeWidget::itemActivated, this, &CPreferences::slotPageSelectorItemActived );
             connect( fImpl->pageSelector, &QTreeWidget::itemSelectionChanged, this, &CPreferences::slotPageSelectorSelectionChanged );
 
             connect( fImpl->btnSelectMKVMergeExe, &QToolButton::clicked, this, &CPreferences::slotSelectMKVMergeExe );
-            fImpl->mkvMergeExe->setIsOKFunction( [ ]( const QString & fileName )
-            {
-                auto fi = QFileInfo( fileName );
-                return fileName.isEmpty() || (fi.exists() && fi.isFile() && fi.isExecutable());
-            }, tr( "File '%1' does not Exist or is not an Executable" ) );
+            fImpl->mkvMergeExe->setCheckExists( true );
+            fImpl->mkvMergeExe->setCheckIsFile( true );
+            fImpl->mkvMergeExe->setCheckIsExecutable( true );
 
             connect( fImpl->btnSelectMKVPropEditExe, &QToolButton::clicked, this, &CPreferences::slotSelectMKVPropEditExe );
-            fImpl->mkvPropEditExe->setIsOKFunction( [ ]( const QString & fileName )
-            {
-                auto fi = QFileInfo( fileName );
-                return fileName.isEmpty() || (fi.exists() && fi.isFile() && fi.isExecutable());
-            }, tr( "File '%1' does not Exist or is not an Executable" ) );
+            fImpl->mkvPropEditExe->setCheckExists( true );
+            fImpl->mkvPropEditExe->setCheckIsFile( true );
+            fImpl->mkvPropEditExe->setCheckIsExecutable( true );
 
             connect( fImpl->btnSelectFFMpegExe, &QToolButton::clicked, this, &CPreferences::slotSelectFFMpegExe );
-            fImpl->ffmpegExe->setIsOKFunction( [ ]( const QString & fileName )
-            {
-                auto fi = QFileInfo( fileName );
-                return fileName.isEmpty() || (fi.exists() && fi.isFile() && fi.isExecutable());
-            }, tr( "File '%1' does not Exist or is not an Executable" ) );
+            fImpl->ffmpegExe->setCheckExists( true );
+            fImpl->ffmpegExe->setCheckIsFile( true );
+            fImpl->ffmpegExe->setCheckIsExecutable( true );
 
             connect( fImpl->btnSelectFFProbeExe, &QToolButton::clicked, this, &CPreferences::slotSelectFFProbeExe );
-            fImpl->ffprobeExe->setIsOKFunction( [ ]( const QString & fileName )
-            {
-                auto fi = QFileInfo( fileName );
-                return fileName.isEmpty() || (fi.exists() && fi.isFile() && fi.isExecutable());
-            }, tr( "File '%1' does not Exist or is not an Executable" ) );
+            fImpl->ffprobeExe->setCheckExists( true );
+            fImpl->ffprobeExe->setCheckIsFile( true );
+            fImpl->ffprobeExe->setCheckIsExecutable( true );
 
             connect( fImpl->ffmpegExe, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CPreferences::slotFFToolChanged );
             connect( fImpl->ffprobeExe, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CPreferences::slotFFToolChanged );
@@ -107,11 +101,15 @@ namespace NMediaManager
             fIgnorePathNamesModel = new QStringListModel( this );
             fImpl->pathNamesToIgnore->setModel( fIgnorePathNamesModel );
 
+            fPathsToDeleteModel = new QStringListModel( this );
+            fImpl->pathsToDelete->setModel( fPathsToDeleteModel );
+
             new NSABUtils::CButtonEnabler( fImpl->knownStrings, fImpl->btnDelKnownString );
             new NSABUtils::CButtonEnabler( fImpl->knownExtraStrings, fImpl->btnDelExtraString );
             new NSABUtils::CButtonEnabler( fImpl->knownAbbreviations, fImpl->btnDelAbbreviation );
             new NSABUtils::CButtonEnabler( fImpl->pathNamesToSkip, fImpl->btnDelSkipPathName );
             new NSABUtils::CButtonEnabler( fImpl->pathNamesToIgnore, fImpl->btnDelIgnorePathName );
+            new NSABUtils::CButtonEnabler( fImpl->pathsToDelete, fImpl->btnDelPathToDelete );
 
             loadSettings();
 
@@ -127,9 +125,10 @@ namespace NMediaManager
                 ,{ "Remove from Paths", fImpl->removeFromPathsPage }
                 ,{ "Extended/Extra Information", fImpl->extendedInfoPage }
                 ,{ "Known Abbreviations", fImpl->abbreviationsPage }
-                ,{ "Ignored", fImpl->ignoreDirPage }
-                ,{ "Directory Names", fImpl->ignoreDirPage }
-                ,{ "File Names", fImpl->ignoreFilesPage }
+                ,{ "Paths", fImpl->ignoredPathsPage }
+                ,{ "Ignored Paths", fImpl->ignoredPathsPage }
+                ,{ "Skipped Paths", fImpl->skippedPathsPage }
+                ,{ "Paths to Delete", fImpl->pathsToDeletePage }
                 ,{ "Transformation Settings", fImpl->transformationPage }
                 ,{ "TV Shows", fImpl->tvShowPage }
                 ,{ "Movies", fImpl->moviesPage }
@@ -266,6 +265,16 @@ namespace NMediaManager
             delString( fIgnorePathNamesModel, fImpl->pathNamesToIgnore );
         }
 
+        void CPreferences::slotAddPathToDelete()
+        {
+            addString( tr( "Add Path (Regular Expressions Allowed) Name to Delete" ), tr( "Name:" ), fPathsToDeleteModel, fImpl->pathsToDelete, false );
+        }
+
+        void CPreferences::slotDelPathToDelete()
+        {
+            delString( fPathsToDeleteModel, fImpl->pathsToDelete );
+        }
+
         void CPreferences::slotSelectMKVMergeExe()
         {
             auto exe = QFileDialog::getOpenFileName( this, tr( "Select MKVMerge Executable:" ), fImpl->mkvMergeExe->text(), "mkvmerge Executable (mkvmerge.exe);;All Executables (*.exe);;All Files (*.*)" );
@@ -383,6 +392,7 @@ namespace NMediaManager
             fAbbreviationsModel->setValues( NCore::CPreferences::instance()->getKnownAbbreviations() );
             fIgnorePathNamesModel->setStringList( NCore::CPreferences::instance()->getIgnoredPaths() );
             fSkipPathNamesModel->setStringList( NCore::CPreferences::instance()->getSkippedPaths() );
+            fPathsToDeleteModel->setStringList( NCore::CPreferences::instance()->getPathsToDelete() );
 
             fImpl->mediaExtensions->setText( NCore::CPreferences::instance()->getMediaExtensions().join( ";" ) );
             fImpl->subtitleExtensions->setText( NCore::CPreferences::instance()->getSubtitleExtensions().join( ";" ) );
@@ -408,6 +418,8 @@ namespace NMediaManager
             NCore::CPreferences::instance()->setKnownAbbreviations( fAbbreviationsModel->data() );
             NCore::CPreferences::instance()->setSkippedPaths( fSkipPathNamesModel->stringList() );
             NCore::CPreferences::instance()->setIgnoredPaths( fIgnorePathNamesModel->stringList() );
+            NCore::CPreferences::instance()->setPathsToDelete( fPathsToDeleteModel->stringList() );
+
 
             NCore::CPreferences::instance()->setTreatAsTVShowByDefault( fImpl->treatAsTVShowByDefault->isChecked() );
             NCore::CPreferences::instance()->setExactMatchesOnly( fImpl->exactMatchesOnly->isChecked() );

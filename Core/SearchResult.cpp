@@ -38,6 +38,8 @@ namespace NMediaManager
 
         QString SSearchResult::getTitle() const
         {
+            if ( isDeleteResult() )
+                return "<DELETE THIS>";
             return NSABUtils::NStringUtils::transformTitle( fTitle );
         }
 
@@ -255,6 +257,7 @@ namespace NMediaManager
                 case EResultInfoType::eTVShow: return "TV Show";
                 case EResultInfoType::eTVSeason: return "TV Season";
                 case EResultInfoType::eTVEpisode: return "TV Episode";
+                case EResultInfoType::eDeleteFileType: return "Delete File";
             }
             return QString();
         }

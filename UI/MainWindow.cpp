@@ -38,6 +38,7 @@
 #include "SABUtils/DelayLineEdit.h"
 #include "SABUtils/DoubleProgressDlg.h"
 #include "SABUtils/StayAwake.h"
+#include "SABUtils/BackgroundFileCheck.h"
 
 #include <QSettings>
 #include <QFileInfo>
@@ -84,17 +85,20 @@ namespace NMediaManager
         {
             fImpl->setupUi( this );
 
+            fFileChecker = new NSABUtils::CBackgroundFileCheck( this );
+            connect( fFileChecker, &NSABUtils::CBackgroundFileCheck::sigFinished, this, &CMainWindow::slotFileCheckFinished );
+
             fImpl->mergeSRTPage->postInit();
             fImpl->makeMKVPage->postInit();
             fImpl->transformMediaFileNamesPage->postInit();
 
 
             fImpl->directory->setDelay( 1000 );
-            fImpl->directory->setIsOKFunction( [ ]( const QString & dirName )
-            {
-                auto fi = QFileInfo( dirName );
-                return dirName.isEmpty() || (fi.exists() && fi.isDir() && fi.isExecutable());
-            }, tr( "Directory '%1' does not Exist or is not a Directory" ) );
+            auto delayLE = new NSABUtils::CPathBasedDelayLineEdit;
+            delayLE->setCheckExists( true );
+            delayLE->setCheckIsDir( true );
+            delayLE->setCheckIsExecutable( true );
+            fImpl->directory->setDelayLineEdit( delayLE );
 
             auto completer = new QCompleter( this );
             fDirModel = new CCompleterFileSystemModel( completer );
@@ -118,11 +122,11 @@ namespace NMediaManager
             fImpl->fileName->setCompleter( completer );
 
             fImpl->fileName->setDelay( 1000 );
-            fImpl->fileName->setIsOKFunction( [ ]( const QString & fileName )
-            {
-                auto fi = QFileInfo( fileName );
-                return fileName.isEmpty() || (fi.exists() && fi.isFile() && fi.isReadable());
-            }, tr( "File '%1' does not Exist or is not Readable" ) );
+            delayLE = new NSABUtils::CPathBasedDelayLineEdit;
+            delayLE->setCheckExists( true );
+            delayLE->setCheckIsFile( true );
+            delayLE->setCheckIsReadable( true );
+            fImpl->fileName->setDelayLineEdit( delayLE );
             connect( fImpl->fileName, &NSABUtils::CDelayComboBox::sigEditTextChangedAfterDelay, this, &CMainWindow::slotFileChanged );
             connect( fImpl->fileName->lineEdit(), &NSABUtils::CDelayLineEdit::sigFinishedEditingAfterDelay, this, &CMainWindow::slotFileFinishedEditing );
 
@@ -157,7 +161,7 @@ namespace NMediaManager
             fImpl->tabWidget->setCurrentIndex( settings.value( "LastFunctionalityPage", 0 ).toInt() );
 
             QTimer::singleShot( 0, this, &CMainWindow::slotDirectoryChangedImmediate );
-            QTimer::singleShot( 10, this, &CMainWindow::slotDirectoryChanged );
+            //QTimer::singleShot( 10, this, &CMainWindow::slotDirectoryChanged );
 
             QTimer::singleShot( 0, this, &CMainWindow::slotWindowChanged );
         }
@@ -304,17 +308,19 @@ namespace NMediaManager
 
         void CMainWindow::validateLoadAction()
         {
-            NSABUtils::CAutoWaitCursor awc;
-            auto dirName = fImpl->directory->currentText();
+            fFileChecker->checkPath( fImpl->directory->currentText() );
+        }
 
-            QFileInfo fi( dirName );
-            bool aOK = !dirName.isEmpty() && fi.exists() && fi.isDir();
-            fImpl->actionLoad->setEnabled( aOK && !isBIFViewerActive() );
+        void CMainWindow::slotFileCheckFinished( bool aOK, const QString & msg )
+        {
+            fImpl->actionLoad->setEnabled( aOK );
+            if ( !aOK )
+                fImpl->actionLoad->setToolTip( msg );
         }
 
         void CMainWindow::validateRunAction()
         {
-            fImpl->actionRun->setEnabled( !isBIFViewerActive() && canRun() );
+            fImpl->actionRun->setEnabled( canRun() );
         }
 
         void CMainWindow::slotFileFinishedEditing()
@@ -388,7 +394,7 @@ namespace NMediaManager
                 return fImpl->mergeSRTPage->canRun();
             else if ( isMakeMKVActive() )
                 return fImpl->makeMKVPage->canRun();
-            return nullptr;
+            return false;
         }
 
         void CMainWindow::slotLoadFinished( bool canceled )

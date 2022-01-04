@@ -33,6 +33,7 @@ class QToolBar;
 namespace NSABUtils 
 {
     class CStayAwake;
+    class CBackgroundFileCheck;
     namespace NBIF
     {
         enum class EButtonsLayout;
@@ -80,6 +81,7 @@ namespace NMediaManager
             virtual void slotLoadFinished( bool canceled );
             virtual void slotStopStayAwake();
             virtual void slotStartStayAwake();
+            virtual void slotFileCheckFinished( bool aOK, const QString & msg );
         private:
             bool isActivePageFileBased() const;
             bool isActivePageDirBased() const;
@@ -104,6 +106,7 @@ namespace NMediaManager
             std::unique_ptr< Ui::CMainWindow > fImpl;
             CCompleterFileSystemModel * fDirModel{ nullptr };
             CCompleterFileSystemModel * fFileModel{ nullptr };
+            NSABUtils::CBackgroundFileCheck * fFileChecker;
             NSABUtils::CStayAwake * fStayAwake{ nullptr };
             std::map< QWidget *, std::tuple< QWidget *, QAction *, QToolBar * > > fUIComponentMap;
         };

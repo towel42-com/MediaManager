@@ -613,11 +613,16 @@ namespace NMediaManager
                 return item->data( ECustomRoles::eFullPathRole ).toString();
 
             auto parentDir = computeTransformPath( item->parent(), false );
+            if ( parentDir == "<DELETE THIS>" )
+                return parentDir;
 
             auto myName = getMyTransformedName( item, transformParentsOnly );
 
             if ( myName.isEmpty() || parentDir.isEmpty() )
                 return QString();
+
+            if ( myName == "<DELETE THIS>" )
+                return myName;
 
             auto retVal = QDir( parentDir ).absoluteFilePath( myName );
             return retVal;

@@ -284,28 +284,35 @@ namespace NMediaManager
                 else
                 {
                     auto searchResult = (*pos).second;
+                    if ( searchResult->isDeleteResult() )
+                    {
+                        retVal.first = true;
+                        retVal.second = searchResult->getTitle();
+                    }
+                    else
+                    {
+                        auto title = searchResult->getTitle();
+                        auto year = searchResult->getYear();
+                        auto tmdbid = searchResult->fTMDBID;
+                        auto season = searchResult->fSeason;
+                        auto episode = searchResult->fEpisode;
+                        auto extraInfo = searchResult->fExtraInfo;
+                        auto episodeTitle = searchResult->fEpisodeTitle;
 
-                    auto title = searchResult->getTitle();
-                    auto year = searchResult->getYear();
-                    auto tmdbid = searchResult->fTMDBID;
-                    auto season = searchResult->fSeason;
-                    auto episode = searchResult->fEpisode;
-                    auto extraInfo = searchResult->fExtraInfo;
-                    auto episodeTitle = searchResult->fEpisodeTitle;
+                        retVal.second = fileInfo.isDir() ? info.fOutDirPattern : info.fOutFilePattern;
+                        retVal.second = replaceCapture( "title", retVal.second, title );
+                        retVal.second = replaceCapture( "year", retVal.second, year );
+                        retVal.second = replaceCapture( "tmdbid", retVal.second, tmdbid );
+                        retVal.second = replaceCapture( "season", retVal.second, QString( "%1" ).arg( season, fileInfo.isDir() ? 1 : 2, QChar( '0' ) ) );
+                        retVal.second = replaceCapture( "episode", retVal.second, QString( "%1" ).arg( episode, fileInfo.isDir() ? 1 : 2, QChar( '0' ) ) );
+                        retVal.second = replaceCapture( "episode_title", retVal.second, episodeTitle );
+                        retVal.second = replaceCapture( "extra_info", retVal.second, extraInfo );
 
-                    retVal.second = fileInfo.isDir() ? info.fOutDirPattern : info.fOutFilePattern;
-                    retVal.second = replaceCapture( "title", retVal.second, title );
-                    retVal.second = replaceCapture( "year", retVal.second, year );
-                    retVal.second = replaceCapture( "tmdbid", retVal.second, tmdbid );
-                    retVal.second = replaceCapture( "season", retVal.second, QString( "%1" ).arg( season, fileInfo.isDir() ? 1 : 2, QChar( '0' ) ) );
-                    retVal.second = replaceCapture( "episode", retVal.second, QString( "%1" ).arg( episode, fileInfo.isDir() ? 1 : 2, QChar( '0' ) ) );
-                    retVal.second = replaceCapture( "episode_title", retVal.second, episodeTitle );
-                    retVal.second = replaceCapture( "extra_info", retVal.second, extraInfo );
-
-                    cleanFileName( retVal.second, fileInfo.isDir() );
-                    if ( !fileInfo.isDir() )
-                        retVal.second += "." + ext;
-                    retVal.first = true;
+                        cleanFileName( retVal.second, fileInfo.isDir() );
+                        if ( !fileInfo.isDir() )
+                            retVal.second += "." + ext;
+                        retVal.first = true;
+                    }
                 }
 
                 if ( fileInfo.isDir() )
@@ -411,6 +418,12 @@ namespace NMediaManager
             setSearchResult( idx, searchResult, applyToChildren );
         }
 
+        void CTransformModel::setDeleteItem( const QModelIndex & idx )
+        {
+            auto searchResult = std::make_shared< SSearchResult >( EResultInfoType::eDeleteFileType );
+            setSearchResult( idx, searchResult, false );
+        }
+
         void CTransformModel::setSearchResult( const QModelIndex & idx, std::shared_ptr< SSearchResult > searchResult, bool applyToChildren )
         {
             if ( !idx.isValid() )
@@ -483,7 +496,11 @@ namespace NMediaManager
                 QFileInfo oldFileInfo( oldName );
                 QFileInfo newFileInfo( newName );
 
-                myItem = new QStandardItem( QString( "'%1' => '%2'" ).arg( getDispName( oldName ) ).arg( getDispName( newName ) ) );
+                if ( newName == "<DELETE THIS>" )
+                    myItem = new QStandardItem( QString( "Delete '%1'" ).arg( getDispName( oldName ) ) );
+                else
+                    myItem = new QStandardItem( QString( "'%1' => '%2'" ).arg( getDispName( oldName ) ).arg( getDispName( newName ) ) );
+
 
                 myItem->setData( oldName, ECustomRoles::eOldName );
                 myItem->setData( newName, ECustomRoles::eNewName );
@@ -548,8 +565,15 @@ namespace NMediaManager
                         }
                         else if ( oldFileInfo.exists() && removeIt )
                         {
-                            auto dir = QDir( oldName );
-                            aOK = dir.removeRecursively();
+                            if ( oldFileInfo.isDir() )
+                            {
+                                auto dir = QDir( oldName );
+                                aOK = dir.removeRecursively();
+                            }
+                            else
+                            {
+                                aOK = QFile( oldFileInfo.absoluteFilePath() ).remove();
+                            }
                             if ( !aOK )
                             {
                                 auto errorItem = new QStandardItem( QString( "ERROR: Failed to Remove '%1'" ).arg( oldName ) );
