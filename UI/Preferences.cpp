@@ -33,6 +33,7 @@
 
 #include "SABUtils/ButtonEnabler.h"
 #include "SABUtils/UtilityModels.h"
+#include "SABUtils/QtUtils.h"
 
 namespace NMediaManager
 {
@@ -141,6 +142,12 @@ namespace NMediaManager
             auto items = fImpl->pageSelector->findItems( settings.value( "LastPrefPage", "Extensions" ).toString(), Qt::MatchExactly );
             if ( !items.empty() )
                 fImpl->pageSelector->setCurrentItem( items.front() );
+
+            fImpl->pageSelector->header()->setSectionResizeMode( QHeaderView::ResizeToContents );
+            fImpl->pageSelector->header()->setStretchLastSection( false );
+            fImpl->pageSelector->header()->setSectionResizeMode( QHeaderView::Stretch );
+            fImpl->pageSelector->setMinimumWidth( NSABUtils::autoSize( fImpl->pageSelector ) + 4 );
+            fImpl->splitter->setChildrenCollapsible( false );
         }
 
         CPreferences::~CPreferences()
