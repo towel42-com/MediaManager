@@ -64,6 +64,8 @@ namespace NMediaManager
             bool isDeleteResult() const { return fInfoType == EResultInfoType::eDeleteFileType; } // tvshow, season or episode are all not movie
             QString getTitle() const;
             QString getYear() const;
+            QString getInitialYear() const; // if its a TV episode, get the show description year
+            QString getReleaseDate() const;
             QString getEpisodeTitle() const;
             QString getTMDBID() const;
             bool isSeasonOnly() const { return fSeasonOnly; }
@@ -78,6 +80,8 @@ namespace NMediaManager
             [[nodiscard]] QString getText( ETitleInfo which, bool forceTop = false ) const;
 
             bool isBetterMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr<STransformResult> rhs ) const;
+
+            const STransformResult * getTVShowInfo() const; // not to be saved, only used and ignored
 
             QString fTitle;
             QString fReleaseDate;

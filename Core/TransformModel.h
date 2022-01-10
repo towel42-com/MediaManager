@@ -118,7 +118,7 @@ namespace NMediaManager
 
             mutable std::map< QString, std::pair< bool, QString > > fFileMapping;
             mutable std::map< QString, std::pair< bool, QString > > fDirMapping;
-            std::map< QString, std::shared_ptr< STransformResult > > fSearchResultMap;
+            std::map< QString, std::shared_ptr< STransformResult > > fTransformResultMap;
             std::unordered_map< QString, QString > fDiskRipSearchMap;
 
             bool fTreatAsTVShowByDefault{ false };

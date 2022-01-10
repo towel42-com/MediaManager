@@ -43,9 +43,50 @@ namespace NMediaManager
             return NSABUtils::NStringUtils::transformTitle( fTitle );
         }
 
+        QString STransformResult::getReleaseDate() const
+        {
+            if ( fReleaseDate.isEmpty() )
+            {
+                auto parent = fParent.lock();
+                if ( parent )
+                    return parent->getReleaseDate();
+            }
+            return fReleaseDate;
+        }
+
+        QString STransformResult::getInitialYear() const
+        {
+            if ( (fInfoType != EResultInfoType::eTVEpisode)
+              && (fInfoType != EResultInfoType::eTVSeason) )
+            {
+                return getYear();
+            }
+            
+            auto tvShowInfo = getTVShowInfo();
+            if ( !tvShowInfo )
+                return getYear();
+            return tvShowInfo->getYear();
+        }
+
+        const STransformResult * STransformResult::getTVShowInfo() const
+        {
+            if (  ( fInfoType == EResultInfoType::eTVEpisode )
+               || (fInfoType == EResultInfoType::eTVSeason) )
+            {
+                auto parent = fParent.lock();
+                if ( parent )
+                    return parent->getTVShowInfo();
+                else
+                    return nullptr;
+            }
+            return this;
+        }
+
+
         QString STransformResult::getYear() const
         {
-            auto dt = NSABUtils::findDate( fReleaseDate );
+            auto date = getReleaseDate();
+            auto dt = NSABUtils::findDate( date );
             if ( !dt.isValid() )
                 return QString();
             return QString::number( dt.year() );
@@ -108,8 +149,8 @@ namespace NMediaManager
                     << "Title: '" + fTitle + "'"
                     << "ReleaseDate: '" + fReleaseDate + "'"
                     << "TMDBID: '" + fTMDBID + "'"
-                    << "SeasonTMBDID: '" + fSeasonTMDBID + "'"
-                    << "EpisodeTMDBID: '" + fEpisodeTMDBID + "'"
+                    << "Season TMBDID: '" + fSeasonTMDBID + "'"
+                    << "Episode TMDBID: '" + fEpisodeTMDBID + "'"
                     << "Season: '" + fSeason + "'"
                     << QString( " Season Only? %1" ).arg( fSeasonOnly ? "Yes" : "No" )
                     << "Episode: '" + fEpisode + "'"
@@ -127,7 +168,7 @@ namespace NMediaManager
             }
             else
             {
-                tmp << "InfoType: '" + NMediaManager::NCore::toEnumString( fInfoType ) + "'"
+                tmp << NMediaManager::NCore::toEnumString( fInfoType ) + " -"
                     << "Title: '" + fTitle + "'"
                     << "ReleaseDate: '" + fReleaseDate + "'"
                     << "TMDBID: '" + fTMDBID + "'"
@@ -135,13 +176,19 @@ namespace NMediaManager
 
                 if ( fInfoType != EResultInfoType::eMovie )
                 {
-                    tmp << "SeasonTMBDID: '" + fSeasonTMDBID + "'"
-                        << "EpisodeTMDBID: '" + fEpisodeTMDBID + "'"
-                        << "Season: '" + fSeason + "'"
-                        << QString( " Season Only? %1" ).arg( fSeasonOnly ? "Yes" : "No" )
-                        << "Episode: '" + fEpisode + "'"
-                        << "EpisodeTitle: '" + fEpisodeTitle + "'"
-                        ;
+                    if ( !fSeason.isEmpty() )
+                        tmp << "Season TMBDID: '" + fSeasonTMDBID + "'";
+                    if ( !fEpisode.isEmpty() )
+                        tmp << "Episode TMDBID: '" + fEpisodeTMDBID + "'";
+
+
+                    if ( !fSeason.isEmpty() )
+                        tmp << "Season: '" + fSeason + "'";
+
+                    if ( !fEpisode.isEmpty() )
+                        tmp << "Episode: '" + fEpisode + "'";
+                    if ( fEpisodeTitle.isEmpty() )
+                        tmp << "EpisodeTitle: '" + fEpisodeTitle + "'";
                 }
                 
                 tmp << "ExtraInfo: '" + fExtraInfo + "'"

@@ -208,7 +208,7 @@ namespace NMediaManager
             }
 
             // its in there..now lets see if its optional
-            auto optRegExStr = QString( "\\((?<replText>[^()]+)\\)\\:%1" ).arg( capRegEx );
+            auto optRegExStr = QString( "\\((?<replText>.+)\\)\\:%1" ).arg( capRegEx );
             regExp = QRegularExpression( optRegExStr );
             match = regExp.match( returnPattern );
             bool optional = match.hasMatch();
@@ -275,8 +275,8 @@ namespace NMediaManager
                     ext = fileInfo.suffix();
                 }
 
-                auto pos = fSearchResultMap.find( filePath );
-                if ( pos == fSearchResultMap.end() )
+                auto pos = fTransformResultMap.find( filePath );
+                if ( pos == fTransformResultMap.end() )
                 {
                     if ( isValidName( fileInfo ) || isIgnoredPathName( fileInfo ) )
                         retVal.second = QString();
@@ -292,7 +292,7 @@ namespace NMediaManager
                     else
                     {
                         auto title = searchResult->getTitle();
-                        auto year = searchResult->getYear();
+                        auto year = searchResult->getInitialYear();
                         auto tmdbid = searchResult->fTMDBID;
                         auto season = searchResult->fSeason;
                         auto episode = searchResult->fEpisode;
@@ -406,8 +406,8 @@ namespace NMediaManager
         bool CTransformModel::treatAsTVShow( const QFileInfo & fileInfo, bool defaultValue ) const
         {
             bool asTVShow = defaultValue;
-            auto pos = fSearchResultMap.find( fileInfo.absoluteFilePath() );
-            if ( pos != fSearchResultMap.end() )
+            auto pos = fTransformResultMap.find( fileInfo.absoluteFilePath() );
+            if ( pos != fTransformResultMap.end() )
                 asTVShow = (*pos).second->isTVShow();
             return asTVShow;
         }
@@ -436,9 +436,9 @@ namespace NMediaManager
             if ( !isIgnoredPathName( fi ) )
             {
                 if ( !searchResult )
-                    fSearchResultMap.erase( fi.absoluteFilePath() );
+                    fTransformResultMap.erase( fi.absoluteFilePath() );
                 else
-                    fSearchResultMap[fi.absoluteFilePath()] = searchResult;
+                    fTransformResultMap[fi.absoluteFilePath()] = searchResult;
                 if ( isDir( idx ) )
                     fDirMapping.erase( fi.absoluteFilePath() );
                 else
@@ -473,8 +473,8 @@ namespace NMediaManager
                 return {};
 
             auto fi = fileInfo( idx );
-            auto pos = fSearchResultMap.find( fi.absoluteFilePath() );
-            if ( pos == fSearchResultMap.end() )
+            auto pos = fTransformResultMap.find( fi.absoluteFilePath() );
+            if ( pos == fTransformResultMap.end() )
                 return {};
             return (*pos).second;
         }
@@ -670,8 +670,8 @@ namespace NMediaManager
                             }
                             else if ( parentPathOK && !dirAlreadyExisted )
                             {
-                                auto pos = fSearchResultMap.find( oldName );
-                                auto searchInfo = (pos == fSearchResultMap.end()) ? std::shared_ptr< STransformResult >() : (*pos).second;
+                                auto pos = fTransformResultMap.find( oldName );
+                                auto searchInfo = (pos == fTransformResultMap.end()) ? std::shared_ptr< STransformResult >() : (*pos).second;
                                 QString msg;
                                 auto aOK = SetMKVTags( newName, searchInfo, msg );
                                 if ( progressDlg() )
@@ -749,7 +749,7 @@ namespace NMediaManager
         {
             fFileMapping.clear();
             fDirMapping.clear();
-            fSearchResultMap.clear();
+            fTransformResultMap.clear();
             fDiskRipSearchMap.clear();
         }
 
@@ -850,7 +850,6 @@ namespace NMediaManager
                 {
                     updateTransformPattern( nameItem, item );
                 }
-
             }
         }
 
