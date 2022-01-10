@@ -33,7 +33,6 @@
 #include <QDir>
 #include <QVariant>
 #include <QString>
-#include <QRegularExpression>
 
 #include <optional>
 #include <unordered_set>
@@ -67,9 +66,9 @@ namespace NMediaManager
         QString CPreferences::getDefaultOutDirPattern( bool forTV ) const
         {
             if ( forTV )
-                return "<title> - Season <season>";
+                return "<title>( (<year>)):<year>/Season <season>";
             else
-                return "<title> (<year>)( [tmdbid=<tmdbid>]):<tmdbid>( - <extra_info>):<extra_info>";
+                return "<title>( (<year>)):<year>( [tmdbid=<tmdbid>]):<tmdbid>( - <extra_info>):<extra_info>";
         }
 
         QString CPreferences::getDefaultOutFilePattern( bool forTV ) const
