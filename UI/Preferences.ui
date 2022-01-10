@@ -40,71 +40,6 @@
         <string>Name</string>
        </property>
       </column>
-      <item>
-       <property name="text">
-        <string>Extensions</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Known Strings</string>
-       </property>
-       <item>
-        <property name="text">
-         <string>Remove from Paths</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Extended/Extra Information</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Known Abbreviations</string>
-        </property>
-       </item>
-      </item>
-      <item>
-       <property name="text">
-        <string>Paths</string>
-       </property>
-       <item>
-        <property name="text">
-         <string>Ignored Paths</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Skipped Paths</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Paths to Delete</string>
-        </property>
-       </item>
-      </item>
-      <item>
-       <property name="text">
-        <string>Transformation Settings</string>
-       </property>
-       <item>
-        <property name="text">
-         <string>TV Shows</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Movies</string>
-        </property>
-       </item>
-      </item>
-      <item>
-       <property name="text">
-        <string>External Tools</string>
-       </property>
-      </item>
      </widget>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="sizePolicy">
@@ -114,9 +49,9 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>6</number>
+       <number>9</number>
       </property>
-      <widget class="QWidget" name="extensionsPage">
+      <widget class="QWidget" name="Extensions">
        <layout class="QGridLayout" name="gridLayout_8">
         <item row="1" column="0">
          <widget class="QLabel" name="label_2">
@@ -163,7 +98,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="removeFromPathsPage">
+      <widget class="QWidget" name="Known_Strings____Remove_from_Paths">
        <layout class="QVBoxLayout" name="verticalLayout">
         <item>
          <widget class="QGroupBox" name="groupBox">
@@ -214,7 +149,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="extendedInfoPage">
+      <widget class="QWidget" name="Known_Strings____Extended__Extra_Information">
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
          <widget class="QGroupBox" name="groupBox_2">
@@ -265,7 +200,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="abbreviationsPage">
+      <widget class="QWidget" name="Known_Strings____Known_Abbreviatiosn">
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
          <widget class="QGroupBox" name="groupBox_3">
@@ -316,7 +251,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="ignoredPathsPage">
+      <widget class="QWidget" name="Paths____Ignored_Paths">
        <layout class="QVBoxLayout" name="verticalLayout_5">
         <item>
          <widget class="QGroupBox" name="groupBox_4">
@@ -367,7 +302,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="skippedPathsPage">
+      <widget class="QWidget" name="Paths____Skipped_Paths">
        <layout class="QVBoxLayout" name="verticalLayout_4">
         <item>
          <widget class="QGroupBox" name="groupBox_5">
@@ -418,7 +353,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="pathsToDeletePage">
+      <widget class="QWidget" name="Paths____Paths_to_Delete">
        <layout class="QVBoxLayout" name="verticalLayout_6">
         <item>
          <widget class="QGroupBox" name="groupBox_6">
@@ -476,7 +411,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="transformationPage">
+      <widget class="QWidget" name="Transformation_Settings">
        <layout class="QGridLayout" name="gridLayout_7">
         <item row="0" column="0" colspan="2">
          <widget class="QCheckBox" name="treatAsTVShowByDefault">
@@ -507,7 +442,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tvShowPage">
+      <widget class="QWidget" name="Transformation_Settings____TV_Shows">
        <layout class="QGridLayout" name="gridLayout_4">
         <item row="0" column="1">
          <widget class="QLineEdit" name="tvOutDirPattern">
@@ -564,7 +499,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="moviesPage">
+      <widget class="QWidget" name="Transformation_Settings____Movies">
        <layout class="QGridLayout" name="gridLayout_5">
         <item row="1" column="1">
          <widget class="QLineEdit" name="movieOutFilePattern"/>
@@ -621,7 +556,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="externalToolsPage">
+      <widget class="QWidget" name="External_Tools">
        <layout class="QGridLayout" name="gridLayout_6">
         <item row="4" column="0">
          <spacer name="verticalSpacer_4">

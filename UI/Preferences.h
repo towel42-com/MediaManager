@@ -44,7 +44,6 @@ namespace NMediaManager
         public:
             CPreferences( QWidget * parent = 0 );
             ~CPreferences();
-
         public Q_SLOTS:
             void slotAddKnownString();
             void slotDelKnownString();
@@ -75,6 +74,10 @@ namespace NMediaManager
             void mkvnixToolChanged( QLineEdit * le );
             void fftoolToolChanged( QLineEdit * le );
 
+            static QString keyForItem( QTreeWidgetItem * item );
+            static  QStringList getPageItemNames( const QString & name );
+
+            void setupPageSelector();
             void loadSettings();
             void saveSettings();
 
@@ -88,7 +91,8 @@ namespace NMediaManager
             QStringListModel * fSkipPathNamesModel{ nullptr };
             QStringListModel * fIgnorePathNamesModel{ nullptr };
             QStringListModel * fPathsToDeleteModel{ nullptr };
-            std::unordered_map< QString, QWidget * > fPageMap;
+            std::unordered_map< QString, QTreeWidgetItem* > fItemMap;
+            std::unordered_map< QTreeWidgetItem *, QWidget * > fPageMap;
             std::unique_ptr< Ui::CPreferences > fImpl;
         };
     }

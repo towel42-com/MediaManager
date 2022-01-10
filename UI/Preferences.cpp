@@ -119,29 +119,15 @@ namespace NMediaManager
             mkvnixToolChanged( fImpl->mkvMergeExe );
             mkvnixToolChanged( fImpl->mkvPropEditExe );
 
-            fPageMap =
-            {
-                 { "Extensions", fImpl->extensionsPage }
-                ,{ "Known Strings", fImpl->removeFromPathsPage }
-                ,{ "Remove from Paths", fImpl->removeFromPathsPage }
-                ,{ "Extended/Extra Information", fImpl->extendedInfoPage }
-                ,{ "Known Abbreviations", fImpl->abbreviationsPage }
-                ,{ "Paths", fImpl->ignoredPathsPage }
-                ,{ "Ignored Paths", fImpl->ignoredPathsPage }
-                ,{ "Skipped Paths", fImpl->skippedPathsPage }
-                ,{ "Paths to Delete", fImpl->pathsToDeletePage }
-                ,{ "Transformation Settings", fImpl->transformationPage }
-                ,{ "TV Shows", fImpl->tvShowPage }
-                ,{ "Movies", fImpl->moviesPage }
-                ,{ "External Tools", fImpl->externalToolsPage }
-            };
+            setupPageSelector();
 
             fImpl->pageSelector->expandAll();
 
             QSettings settings;
-            auto items = fImpl->pageSelector->findItems( settings.value( "LastPrefPage", "Extensions" ).toString(), Qt::MatchExactly );
-            if ( !items.empty() )
-                fImpl->pageSelector->setCurrentItem( items.front() );
+            auto lastPrefPageKey = settings.value( "LastPrefPage", "Extensions" ).toString();
+            auto pos = fItemMap.find( lastPrefPageKey );
+            if ( pos != fItemMap.end() )
+                fImpl->pageSelector->setCurrentItem( (*pos).second );
 
             fImpl->pageSelector->header()->setSectionResizeMode( QHeaderView::ResizeToContents );
             fImpl->pageSelector->header()->setStretchLastSection( false );
@@ -153,8 +139,8 @@ namespace NMediaManager
         CPreferences::~CPreferences()
         {
             QSettings settings;
-            auto currItem = fImpl->pageSelector->currentItem();
-            settings.setValue( "LastPrefPage", currItem ? currItem->text( 0 ) : QString() );
+            auto currItem = keyForItem( fImpl->pageSelector->currentItem() );
+            settings.setValue( "LastPrefPage", currItem );
         }
 
         void CPreferences::accept()
@@ -458,10 +444,73 @@ namespace NMediaManager
             auto curr = fImpl->pageSelector->currentItem();
             if ( !curr )
                 return;
-            auto ii = fPageMap.find( curr->text( 0 ) );
+            auto ii = fPageMap.find( curr );
             if ( ii == fPageMap.end() )
                 return;
             fImpl->stackedWidget->setCurrentWidget( (*ii).second );
         }
+
+        QStringList CPreferences::getPageItemNames( const QString & name )
+        {
+            auto retVal = name.split( "____", Qt::SkipEmptyParts );
+            for ( auto && ii : retVal )
+            {
+                ii.replace( "__", "/" );
+                ii.replace( "_", " " );
+            }
+
+            return retVal;
+        }
+
+        QString CPreferences::keyForItem( QTreeWidgetItem * item )
+        {
+            if ( !item )
+                return QString();
+
+            QString retVal;
+            if ( item->parent() )
+                retVal = keyForItem( item->parent() );
+            retVal += "__" + item->text( 0 );
+            return retVal;
+        }
+
+        void CPreferences::setupPageSelector()
+        {
+            int pageCount = fImpl->stackedWidget->count();
+            for ( int ii = 0; ii < pageCount; ++ii )
+            {
+                auto widget = fImpl->stackedWidget->widget( ii );
+                auto itemNames = getPageItemNames( widget->objectName() );
+                Q_ASSERT( !itemNames.isEmpty() );
+                if ( itemNames.isEmpty() )
+                    continue;
+
+                QString key;
+                QTreeWidgetItem * parentItem = nullptr;
+                for ( int ii = 0; ii < itemNames.count(); ++ii )
+                {
+                    key += "__" + itemNames[ii];
+                    auto pos = fItemMap.find( key );
+                    QTreeWidgetItem * item = nullptr;
+                    if ( pos == fItemMap.end() )
+                    {
+                        if ( parentItem )
+                            item = new QTreeWidgetItem( parentItem );
+                        else
+                            item = new QTreeWidgetItem( fImpl->pageSelector );
+                        item->setText( 0, itemNames[ii] );
+
+                        fPageMap[item] = widget;
+                        fItemMap[key] = item;
+                        parentItem = item;
+                    }
+                    else
+                    {
+                        item = parentItem = (*pos).second;
+                    }
+                }
+            }
+        }
+
     }
 }
