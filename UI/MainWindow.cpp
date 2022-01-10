@@ -355,8 +355,8 @@ namespace NMediaManager
             auto basePage = getCurrentBasePage();
             if ( basePage )
             {
-                basePage->load( fImpl->directory->currentText() );
                 fImpl->actionRun->setEnabled( false );
+                basePage->load( fImpl->directory->currentText() );
             }
         }
 
