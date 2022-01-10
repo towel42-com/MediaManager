@@ -760,7 +760,6 @@ namespace NMediaManager
 
         bool CDirModel::process( const QModelIndex & idx, const std::function< void( int count, int eventsPerPath ) > & startProgress, const std::function< void( bool finalStep ) > & endProgress, QWidget * parent )
         {
-            startProgress( 0, 1 );
             process( idx, true );
             if ( fProcessResults.second && fProcessResults.second->rowCount() == 0 )
             {
@@ -770,7 +769,6 @@ namespace NMediaManager
             }
 
             bool continueOn = showProcessResults( tr( "Process:" ), tr( "Proceed?" ), QMessageBox::Information, QDialogButtonBox::Yes | QDialogButtonBox::No, parent );
-            endProgress( false );
             if ( !continueOn )
             {
                 emit sigProcessesFinished( false, true, false );
