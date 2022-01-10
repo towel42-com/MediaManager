@@ -21,8 +21,8 @@
 // SOFTWARE.
 
 
-#include "TransformConfirm.h"
-#include "ui_TransformConfirm.h"
+#include "ProcessConfirm.h"
+#include "ui_ProcessConfirm.h"
 
 #include "SABUtils/QtUtils.h"
 
@@ -33,9 +33,9 @@ namespace NMediaManager
 {
     namespace NUi
     {
-        CTransformConfirm::CTransformConfirm( const QString &title, const QString &label, QWidget *parent ) :
+        CProcessConfirm::CProcessConfirm( const QString &title, const QString &label, QWidget *parent ) :
             QDialog( parent ),
-            fImpl( new Ui::CTransformConfirm )
+            fImpl( new Ui::CProcessConfirm )
         {
             fImpl->setupUi( this );
 
@@ -51,34 +51,34 @@ namespace NMediaManager
 
             setIconLabel( QMessageBox::Information );
 
-            connect( fImpl->buttonBox, &QDialogButtonBox::clicked, this, &CTransformConfirm::slotButtonClicked );
+            connect( fImpl->buttonBox, &QDialogButtonBox::clicked, this, &CProcessConfirm::slotButtonClicked );
 
             setLabel( label );
             setTitle( title );
         }
 
 
-        CTransformConfirm::~CTransformConfirm()
+        CProcessConfirm::~CProcessConfirm()
         {
         }
 
-        void CTransformConfirm::setTitle( const QString &text )
+        void CProcessConfirm::setTitle( const QString &text )
         {
             setWindowTitle( text );
         }
 
-        void CTransformConfirm::setLabel( const QString &text )
+        void CProcessConfirm::setLabel( const QString &text )
         {
             fImpl->label->setText( text );
         }
 
-        void CTransformConfirm::setModel( QAbstractItemModel *model )
+        void CProcessConfirm::setModel( QAbstractItemModel *model )
         {
             fImpl->transformations->setModel( model );
             NSABUtils::expandAll( model, QModelIndex(), fImpl->transformations );
         }
 
-        void CTransformConfirm::setIconLabel( const QMessageBox::Icon &icon )
+        void CProcessConfirm::setIconLabel( const QMessageBox::Icon &icon )
         {
             fImpl->iconLabel->setVisible( true );
             auto pm = QMessageBox::standardIcon( icon );
@@ -88,12 +88,12 @@ namespace NMediaManager
                 QApplication::beep();
         }
 
-        void CTransformConfirm::setButtons( QDialogButtonBox::StandardButtons buttons )
+        void CProcessConfirm::setButtons( QDialogButtonBox::StandardButtons buttons )
         {
             fImpl->buttonBox->setStandardButtons( buttons );
         }
 
-        void CTransformConfirm::slotButtonClicked( QAbstractButton *btn )
+        void CProcessConfirm::slotButtonClicked( QAbstractButton *btn )
         {
             if ( ( fImpl->buttonBox->buttonRole( btn ) == QDialogButtonBox::ApplyRole ) || ( fImpl->buttonBox->buttonRole( btn ) == QDialogButtonBox::YesRole ) )
             {
