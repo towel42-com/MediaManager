@@ -24,16 +24,13 @@
 #define _DIRMODEL_H
 
 #include <QStandardItemModel>
-#include <QRegularExpression>
-#include <QFileInfo>
-#include <memory>
+#include <QFileInfo> // filedevice
 #include <unordered_set>
 #include <optional>
-#include <QProcess>
+#include <QProcess> // qprocess enums
+#include <QMessageBox> // needed for icon type
+#include <QDialogButtonBox> // StandardButtons
 #include <QDateTime>
-#include <QMessageBox>
-#include <QDialogButtonBox>
-#include "SABUtils/HashUtils.h"
 
 namespace NSABUtils
 {
@@ -46,6 +43,7 @@ class QFileIconProvider;
 class QDirIterator;
 class QPlainTextEdit;
 class QProcess;
+class QFileInfo;
 
 namespace NMediaManager
 {
