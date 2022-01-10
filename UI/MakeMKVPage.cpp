@@ -26,6 +26,8 @@
 #include "Core/MakeMKVModel.h"
 #include "SABUtils/DoubleProgressDlg.h"
 
+#include <QRegularExpression>
+
 namespace NMediaManager
 {
     namespace NUi

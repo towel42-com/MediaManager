@@ -24,6 +24,8 @@
 #include "Core/MergeSRTModel.h"
 #include "SABUtils/DoubleProgressDlg.h"
 
+#include <QRegularExpression>
+
 namespace NMediaManager
 {
     namespace NUi
