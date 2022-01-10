@@ -44,7 +44,7 @@ namespace NMediaManager
             fImpl->setupUi( this );
             fProgressDlg = new NSABUtils::CDoubleProgressDlg( this );
             connect( fProgressDlg, &NSABUtils::CDoubleProgressDlg::canceled,
-                        [ this ]()
+                     [ this ]()
             {
                 clearProgressDlg( true );
             } );
@@ -55,7 +55,32 @@ namespace NMediaManager
             connect( fImpl->filesView, &QTreeView::doubleClicked, this, &CBasePage::slotDoubleClicked );
             connect( fImpl->filesView, &QTreeView::customContextMenuRequested, this, &CBasePage::slotContextMenu );
             QTimer::singleShot( 0, this, &CBasePage::slotPostInit );
-       }
+
+            fImpl->log->installEventFilter( this );
+        }
+
+        bool CBasePage::eventFilter( QObject * obj, QEvent * event )
+        {
+            if ( (obj == fImpl->log) && (event->type() == QEvent::MouseButtonPress ) )
+            {
+                qDebug() << event;
+                auto mouseEvent = dynamic_cast<QMouseEvent *>(event);
+                if ( mouseEvent->buttons() & Qt::MouseButton::RightButton )
+                {
+                    auto menu = fImpl->log->createStandardContextMenu();
+                    menu->addSeparator();
+                    auto action = menu->addAction( tr( "Clear All" ) );
+                    connect( action, &QAction::triggered, [ this ]()
+                    {
+                        fImpl->log->clear();;
+                    } );
+                    menu->exec( mouseEvent->globalPos() );
+                    delete menu;
+                    return true;
+                }
+            }
+            return false;
+        }
 
         void CBasePage::slotPostInit()
         {
@@ -123,7 +148,7 @@ namespace NMediaManager
             fProgressDlg->setValue( 0 );
             fProgressDlg->setWindowTitle( title );
             fProgressDlg->setCancelButtonText( cancelButtonText );
-            fProgressDlg->setRange( 0, max*eventsPerPath );
+            fProgressDlg->setRange( 0, max * eventsPerPath );
             fProgressDlg->setPrimaryEventsPerIncrement( eventsPerPath );
             fProgressDlg->show();
         }
@@ -157,8 +182,12 @@ namespace NMediaManager
         {
             if ( !fImpl )
                 return;
+            fImpl->log->clear();
             if ( !fModel )
                 fModel.reset( createDirModel() );
+            appendSeparator();
+            appendToLog( tr( "Loading Directory: '%1'" ).arg( fDirName ), true );
+            appendSeparator();
             fModel->clear();
             filesView()->setModel( fModel.get() );
             connect( fModel.get(), &NCore::CDirModel::sigDirReloaded, this, &CBasePage::slotLoadFinished );
@@ -208,12 +237,12 @@ namespace NMediaManager
             if ( fModel )
             {
                 fModel->process( idx,
-                    [ actionName, cancelName, this ]( int count, int eventsPerPath )
+                                 [ actionName, cancelName, this ]( int count, int eventsPerPath )
                 {
                     setupProgressDlg( actionName, cancelName, count, eventsPerPath );
                 },
-                    [ this ]( bool finalStep )
-                { 
+                                 [ this ]( bool finalStep )
+                {
                     postNonQueuedRun( finalStep );
                 }, this );
             }
@@ -259,6 +288,11 @@ namespace NMediaManager
             }
         }
 
+        void CBasePage::appendSeparator()
+        {
+            appendToLog( "================================", true );
+        }
+
         void CBasePage::appendToLog( const QString & msg, std::pair<QString, bool> & previousText, bool /*stdOut*/ )
         {
             showResults();
@@ -273,12 +307,12 @@ namespace NMediaManager
 
         void CBasePage::appendToLog( const QString & msg, bool stdOut )
         {
+            Q_ASSERT( fModel );
             return appendToLog( msg, stdOut ? fModel->stdOutRemaining() : fModel->stdErrRemaining(), stdOut );
         }
 
         void CBasePage::postProcessLog( const QString & /*string*/ )
-        {
-        }
+        {}
     }
 }
 

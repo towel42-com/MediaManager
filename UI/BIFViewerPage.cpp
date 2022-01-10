@@ -27,7 +27,6 @@
 
 #include "Core/Preferences.h"
 #include "Core/DirModel.h"
-#include "Core/SearchResult.h"
 #include "Core/SearchTMDBInfo.h"
 #include "Core/SearchTMDB.h"
 

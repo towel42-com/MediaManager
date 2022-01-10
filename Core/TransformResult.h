@@ -56,9 +56,9 @@ namespace NMediaManager
         QString toEnumString( EResultInfoType infoType );
 
 
-        struct SSearchResult
+        struct STransformResult
         {
-            SSearchResult( EResultInfoType type );
+            STransformResult( EResultInfoType type );
 
             bool isTVShow() const { return fInfoType != EResultInfoType::eMovie; } // tvshow, season or episode are all not movie
             bool isDeleteResult() const { return fInfoType == EResultInfoType::eDeleteFileType; } // tvshow, season or episode are all not movie
@@ -71,13 +71,13 @@ namespace NMediaManager
             QString getSeason() const;
             QString getEpisode() const;
 
-            void removeChild( std::shared_ptr< SSearchResult > info );
+            void removeChild( std::shared_ptr< STransformResult > info );
 
             QString toString( bool forDebug ) const;
             [[nodiscard]] QString getMyText( ETitleInfo which ) const;
             [[nodiscard]] QString getText( ETitleInfo which, bool forceTop = false ) const;
 
-            bool isBetterMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr<SSearchResult> rhs ) const;
+            bool isBetterMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr<STransformResult> rhs ) const;
 
             QString fTitle;
             QString fReleaseDate;
@@ -94,14 +94,14 @@ namespace NMediaManager
             QString fDescription;
             QPixmap fPixmap;
 
-            std::weak_ptr < SSearchResult > fParent;
-            std::list< std::shared_ptr< SSearchResult > > fChildren;
+            std::weak_ptr < STransformResult > fParent;
+            std::list< std::shared_ptr< STransformResult > > fChildren;
             EResultInfoType fInfoType;
 
         private:
-            bool isBetterTitleMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr<SSearchResult> rhs ) const;
-            bool isBetterSeasonMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr< SSearchResult > rhs ) const;
-            bool isBetterEpisodeMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr< SSearchResult > rhs ) const;
+            bool isBetterTitleMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr<STransformResult> rhs ) const;
+            bool isBetterSeasonMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr< STransformResult > rhs ) const;
+            bool isBetterEpisodeMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr< STransformResult > rhs ) const;
         };
     }
 }

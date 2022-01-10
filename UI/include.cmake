@@ -28,7 +28,7 @@ set(qtproject_SRCS
     MergeSRTPage.cpp
     Preferences.cpp
     SelectTMDB.cpp
-    TransformConfirm.cpp
+    ProcessConfirm.cpp
     TransformMediaFileNamesPage.cpp
 )
 
@@ -40,7 +40,7 @@ set(qtproject_H
     MergeSRTPage.h
     Preferences.h
     SelectTMDB.h
-    TransformConfirm.h
+    ProcessConfirm.h
     TransformMediaFileNamesPage.h
 )
 
@@ -53,7 +53,7 @@ set(qtproject_UIS
     MainWindow.ui
     Preferences.ui
     SelectTMDB.ui
-    TransformConfirm.ui
+    ProcessConfirm.ui
 )
 
 set(qtproject_QRC

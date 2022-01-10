@@ -49,9 +49,9 @@ namespace NMediaManager
             CTransformModel( NUi::CBasePage * page, QObject * parent = nullptr );
             ~CTransformModel();
 
-            void setSearchResult( const QModelIndex & idx, std::shared_ptr< SSearchResult > info, bool applyToChilren );
-            void setSearchResult( QStandardItem * item, std::shared_ptr< SSearchResult > info, bool applyToChilren );
-            std::shared_ptr< SSearchResult > getSearchResultInfo( const QModelIndex & idx ) const;
+            void setSearchResult( const QModelIndex & idx, std::shared_ptr< STransformResult > info, bool applyToChilren );
+            void setSearchResult( QStandardItem * item, std::shared_ptr< STransformResult > info, bool applyToChilren );
+            std::shared_ptr< STransformResult > getSearchResultInfo( const QModelIndex & idx ) const;
             void clearSearchResult( const QModelIndex & idx );
 
             bool treatAsTVShow( const QFileInfo & fileInfo, bool defaultValue ) const;
@@ -94,7 +94,7 @@ namespace NMediaManager
             std::pair< bool, QStandardItem * > processItem( const QStandardItem * item, QStandardItem * parentItem, bool displayOnly ) const override;
             QStandardItem * getTransformItem( const QStandardItem * parent ) const;
 
-            bool SetMKVTags( const QString & fileName, std::shared_ptr< SSearchResult > & searchResults, QString & msg ) const;
+            bool SetMKVTags( const QString & fileName, std::shared_ptr< STransformResult > & searchResults, QString & msg ) const;
 
             bool isValidName( const QFileInfo & fi ) const;
             bool isValidName( const QString & absPath, bool isDir, std::optional< bool > isTVShow ) const;
@@ -118,7 +118,7 @@ namespace NMediaManager
 
             mutable std::map< QString, std::pair< bool, QString > > fFileMapping;
             mutable std::map< QString, std::pair< bool, QString > > fDirMapping;
-            std::map< QString, std::shared_ptr< SSearchResult > > fSearchResultMap;
+            std::map< QString, std::shared_ptr< STransformResult > > fSearchResultMap;
             std::unordered_map< QString, QString > fDiskRipSearchMap;
 
             bool fTreatAsTVShowByDefault{ false };

@@ -62,6 +62,7 @@ namespace NMediaManager
             QTreeView * filesView() const;
             QPlainTextEdit * log() const;
 
+            virtual void appendSeparator();
             virtual void appendToLog( const QString & msg, bool stdOut );
             virtual void appendToLog( const QString & msg, std::pair<QString, bool> & previousText, bool stdOut );
 
@@ -79,6 +80,7 @@ namespace NMediaManager
             virtual bool isDirBased() const { return true; }
 
             virtual QString selectFileFilter() const { return QString(); }
+            virtual bool eventFilter( QObject * obj, QEvent * event ) override;
         public Q_SLOTS:
             void slotLoadFinished( bool canceled );
             void slotProcessingStarted();

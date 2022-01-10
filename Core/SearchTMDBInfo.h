@@ -31,7 +31,7 @@ namespace NMediaManager
 {
     namespace NCore
     {
-        struct SSearchResult;
+        struct STransformResult;
 
         enum class ESearchType
         {
@@ -44,9 +44,9 @@ namespace NMediaManager
         struct SSearchTMDBInfo
         {
             SSearchTMDBInfo() {};
-            SSearchTMDBInfo( const QString & searchString, std::shared_ptr< SSearchResult > titleInfo );
+            SSearchTMDBInfo( const QString & searchString, std::shared_ptr< STransformResult > titleInfo );
 
-            static bool hasDiskNumber( QString & searchString, int & diskNum, std::shared_ptr< SSearchResult > searchResult );
+            static bool hasDiskNumber( QString & searchString, int & diskNum, std::shared_ptr< STransformResult > searchResult );
             static bool looksLikeTVShow( const QString & searchString, QString * titleStr, QString * seasonStr = nullptr, QString * episodeStr = nullptr, QString * extraStr = nullptr );
             static bool isDiskTitle( const QString & name, int & titleNum );
 
@@ -90,7 +90,7 @@ namespace NMediaManager
             QString getExtendedInfo() const { return fFoundExtendedInfo; }
             QString toString( bool forDebug ) const;
 
-            bool isMatch( std::shared_ptr< SSearchResult > searchResult ) const;
+            bool isMatch( std::shared_ptr< STransformResult > searchResult ) const;
 
 
             template< typename T >
@@ -148,7 +148,7 @@ namespace NMediaManager
             QString fFoundExtendedInfo;
 
             QString fInitSearchString;
-            std::shared_ptr< SSearchResult > fSearchResultInfo;
+            std::shared_ptr< STransformResult > fSearchResultInfo;
         };
     }
 }

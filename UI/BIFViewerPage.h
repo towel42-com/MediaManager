@@ -49,7 +49,7 @@ namespace NMediaManager
     namespace NCore
     {
         struct SSearchTMDBInfo;
-        struct SSearchResult;
+        struct STransformResult;
         class CDirModel;
         class CSearchTMDB;
     }

@@ -27,7 +27,6 @@
 
 #include "Core/Preferences.h"
 #include "Core/DirModel.h"
-#include "Core/SearchResult.h"
 #include "Core/SearchTMDBInfo.h"
 #include "Core/SearchTMDB.h"
 
@@ -135,19 +134,7 @@ namespace NMediaManager
 
             loadSettings();
             
-            connect( fImpl->transformMediaFileNamesPage, &CTransformMediaFileNamesPage::sigLoadFinished, this, &CMainWindow::slotLoadFinished );
-            connect( fImpl->transformMediaFileNamesPage, &CTransformMediaFileNamesPage::sigStartStayAwake, this, &CMainWindow::slotStartStayAwake );
-            connect( fImpl->transformMediaFileNamesPage, &CTransformMediaFileNamesPage::sigStopStayAwake, this, &CMainWindow::slotStopStayAwake );
-
-            connect( fImpl->makeMKVPage, &CMakeMKVPage::sigLoadFinished, this, &CMainWindow::slotLoadFinished );
-            connect( fImpl->makeMKVPage, &CMakeMKVPage::sigStartStayAwake, this, &CMainWindow::slotStartStayAwake );
-            connect( fImpl->makeMKVPage, &CMakeMKVPage::sigStopStayAwake, this, &CMainWindow::slotStopStayAwake );
-
-            connect( fImpl->mergeSRTPage, &CMergeSRTPage::sigLoadFinished, this, &CMainWindow::slotLoadFinished );
-            connect( fImpl->mergeSRTPage, &CMergeSRTPage::sigStartStayAwake, this, &CMainWindow::slotStartStayAwake );
-            connect( fImpl->mergeSRTPage, &CMergeSRTPage::sigStopStayAwake, this, &CMainWindow::slotStopStayAwake );
-
-            addUIComponents( fImpl->bifViewerTab, fImpl->bifViewerPage, fImpl->bifViewerPage->menu(), fImpl->bifViewerPage->toolBar() );
+            addUIComponents( fImpl->bifViewerTab, fImpl->bifViewerPage );
             addUIComponents( fImpl->transformMediaFileNamesTab, fImpl->transformMediaFileNamesPage );
             addUIComponents( fImpl->makeMKVTab, fImpl->makeMKVPage );
             addUIComponents( fImpl->mergeSRTTab, fImpl->mergeSRTPage );
@@ -187,21 +174,25 @@ namespace NMediaManager
             return false;
         }
 
+        void CMainWindow::connectBasePage( CBasePage * basePage )
+        {
+            connect( basePage, &CBasePage::sigLoadFinished, this, &CMainWindow::slotLoadFinished );
+            connect( basePage, &CBasePage::sigStartStayAwake, this, &CMainWindow::slotStartStayAwake );
+            connect( basePage, &CBasePage::sigStopStayAwake, this, &CMainWindow::slotStopStayAwake );
+        }
+
         void CMainWindow::addUIComponents( QWidget * tab, CBasePage * page )
         {
             auto menu = page->menu();
             auto toolBar = page->toolBar();
-            addUIComponents( tab, page, menu, toolBar );
-        }
 
-        void CMainWindow::addUIComponents( QWidget * tab, QWidget * page, QMenu * menu, QToolBar * toolbar )
-        {
             QAction * menuAction = nullptr;
             if ( menu )
                 menuAction = menuBar()->addMenu( menu );
-            if ( toolbar )
-                addToolBar( toolbar );
-            fUIComponentMap[tab] = std::make_tuple( page, menuAction, toolbar );
+            if ( toolBar )
+                addToolBar( toolBar );
+            fUIComponentMap[tab] = std::make_tuple( page, menuAction, toolBar );
+            connectBasePage( page );
         }
 
         bool CMainWindow::setBIFFileName( const QString & name )

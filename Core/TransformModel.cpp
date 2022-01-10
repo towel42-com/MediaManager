@@ -21,7 +21,7 @@
 // SOFTWARE.
 
 #include "TransformModel.h"
-#include "SearchResult.h"
+#include "TransformResult.h"
 #include "SearchTMDBInfo.h"
 #include "Preferences.h"
 #include "SABUtils/QtUtils.h"
@@ -412,7 +412,7 @@ namespace NMediaManager
             return asTVShow;
         }
 
-        void CTransformModel::setSearchResult( QStandardItem * item, std::shared_ptr< SSearchResult > searchResult, bool applyToChildren )
+        void CTransformModel::setSearchResult( QStandardItem * item, std::shared_ptr< STransformResult > searchResult, bool applyToChildren )
         {
             auto idx = indexFromItem( item );
             setSearchResult( idx, searchResult, applyToChildren );
@@ -420,11 +420,11 @@ namespace NMediaManager
 
         void CTransformModel::setDeleteItem( const QModelIndex & idx )
         {
-            auto searchResult = std::make_shared< SSearchResult >( EResultInfoType::eDeleteFileType );
+            auto searchResult = std::make_shared< STransformResult >( EResultInfoType::eDeleteFileType );
             setSearchResult( idx, searchResult, false );
         }
 
-        void CTransformModel::setSearchResult( const QModelIndex & idx, std::shared_ptr< SSearchResult > searchResult, bool applyToChildren )
+        void CTransformModel::setSearchResult( const QModelIndex & idx, std::shared_ptr< STransformResult > searchResult, bool applyToChildren )
         {
             if ( !idx.isValid() )
                 return;
@@ -467,7 +467,7 @@ namespace NMediaManager
             }
         }
 
-        std::shared_ptr< SSearchResult > CTransformModel::getSearchResultInfo( const QModelIndex & idx ) const
+        std::shared_ptr< STransformResult > CTransformModel::getSearchResultInfo( const QModelIndex & idx ) const
         {
             if ( !idx.isValid() )
                 return {};
@@ -671,7 +671,7 @@ namespace NMediaManager
                             else if ( parentPathOK && !dirAlreadyExisted )
                             {
                                 auto pos = fSearchResultMap.find( oldName );
-                                auto searchInfo = (pos == fSearchResultMap.end()) ? std::shared_ptr< SSearchResult >() : (*pos).second;
+                                auto searchInfo = (pos == fSearchResultMap.end()) ? std::shared_ptr< STransformResult >() : (*pos).second;
                                 QString msg;
                                 auto aOK = SetMKVTags( newName, searchInfo, msg );
                                 if ( progressDlg() )
@@ -911,7 +911,7 @@ namespace NMediaManager
 
         }
 
-        bool CTransformModel::SetMKVTags( const QString & fileName, std::shared_ptr< SSearchResult > & searchResults, QString & msg ) const
+        bool CTransformModel::SetMKVTags( const QString & fileName, std::shared_ptr< STransformResult > & searchResults, QString & msg ) const
         {
             QString year;
             QString title = QFileInfo( fileName ).completeBaseName();

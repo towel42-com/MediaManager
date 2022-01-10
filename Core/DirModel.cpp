@@ -21,11 +21,11 @@
 // SOFTWARE.
 
 #include "DirModel.h"
-#include "SearchResult.h"
+#include "TransformResult.h"
 #include "SearchTMDBInfo.h"
 #include "Preferences.h"
 
-#include "UI/TransformConfirm.h"
+#include "UI/ProcessConfirm.h"
 #include "UI/BasePage.h"
 
 #include "SABUtils/StringUtils.h"
@@ -745,7 +745,7 @@ namespace NMediaManager
             if ( !fProcessResults.second || fProcessResults.second->rowCount() == 0 )
                 return true;
 
-            NUi::CTransformConfirm dlg( title, label, parent );
+            NUi::CProcessConfirm dlg( title, label, parent );
             dlg.setModel( fProcessResults.second.get() );
             dlg.setIconLabel( icon );
             dlg.setButtons( buttons );

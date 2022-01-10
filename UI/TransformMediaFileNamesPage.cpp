@@ -24,7 +24,7 @@
 #include "SelectTMDB.h"
 #include "Core/Preferences.h"
 #include "Core/TransformModel.h"
-#include "Core/SearchResult.h"
+#include "Core/TransformResult.h"
 #include "Core/SearchTMDBInfo.h"
 #include "Core/SearchTMDB.h"
 

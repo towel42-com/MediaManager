@@ -44,7 +44,7 @@ namespace NMediaManager
     {
         class CSearchTMDB;
         struct SSearchTMDBInfo;
-        struct SSearchResult;
+        struct STransformResult;
     }
     namespace NUi
     {
@@ -61,11 +61,11 @@ namespace NMediaManager
                 eEpisode
             };
 
-            CSelectTMDB( const QString &searchText, std::shared_ptr< NCore::SSearchResult > searchResult, QWidget *parent = 0 );
+            CSelectTMDB( const QString &searchText, std::shared_ptr< NCore::STransformResult > searchResult, QWidget *parent = 0 );
 
             ~CSelectTMDB();
 
-            std::shared_ptr< NCore::SSearchResult > getSearchResult() const;
+            std::shared_ptr< NCore::STransformResult > getSearchResult() const;
 
             void setSearchForTVShows( bool value, bool init );
             void setExactMatchOnly( bool value, bool init );
@@ -99,7 +99,7 @@ namespace NMediaManager
             std::shared_ptr< NCore::SSearchTMDBInfo > getSearchInfo();
             void resetHeader();
 
-            void loadResults( std::shared_ptr< NCore::SSearchResult > item, QTreeWidgetItem *parent );
+            void loadResults( std::shared_ptr< NCore::STransformResult > item, QTreeWidgetItem *parent );
             void deleteParent( QTreeWidgetItem *item );
 
             std::unique_ptr< Ui::CSelectTMDB > fImpl;
@@ -114,9 +114,9 @@ namespace NMediaManager
             std::shared_ptr< NCore::SSearchTMDBInfo > fQueuedSearchInfo;
             QString fPrevSearchName;
 
-            std::shared_ptr< NCore::SSearchResult > fBestMatch;
-            std::list< std::shared_ptr< NCore::SSearchResult > > fCurrentResults;
-            std::unordered_map< QTreeWidgetItem *, std::shared_ptr< NCore::SSearchResult > > fSearchResultMap;
+            std::shared_ptr< NCore::STransformResult > fBestMatch;
+            std::list< std::shared_ptr< NCore::STransformResult > > fCurrentResults;
+            std::unordered_map< QTreeWidgetItem *, std::shared_ptr< NCore::STransformResult > > fSearchResultMap;
         };
     }
 }

@@ -45,7 +45,7 @@ namespace NMediaManager
     namespace NCore
     {
         struct SSearchTMDBInfo;
-        struct SSearchResult;
+        struct STransformResult;
         class CDirModel;
         class CSearchTMDB;
     }
@@ -86,8 +86,8 @@ namespace NMediaManager
             bool isActivePageFileBased() const;
             bool isActivePageDirBased() const;
 
+            void connectBasePage( CBasePage * basePage );
             void addUIComponents( QWidget * tab, CBasePage * page );
-            void addUIComponents( QWidget * tab, QWidget * page, QMenu * menu, QToolBar * toolbar );
 
             void validateLoadAction();
             void validateRunAction();
@@ -106,7 +106,7 @@ namespace NMediaManager
             CCompleterFileSystemModel * fFileModel{ nullptr };
             NSABUtils::CBackgroundFileCheck * fFileChecker;
             NSABUtils::CStayAwake * fStayAwake{ nullptr };
-            std::map< QWidget *, std::tuple< QWidget *, QAction *, QToolBar * > > fUIComponentMap;
+            std::map< QWidget *, std::tuple< CBasePage *, QAction *, QToolBar * > > fUIComponentMap;
         };
     }
 }

@@ -21,7 +21,7 @@
 // SOFTWARE.
 
 #include "SearchTMDBInfo.h"
-#include "SearchResult.h"
+#include "TransformResult.h"
 #include "Preferences.h"
 #include "SABUtils/QtUtils.h"
 #include "SABUtils/StringUtils.h"
@@ -33,7 +33,7 @@ namespace NMediaManager
 {
     namespace NCore
     {
-        SSearchTMDBInfo::SSearchTMDBInfo( const QString &text, std::shared_ptr< SSearchResult > searchResult )
+        SSearchTMDBInfo::SSearchTMDBInfo( const QString &text, std::shared_ptr< STransformResult > searchResult )
         {
             fSearchResultInfo = searchResult;
             fInitSearchString = text;
@@ -264,7 +264,7 @@ namespace NMediaManager
             return retVal;
         }
 
-        bool SSearchTMDBInfo::isMatch( std::shared_ptr< SSearchResult > searchResult ) const
+        bool SSearchTMDBInfo::isMatch( std::shared_ptr< STransformResult > searchResult ) const
         {
             return isMatch( searchResult->fReleaseDate, searchResult->fTMDBID, searchResult->getTitle(), searchResult->isTVShow(), searchResult->getSeason(), searchResult->getEpisode() );
         }
@@ -409,7 +409,7 @@ namespace NMediaManager
             return aOK;
         }
 
-        bool SSearchTMDBInfo::hasDiskNumber( QString & searchString, int & diskNum, std::shared_ptr< SSearchResult > searchResultInfo )
+        bool SSearchTMDBInfo::hasDiskNumber( QString & searchString, int & diskNum, std::shared_ptr< STransformResult > searchResultInfo )
         {
             QString diskStr;
             auto regExpStr = "[^A-Za-z](?<fulltext>D(?<num>\\d+))(\\D|$)";

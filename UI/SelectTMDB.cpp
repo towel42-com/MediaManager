@@ -23,7 +23,7 @@
 #include "SelectTMDB.h"
 #include "ui_SelectTMDB.h"
 #include "Core/DirModel.h"
-#include "Core/SearchResult.h"
+#include "Core/TransformResult.h"
 #include "Core/SearchTMDB.h"
 #include "Core/SearchTMDBInfo.h"
 #include "Core/Preferences.h"
@@ -43,7 +43,7 @@ namespace NMediaManager
 {
     namespace NUi
     {
-        CSelectTMDB::CSelectTMDB( const QString &text, std::shared_ptr< NCore::SSearchResult > searchResult, QWidget *parent )
+        CSelectTMDB::CSelectTMDB( const QString &text, std::shared_ptr< NCore::STransformResult > searchResult, QWidget *parent )
             : QDialog( parent ),
             fImpl( new Ui::CSelectTMDB )
         {
@@ -282,7 +282,7 @@ namespace NMediaManager
             return retVal;
         }
 
-        void CSelectTMDB::loadResults( std::shared_ptr< NCore::SSearchResult > info, QTreeWidgetItem *parent )
+        void CSelectTMDB::loadResults( std::shared_ptr< NCore::STransformResult > info, QTreeWidgetItem *parent )
         {
             if ( fStopLoading )
                 return;
@@ -351,7 +351,7 @@ namespace NMediaManager
         }
 
 
-        std::shared_ptr< NCore::SSearchResult > CSelectTMDB::getSearchResult() const
+        std::shared_ptr< NCore::STransformResult > CSelectTMDB::getSearchResult() const
         {
             auto first = getFirstSelected();
             if ( !first )

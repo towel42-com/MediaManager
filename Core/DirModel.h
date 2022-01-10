@@ -56,7 +56,7 @@ namespace NMediaManager
 
     namespace NCore
     {
-        struct SSearchResult;
+        struct STransformResult;
         class CDirModel;
 
         enum EColumns

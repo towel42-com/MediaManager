@@ -20,7 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "SearchResult.h"
+#include "TransformResult.h"
 #include "SearchTMDBInfo.h"
 
 #include "SABUtils/StringUtils.h"
@@ -30,20 +30,20 @@ namespace NMediaManager
 {
     namespace NCore
     {
-        SSearchResult::SSearchResult( EResultInfoType type ) :
+        STransformResult::STransformResult( EResultInfoType type ) :
             fInfoType( type )
         {
 
         }
 
-        QString SSearchResult::getTitle() const
+        QString STransformResult::getTitle() const
         {
             if ( isDeleteResult() )
                 return "<DELETE THIS>";
             return NSABUtils::NStringUtils::transformTitle( fTitle );
         }
 
-        QString SSearchResult::getYear() const
+        QString STransformResult::getYear() const
         {
             auto dt = NSABUtils::findDate( fReleaseDate );
             if ( !dt.isValid() )
@@ -51,12 +51,12 @@ namespace NMediaManager
             return QString::number( dt.year() );
         }
 
-        QString SSearchResult::getEpisodeTitle() const
+        QString STransformResult::getEpisodeTitle() const
         {
             return NSABUtils::NStringUtils::transformTitle( fEpisodeTitle );
         }
 
-        QString SSearchResult::getTMDBID() const
+        QString STransformResult::getTMDBID() const
         {
             auto retVal = fTMDBID;
             if ( !fSeasonTMDBID.isEmpty() )
@@ -67,7 +67,7 @@ namespace NMediaManager
         }
 
 
-        QString SSearchResult::getSeason() const
+        QString STransformResult::getSeason() const
         {
             if ( !isTVShow() )
                 return QString();
@@ -77,7 +77,7 @@ namespace NMediaManager
         }
 
 
-        QString SSearchResult::getEpisode() const
+        QString STransformResult::getEpisode() const
         {
             if ( !isTVShow() )
                 return QString();
@@ -86,7 +86,7 @@ namespace NMediaManager
             return fSeason;
         }
 
-        void SSearchResult::removeChild( std::shared_ptr< SSearchResult > info )
+        void STransformResult::removeChild( std::shared_ptr< STransformResult > info )
         {
             for ( auto &&ii = fChildren.begin(); ii != fChildren.end(); ++ii )
             {
@@ -98,7 +98,7 @@ namespace NMediaManager
             }
         }
 
-        QString SSearchResult::toString( bool forDebug ) const
+        QString STransformResult::toString( bool forDebug ) const
         {
             QStringList tmp;
             if ( forDebug )
@@ -151,7 +151,7 @@ namespace NMediaManager
             return retVal;
         }
 
-        QString SSearchResult::getText( ETitleInfo which, bool forceTop /*= false */ ) const
+        QString STransformResult::getText( ETitleInfo which, bool forceTop /*= false */ ) const
         {
             auto parentPtr = fParent.lock();
             if ( forceTop )
@@ -171,7 +171,7 @@ namespace NMediaManager
         }
 
 
-        bool SSearchResult::isBetterTitleMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr<SSearchResult> rhs ) const
+        bool STransformResult::isBetterTitleMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr<STransformResult> rhs ) const
         {
             if ( !rhs )
                 return true;
@@ -182,7 +182,7 @@ namespace NMediaManager
             return false;
         }
 
-        bool SSearchResult::isBetterSeasonMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr< SSearchResult > rhs ) const
+        bool STransformResult::isBetterSeasonMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr< STransformResult > rhs ) const
         {
             if ( searchInfo->season() != -1 )
             {
@@ -201,7 +201,7 @@ namespace NMediaManager
             return isBetterTitleMatch( searchInfo, rhs );
         }
 
-        bool SSearchResult::isBetterEpisodeMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr< SSearchResult > rhs ) const
+        bool STransformResult::isBetterEpisodeMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr< STransformResult > rhs ) const
         {
             if ( !rhs )
                 return true;
@@ -223,7 +223,7 @@ namespace NMediaManager
             return isBetterTitleMatch( searchInfo, rhs );
         }
 
-        bool SSearchResult::isBetterMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr<SSearchResult> rhs ) const
+        bool STransformResult::isBetterMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr<STransformResult> rhs ) const
         {
             if ( fInfoType == EResultInfoType::eTVSeason )
                 return isBetterSeasonMatch( searchInfo, rhs );
@@ -233,7 +233,7 @@ namespace NMediaManager
                 return isBetterTitleMatch( searchInfo, rhs );
         }
 
-        QString SSearchResult::getMyText( ETitleInfo which ) const
+        QString STransformResult::getMyText( ETitleInfo which ) const
         {
             switch ( which )
             {

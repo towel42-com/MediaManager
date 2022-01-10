@@ -21,7 +21,7 @@
 // SOFTWARE.
 
 #include "SearchTMDB.h"
-#include "SearchResult.h"
+#include "TransformResult.h"
 #include "SearchTMDBInfo.h"
 #include "NetworkReply.h"
 
@@ -440,7 +440,7 @@ namespace NMediaManager
             return false;
         }
 
-        std::list< std::shared_ptr< SSearchResult > > CSearchTMDB::getResult( const QString &path ) const
+        std::list< std::shared_ptr< STransformResult > > CSearchTMDB::getResult( const QString &path ) const
         {
             auto pos = fQueuedResults.find( path );
             if ( pos == fQueuedResults.end() )
@@ -448,12 +448,12 @@ namespace NMediaManager
             return ( *pos ).second;
         }
 
-        std::list< std::shared_ptr< SSearchResult > > CSearchTMDB::getResults() const
+        std::list< std::shared_ptr< STransformResult > > CSearchTMDB::getResults() const
         {
             return fResults;
         }
 
-        std::shared_ptr< NMediaManager::NCore::SSearchResult > CSearchTMDB::bestMatch() const
+        std::shared_ptr< NMediaManager::NCore::STransformResult > CSearchTMDB::bestMatch() const
         {
             if ( fResults.empty() )
                 return {};
@@ -733,13 +733,16 @@ namespace NMediaManager
                 title = resultItem.contains( "name" ) ? resultItem["name"].toString() : QString();
             else
                 title = resultItem.contains( "title" ) ? resultItem["title"].toString() : QString();
-            auto releaseDate = resultItem.contains( "release_date" ) ? resultItem["release_date"].toString() : QString();
+            auto releaseDate = resultItem.contains( "release_date" )
+                ? resultItem["release_date"].toString()
+                : resultItem.contains( "first_air_date" ) ? resultItem["first_air_date"].toString()
+                : QString();
             auto posterPath = resultItem.contains( "poster_path" ) ? resultItem["poster_path"].toString() : QString();
 
             if ( !fSearchInfo->isMatch( releaseDate, tmdbid, title ) )
                 return false;
 
-            auto searchResult = std::make_shared< SSearchResult >( fSearchInfo->isTVShow() ? EResultInfoType::eTVShow : EResultInfoType::eMovie ); // movie or TV show
+            auto searchResult = std::make_shared< STransformResult >( fSearchInfo->isTVShow() ? EResultInfoType::eTVShow : EResultInfoType::eMovie ); // movie or TV show
             searchResult->fDescription = desc;
             searchResult->fReleaseDate = releaseDate;
             searchResult->fTitle = title;
@@ -781,7 +784,7 @@ namespace NMediaManager
             return true;
         }
 
-        void CSearchTMDB::searchTVDetails( std::shared_ptr< SSearchResult > showInfo, int tmdbid, int seasonNum )
+        void CSearchTMDB::searchTVDetails( std::shared_ptr< STransformResult > showInfo, int tmdbid, int seasonNum )
         {
             QUrl url;
             url.setScheme( "https" );
@@ -790,11 +793,11 @@ namespace NMediaManager
             auto path = QString( "/3/tv/%1" ).arg( tmdbid );
             if ( seasonNum == -1 )
                 seasonNum = fSearchInfo->season();
-            std::shared_ptr< SSearchResult > seasonInfo;
+            std::shared_ptr< STransformResult > seasonInfo;
             if ( seasonNum != -1 )
             {
                 path += QString( "/season/%1" ).arg( seasonNum );
-                seasonInfo = std::make_shared< SSearchResult >( EResultInfoType::eTVSeason );
+                seasonInfo = std::make_shared< STransformResult >( EResultInfoType::eTVSeason );
                 seasonInfo->fTitle = showInfo->fTitle;
                 seasonInfo->fTMDBID = showInfo->fTMDBID;
                 seasonInfo->fSeason = QString::number( seasonNum );
@@ -889,7 +892,7 @@ namespace NMediaManager
             return true;
         }
 
-        bool CSearchTMDB::loadEpisodeDetails( const QJsonObject &episodeObj, std::shared_ptr< SSearchResult > seasonInfo )
+        bool CSearchTMDB::loadEpisodeDetails( const QJsonObject &episodeObj, std::shared_ptr< STransformResult > seasonInfo )
         {
             auto episodeNumber = episodeObj.contains( "episode_number" ) ? episodeObj["episode_number"].toInt() : -1;
             if ( fSearchInfo->episode() != -1 )
@@ -900,7 +903,7 @@ namespace NMediaManager
             auto episodeName = episodeObj.contains( "name" ) ? episodeObj["name"].toString() : QString();
             auto overview = episodeObj.contains( "overview" ) ? episodeObj["overview"].toString() : QString();
 
-            auto episodeInfo = std::make_shared< SSearchResult >( EResultInfoType::eTVEpisode );
+            auto episodeInfo = std::make_shared< STransformResult >( EResultInfoType::eTVEpisode );
             episodeInfo->fEpisode = episodeNumber == -1 ? QString() : QString::number( episodeNumber );
             episodeInfo->fSeason = episodeObj.contains( "season_number" ) ? QString::number( episodeObj["season_number"].toInt() ) : QString();
             episodeInfo->fEpisodeTitle = episodeName;
@@ -921,7 +924,7 @@ namespace NMediaManager
         }
 
 
-        void CSearchTMDB::addResultToList( std::list< std::shared_ptr< SSearchResult > > & list, std::shared_ptr<SSearchResult> result, std::shared_ptr< SSearchTMDBInfo > searchInfo ) const
+        void CSearchTMDB::addResultToList( std::list< std::shared_ptr< STransformResult > > & list, std::shared_ptr<STransformResult> result, std::shared_ptr< SSearchTMDBInfo > searchInfo ) const
         {
             auto pos = list.begin();
             for ( ; pos != list.end(); ++pos )
@@ -932,7 +935,7 @@ namespace NMediaManager
             list.insert( pos, result );
         }
 
-        void CSearchTMDB::addResult( std::shared_ptr<SSearchResult> result ) //, TBettterMatchFunc isBetterMatchFunc )
+        void CSearchTMDB::addResult( std::shared_ptr<STransformResult> result ) //, TBettterMatchFunc isBetterMatchFunc )
         {
             if ( fCurrentQueuedSearch.has_value() )
             {
