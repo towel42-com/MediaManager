@@ -84,6 +84,7 @@ namespace NMediaManager
         public Q_SLOTS:
             void slotLoadFinished( bool canceled );
             void slotProcessingStarted();
+            void slotProcessesFinished( bool status, bool canceled, bool reloadModel );
 
             void showResults();
             virtual void slotDoubleClicked( const QModelIndex & idx ) final;

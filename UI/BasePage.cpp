@@ -184,14 +184,17 @@ namespace NMediaManager
                 return;
             fImpl->log->clear();
             if ( !fModel )
+            {
                 fModel.reset( createDirModel() );
+                connect( fModel.get(), &NCore::CDirModel::sigDirReloaded, this, &CBasePage::slotLoadFinished );
+                connect( fModel.get(), &NCore::CDirModel::sigProcessingStarted, this, &CBasePage::slotProcessingStarted );
+                connect( fModel.get(), &NCore::CDirModel::sigProcessesFinished, this, &CBasePage::slotProcessesFinished );
+            }
             appendSeparator();
             appendToLog( tr( "Loading Directory: '%1'" ).arg( fDirName ), true );
             appendSeparator();
             fModel->clear();
             filesView()->setModel( fModel.get() );
-            connect( fModel.get(), &NCore::CDirModel::sigDirReloaded, this, &CBasePage::slotLoadFinished );
-            connect( fModel.get(), &NCore::CDirModel::sigProcessingStarted, this, &CBasePage::slotProcessingStarted );
             setupModel();
             setupProgressDlg( loadTitleName(), loadCancelName(), 1, 1 );
 
@@ -215,6 +218,18 @@ namespace NMediaManager
 
         }
 
+        void CBasePage::slotProcessesFinished( bool status, bool canceled, bool reloadModel )
+        {
+            clearProgressDlg( false );
+            if ( !status )
+            {
+                fModel->showProcessResults( actionErrorName(), tr( "Issues:" ), QMessageBox::Critical, QDialogButtonBox::Ok, this );
+            }
+            if ( !canceled && reloadModel )
+                load();
+            emit sigStopStayAwake();
+        }
+
         void CBasePage::run( const QModelIndex & idx )
         {
             emit sigStartStayAwake();
@@ -222,29 +237,18 @@ namespace NMediaManager
             auto actionName = actionTitleName();
             auto cancelName = actionCancelName();
 
-            connect( fModel.get(), &NCore::CDirModel::sigProcessesFinished, [ this ]( bool status, bool canceled, bool reloadModel )
-            {
-                clearProgressDlg( false );
-                if ( !status )
-                {
-                    fModel->showProcessResults( actionErrorName(), tr( "Issues:" ), QMessageBox::Critical, QDialogButtonBox::Ok, this );
-                }
-                if ( !canceled && reloadModel )
-                    load();
-                emit sigStopStayAwake();
-            } );
-
             if ( fModel )
             {
                 fModel->process( idx,
-                                 [ actionName, cancelName, this ]( int count, int eventsPerPath )
-                {
-                    setupProgressDlg( actionName, cancelName, count, eventsPerPath );
-                },
-                                 [ this ]( bool finalStep )
-                {
-                    postNonQueuedRun( finalStep );
-                }, this );
+                    [ actionName, cancelName, this ]( int count, int eventsPerPath )
+                    {
+                        setupProgressDlg( actionName, cancelName, count, eventsPerPath );
+                    },
+                    [ this ]( bool finalStep )
+                    {
+                        postNonQueuedRun( finalStep );
+                    },
+                    this );
             }
         }
 
