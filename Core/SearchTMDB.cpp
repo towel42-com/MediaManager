@@ -213,8 +213,8 @@ namespace NMediaManager
 
         std::shared_ptr< CNetworkReply > CSearchTMDB::sendRequest( const QNetworkRequest &request, ERequestType requestType )
         {
-            auto path = CNetworkReply::key( request, requestType );
-            auto pos = fURLResultsCache.find( path );
+            auto key = CNetworkReply::key( request, requestType );
+            auto pos = fURLResultsCache.find( key );
             if ( pos != fURLResultsCache.end() )
             {
                 //qDebug().noquote().nospace() << "Cached Result " << NCore::toString( requestType ) << " request:" << (*pos).first;
@@ -305,14 +305,14 @@ namespace NMediaManager
                 }
                 else if ( reply->isReply( fGetMovieReply ) )
                 {
-                    fErrorMessage = tr( "Could not find Movie with TMDBID: <b>%1</b>" ).arg( fGetMovieReply->getTMDBIDFromURL() );
+                    fErrorMessage = tr( "Could not find Movie with TMDBID: <b>%1</b>" ).arg( fGetMovieReply->tmdbID() );
                     fGetMovieReply.reset();
                     emitSigFinished();
                     return;
                 }
                 else if ( reply->isReply( fGetTVReply ) )
                 {
-                    fErrorMessage = tr( "Could not find TV Show with TMDBID: <b>%1</b>" ).arg( fGetTVReply->getTMDBIDFromURL() );
+                    fErrorMessage = tr( "Could not find TV Show with TMDBID: <b>%1</b>" ).arg( fGetTVReply->tmdbID() );
                     fGetTVReply.reset();
                     emitSigFinished();
                     return;
@@ -374,9 +374,7 @@ namespace NMediaManager
             {
                 reply->reportUnhandled();
             }
-
-            // cache it for nexttime
-            if ( !reply->isCached() )
+            else if ( !reply->isCached() )
             {
                 fURLResultsCache[ reply->key() ] = reply->getData();
                 removeRequestType( reply );
@@ -611,8 +609,8 @@ namespace NMediaManager
             if ( !fGetMovieReply || !reply->isType( ERequestType::eGetMovie ) )
                 return false;
 
-            auto data = fGetMovieReply->getData();
-            auto tmdbid = fGetMovieReply->getTMDBIDFromURL();
+            auto data = reply->getData();
+            auto tmdbid = reply->tmdbID();
             fGetMovieReply.reset();
 
             auto doc = QJsonDocument::fromJson( data );
@@ -633,7 +631,7 @@ namespace NMediaManager
                 return false;
 
             auto data = reply->getData();
-            auto tmdbid = reply->getTMDBIDFromURL();
+            auto tmdbid = reply->tmdbID();
             fGetTVReply.reset();
 
             auto doc = QJsonDocument::fromJson( data );
@@ -790,7 +788,7 @@ namespace NMediaManager
             //qDebug().nospace().noquote() << doc.toJson( QJsonDocument::Indented );
 
             auto numSeasons = doc.object().contains( "number_of_seasons" ) ? doc.object()["number_of_seasons"].toInt() : -1;
-            //showInfo->fEpisodeTitle = QString( "%1 Season%2" ).arg( numSeasons ).arg( numSeasons != 1 ? "s" : "" );
+            //showInfo->fSubTitle = QString( "%1 Season%2" ).arg( numSeasons ).arg( numSeasons != 1 ? "s" : "" );
 
             auto seasons = doc.object()["seasons"].toArray();
 
@@ -816,7 +814,7 @@ namespace NMediaManager
             auto doc = QJsonDocument::fromJson( data );
             //qDebug().nospace().noquote() << doc.toJson( QJsonDocument::Indented );
 
-            seasonInfo->fEpisodeTitle = doc.object().contains( "name" ) ? doc.object()["name"].toString() : QString();;
+            seasonInfo->fSubTitle = doc.object().contains( "name" ) ? doc.object()["name"].toString() : QString();;
             seasonInfo->fSeason = doc.object().contains( "season_number" ) ? QString::number( doc.object()["season_number"].toInt() ) : QString();
             seasonInfo->setSeasonOnly( true );
 
@@ -858,7 +856,7 @@ namespace NMediaManager
             auto episodeInfo = std::make_shared< STransformResult >( EMediaType::eTVEpisode );
             episodeInfo->fEpisode = episodeNumber == -1 ? QString() : QString::number( episodeNumber );
             episodeInfo->fSeason = episodeObj.contains( "season_number" ) ? QString::number( episodeObj["season_number"].toInt() ) : QString();
-            episodeInfo->fEpisodeTitle = episodeName;
+            episodeInfo->fSubTitle = episodeName;
             episodeInfo->fDescription = overview;
             episodeInfo->fTMDBID = seasonInfo->fTMDBID;
             episodeInfo->fSeasonTMDBID = seasonInfo->fSeasonTMDBID;
