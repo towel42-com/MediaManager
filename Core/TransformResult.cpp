@@ -92,9 +92,9 @@ namespace NMediaManager
             return QString::number( dt.year() );
         }
 
-        QString STransformResult::getEpisodeTitle() const
+        QString STransformResult::getSubTitle() const
         {
-            return NSABUtils::NStringUtils::transformTitle( fEpisodeTitle );
+            return NSABUtils::NStringUtils::transformTitle( fSubTitle );
         }
 
         QString STransformResult::getTMDBID() const
@@ -154,7 +154,7 @@ namespace NMediaManager
                     << "Season: '" + fSeason + "'"
                     << QString( " Season Only? %1" ).arg( fSeasonOnly ? "Yes" : "No" )
                     << "Episode: '" + fEpisode + "'"
-                    << "EpisodeTitle: '" + fEpisodeTitle + "'"
+                    << "Sub Title: '" + fSubTitle + "'"
                     << "ExtraInfo: '" + fExtraInfo + "'"
                     << "Description: '" + fDescription + "'"
                     << QString( "Has Pixmap? %1" ).arg( fPixmap.isNull() ? "No" : "Yes" )
@@ -187,8 +187,8 @@ namespace NMediaManager
 
                     if ( !fEpisode.isEmpty() )
                         tmp << "Episode: '" + fEpisode + "'";
-                    if ( fEpisodeTitle.isEmpty() )
-                        tmp << "EpisodeTitle: '" + fEpisodeTitle + "'";
+                    if ( fSubTitle.isEmpty() )
+                        tmp << "Sub Title: '" + fSubTitle + "'";
                 }
                 
                 tmp << "ExtraInfo: '" + fExtraInfo + "'"
@@ -297,7 +297,7 @@ namespace NMediaManager
                 case ETitleInfo::eTMDBID: return fTMDBID;
                 case ETitleInfo::eSeason: return fSeason;
                 case ETitleInfo::eEpisode: return fEpisode;
-                case ETitleInfo::eEpisodeTitle: return fEpisodeTitle;
+                case ETitleInfo::eEpisodeTitle: return fSubTitle;
                 case ETitleInfo::eExtraInfo: return fExtraInfo;
                 case ETitleInfo::eDescription: return fDescription;
             }
