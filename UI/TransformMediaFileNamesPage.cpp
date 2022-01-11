@@ -312,7 +312,7 @@ namespace NMediaManager
             bool isTVShow = baseIdx.data( NCore::ECustomRoles::eIsTVShowRole ).toBool();
             auto nm = model()->getSearchName( idx );
 
-            CSelectTMDB dlg( nm, titleInfo, fSearchTMDB, this );
+            CSelectTMDB dlg( nm, titleInfo, this );
             dlg.setSearchForTVShows( model()->treatAsTVShow( QFileInfo( fullPath ), isTVShow ), true );
             dlg.setExactMatchOnly( NCore::CPreferences::instance()->getExactMatchesOnly(), true );
 

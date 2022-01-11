@@ -42,14 +42,15 @@ namespace NMediaManager
 {
     namespace NUi
     {
-        CSelectTMDB::CSelectTMDB( const QString &text, std::shared_ptr< NCore::STransformResult > searchResult, NCore::CSearchTMDB * searchTMDB, QWidget *parent )
+        CSelectTMDB::CSelectTMDB( const QString &text, std::shared_ptr< NCore::STransformResult > searchResult, QWidget *parent )
             : QDialog( parent ),
-            fImpl( new Ui::CSelectTMDB ),
-            fSearchTMDB( searchTMDB )
+            fImpl( new Ui::CSelectTMDB )
         {
             fImpl->setupUi( this );
 
             fSearchInfo = std::make_shared< NCore::SSearchTMDBInfo >( text, searchResult );
+            fSearchTMDB = new NCore::CSearchTMDB( fSearchInfo, std::optional< QString >(), this );
+
 
             connect( this, &CSelectTMDB::sigStartSearch, fSearchTMDB, &NCore::CSearchTMDB::slotSearch );
             connect( fSearchTMDB, &NCore::CSearchTMDB::sigSearchFinished, this, &CSelectTMDB::slotSearchFinished );
