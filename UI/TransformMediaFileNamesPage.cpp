@@ -221,7 +221,7 @@ namespace NMediaManager
             else
             {
                 if ( results.size() > 1 )
-                    logMsg += tr( "Found %1 matches. Choosing %2: " ).arg( results.size() );
+                    logMsg += tr( "Found %1 matches. Choosing %2." ).arg( results.size() );
                 else
                     logMsg += tr( "Found: %1" );
                 logMsg = logMsg.arg( results.front()->toString( false ) );
