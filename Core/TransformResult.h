@@ -69,7 +69,7 @@ namespace NMediaManager
             QString getYear() const;
             QString getInitialYear() const; // if its a TV episode, get the show description year
             QString getReleaseDate() const;
-            QString getEpisodeTitle() const;
+            QString getSubTitle() const;
             QString getTMDBID() const;
             bool isSeasonOnly() const { return fSeasonOnly; }
             void setSeasonOnly( bool value ) { fSeasonOnly = value; }
@@ -94,7 +94,7 @@ namespace NMediaManager
             QString fSeason;
             bool fSeasonOnly{ false };
             QString fEpisode;
-            QString fEpisodeTitle;
+            QString fSubTitle;
             QString fExtraInfo;
             QString fDiskNum;
 
