@@ -201,7 +201,7 @@ namespace NMediaManager
             }
 
             // its in there..now lets see if its optional
-            auto optRegExStr = QString( "\\((?<replText>.+)\\)\\:%1" ).arg( capRegEx );
+            auto optRegExStr = QString( "\\{(?<replText>[^{}]+)\\}\\:%1" ).arg( capRegEx );
             regExp = QRegularExpression( optRegExStr );
             match = regExp.match( returnPattern );
             bool optional = match.hasMatch();
@@ -231,13 +231,17 @@ namespace NMediaManager
 
             inFile.replace( QRegularExpression( "^(([A-Za-z]\\:)|(\\/)|(\\\\))+" ), "" );
 
-            QString text = "\\s*\\:\\s*";
-            inFile.replace( QRegularExpression( text ), " - " );
-            text = "[\\:\\<\\>\\\"\\|\\?\\*";
+            auto regExStr = QString( "(?<hours>\\d{1,2}):(?<minutes>\\d{2})" );
+            inFile.replace( QRegularExpression( regExStr ), "\\1\\2" );
+            
+            regExStr = "\\s*\\:\\s*";
+            inFile.replace( QRegularExpression( regExStr ), " - " );
+
+            regExStr = "[\\:\\<\\>\\\"\\|\\?\\*";
             if ( !isDir )
-                text += "\\/\\\\";
-            text += "]";
-            inFile.replace( QRegularExpression( text ), "" );
+                regExStr += "\\/\\\\";
+            regExStr += "]";
+            inFile.replace( QRegularExpression( regExStr ), "" );
         }
 
         std::pair< bool, QString > CTransformModel::transformItem( const QFileInfo & fileInfo ) const
@@ -290,7 +294,7 @@ namespace NMediaManager
                         auto season = searchResult->fSeason;
                         auto episode = searchResult->fEpisode;
                         auto extraInfo = searchResult->fExtraInfo;
-                        auto episodeTitle = searchResult->fEpisodeTitle;
+                        auto episodeTitle = searchResult->fSubTitle;
 
                         retVal.second = fileInfo.isDir() ? info.fOutDirPattern : info.fOutFilePattern;
                         retVal.second = replaceCapture( "title", retVal.second, title );
@@ -334,7 +338,9 @@ namespace NMediaManager
                 {
                     for ( auto && kk : jj.second )
                     {
-                        auto searchName = QString( "%1 - S%2E%3" ).arg( title ).arg( seasonNum, 2, 10, QChar( '0' ) ).arg( episodeNum, 2, 10, QChar( '0' ) );
+                        auto searchName = QString( "S%2E%3" ).arg( seasonNum, 2, 10, QChar( '0' ) ).arg( episodeNum, 2, 10, QChar( '0' ) );
+                        if ( !title.isEmpty() )
+                            searchName = title + " - " + searchName;
                         //qDebug() << kk.second << " = " << searchName;
                         episodeNum++;
                         fDiskRipSearchMap[kk.second] = searchName;
