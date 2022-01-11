@@ -57,10 +57,12 @@ namespace NMediaManager
             bool isValid() const;
             bool isCached() const { return !fReply; }
 
+            static QString key( const QNetworkRequest & request, ERequestType type, const QString & tmdbID );
+            static QString key( const QUrl & url, ERequestType type, const QString & tmdbID );
             static QString key( const QNetworkRequest & request, ERequestType type );
             static QString key( const QUrl & url, ERequestType type );
             QString key() const;
-            // errrors only available on real requests, not cached requests
+            // errors only available on real requests, not cached requests
             bool hasError() const;
             QString errorString() const;
 
@@ -70,8 +72,7 @@ namespace NMediaManager
 
             bool isType( ERequestType type )const { return fRequestType == type; }
 
-            QString urlPathKey() const { return fURLPathKey; }
-            QString getTMDBIDFromURL() const;
+            QString tmdbID() const;
 
             std::size_t hash() const;
             void reportUnhandled() const;
@@ -83,9 +84,12 @@ namespace NMediaManager
 
             ERequestType requestType() const { return fRequestType; }
         private:
-            ERequestType fRequestType{ ERequestType::eUnknownRequest };
+            static QString tmdbFromUrl( const QUrl & url );
+            static QString tmdbFromKey( const QString & key );
+            ERequestType fRequestType { ERequestType::eUnknownRequest };
             QNetworkReply * fReply{ nullptr };
             QString fURLPathKey;
+            QString fTMDBID;
             mutable QByteArray fCachedData;
         };
         QDebug operator<<( QDebug debug, const CNetworkReply & reply );
