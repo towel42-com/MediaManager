@@ -66,15 +66,15 @@ namespace NMediaManager
         QString CPreferences::getDefaultOutDirPattern( bool forTV ) const
         {
             if ( forTV )
-                return "<title>( (<year>)):<year>/Season <season>";
+                return "<title>{ (<year>)}:<year>/Season <season>";
             else
-                return "<title>( (<year>)):<year>( [tmdbid=<tmdbid>]):<tmdbid>( - <extra_info>):<extra_info>";
+                return "<title>{ (<year>)}:<year>{ [tmdbid=<tmdbid>]}:<tmdbid>{ - <extra_info>}:<extra_info>";
         }
 
         QString CPreferences::getDefaultOutFilePattern( bool forTV ) const
         {
             if ( forTV )
-                return "<title> - S<season>E<episode>( - <episode_title>):<episode_title>( - <extra_info>):<extra_info>";
+                return "<title> - S<season>E<episode>{ - <episode_title>}:<episode_title>{ - <extra_info>}:<extra_info>";
             else
                 return "<title>";
         }
@@ -382,7 +382,12 @@ namespace NMediaManager
 
         void CPreferences::addKnownStrings(const QStringList & value)
         {
-            auto knownWords = getKnownStrings() << value;
+            auto knownWords = getKnownStrings();
+            for ( auto && ii : value )
+            {
+                if ( !knownWords.contains( ii ) )
+                    knownWords << value;
+            }
             setKnownStrings(knownWords);
         }
 
@@ -390,7 +395,15 @@ namespace NMediaManager
         {
             QSettings settings;
             settings.beginGroup("Transform");
-            settings.setValue( "KnownStrings", value );
+            QSet< QString > tmp;
+            QStringList realValues;
+            for ( auto && ii : value )
+            {
+                if ( !tmp.contains( ii ) )
+                    realValues << ii;
+            }
+
+            settings.setValue( "KnownStrings", realValues );
         }
 
         QStringList CPreferences::getKnownStrings() const
@@ -441,6 +454,31 @@ namespace NMediaManager
             QSettings settings;
             settings.beginGroup("Transform");
             return settings.value( "KnownStrings", knownStrings ).toStringList();
+        }
+
+        QStringList CPreferences::getKnownStringRegExs() const
+        {
+            auto strings = getKnownStrings();
+            QStringList nonRegExs;
+            QStringList retVal;
+            for ( auto && ii : strings )
+            {
+                bool isRegEx =
+                    (ii.indexOf( "\\" ) != -1)
+                    || (ii.indexOf( "?" ) != -1)
+                    || (ii.indexOf( "{" ) != -1)
+                    || (ii.indexOf( "}" ) != -1)
+                    ;
+
+                if ( isRegEx )
+                    retVal << QString( "(?<word>" + ii + ")" );
+                else
+                    nonRegExs << QRegularExpression::escape( ii );
+            }
+            auto primRegEx = "((?<prefix>\\[|\\()|\\W)(?<word>" + nonRegExs.join("|") + ")((?<suffix>\\]|\\))|\\W|$)";
+            retVal << primRegEx;
+
+            return retVal;
         }
 
         void CPreferences::setKnownExtendedStrings(const QStringList & value)

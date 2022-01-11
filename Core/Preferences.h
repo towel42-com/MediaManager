@@ -94,6 +94,7 @@ namespace NMediaManager
             void addKnownStrings( const QStringList & value );
             void setKnownStrings( const QStringList & value );
             QStringList getKnownStrings() const;
+            QStringList getKnownStringRegExs() const;
 
             void setKnownExtendedStrings( const QStringList & value );
             QStringList getKnownExtendedStrings() const;
