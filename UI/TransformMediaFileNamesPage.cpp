@@ -78,8 +78,6 @@ namespace NMediaManager
 
         void CTransformMediaFileNamesPage::setTreatAsTVByDefault( bool value )
         {
-            if ( model() )
-                model()->slotTreatAsTVByDefaultChanged( value );
             NCore::CPreferences::instance()->setTreatAsTVShowByDefault( value );
         }
 
@@ -201,39 +199,45 @@ namespace NMediaManager
 
         void CTransformMediaFileNamesPage::slotAutoSearchFinished( const QString &path, bool searchesRemaining )
         {
-            auto result = fSearchTMDB->getResult( path );
+            auto results = fSearchTMDB->getResult( path );
 
             searchesRemaining = searchesRemaining && !fProgressDlg->wasCanceled();
 
+            auto msg = tr( "Search Complete for '%1'" ).arg( QDir( fDirName ).relativeFilePath( path ) );
             if ( searchesRemaining )
             {
                 fProgressDlg->setValue( fProgressDlg->value() + 1 );
                 fSearchesCompleted++;
-                auto msg = tr( "Search Complete for '%1'" ).arg( QDir( fDirName ).relativeFilePath( path ) );
                 fProgressDlg->setLabelText( msg );
-
-                msg += "\n\t%1";
-                if ( result.empty() )
-                    msg = msg.arg( "Found: <No Match>" );
-                else
-                    msg = msg.arg( tr( "Found: %1" ).arg( result.front()->toString( false ) ) );
-                        
-                appendToLog( msg, true );
             }
             else
             {
                 clearProgressDlg( fProgressDlg->wasCanceled() );
             }
 
+            auto logMsg = QString( "\n\t" );
+            if ( results.empty() )
+                logMsg += tr( "Found: <No Match>" );
+            else
+            {
+                if ( results.size() > 1 )
+                    logMsg += tr( "Found %1 matches. Choosing %2: " ).arg( results.size() );
+                else
+                    logMsg += tr( "Found: %1" );
+                logMsg = logMsg.arg( results.front()->toString( false ) );
+            }
+
+            appendToLog( msg + logMsg, true );
+
             if ( fProgressDlg->wasCanceled() )
                 fSearchTMDB->clearSearchCache();
             else
             {
-                if ( !result.empty() )
+                if ( !results.empty() )
                 {
                     auto item = model()->getItemFromPath( path );
                     if ( item )
-                        model()->setSearchResult( item, result.front(), false );
+                        model()->setSearchResult( item, results.front(), false );
                 }
             }
             if ( !searchesRemaining )
@@ -290,7 +294,6 @@ namespace NMediaManager
 
         void CTransformMediaFileNamesPage::setupModel()
         {
-            model()->slotTreatAsTVByDefaultChanged( NCore::CPreferences::instance()->getTreatAsTVShowByDefault() );
             model()->slotTVOutputFilePatternChanged( NCore::CPreferences::instance()->getTVOutFilePattern() );
             model()->slotTVOutputDirPatternChanged( NCore::CPreferences::instance()->getTVOutDirPattern() );
             model()->slotMovieOutputFilePatternChanged( NCore::CPreferences::instance()->getMovieOutFilePattern() );
@@ -309,7 +312,7 @@ namespace NMediaManager
             bool isTVShow = baseIdx.data( NCore::ECustomRoles::eIsTVShowRole ).toBool();
             auto nm = model()->getSearchName( idx );
 
-            CSelectTMDB dlg( nm, titleInfo, this );
+            CSelectTMDB dlg( nm, titleInfo, fSearchTMDB, this );
             dlg.setSearchForTVShows( model()->treatAsTVShow( QFileInfo( fullPath ), isTVShow ), true );
             dlg.setExactMatchOnly( NCore::CPreferences::instance()->getExactMatchesOnly(), true );
 

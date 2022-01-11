@@ -178,13 +178,6 @@ namespace NMediaManager
             transformPatternChanged();
         }
 
-        void CTransformModel::slotTreatAsTVByDefaultChanged( bool treatAsTVShowByDefault )
-        {
-            fTreatAsTVShowByDefault = treatAsTVShowByDefault;
-            // need to emit datachanged on column 4 for all known indexes
-            transformPatternChanged();
-        }
-
         // do not include <> in the capture name
         QString replaceCapture( const QString & captureName, const QString & returnPattern, const QString & value )
         {
@@ -403,13 +396,13 @@ namespace NMediaManager
             return CDirModel::getSearchName( idx );
         }
 
-        bool CTransformModel::treatAsTVShow( const QFileInfo & fileInfo, bool defaultValue ) const
+        bool CTransformModel::treatAsTVShow( const QFileInfo & fileInfo, bool isTVByDefault ) const
         {
-            bool asTVShow = defaultValue;
+            EMediaType mediaType = isTVByDefault ? EMediaType::eTVShow : EMediaType::eMovie;
             auto pos = fTransformResultMap.find( fileInfo.absoluteFilePath() );
             if ( pos != fTransformResultMap.end() )
-                asTVShow = (*pos).second->isTVShow();
-            return asTVShow;
+                mediaType = (*pos).second->mediaType();
+            return isTVType( mediaType );
         }
 
         void CTransformModel::setSearchResult( QStandardItem * item, std::shared_ptr< STransformResult > searchResult, bool applyToChildren )
@@ -420,7 +413,7 @@ namespace NMediaManager
 
         void CTransformModel::setDeleteItem( const QModelIndex & idx )
         {
-            auto searchResult = std::make_shared< STransformResult >( EResultInfoType::eDeleteFileType );
+            auto searchResult = std::make_shared< STransformResult >( EMediaType::eDeleteFileType );
             setSearchResult( idx, searchResult, false );
         }
 
@@ -805,7 +798,8 @@ namespace NMediaManager
                 return;
 
             auto transformInfo = transformItem( fileInfo );
-            if ( !transformInfo.first || (item->text() != transformInfo.second) )
+            auto currText = item->text();
+            if ( !transformInfo.first || (currText != transformInfo.second) )
             {
                 if ( transformedItem->text() != transformInfo.second )
                     transformedItem->setText( transformInfo.second );
@@ -818,7 +812,7 @@ namespace NMediaManager
 
         void CTransformModel::preAddItems( const QFileInfo & fileInfo, std::list< NMediaManager::NCore::STreeNodeItem > & currItems ) const
         {
-            bool isTVShow = SSearchTMDBInfo::looksLikeTVShow( fileInfo.fileName(), nullptr );
+            bool isTVShow = isTVType( SSearchTMDBInfo::looksLikeTVShow( fileInfo.fileName(), nullptr ) );
 
             currItems.front().setData( isTVShow, ECustomRoles::eIsTVShowRole );
         }
@@ -827,9 +821,9 @@ namespace NMediaManager
         {
             std::list< NMediaManager::NCore::STreeNodeItem > retVal;
 
-            bool isTVShow = SSearchTMDBInfo::looksLikeTVShow( fileInfo.fileName(), nullptr );
+            auto mediaType = SSearchTMDBInfo::looksLikeTVShow( fileInfo.fileName(), nullptr );
             auto isTVShowItem = STreeNodeItem( QString(), EColumns::eIsTVShow );
-            isTVShowItem.fIsTVShow = isTVShow;
+            isTVShowItem.fMediaType = mediaType;
             isTVShowItem.fCheckable = true;
 
             retVal.push_back( isTVShowItem );
@@ -843,7 +837,7 @@ namespace NMediaManager
         void CTransformModel::setupNewItem( const STreeNodeItem & nodeItem, const QStandardItem * nameItem, QStandardItem * item ) const
         {
             if ( nodeItem.fType == EColumns::eIsTVShow )
-                setChecked( item, nodeItem.fIsTVShow );
+                setChecked( item, isTVType( nodeItem.fMediaType ) );
             else if ( nodeItem.fType == EColumns::eTransformName )
             {
                 if ( nameItem && item )
@@ -920,6 +914,40 @@ namespace NMediaManager
                 title = searchResults->getTitle();
             }
             return CDirModel::SetMKVTags( fileName, title, year, &msg );
+        }
+
+        bool CTransformModel::canAutoSearch( const QModelIndex & index ) const
+        {
+            auto path = index.data( ECustomRoles::eFullPathRole ).toString();
+            if ( path.isEmpty() )
+                return false;
+            return canAutoSearch( QFileInfo( path ) );
+        }
+
+        bool CTransformModel::canAutoSearch( const QFileInfo & fileInfo ) const
+        {
+            if ( CPreferences::instance()->isIgnoredPath( fileInfo ) || CPreferences::instance()->isSkippedPath( fileInfo ) )
+                return false;
+
+            bool isLangFormat;
+            if ( CPreferences::instance()->isSubtitleFile( fileInfo, &isLangFormat ) && !isLangFormat )
+                return false;
+
+            if ( !fileInfo.isDir() )
+                return true;
+
+            auto files = QDir( fileInfo.absoluteFilePath() ).entryInfoList( QDir::Files );
+            bool hasFiles = false;
+            for ( auto && ii : files )
+            {
+                if ( canAutoSearch( ii ) )
+                {
+                    hasFiles = true;
+                    break;
+                }
+            }
+
+            return hasFiles;
         }
     }
 }

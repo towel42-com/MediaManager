@@ -402,6 +402,20 @@ namespace NMediaManager
             return STreeNode( fileInfo, this );
         }
 
+        STreeNodeItem::STreeNodeItem() : 
+            fMediaType( EMediaType::eUnknownType )
+        {
+
+        }
+
+        STreeNodeItem::STreeNodeItem( const QString & text, EColumns nodeType ) : 
+            fText( text ), 
+            fType( nodeType ), 
+            fMediaType( EMediaType::eUnknownType )
+        {
+
+        }
+
         QStandardItem * STreeNodeItem::createStandardItem() const
         {
             auto retVal = new QStandardItem( fText );
@@ -564,40 +578,6 @@ namespace NMediaManager
         bool CDirModel::isSubtitleFile( const QStandardItem * item, bool * isLangFileFormat /*= nullptr */ ) const
         {
             return item && CPreferences::instance()->isSubtitleFile( item->data( ECustomRoles::eFullPathRole ).toString(), isLangFileFormat );
-        }
-
-        bool CDirModel::canAutoSearch( const QModelIndex & index ) const
-        {
-            auto path = index.data( ECustomRoles::eFullPathRole ).toString();
-            if ( path.isEmpty() )
-                return false;
-            return canAutoSearch( QFileInfo( path ) );
-        }
-
-        bool CDirModel::canAutoSearch( const QFileInfo & fileInfo ) const
-        {
-            if ( CPreferences::instance()->isIgnoredPath( fileInfo ) || CPreferences::instance()->isSkippedPath( fileInfo ) )
-                return false;
-
-            bool isLangFormat;
-            if ( CPreferences::instance()->isSubtitleFile( fileInfo, &isLangFormat ) && !isLangFormat )
-                return false;
-
-            if ( !fileInfo.isDir() )
-                return true;
-
-            auto files = QDir( fileInfo.absoluteFilePath() ).entryInfoList( QDir::Files );
-            bool hasFiles = false;
-            for ( auto && ii : files )
-            {
-                if ( canAutoSearch( ii ) )
-                {
-                    hasFiles = true;
-                    break;
-                }
-            }
-
-            return hasFiles;
         }
 
         QString CDirModel::getMyTransformedName( const QStandardItem * item, bool /*transformParentsOnly*/ ) const
@@ -771,7 +751,7 @@ namespace NMediaManager
             bool continueOn = showProcessResults( tr( "Process:" ), tr( "Proceed?" ), QMessageBox::Information, QDialogButtonBox::Yes | QDialogButtonBox::No, parent );
             if ( !continueOn )
             {
-                emit sigProcessesFinished( false, true, false );
+                emit sigProcessesFinished( false, false, true, false );
                 return false;
             }
 
@@ -911,7 +891,7 @@ namespace NMediaManager
             fFirstProcess = false;
             if ( fProcessQueue.empty() )
             {
-                emit sigProcessesFinished( fProcessResults.first, false, true );
+                emit sigProcessesFinished( fProcessResults.first, true, false, true );
                 return;
             }
 

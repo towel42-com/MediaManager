@@ -32,7 +32,6 @@
 #include "SABUtils/QtUtils.h"
 
 #include <QUrl>
-#include <QUrlQuery>
 #include <QTimer>
 #include <QDebug>
 #include <QRegularExpression>
@@ -43,14 +42,14 @@ namespace NMediaManager
 {
     namespace NUi
     {
-        CSelectTMDB::CSelectTMDB( const QString &text, std::shared_ptr< NCore::STransformResult > searchResult, QWidget *parent )
+        CSelectTMDB::CSelectTMDB( const QString &text, std::shared_ptr< NCore::STransformResult > searchResult, NCore::CSearchTMDB * searchTMDB, QWidget *parent )
             : QDialog( parent ),
-            fImpl( new Ui::CSelectTMDB )
+            fImpl( new Ui::CSelectTMDB ),
+            fSearchTMDB( searchTMDB )
         {
             fImpl->setupUi( this );
 
             fSearchInfo = std::make_shared< NCore::SSearchTMDBInfo >( text, searchResult );
-            fSearchTMDB = new NCore::CSearchTMDB( fSearchInfo, std::optional<QString>(), this );
 
             connect( this, &CSelectTMDB::sigStartSearch, fSearchTMDB, &NCore::CSearchTMDB::slotSearch );
             connect( fSearchTMDB, &NCore::CSearchTMDB::sigSearchFinished, this, &CSelectTMDB::slotSearchFinished );
@@ -109,7 +108,7 @@ namespace NMediaManager
             fImpl->byName->setChecked( fSearchTMDB->searchByName() );
             fImpl->byTMDBID->setChecked( !fSearchTMDB->searchByName() );
             fImpl->exactMatchesOnly->setChecked( searchInfo->exactMatchOnly() );
-            fImpl->searchForTVShows->setChecked( searchInfo->isTVShow() );
+            fImpl->searchForTVShows->setChecked( searchInfo->isTVMedia() );
             updateEnabled();
 
             connect( fImpl->byName, &QRadioButton::toggled, this, &CSelectTMDB::slotExactOrForTVShowsChanged);
@@ -287,7 +286,7 @@ namespace NMediaManager
             if ( fStopLoading )
                 return;
 
-            if ( info->fInfoType == NCore::EResultInfoType::eTVShow || info->fInfoType == NCore::EResultInfoType::eTVSeason )
+            if ( info->fMediaType == NCore::EMediaType::eTVShow || info->fMediaType == NCore::EMediaType::eTVSeason )
             {
                 if ( info->fChildren.empty() )
                     return;
@@ -422,7 +421,7 @@ namespace NMediaManager
         {
             auto searchInfo = getSearchInfo();
 
-            searchInfo->setIsTVShow( value );
+            searchInfo->setMediaType( value ? NCore::EMediaType::eTVShow : NCore::EMediaType::eMovie );
             searchInfo->updateSearchCriteria( init );
             if ( init && !fSearchPending )
                 updateFromSearchInfo( searchInfo );
@@ -457,7 +456,7 @@ namespace NMediaManager
             auto searchInfo = getSearchInfo();
 
             searchInfo->setExactMatchOnly( fImpl->exactMatchesOnly->isChecked() );
-            searchInfo->setIsTVShow( fImpl->searchForTVShows->isChecked() );
+            searchInfo->setMediaType( fImpl->searchForTVShows->isChecked() ? NCore::EMediaType::eTVShow : NCore::EMediaType::eMovie );
             updateEnabled();
             slotSearchCriteriaChanged();
         }
@@ -515,7 +514,7 @@ namespace NMediaManager
             searchInfo->setSeason( fImpl->searchSeason->value() );
             searchInfo->setEpisode( fImpl->searchEpisode->value() );
             searchInfo->setTMDBID( fImpl->searchTMDBID->text().trimmed());
-            searchInfo->setIsTVShow( fImpl->searchForTVShows->isChecked() );
+            searchInfo->setMediaType( fImpl->searchForTVShows->isChecked() ? NCore::EMediaType::eTVShow : NCore::EMediaType::eMovie );
             searchInfo->setExactMatchOnly( fImpl->exactMatchesOnly->isChecked() );
             searchInfo->setSearchByName( fImpl->byName->isChecked() );
 

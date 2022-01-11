@@ -20,8 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef _TITLEINFO_H
-#define _TITLEINFO_H
+#ifndef __TRANSFORMRESULT_H
+#define __TRANSFORMRESULT_H
 
 #include <QString>
 #include <QPixmap>
@@ -45,23 +45,26 @@ namespace NMediaManager
             eDescription
         };
 
-        enum class EResultInfoType
+        enum class EMediaType
         {
+            eUnknownType,
             eDeleteFileType,
             eMovie,
             eTVShow,
             eTVSeason,
             eTVEpisode
         };
-        QString toEnumString( EResultInfoType infoType );
+        QString toEnumString( EMediaType infoType );
+        bool isTVType( EMediaType infoType );
 
 
         struct STransformResult
         {
-            STransformResult( EResultInfoType type );
+            STransformResult( EMediaType type );
 
-            bool isTVShow() const { return fInfoType != EResultInfoType::eMovie; } // tvshow, season or episode are all not movie
-            bool isDeleteResult() const { return fInfoType == EResultInfoType::eDeleteFileType; } // tvshow, season or episode are all not movie
+            EMediaType mediaType() const { return fMediaType; }
+            bool isTVShow() const { return fMediaType != EMediaType::eMovie; } // tvshow, season or episode are all not movie
+            bool isDeleteResult() const { return fMediaType == EMediaType::eDeleteFileType; } // tvshow, season or episode are all not movie
             QString getTitle() const;
             QString getYear() const;
             QString getInitialYear() const; // if its a TV episode, get the show description year
@@ -100,7 +103,7 @@ namespace NMediaManager
 
             std::weak_ptr < STransformResult > fParent;
             std::list< std::shared_ptr< STransformResult > > fChildren;
-            EResultInfoType fInfoType;
+            EMediaType fMediaType;
 
         private:
             bool isBetterTitleMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr<STransformResult> rhs ) const;

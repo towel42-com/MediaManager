@@ -42,17 +42,6 @@ namespace NSABUtils
 
 namespace NMediaManager
 {
-    namespace NCore
-    {
-        struct SSearchTMDBInfo;
-        struct STransformResult;
-        class CDirModel;
-        class CSearchTMDB;
-    }
-}
-
-namespace NMediaManager
-{
     namespace NUi
     {
         class CBasePage;

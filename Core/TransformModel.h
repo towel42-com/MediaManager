@@ -64,6 +64,8 @@ namespace NMediaManager
             virtual QString getSearchName( const QModelIndex & idx ) const override;
 
             void setDeleteItem( const QModelIndex & idx );
+            bool canAutoSearch( const QModelIndex & index ) const;
+            bool canAutoSearch( const QFileInfo & info ) const;
         public Q_SLOTS:
             void slotPatternChanged();
 
@@ -71,8 +73,6 @@ namespace NMediaManager
             void slotTVOutputDirPatternChanged( const QString & outPattern );
             void slotMovieOutputDirPatternChanged( const QString & outPattern );
             void slotMovieOutputFilePatternChanged( const QString & outPattern );
-            void slotTreatAsTVByDefaultChanged( bool treatAsTVShowByDefault );
-
         private:
             virtual void preAddItems( const QFileInfo & fileInfo, std::list< NMediaManager::NCore::STreeNodeItem > & currItems ) const override;
             virtual std::list< NMediaManager::NCore::STreeNodeItem > addItems( const QFileInfo & fileInfo ) const override;
@@ -121,7 +121,7 @@ namespace NMediaManager
             std::map< QString, std::shared_ptr< STransformResult > > fTransformResultMap;
             std::unordered_map< QString, QString > fDiskRipSearchMap;
 
-            bool fTreatAsTVShowByDefault{ false };
+            //bool fTreatAsTVShowByDefault{ false };
             QTimer * fPatternTimer{ nullptr };
 
         };

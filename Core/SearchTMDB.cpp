@@ -39,6 +39,7 @@
 #include <QJsonArray>
 #include <QImage>
 #include <QPixmap>
+#include <QDebug>
 
 QDebug operator<<( QDebug debug, const NMediaManager::NCore::CSearchTMDB &searchTMDB )
 {
@@ -99,6 +100,7 @@ namespace NMediaManager
         void CSearchTMDB::clearSearchCache()
         {
             fSearchQueue.clear();
+            //fURLResultsCache.clear();
         }
 
         QString CSearchTMDB::toString() const
@@ -187,8 +189,17 @@ namespace NMediaManager
             fAutoSearchTimer->start();
         }
 
-        const QString apiKeyV3 = "7c58ff37c9fadd56c51dae3a97339378";
-        const QString apiKeyV4 = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI3YzU4ZmYzN2M5ZmFkZDU2YzUxZGFlM2E5NzMzOTM3OCIsInN1YiI6IjVmYTAzMzJiNjM1MDEzMDAzMTViZjg2NyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.MBAzJIxvsRm54kgPKcfixxtfbg2bdNGDHKnEt15Nuac";
+        const QString kApiKeyV3 = "7c58ff37c9fadd56c51dae3a97339378";
+        QString CSearchTMDB::apiKeyV3()
+        {
+            return kApiKeyV3;
+        }
+
+        const QString kApiKeyV4 = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI3YzU4ZmYzN2M5ZmFkZDU2YzUxZGFlM2E5NzMzOTM3OCIsInN1YiI6IjVmYTAzMzJiNjM1MDEzMDAzMTViZjg2NyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.MBAzJIxvsRm54kgPKcfixxtfbg2bdNGDHKnEt15Nuac";
+        QString CSearchTMDB::apiKeyV4()
+        {
+            return kApiKeyV4;
+        }
 
         void CSearchTMDB::slotAuthenticationRequired( QNetworkReply * /*reply*/, QAuthenticator * /*authenticator*/ )
         {
@@ -202,13 +213,13 @@ namespace NMediaManager
 
         std::shared_ptr< CNetworkReply > CSearchTMDB::sendRequest( const QNetworkRequest &request, ERequestType requestType )
         {
-            auto path = CNetworkReply::key( request.url() );
+            auto path = CNetworkReply::key( request, requestType );
             auto pos = fURLResultsCache.find( path );
             if ( pos != fURLResultsCache.end() )
             {
-                //qDebug().noquote().nospace() << "Cached Result " << ::toString( requestType ) << " request:" << ( *pos ).first;
-                QTimer::singleShot( 0, [this, requestType, pos]() { emit sigFakeRequestFinished( requestType, ( *pos ).first, ( *pos ).second ); } );
-                return std::make_shared< CNetworkReply >( requestType, ( *pos ).first, ( *pos ).second );
+                //qDebug().noquote().nospace() << "Cached Result " << NCore::toString( requestType ) << " request:" << (*pos).first;
+                QTimer::singleShot( 0, [ this, requestType, pos ]() { emit sigFakeRequestFinished( requestType, (*pos).first, (*pos).second ); } );
+                return std::make_shared< CNetworkReply >( requestType, (*pos).first, (*pos).second );
             }
             auto retVal = fManager->get( request );
             //qDebug().noquote().nospace() << "Sending " << ::toString( requestType ) << " request:" << request.url() << "Reply: 0x" << Qt::hex << reinterpret_cast< uint64_t >( retVal );
@@ -308,23 +319,23 @@ namespace NMediaManager
                 }
                 else
                 {
-                    if ( fImageInfoReplies.find( reply ) != fImageInfoReplies.end() )
+                    if ( fImageInfoReplies.find( reply->key() ) != fImageInfoReplies.end() )
                     {
                         title = tr( "Could not get image(s)" );
 
-                        auto pos = fImageInfoReplies.find( reply );
+                        auto pos = fImageInfoReplies.find( reply->key() );
                         fImageInfoReplies.erase( pos );
                     }
-                    else if ( fTVInfoReplies.find( reply ) != fTVInfoReplies.end() )
+                    else if ( fTVInfoReplies.find( reply->key() ) != fTVInfoReplies.end() )
                     {
                         title = tr( "Could not find TV Details information" );
-                        auto pos = fTVInfoReplies.find( reply );
+                        auto pos = fTVInfoReplies.find( reply->key() );
                         fTVInfoReplies.erase( pos );
                     }
-                    else if ( fSeasonInfoReplies.first.find( reply ) != fSeasonInfoReplies.first.end() )
+                    else if ( fSeasonInfoReplies.first.find( reply->key() ) != fSeasonInfoReplies.first.end() )
                     {
                         title = tr( "Could not find Season/Episode information" );
-                        auto pos = fSeasonInfoReplies.first.find( reply );
+                        auto pos = fSeasonInfoReplies.first.find( reply->key() );
                         auto info = ( *pos ).second;
                         fSeasonInfoReplies.first.erase( pos );
                         auto parent = info->fParent.lock();
@@ -367,7 +378,7 @@ namespace NMediaManager
             // cache it for nexttime
             if ( !reply->isCached() )
             {
-                fURLResultsCache[reply->urlPathKey()] = reply->getData();
+                fURLResultsCache[ reply->key() ] = reply->getData();
                 removeRequestType( reply );
             }
 
@@ -391,7 +402,7 @@ namespace NMediaManager
 
         QString CSearchTMDB::getSearchName() const
         {
-            return fSearchInfo ? (fSearchInfo->isTVShow() ? tr( "TV Show" ) : tr( "Movie" )) : QString();
+            return fSearchInfo ? (fSearchInfo->isTVMedia() ? tr( "TV Show" ) : tr( "Movie" )) : QString();
         }
 
         void CSearchTMDB::checkIfStillSearching()
@@ -479,7 +490,7 @@ namespace NMediaManager
             url.setPath( "/3/configuration" );
 
             QUrlQuery query;
-            query.addQueryItem( "api_key", apiKeyV3 );
+            query.addQueryItem( "api_key", apiKeyV3() );
             url.setQuery( query );
             fConfigReply = sendRequest( QNetworkRequest( url ), ERequestType::eConfig );
         }
@@ -517,66 +528,7 @@ namespace NMediaManager
                 fConfiguration = posterURL + posterSize;
             return true;
         }
-
-        std::optional< std::pair< QUrl, ESearchType > > SSearchTMDBInfo::getSearchURL() const
-        {
-            QUrl url;
-            url.setScheme( "https" );
-            url.setHost( "api.themoviedb.org" );
-            if ( fSearchByName )
-            {
-                if ( fIsTVShow )
-                    url.setPath( "/3/search/tv" );
-                else
-                    url.setPath( "/3/search/movie" );
-
-                QUrlQuery query;
-                query.addQueryItem( "api_key", apiKeyV3 );
-
-                query.addQueryItem( "include_adult", "true" );
-                if ( !fReleaseDate.isEmpty() )
-                    query.addQueryItem( "year", fReleaseDate );
-                auto searchStrings = fSearchName.split( QRegularExpression( "[\\s\\.]" ), TSkipEmptyParts );
-
-                if ( searchStrings.isEmpty() )
-                    return {};
-
-                query.addQueryItem( "query", searchStrings.join( "+" ) );
-                url.setQuery( query );
-
-                //qDebug() << url.toString();
-                return std::make_pair( url, fIsTVShow ? ESearchType::eSearchTV : ESearchType::eSearchMovie );
-            }
-            else if ( fIsTVShow ) // by tmdbid
-            {
-                if ( fTMDBID.isEmpty() )
-                    return {};
-
-                url.setPath( QString( "/3/tv/%1" ).arg( fTMDBID ) );
-
-                QUrlQuery query;
-                query.addQueryItem( "api_key", apiKeyV3 );
-
-                url.setQuery( query );
-                //qDebug() << url.toString();
-                return std::make_pair( url, ESearchType::eGetTVShow );
-            }
-            else
-            {
-                if ( fTMDBID.isEmpty() )
-                    return {};
-
-                url.setPath( QString( "/3/movie/%1" ).arg( fTMDBID ) );
-
-                QUrlQuery query;
-                query.addQueryItem( "api_key", apiKeyV3 );
-
-                url.setQuery( query );
-                //qDebug() << url.toString();
-                return std::make_pair( url, ESearchType::eGetMovie );
-            }
-        }
-
+        
         void CSearchTMDB::slotAutoSearch()
         {
             //qDebug() << "slotAutoSearch";
@@ -729,7 +681,7 @@ namespace NMediaManager
             auto tmdbid = resultItem.contains( "id" ) ? resultItem["id"].toInt() : -1;
             auto desc = resultItem.contains( "overview" ) ? resultItem["overview"].toString() : QString();
             QString title;
-            if ( fSearchInfo->isTVShow() )
+            if ( fSearchInfo->isTVMedia() )
                 title = resultItem.contains( "name" ) ? resultItem["name"].toString() : QString();
             else
                 title = resultItem.contains( "title" ) ? resultItem["title"].toString() : QString();
@@ -742,7 +694,7 @@ namespace NMediaManager
             if ( !fSearchInfo->isMatch( releaseDate, tmdbid, title ) )
                 return false;
 
-            auto searchResult = std::make_shared< STransformResult >( fSearchInfo->isTVShow() ? EResultInfoType::eTVShow : EResultInfoType::eMovie ); // movie or TV show
+            auto searchResult = std::make_shared< STransformResult >( fSearchInfo->isTVMedia() ? EMediaType::eTVShow : EMediaType::eMovie ); // movie or TV show
             searchResult->fDescription = desc;
             searchResult->fReleaseDate = releaseDate;
             searchResult->fTitle = title;
@@ -763,18 +715,18 @@ namespace NMediaManager
                 QUrl url( path );
 
                 QUrlQuery query;
-                query.addQueryItem( "api_key", apiKeyV3 );
+                query.addQueryItem( "api_key", apiKeyV3() );
                 url.setQuery( query );
                 //qDebug() << url.toString();
 
                 if ( !fStopSearching )
                 {
                     auto reply = sendRequest( QNetworkRequest( url ), ERequestType::eGetImage );
-                    fImageInfoReplies[reply] = searchResult;
+                    fImageInfoReplies[reply->key()] = searchResult;
                 }
             }
 
-            if ( fSearchInfo->isTVShow() && ( tmdbid != -1 ) )
+            if ( fSearchInfo->isTVMedia() && ( tmdbid != -1 ) )
             {
                 searchTVDetails( searchResult, tmdbid, -1 );
             }
@@ -797,7 +749,7 @@ namespace NMediaManager
             if ( seasonNum != -1 )
             {
                 path += QString( "/season/%1" ).arg( seasonNum );
-                seasonInfo = std::make_shared< STransformResult >( EResultInfoType::eTVSeason );
+                seasonInfo = std::make_shared< STransformResult >( EMediaType::eTVSeason );
                 seasonInfo->fTitle = showInfo->fTitle;
                 seasonInfo->fTMDBID = showInfo->fTMDBID;
                 seasonInfo->fSeason = QString::number( seasonNum );
@@ -808,23 +760,23 @@ namespace NMediaManager
             url.setPath( path );
 
             QUrlQuery query;
-            query.addQueryItem( "api_key", apiKeyV3 );
+            query.addQueryItem( "api_key", apiKeyV3() );
             url.setQuery( query );
 
             if ( !fStopSearching )
             {
                 auto reply = sendRequest( QNetworkRequest( url ), seasonInfo ? ERequestType::eSeasonInfo : ERequestType::eTVInfo );
                 if ( seasonInfo )
-                    fSeasonInfoReplies.first[reply] = seasonInfo;
+                    fSeasonInfoReplies.first[reply->key()] = seasonInfo;
                 else
-                    fTVInfoReplies[reply] = showInfo;
+                    fTVInfoReplies[reply->key()] = showInfo;
             }
         }
 
         // from a /tv/tv_id request
         bool CSearchTMDB::loadTVDetails( std::shared_ptr< CNetworkReply > reply )
         {
-            auto pos = fTVInfoReplies.find( reply );
+            auto pos = fTVInfoReplies.find( reply->key() );
             if ( pos == fTVInfoReplies.end() )
                 return false;
 
@@ -852,7 +804,7 @@ namespace NMediaManager
 
         bool CSearchTMDB::loadSeasonDetails( std::shared_ptr< CNetworkReply > reply )
         {
-            auto pos = fSeasonInfoReplies.first.find( reply );
+            auto pos = fSeasonInfoReplies.first.find( reply->key() );
             if ( pos == fSeasonInfoReplies.first.end() )
                 return false;
             auto seasonInfo = ( *pos ).second;
@@ -903,7 +855,7 @@ namespace NMediaManager
             auto episodeName = episodeObj.contains( "name" ) ? episodeObj["name"].toString() : QString();
             auto overview = episodeObj.contains( "overview" ) ? episodeObj["overview"].toString() : QString();
 
-            auto episodeInfo = std::make_shared< STransformResult >( EResultInfoType::eTVEpisode );
+            auto episodeInfo = std::make_shared< STransformResult >( EMediaType::eTVEpisode );
             episodeInfo->fEpisode = episodeNumber == -1 ? QString() : QString::number( episodeNumber );
             episodeInfo->fSeason = episodeObj.contains( "season_number" ) ? QString::number( episodeObj["season_number"].toInt() ) : QString();
             episodeInfo->fEpisodeTitle = episodeName;
@@ -948,7 +900,7 @@ namespace NMediaManager
 
         bool CSearchTMDB::loadImageResults( std::shared_ptr< CNetworkReply > reply )
         {
-            auto pos = fImageInfoReplies.find( reply );
+            auto pos = fImageInfoReplies.find( reply->key() );
             if ( pos == fImageInfoReplies.end() )
                 return false;
             auto info = ( *pos ).second;

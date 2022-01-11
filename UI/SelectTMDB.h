@@ -61,7 +61,7 @@ namespace NMediaManager
                 eEpisode
             };
 
-            CSelectTMDB( const QString &searchText, std::shared_ptr< NCore::STransformResult > searchResult, QWidget *parent = 0 );
+            CSelectTMDB( const QString &searchText, std::shared_ptr< NCore::STransformResult > searchResult, NCore::CSearchTMDB * searchTMDB, QWidget *parent = 0 );
 
             ~CSelectTMDB();
 

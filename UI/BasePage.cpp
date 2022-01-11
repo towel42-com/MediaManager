@@ -63,7 +63,7 @@ namespace NMediaManager
         {
             if ( (obj == fImpl->log) && (event->type() == QEvent::MouseButtonPress ) )
             {
-                qDebug() << event;
+                //qDebug() << event;
                 auto mouseEvent = dynamic_cast<QMouseEvent *>(event);
                 if ( mouseEvent->buttons() & Qt::MouseButton::RightButton )
                 {
@@ -170,6 +170,7 @@ namespace NMediaManager
         void CBasePage::slotProcessingStarted()
         {
             showResults();
+            emit sigStartStayAwake();
         }
 
         void CBasePage::load( const QString & dirName )
@@ -218,10 +219,10 @@ namespace NMediaManager
 
         }
 
-        void CBasePage::slotProcessesFinished( bool status, bool canceled, bool reloadModel )
+        void CBasePage::slotProcessesFinished( bool status, bool showProcessResults, bool canceled, bool reloadModel )
         {
             clearProgressDlg( false );
-            if ( !status )
+            if ( !status && showProcessResults )
             {
                 fModel->showProcessResults( actionErrorName(), tr( "Issues:" ), QMessageBox::Critical, QDialogButtonBox::Ok, this );
             }
@@ -232,8 +233,6 @@ namespace NMediaManager
 
         void CBasePage::run( const QModelIndex & idx )
         {
-            emit sigStartStayAwake();
-
             auto actionName = actionTitleName();
             auto cancelName = actionCancelName();
 

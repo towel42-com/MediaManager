@@ -68,7 +68,7 @@ namespace NMediaManager
             fRequestType( requestType ),
             fReply( reply )
         {
-            fURLPathKey = key( reply->url() );
+            fURLPathKey = key( reply->url(), requestType );
         }
 
         CNetworkReply::CNetworkReply( ERequestType requestType, const QString &urlPathKey, const QByteArray &data ) :
@@ -84,9 +84,19 @@ namespace NMediaManager
         }
 
 
-        QString CNetworkReply::key( const QUrl &url )
+        QString CNetworkReply::key( const QUrl &url, ERequestType type )
         {
-            return url.toString( QUrl::PrettyDecoded | QUrl::RemoveScheme | QUrl::RemoveAuthority );
+            return NCore::toString( type ) + "__" + url.toString( QUrl::PrettyDecoded | QUrl::RemoveScheme | QUrl::RemoveAuthority );
+        }
+
+        QString CNetworkReply::key( const QNetworkRequest & request, ERequestType type )
+        {
+            return key( request.url(), type );
+        }
+
+        QString CNetworkReply::key() const
+        {
+            return fURLPathKey;
         }
 
         bool CNetworkReply::hasError() const
@@ -140,10 +150,10 @@ namespace NMediaManager
 
         void CNetworkReply::reportUnhandled() const
         {
-            if ( fReply )
-                qDebug().noquote().nospace() << "Reply not handled: " << NMediaManager::NCore::toString( fRequestType ) << " - 0x" << Qt::hex << reinterpret_cast<uintptr_t>( fReply ) << " - " << fURLPathKey;
-            else
-                qDebug().noquote().nospace() << "Reply not handled: " << NMediaManager::NCore::toString( fRequestType ) << " - Cached -" << fURLPathKey;
+            //if ( fReply )
+            //    qDebug().noquote().nospace() << "Reply not handled: " << NMediaManager::NCore::toString( fRequestType ) << " - 0x" << Qt::hex << reinterpret_cast<uintptr_t>( fReply ) << " - " << fURLPathKey;
+            //else
+            //    qDebug().noquote().nospace() << "Reply not handled: " << NMediaManager::NCore::toString( fRequestType ) << " - Cached -" << fURLPathKey;
         }
 
         QByteArray CNetworkReply::getData() const

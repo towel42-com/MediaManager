@@ -56,6 +56,7 @@ namespace NMediaManager
     {
         struct STransformResult;
         class CDirModel;
+        enum class EMediaType;
 
         enum EColumns
         {
@@ -88,8 +89,8 @@ namespace NMediaManager
 
         struct STreeNodeItem
         {
-            STreeNodeItem() {}
-            STreeNodeItem( const QString & text, EColumns nodeType ) : fText( text ), fType( nodeType ) {}
+            STreeNodeItem();
+            STreeNodeItem( const QString & text, EColumns nodeType );
 
             void setData( QVariant value, int role )
             {
@@ -103,7 +104,7 @@ namespace NMediaManager
             QIcon fIcon;
             std::optional< Qt::Alignment > fAlignment;
             std::list< std::pair< QVariant, int > > fRoles;
-            bool fIsTVShow{ false };
+            EMediaType fMediaType;
             std::optional< bool > fCheckable;
         };
 
@@ -181,8 +182,6 @@ namespace NMediaManager
             bool isSubtitleFile( const QStandardItem * item, bool * isLangFileFormat = nullptr ) const;
             bool isSubtitleFile( const QModelIndex & idx, bool * isLangFileFormat = nullptr ) const;
 
-            bool canAutoSearch( const QModelIndex & index ) const;
-            bool canAutoSearch( const QFileInfo & info ) const;
             virtual int eventsPerPath() const { return 1; }
 
             static bool isAutoSetText( const QString & text );
@@ -196,7 +195,7 @@ namespace NMediaManager
             virtual void clear();
         Q_SIGNALS:
             void sigDirReloaded( bool canceled );
-            void sigProcessesFinished( bool status, bool cancelled, bool reloadModel );
+            void sigProcessesFinished( bool status, bool showProcessResults, bool cancelled, bool reloadModel );
             void sigProcessingStarted();
         public Q_SLOTS:
             void slotLoadRootDirectory();

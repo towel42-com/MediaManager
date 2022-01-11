@@ -23,11 +23,14 @@
 #include "SearchTMDBInfo.h"
 #include "TransformResult.h"
 #include "Preferences.h"
+#include "SearchTMDB.h"
+
 #include "SABUtils/QtUtils.h"
 #include "SABUtils/StringUtils.h"
 
 #include <QRegularExpression>
 #include <QDebug>
+#include <QUrlQuery>
 
 namespace NMediaManager
 {
@@ -37,8 +40,14 @@ namespace NMediaManager
         {
             fSearchResultInfo = searchResult;
             fInitSearchString = text;
-            fIsTVShow = looksLikeTVShow( text, nullptr );
+            fMediaType = looksLikeTVShow( text, nullptr );
             updateSearchCriteria( true );
+        }
+
+        SSearchTMDBInfo::SSearchTMDBInfo() :
+            fMediaType( EMediaType::eUnknownType )
+        {
+
         }
 
         QString SSearchTMDBInfo::replaceKnownAbbreviations( const QString & string )
@@ -137,7 +146,7 @@ namespace NMediaManager
             return retVal;
         }
 
-        bool SSearchTMDBInfo::looksLikeTVShow( const QString &searchString, QString *titleStr, QString *seasonStr, QString *episodeStr, QString * extraStr )
+        EMediaType SSearchTMDBInfo::looksLikeTVShow( const QString &searchString, QString *titleStr, QString *seasonStr, QString *episodeStr, QString * extraStr )
         {
             QString localRetVal = searchString;
 
@@ -150,7 +159,8 @@ namespace NMediaManager
             if ( extraStr )
                 extraStr->clear();
 
-            bool isTV = false;
+            EMediaType retVal = EMediaType::eUnknownType; // default is a movie
+
             auto regExpStr = QString( "S(?<season>\\d{1,4})" );
             auto regExp = QRegularExpression( regExpStr, QRegularExpression::PatternOption::CaseInsensitiveOption );
             auto match = regExp.match( localRetVal );
@@ -160,27 +170,24 @@ namespace NMediaManager
                 if ( seasonStr )
                     *seasonStr = smartTrim( match.captured( "season" ) );
                 positions.push_back( std::make_pair( match.capturedStart( "season" ) - 1, match.capturedLength( "season" ) + 1 ) );
-                isTV = true;
+                retVal = EMediaType::eTVSeason;
             }
 
-            if ( titleStr || !isTV )
+            regExpStr = "E(?<episode>\\d{1,4})";
+            regExp = QRegularExpression( regExpStr, QRegularExpression::PatternOption::CaseInsensitiveOption );
+            match = regExp.match( localRetVal );
+            if ( match.hasMatch() )
             {
-                regExpStr = "E(?<episode>\\d{1,4})";
-                regExp = QRegularExpression( regExpStr, QRegularExpression::PatternOption::CaseInsensitiveOption );
-                match = regExp.match( localRetVal );
-                if ( match.hasMatch() )
-                {
-                    if ( episodeStr )
-                        *episodeStr = smartTrim( match.captured( "episode" ) );
+                if ( episodeStr )
+                    *episodeStr = smartTrim( match.captured( "episode" ) );
 
-                    auto pos = std::make_pair( match.capturedStart( "episode" ) - 1, match.capturedLength( "episode" ) + 1 );
+                auto pos = std::make_pair( match.capturedStart( "episode" ) - 1, match.capturedLength( "episode" ) + 1 );
 
-                    if ( positions.empty() || ( positions.front().first < match.capturedStart( "episode" ) ) )
-                        positions.push_back( pos );
-                    else
-                        positions.push_front( pos );
-                    isTV = true;
-                }
+                if ( positions.empty() || ( positions.front().first < match.capturedStart( "episode" ) ) )
+                    positions.push_back( pos );
+                else
+                    positions.push_front( pos );
+                retVal = EMediaType::eTVEpisode;
             }
 
             if ( titleStr )
@@ -195,23 +202,23 @@ namespace NMediaManager
                 }
             }
 
-            if ( titleStr || !isTV )
+            regExpStr = ".*\\s??(?<seasonsuffix>-\\s??Season\\s?(?<season>\\d+))";
+            regExp = QRegularExpression( regExpStr, QRegularExpression::PatternOption::CaseInsensitiveOption );
+            match = regExp.match( localRetVal );
+            if ( match.hasMatch() )
             {
-                regExpStr = ".*\\s??(?<seasonsuffix>-\\s??Season\\s?(?<season>\\d+))";
-                regExp = QRegularExpression( regExpStr, QRegularExpression::PatternOption::CaseInsensitiveOption );
-                match = regExp.match( localRetVal );
-                if ( match.hasMatch() )
-                {
-                    if ( seasonStr )
-                        *seasonStr = smartTrim( match.captured( ( "season" ) ) );
-                    if ( titleStr )
-                        localRetVal.replace( match.capturedStart( "seasonsuffix" ), match.capturedEnd( "seasonsuffix" ), "" );
-                    isTV = true;
-                }
+                if ( seasonStr )
+                    *seasonStr = smartTrim( match.captured( ( "season" ) ) );
+                if ( titleStr )
+                    localRetVal.replace( match.capturedStart( "seasonsuffix" ), match.capturedEnd( "seasonsuffix" ), "" );
+                retVal = EMediaType::eTVSeason;
             }
+
             if ( titleStr )
                 *titleStr = localRetVal;
-            return isTV;
+            if ( retVal == EMediaType::eUnknownType )
+                retVal = EMediaType::eMovie;
+            return retVal;
         }
 
         void SSearchTMDBInfo::updateSearchCriteria( bool updateSearchBy )
@@ -258,15 +265,24 @@ namespace NMediaManager
 
         QString SSearchTMDBInfo::toString( bool forDebug ) const
         {
-            auto retVal = forDebug
-                ? QString( "SSearchTMDBInfo(%1 (%2)-S%3E%4-%5-%6-%7)" ).arg( searchName() ).arg( releaseDateString() ).arg( season() ).arg( episode() ).arg( tmdbIDString() ).arg( isTVShow() ).arg( exactMatchOnly() )
-                : QString( "Search Name: '%1' - Release Date: %2 - Season: %3 - Episode: %4 - TMDB ID: %5 - Is TV Show? %6 - Exact Match Only: %7" ).arg( searchName() ).arg( releaseDateString().isEmpty() ? "<Not Set>" : releaseDateString() ).arg( (season() == -1) ? "<Not Set>" : QString::number( season() ) ).arg( ( episode() == -1 ) ? "<Not Set>" : QString::number( episode() ) ).arg( tmdbIDString().isEmpty() ? "<Not Set>" : tmdbIDString() ).arg( isTVShow() ? "Yes" : "No" ).arg( exactMatchOnly() ? "Yes" : "No" );
+            auto retVal = forDebug ? QString( "SSearchTMDBInfo(%1 (%2)-S%3E%4-%5-%6-%7)" ) : QString( "Search Name: '%1' - Release Date: %2 - Season: %3 - Episode: %4 - TMDB ID: %5 - Media Type: %6 - Exact Match Only: %7" );
+
+            retVal = retVal
+                .arg( searchName() )
+                .arg( forDebug ? releaseDateString() : (releaseDateString().isEmpty() ? "<Not Set>" : releaseDateString()) )
+                .arg( forDebug ? QString::number( season() ) : (season() == -1) ? "<Not Set>" : QString::number( season() ) )
+                .arg( forDebug ? QString::number( episode() ) : (episode() == -1) ? "<Not Set>" : QString::number( episode() ) )
+                .arg( forDebug ? tmdbIDString() : tmdbIDString().isEmpty() ? "<Not Set>" : tmdbIDString() )
+                .arg( toEnumString( fMediaType ) )
+                .arg( forDebug ? QString("%1").arg( exactMatchOnly() ) :exactMatchOnly() ? "Yes" : "No" )
+                ;
+
             return retVal;
         }
 
         bool SSearchTMDBInfo::isMatch( std::shared_ptr< STransformResult > searchResult ) const
         {
-            return isMatch( searchResult->fReleaseDate, searchResult->fTMDBID, searchResult->getTitle(), searchResult->isTVShow(), searchResult->getSeason(), searchResult->getEpisode() );
+            return isMatch( searchResult->fReleaseDate, searchResult->fTMDBID, searchResult->getTitle(), searchResult->mediaType(), searchResult->getSeason(), searchResult->getEpisode() );
         }
 
         bool SSearchTMDBInfo::isSeasonMatch( int seasonMatch ) const
@@ -330,7 +346,7 @@ namespace NMediaManager
             int myTmdbID = tmdbID( &aOK );
             bool canCheckTMDB = tmdbIDSet() && ( tmdbid != -1 );
 
-            if ( aOK && canCheckTMDB && !isTVShow() ) // dont check for TV shows, as the TMDB could be the episode ID
+            if ( aOK && canCheckTMDB && !isTVMedia() ) // dont check for TV shows, as the TMDB could be the episode ID or season ID
             {
                 if ( tmdbid != myTmdbID )
                     return false;
@@ -393,6 +409,11 @@ namespace NMediaManager
                 fReleaseDate = fSearchResultInfo->fReleaseDate;
         }
 
+        bool SSearchTMDBInfo::isTVMedia() const
+        {
+            return isTVType( fMediaType );
+        }
+
         bool SSearchTMDBInfo::isDiskTitle( const QString & name, int & titleNum )
         {
             auto regExpStr = "^.*_t(?<num>\\d+)\\.mkv$";
@@ -442,7 +463,7 @@ namespace NMediaManager
         {
             QString seasonStr;
             QString episodeStr;
-            if ( fIsTVShow )
+            if ( isTVMedia() )
             {
                 looksLikeTVShow( fSearchName, &fSearchName, &seasonStr, &episodeStr, &fEpisodeTitle );
                 fEpisodeTitle = smartTrim( fEpisodeTitle, true );
@@ -482,6 +503,65 @@ namespace NMediaManager
             }
             if ( fSearchResultInfo )
                 fTMDBID = fSearchResultInfo->fTMDBID;
+        }
+
+        std::optional< std::pair< QUrl, ESearchType > > SSearchTMDBInfo::getSearchURL() const
+        {
+            QUrl url;
+            url.setScheme( "https" );
+            url.setHost( "api.themoviedb.org" );
+            if ( fSearchByName )
+            {
+                if ( isTVMedia() )
+                    url.setPath( "/3/search/tv" );
+                else
+                    url.setPath( "/3/search/movie" );
+
+                QUrlQuery query;
+                query.addQueryItem( "api_key", CSearchTMDB::apiKeyV3() );
+
+                query.addQueryItem( "include_adult", "true" );
+                if ( !fReleaseDate.isEmpty() )
+                    query.addQueryItem( "year", fReleaseDate );
+                auto searchStrings = fSearchName.split( QRegularExpression( "[\\s\\.]" ), TSkipEmptyParts );
+
+                if ( searchStrings.isEmpty() )
+                    return {};
+
+                query.addQueryItem( "query", searchStrings.join( "+" ) );
+                url.setQuery( query );
+
+                //qDebug() << url.toString();
+                return std::make_pair( url, isTVMedia() ? ESearchType::eSearchTV : ESearchType::eSearchMovie );
+            }
+            else if ( isTVMedia() ) // by tmdbid
+            {
+                if ( fTMDBID.isEmpty() )
+                    return {};
+
+                url.setPath( QString( "/3/tv/%1" ).arg( fTMDBID ) );
+
+                QUrlQuery query;
+                query.addQueryItem( "api_key", CSearchTMDB::apiKeyV3() );
+
+                url.setQuery( query );
+                //qDebug() << url.toString();
+                return std::make_pair( url, ESearchType::eGetTVShow );
+            }
+            else
+            {
+                if ( fTMDBID.isEmpty() )
+                    return {};
+
+                url.setPath( QString( "/3/movie/%1" ).arg( fTMDBID ) );
+
+                QUrlQuery query;
+                query.addQueryItem( "api_key", CSearchTMDB::apiKeyV3() );
+
+                url.setQuery( query );
+                //qDebug() << url.toString();
+                return std::make_pair( url, ESearchType::eGetMovie );
+            }
         }
     }
 }

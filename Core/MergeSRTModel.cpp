@@ -178,7 +178,7 @@ namespace NMediaManager
 
         QFileInfoList CMergeSRTModel::getMKVFilesInDir( const QDir & dir ) const
         {
-            qDebug() << dir.absolutePath();
+            //qDebug() << dir.absolutePath();
 
             auto srtFiles = dir.entryInfoList( QStringList() << "*.srt" );
 

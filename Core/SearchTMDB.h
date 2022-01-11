@@ -82,6 +82,9 @@ namespace NMediaManager
             void clearSearchCache();
 
             QString toString() const;
+
+            static QString apiKeyV3();
+            static QString apiKeyV4();
         public Q_SLOTS:
             void slotAuthenticationRequired( QNetworkReply * reply, QAuthenticator * authenticator );
             void slotEncrypted( QNetworkReply * reply );
@@ -114,13 +117,6 @@ namespace NMediaManager
             ERequestType getRequestType( QNetworkReply * reply ) const;
 
             QString getSearchName() const;
-            bool isBetterSeasonMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr< STransformResult > lhs, std::shared_ptr< STransformResult > rhs ) const;
-            bool isBetterTitleMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr<STransformResult> lhs, std::shared_ptr<STransformResult> rhs ) const;
-            bool isBetterEpisodeMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr< STransformResult > lhs, std::shared_ptr< STransformResult > rhs ) const;
-
-            bool isBetterSeasonMatch( std::shared_ptr< STransformResult > lhs, std::shared_ptr< STransformResult > rhs ) const;
-            bool isBetterTitleMatch( std::shared_ptr<STransformResult> lhs, std::shared_ptr<STransformResult> rhs ) const;
-            bool isBetterEpisodeMatch( std::shared_ptr< STransformResult > lhs, std::shared_ptr< STransformResult > rhs ) const;
             bool hasConfiguration() const;
 
             bool loadConfig( std::shared_ptr< CNetworkReply > networkReply );
@@ -147,9 +143,9 @@ namespace NMediaManager
             std::shared_ptr< CNetworkReply > fGetMovieReply;
             std::shared_ptr< CNetworkReply > fGetTVReply;
 
-            std::unordered_map< std::shared_ptr< CNetworkReply >, std::shared_ptr< STransformResult > > fImageInfoReplies;
-            std::unordered_map< std::shared_ptr< CNetworkReply >, std::shared_ptr< STransformResult > > fTVInfoReplies;
-            std::pair< std::unordered_map< std::shared_ptr< CNetworkReply >, std::shared_ptr< STransformResult > >, std::optional< bool > > fSeasonInfoReplies; // bool means episode found for this round of seasons searchess
+            std::unordered_map< QString, std::shared_ptr< STransformResult > > fImageInfoReplies;
+            std::unordered_map< QString, std::shared_ptr< STransformResult > > fTVInfoReplies;
+            std::pair< std::unordered_map< QString, std::shared_ptr< STransformResult > >, std::optional< bool > > fSeasonInfoReplies; // bool means episode found for this round of seasons searchess
 
             std::shared_ptr< SSearchTMDBInfo > fSearchInfo;
             std::optional< std::pair< QString, std::shared_ptr< SSearchTMDBInfo > > > fCurrentQueuedSearch;

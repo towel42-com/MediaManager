@@ -28,7 +28,7 @@
 #include <QString>
 class QNetworkReply;
 class QUrl;
-
+class QNetworkRequest;
 namespace NMediaManager
 {
     namespace NCore
@@ -57,7 +57,9 @@ namespace NMediaManager
             bool isValid() const;
             bool isCached() const { return !fReply; }
 
-            static QString key( const QUrl & url );
+            static QString key( const QNetworkRequest & request, ERequestType type );
+            static QString key( const QUrl & url, ERequestType type );
+            QString key() const;
             // errrors only available on real requests, not cached requests
             bool hasError() const;
             QString errorString() const;
@@ -78,6 +80,8 @@ namespace NMediaManager
 
             QString toString() const;
             QNetworkReply * getNetworkReply() const { return fReply; }
+
+            ERequestType requestType() const { return fRequestType; }
         private:
             ERequestType fRequestType{ ERequestType::eUnknownRequest };
             QNetworkReply * fReply{ nullptr };
