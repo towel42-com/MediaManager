@@ -62,7 +62,7 @@ namespace NMediaManager
 
             void setSearchName( const QString & searchName ) { fSearchName = searchName; }
             QString searchName() const { return fSearchName; }
-            QString episodeTitle() const { return fEpisodeTitle; }
+            QString subTitle() const { return fSubTitle; }
 
             bool isTVMedia() const;
             void setMediaType( EMediaType searchType ) { fMediaType = searchType; }
@@ -76,7 +76,8 @@ namespace NMediaManager
 
             void setReleaseDate( const QString & releaseDate ) { fReleaseDate = releaseDate; }
             QString releaseDateString() const { return fReleaseDate; }
-            int releaseDate( bool * aOK = nullptr ) const;
+            int releaseYear( bool * aOK = nullptr ) const;
+            static int releaseYear( const QString & dateStr, bool * aOK = nullptr );
             bool releaseDateSet()  const { return !fReleaseDate.isEmpty(); }
 
             void setTMDBID( const QString & tmdbID ) { fTMDBID = tmdbID; }
@@ -144,7 +145,7 @@ namespace NMediaManager
             bool fSearchByName{ false };
 
             // not search criteria
-            QString fEpisodeTitle;
+            QString fSubTitle;
             QString fDescription;
 
             QString fFoundExtendedInfo;
