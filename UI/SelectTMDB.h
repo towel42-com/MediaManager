@@ -73,10 +73,7 @@ namespace NMediaManager
         public Q_SLOTS:
             void slotSearchCriteriaChanged();
             void slotSearchTextChanged();
-
             void slotItemChanged();
-
-            QTreeWidgetItem *getFirstSelected() const;
 
             void slotAcceptItem();
             void slotByNameChanged();
@@ -88,6 +85,9 @@ namespace NMediaManager
         Q_SIGNALS:
             void sigStartSearch();
         private:
+            bool searchByName();
+            QTreeWidgetItem * getFirstSelected() const;
+
             bool isMatchingItem( QTreeWidgetItem *item ) const;
             QTreeWidgetItem *getSingleMatchingItem( QTreeWidgetItem *parentItem ) const;
             std::list < QTreeWidgetItem * > getMatchingItems( QTreeWidgetItem *parentItem ) const;
@@ -95,6 +95,9 @@ namespace NMediaManager
             void updateEnabled();
             void updateByName( bool init );
             void updateFromSearchInfo( std::shared_ptr< NCore::SSearchTMDBInfo > searchInfo );
+
+            void connect();
+            void disconnect();
 
             std::shared_ptr< NCore::SSearchTMDBInfo > getSearchInfo();
             void resetHeader();
