@@ -116,6 +116,11 @@ namespace NMediaManager
                 {
                     run( idx );
                 } );
+                menu->addAction( tr( "Set Tags..." ),
+                                 [ idx, this ]()
+                {
+                    setMKVTags( idx );
+                } );
             }
             return menu;
         }
@@ -147,6 +152,7 @@ namespace NMediaManager
             if ( !somethingToSearchFor )
             {
                 emit sigLoadFinished( false );
+                clearProgressDlg( false );
                 return;
             }
         }
