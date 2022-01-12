@@ -116,12 +116,12 @@ namespace NMediaManager
                 {
                     run( idx );
                 } );
-                menu->addAction( tr( "Set Tags..." ),
-                                 [ idx, this ]()
-                {
-                    setMKVTags( idx );
-                } );
             }
+            menu->addAction( tr( "Set Tags..." ),
+                                [ idx, this ]()
+            {
+                setMKVTags( idx );
+            } );
             return menu;
         }
 
