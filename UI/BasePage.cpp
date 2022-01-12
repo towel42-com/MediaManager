@@ -22,6 +22,7 @@
 
 #include "ui_BasePage.h"
 #include "BasePage.h"
+#include "SetTags.h"
 
 #include "Core/Preferences.h"
 #include "Core/DirModel.h"
@@ -296,12 +297,12 @@ namespace NMediaManager
             appendToLog( "================================", true );
         }
 
-        void CBasePage::appendToLog( const QString & msg, std::pair<QString, bool> & previousText, bool /*stdOut*/ )
+        void CBasePage::appendToLog( const QString & msg, std::pair<QString, bool> & previousText, bool /*stdOut*/, bool fromProcess )
         {
             showResults();
 
             QString realMessage = msg;
-            if ( !realMessage.endsWith( "\n" ) )
+            if ( !fromProcess && !realMessage.endsWith( "\n" ) )
                 realMessage += "\n";
 
             NSABUtils::appendToLog( fImpl->log, realMessage, previousText );
@@ -311,11 +312,18 @@ namespace NMediaManager
         void CBasePage::appendToLog( const QString & msg, bool stdOut )
         {
             Q_ASSERT( fModel );
-            return appendToLog( msg, stdOut ? fModel->stdOutRemaining() : fModel->stdErrRemaining(), stdOut );
+            return appendToLog( msg, stdOut ? fModel->stdOutRemaining() : fModel->stdErrRemaining(), stdOut, false );
         }
 
         void CBasePage::postProcessLog( const QString & /*string*/ )
         {}
+
+        void CBasePage::setMKVTags( const QModelIndex & idx )
+        {
+            auto fn = fModel->fileInfo( idx ).absoluteFilePath();
+            CSetTags dlg( fn, this );
+            dlg.exec();
+        }
     }
 }
 
