@@ -33,6 +33,7 @@
 #include "SABUtils/AutoWaitCursor.h"
 #include "SABUtils/FileUtils.h"
 #include "SABUtils/FileCompare.h"
+#include "SABUtils/MKVUtils.h"
 
 #include "SABUtils/DoubleProgressDlg.h"
 
@@ -126,17 +127,6 @@ namespace NMediaManager
             return (text == "<NO MATCH>") || (text == "<NO AUTO MATCH>");
         }
 
-        QString CDirModel::getSearchName( const QModelIndex & idx ) const
-        {
-            auto nm = index( idx.row(), EColumns::eTransformName, idx.parent() ).data().toString();
-            if ( isAutoSetText( nm ) || nm.isEmpty() )
-            {
-                nm = index( idx.row(), EColumns::eFSName, idx.parent() ).data( ECustomRoles::eFullPathRole ).toString();
-                nm = nm.isEmpty() ? QString() : (QFileInfo( nm ).isDir() ? QFileInfo( nm ).fileName() : QFileInfo( nm ).completeBaseName());
-            }
-            return nm;
-        }
-
         void CDirModel::setNameFilters( const QStringList & filters )
         {
             fNameFilter = filters;
@@ -186,13 +176,11 @@ namespace NMediaManager
             if ( !filesView() )
                 return;
 
-            filesView()->resizeColumnToContents( EColumns::eFSName );
-            filesView()->resizeColumnToContents( EColumns::eFSSize );
-            filesView()->resizeColumnToContents( EColumns::eFSType );
-            filesView()->resizeColumnToContents( EColumns::eFSModDate );
+            resizeColumns();
+
             postLoad( filesView() );
         }
-
+                
         void CDirModel::postReloadModel()
         {
         }
@@ -332,7 +320,7 @@ namespace NMediaManager
                 tree.pop_back();
                 //qDebug().noquote().nospace() << "Post Dir B: " << dirInfo.absoluteFilePath() << tree;
                 if ( filesView() )
-                    filesView()->resizeColumnToContents( EColumns::eFSName );
+                    resizeColumns();
             };
 
             info.fPostFileFunction = [ this, &tree ]( const QFileInfo & fileInfo, bool aOK )
@@ -408,9 +396,9 @@ namespace NMediaManager
 
         }
 
-        STreeNodeItem::STreeNodeItem( const QString & text, EColumns nodeType ) : 
+        STreeNodeItem::STreeNodeItem( const QString & text, int nodeType ) : 
             fText( text ), 
-            fType( nodeType ), 
+            fType( static_cast< EColumns >( nodeType ) ), 
             fMediaType( EMediaType::eUnknownType )
         {
 
@@ -461,12 +449,12 @@ namespace NMediaManager
         QStandardItem * STreeNode::item( EColumns column, bool createIfNecessary /*= true */ ) const
         {
             items( createIfNecessary );
-            return (column >= fRealItems.count()) ? nullptr : fRealItems[column];
+            return ( column >= fRealItems.count()) ? nullptr : fRealItems[int(column)];
         }
 
         QStandardItem * STreeNode::rootItem( bool createIfNecessary /*= true */ ) const
         {
-            return item( static_cast<EColumns>(0), createIfNecessary );
+            return item( static_cast< EColumns >(0), createIfNecessary );
         }
 
         QList< QStandardItem * > STreeNode::items( bool createIfNecessary ) const
@@ -738,6 +726,13 @@ namespace NMediaManager
             QStandardItemModel::clear();
         }
 
+        std::unordered_map< QString, QString > CDirModel::getMediaTags( const QFileInfo & fi ) const
+        {
+            if ( !CPreferences::instance()->isMediaFile( fi ) )
+                return {};
+            return NSABUtils::getMediaTags( fi.absoluteFilePath(), NCore::CPreferences::instance()->getFFProbeEXE() );
+        }
+
         bool CDirModel::process( const QModelIndex & idx, const std::function< void( int count, int eventsPerPath ) > & startProgress, const std::function< void( bool finalStep ) > & endProgress, QWidget * parent )
         {
             process( idx, true );
@@ -767,7 +762,7 @@ namespace NMediaManager
             return fProcessResults.first;
         }
 
-        QStandardItem * CDirModel::getItem( const QStandardItem * item, EColumns column ) const
+        QStandardItem * CDirModel::getItem( const QStandardItem * item, int column ) const
         {
             auto idx = indexFromItem( item );
             if ( !idx.isValid() )
@@ -777,12 +772,12 @@ namespace NMediaManager
             return retVal;
         }
 
-        bool CDirModel::isChecked( const QFileInfo & fileInfo, EColumns column ) const
+        bool CDirModel::isChecked( const QFileInfo & fileInfo, int column ) const
         {
             return isChecked( fileInfo.absoluteFilePath(), column );
         }
 
-        bool CDirModel::isChecked( const QString & path, EColumns column ) const
+        bool CDirModel::isChecked( const QString & path, int column ) const
         {
             auto item = getItemFromPath( path );
             auto colItem = getItem( item, column );
@@ -791,77 +786,15 @@ namespace NMediaManager
             return item->checkState() != Qt::Unchecked;
         }
 
-        bool CDirModel::SetMKVTags( const QString & fileName, QString title, const QString & year, QString * msg ) const
+        bool CDirModel::setMKVTags( const QString & fileName, QString title, const QString & year, QString * msg ) const
         {
-            Q_INIT_RESOURCE( core );
-            if ( !QFileInfo( fileName ).isFile() )
-                return true;
-
-            auto mkvpropedit = CPreferences::instance()->getMKVPropEditEXE();
-            if ( !QFileInfo( mkvpropedit ).isExecutable() )
+            std::unordered_map< QString, QString > tags =
             {
-                if ( msg )
-                    *msg = tr( "MKVPropEdit not found or is not an executable" );
-                return false;
-            }
+                { "TITLE", title }
+                ,{ "YEAR", year }
+            };
 
-            auto file = QFile( ":/resources/BlankTags.xml" );
-            if ( !file.open( QFile::ReadOnly ) )
-            {
-                if ( msg )
-                    *msg = tr( "Internal error, could not open blank tags file" );
-                return false;
-            }
-
-            if ( title.isEmpty() )
-                title = QFileInfo( fileName ).completeBaseName();
-
-            auto xml = file.readAll();
-            xml.replace( QByteArray( "%TITLE%" ), title.toUtf8() );
-            xml.replace( QByteArray( "%YEAR%" ), year.toUtf8() );
-
-            auto templateName = QDir( QDir::tempPath() ).absoluteFilePath( "XXXXXX.xml" );
-            QTemporaryFile tmpFile( templateName );
-            auto tmplate = tmpFile.fileTemplate();
-            if ( !tmpFile.open() )
-            {
-                if ( msg )
-                    *msg = tr( "Internal error, could not open blank tags file" );
-                return false;
-            }
-
-            tmpFile.write( xml );
-            auto tmpFileName = tmpFile.fileName();
-            tmpFile.close();
-
-            auto args = QStringList()
-                << fileName
-                << "--tags"
-                << QString( "global:%1" ).arg( tmpFileName )
-                << "--edit"
-                << "info"
-                << "--set"
-                << QString( "title=%2" ).arg( title )
-                ;
-            auto retVal = QProcess::execute( mkvpropedit, args );
-
-            if ( retVal == -1 )
-            {
-                if ( msg )
-                    *msg = "MKVPropEdit crashed";
-            }
-            else if ( retVal == -2 )
-            {
-                if ( msg )
-                    *msg = "MKVPropEdit could not be started";
-            }
-            else if ( retVal != 0 )
-            {
-                if ( msg )
-                    *msg = "MKVPropEdit returned with an unknown error";
-            }
-
-            return retVal == 0;
+            return NSABUtils::setMediaTags( fileName, tags, CPreferences::instance()->getMKVPropEditEXE(), msg );
         }
 
         void CDirModel::addProcessError( const QString & msg )
@@ -949,6 +882,21 @@ namespace NMediaManager
         void CDirModel::slotProgressCanceled()
         {
             fProcess->kill();
+        }
+
+        QStringList CDirModel::getMediaHeaders() const
+        {
+            return QStringList() << tr( "Title" ) << tr( "Media Date" ) << tr( "Comment" );
+        }
+
+        std::list<NMediaManager::NCore::STreeNodeItem> CDirModel::getMediaInfoItems( const QFileInfo & fileInfo, int offset ) const
+        {
+            std::list<NMediaManager::NCore::STreeNodeItem> retVal;
+            auto mediaInfo = getMediaTags( fileInfo );
+            retVal.push_back( STreeNodeItem( mediaInfo["title"], offset ) );
+            retVal.push_back( STreeNodeItem( mediaInfo["date_recorded"], offset+1 ) );
+            retVal.push_back( STreeNodeItem( mediaInfo["comment"], offset+2 ) );
+            return retVal;
         }
 
         QStringList CDirModel::headers() const
@@ -1048,7 +996,7 @@ namespace NMediaManager
                 return;
             }
 
-            if ( fSetMKVTagsOnSuccess && !model->SetMKVTags( fNewName ) )
+            if ( fSetMKVTagsOnSuccess && !model->setMKVTags( fNewName ) )
             {
                 auto errorItem = new QStandardItem( QString( "ERROR: %1: FAILED TO SET MKV Tags" ).arg( model->getDispName( fNewName ) ) );
                 errorItem->setData( ECustomRoles::eIsErrorNode, true );
@@ -1117,12 +1065,18 @@ namespace NMediaManager
 
         void CDirModel::slotProcessStandardError()
         {
-            fBasePage->appendToLog( fProcess->readAllStandardError(), stdErrRemaining(), false );
+            fBasePage->appendToLog( fProcess->readAllStandardError(), stdErrRemaining(), false, true );
         }
 
         void CDirModel::slotProcessStandardOutput()
         {
-            fBasePage->appendToLog( fProcess->readAllStandardOutput(), stdOutRemaining(), true );
+            fBasePage->appendToLog( fProcess->readAllStandardOutput(), stdOutRemaining(), true, true );
         }
+
+        void CDirModel::resizeColumns() const
+        {
+            NSABUtils::autoSize( filesView() );
+        }
+
     }
 }

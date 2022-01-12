@@ -25,6 +25,7 @@
 #include "SABUtils/DoubleProgressDlg.h"
 #include "SABUtils/FileUtils.h"
 #include "SABUtils/QtUtils.h"
+#include "SABUtils/MKVUtils.h"
 
 #include <QDir>
 #include <QTimer>
@@ -44,41 +45,8 @@ namespace NMediaManager
 
         int64_t CMakeMKVModel::getNumberOfSeconds( const QString & fileName ) const
         {
-            QFileInfo fi( fileName );
-            if ( !fi.exists() || !fi.isReadable() || !fi.isFile() )
-                return 0;
-
-            auto ffprobe = NCore::CPreferences::instance()->getFFProbeEXE();
-
-            fi = QFileInfo( ffprobe );
-            if ( !fi.exists() || !fi.isReadable() || !fi.isExecutable() || !fi.isFile() )
-                return 0;
-
-            auto args = QStringList()
-                << "-v" << "error"
-                << "-show_entries"  << "format=duration"
-                << "-of" << "default=noprint_wrappers=1:nokey=1"
-                << fileName
-                ;
-
-            QProcess process;
-            process.start( ffprobe, args );
-
-            if ( !process.waitForFinished( -1 ) || (process.exitStatus() != QProcess::NormalExit) || (process.exitCode() != 0) )
-            {
-                return 0;
-            }
-            auto out = process.readAllStandardOutput();
-            auto pos = out.indexOf( '.' );
-            out = out.left( pos );
-            bool aOK;
-            int retVal = out.toInt( &aOK );
-            if ( !aOK )
-                return 0;
-            return retVal;
+            return NSABUtils::getNumberOfSeconds( fileName, NCore::CPreferences::instance()->getFFProbeEXE() );
         }
-
-
 
         std::pair< bool, QStandardItem * > CMakeMKVModel::processItem( const QStandardItem * item, QStandardItem * parentItem, bool displayOnly ) const
         {
@@ -148,10 +116,18 @@ namespace NMediaManager
             return QString( "Converting '%1' to '%2'" ).arg( getDispName( processInfo.fOldName ) ).arg( getDispName( processInfo.fNewName ) );
         }
 
-        std::list< NMediaManager::NCore::STreeNodeItem > CMakeMKVModel::addItems( const QFileInfo & /*fileInfo*/ ) const
+        QStringList CMakeMKVModel::headers() const
         {
-            return {};
+            return CDirModel::headers()
+                << tr( "Title" ) << tr( "Media Date" ) << tr( "Comment" )
+                ;
         }
+
+        std::list< NMediaManager::NCore::STreeNodeItem > CMakeMKVModel::addItems( const QFileInfo & fileInfo ) const
+        {
+            return getMediaInfoItems( fileInfo, EColumns::eMediaTitle );
+        }
+
 
         void CMakeMKVModel::preAddItems( const QFileInfo & /*fileInfo*/, std::list< NMediaManager::NCore::STreeNodeItem > & /*currItems*/ ) const
         {

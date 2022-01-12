@@ -58,19 +58,6 @@ namespace NMediaManager
         class CDirModel;
         enum class EMediaType;
 
-        enum EColumns
-        {
-            eFSName,
-            eFSSize,
-            eFSType,
-            eFSModDate,
-            eIsTVShow,
-            eTransformName,
-            eLanguage = eIsTVShow,
-            eForced = eTransformName,
-            eSDH,
-            eOnByDefault
-        };
         enum ECustomRoles
         {
             eFullPathRole = Qt::UserRole + 1,
@@ -87,10 +74,19 @@ namespace NMediaManager
             eIsErrorNode
         };
 
+        enum EColumns
+        {
+            eFSName,
+            eFSSize,
+            eFSType,
+            eFSModDate,
+            eFirstCustomColumn
+        };
+
         struct STreeNodeItem
         {
             STreeNodeItem();
-            STreeNodeItem( const QString & text, EColumns nodeType );
+            STreeNodeItem( const QString & text, int nodeType );
 
             void setData( QVariant value, int role )
             {
@@ -173,7 +169,6 @@ namespace NMediaManager
             void reloadModel();
             void setRootPath( const QString & path );
 
-            virtual QString getSearchName( const QModelIndex & idx ) const;
             virtual bool setData( const QModelIndex & idx, const QVariant & value, int role ) override;
 
             bool isMediaFile( const QStandardItem * item ) const;
@@ -193,6 +188,8 @@ namespace NMediaManager
             std::pair<QString, bool> & stdErrRemaining() { return fStdErrRemaining; }
 
             virtual void clear();
+
+            std::unordered_map< QString, QString > getMediaTags( const QFileInfo & fi ) const;
         Q_SIGNALS:
             void sigDirReloaded( bool canceled );
             void sigProcessesFinished( bool status, bool showProcessResults, bool cancelled, bool reloadModel );
@@ -216,10 +213,17 @@ namespace NMediaManager
             virtual std::pair< bool, QStandardItem * > processItem( const QStandardItem * item, QStandardItem * parentItem, bool displayOnly ) const = 0;
             virtual void preAddItems( const QFileInfo & fileInfo, std::list< NMediaManager::NCore::STreeNodeItem > & currItems ) const = 0;
             virtual std::list< NMediaManager::NCore::STreeNodeItem > addItems( const QFileInfo & fileInfo ) const = 0;
+            virtual std::list<NMediaManager::NCore::STreeNodeItem> getMediaInfoItems(  const QFileInfo & fileInfo, int firstColumn ) const;
+
             virtual void setupNewItem( const STreeNodeItem & nodeItem, const QStandardItem * nameItem, QStandardItem * item ) const = 0;
             virtual QStringList headers() const;
             virtual void postLoad() const final;
             virtual void postLoad( QTreeView * treeView ) const = 0;
+
+            QStringList getMediaHeaders() const;
+
+            virtual void resizeColumns() const;
+
             virtual void postReloadModel();
             virtual int computeNumberOfItems() const = 0;
             virtual void postProcess( bool /*displayOnly*/ );
@@ -237,7 +241,7 @@ namespace NMediaManager
             virtual QString getMyTransformedName( const QStandardItem * item, bool parentsOnly ) const;
 
             void processFinished( const QString & msg, bool withError );
-            bool SetMKVTags( const QString & fileName, QString title=QString(), const QString & year=QString(), QString * msg =nullptr ) const;
+            bool setMKVTags( const QString & fileName, QString title=QString(), const QString & year=QString(), QString * msg =nullptr ) const;
 
             void appendRow( QStandardItem * parent, QList< QStandardItem * > & items );
             static void appendError( QStandardItem * parent, QStandardItem * errorNode );
@@ -270,10 +274,10 @@ namespace NMediaManager
 
             bool checkProcessItemExists( const QString & fileName, QStandardItem * parentItem, bool scheduledForRemoval = false ) const;
 
-            QStandardItem * getItem( const QStandardItem * item, EColumns column ) const;
+            QStandardItem * getItem( const QStandardItem * item, int column ) const;
 
-            bool isChecked( const QFileInfo & fileInfo, EColumns column ) const;
-            bool isChecked( const QString & path, EColumns column ) const;
+            bool isChecked( const QFileInfo & fileInfo, int column ) const;
+            bool isChecked( const QString & path, int column ) const;
 
             void setChecked( QStandardItem * item, bool value ) const;
             void setChecked( QStandardItem * item, ECustomRoles role, bool value ) const;

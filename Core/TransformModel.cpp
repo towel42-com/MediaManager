@@ -399,7 +399,15 @@ namespace NMediaManager
             auto pos = fDiskRipSearchMap.find( path );
             if ( pos != fDiskRipSearchMap.end() )
                 return (*pos).second;
-            return CDirModel::getSearchName( idx );
+            {
+                auto nm = index( idx.row(), EColumns::eTransformName, idx.parent() ).data().toString();
+                if ( isAutoSetText( nm ) || nm.isEmpty() )
+                {
+                    nm = index( idx.row(), NCore::EColumns::eFSName, idx.parent() ).data( ECustomRoles::eFullPathRole ).toString();
+                    nm = nm.isEmpty() ? QString() : (QFileInfo( nm ).isDir() ? QFileInfo( nm ).fileName() : QFileInfo( nm ).completeBaseName());
+                }
+                return nm;
+            }
         }
 
         bool CTransformModel::treatAsTVShow( const QFileInfo & fileInfo, bool isTVByDefault ) const
@@ -450,7 +458,7 @@ namespace NMediaManager
                 auto childCount = rowCount( idx );
                 for ( int ii = 0; ii < childCount; ++ii )
                 {
-                    auto childIdx = index( ii, EColumns::eFSName, idx );
+                    auto childIdx = index( ii, NCore::EColumns::eFSName, idx );
 
                     // exception for "SRT" files that are of the form X_XXXX.ext dont transform
                     //auto txt = childIdx.data( ECustomRoles::eFullPathRole ).toString();
@@ -672,7 +680,7 @@ namespace NMediaManager
                                 auto pos = fTransformResultMap.find( oldName );
                                 auto searchInfo = (pos == fTransformResultMap.end()) ? std::shared_ptr< STransformResult >() : (*pos).second;
                                 QString msg;
-                                auto aOK = SetMKVTags( newName, searchInfo, msg );
+                                auto aOK = setMKVTags( newName, searchInfo, msg );
                                 if ( progressDlg() )
                                 {
                                     progressDlg()->setValue( progressDlg()->value() + 1 );
@@ -782,7 +790,7 @@ namespace NMediaManager
             {
                 auto idx = item->index();
 
-                auto baseIdx = (idx.column() == EColumns::eFSName) ? idx : idx.model()->index( idx.row(), EColumns::eFSName, idx.parent() );
+                auto baseIdx = (idx.column() == NCore::EColumns::eFSName) ? idx : idx.model()->index( idx.row(), NCore::EColumns::eFSName, idx.parent() );
                 auto baseItem = this->itemFromIndex( baseIdx );
 
                 auto transformedItem = getTransformItem( baseItem );
@@ -810,9 +818,9 @@ namespace NMediaManager
                 if ( transformedItem->text() != transformInfo.second )
                     transformedItem->setText( transformInfo.second );
 
-                auto isTVShow = treatAsTVShow( fileInfo, this->isChecked( path, EColumns::eIsTVShow ) );
-                if ( canAutoSearch( fileInfo ) && (CTransformModel::isAutoSetText( transformInfo.second ) || (!isValidName( transformInfo.second, fileInfo.isDir(), isTVShow ) && !isValidName( fileInfo ))) )
-                    transformedItem->setBackground( Qt::red );
+                //auto isTVShow = treatAsTVShow( fileInfo, this->isChecked( path, EColumns::eIsTVShow ) );
+                //if ( canAutoSearch( fileInfo ) && (CTransformModel::isAutoSetText( transformInfo.second ) || (!isValidName( transformInfo.second, fileInfo.isDir(), isTVShow ) && !isValidName( fileInfo ))) )
+                //    transformedItem->setBackground( Qt::red );
             }
         }
 
@@ -821,23 +829,6 @@ namespace NMediaManager
             bool isTVShow = isTVType( SSearchTMDBInfo::looksLikeTVShow( fileInfo.fileName(), nullptr ) );
 
             currItems.front().setData( isTVShow, ECustomRoles::eIsTVShowRole );
-        }
-
-        std::list< NMediaManager::NCore::STreeNodeItem > CTransformModel::addItems( const QFileInfo & fileInfo ) const
-        {
-            std::list< NMediaManager::NCore::STreeNodeItem > retVal;
-
-            auto mediaType = SSearchTMDBInfo::looksLikeTVShow( fileInfo.fileName(), nullptr );
-            auto isTVShowItem = STreeNodeItem( QString(), EColumns::eIsTVShow );
-            isTVShowItem.fMediaType = mediaType;
-            isTVShowItem.fCheckable = true;
-
-            retVal.push_back( isTVShowItem );
-
-            auto transformInfo = transformItem( fileInfo );
-            auto transformedItem = STreeNodeItem( transformInfo.second, EColumns::eTransformName );
-            retVal.push_back( transformedItem );
-            return retVal;
         }
 
         void CTransformModel::setupNewItem( const STreeNodeItem & nodeItem, const QStandardItem * nameItem, QStandardItem * item ) const
@@ -853,18 +844,38 @@ namespace NMediaManager
             }
         }
 
+        std::list< NMediaManager::NCore::STreeNodeItem > CTransformModel::addItems( const QFileInfo & fileInfo ) const
+        {
+            std::list< NMediaManager::NCore::STreeNodeItem > retVal;
+
+            auto mediaType = SSearchTMDBInfo::looksLikeTVShow( fileInfo.fileName(), nullptr );
+            auto isTVShowItem = STreeNodeItem( QString(), EColumns::eIsTVShow );
+            isTVShowItem.fMediaType = mediaType;
+            isTVShowItem.fCheckable = true;
+
+            retVal.push_back( isTVShowItem );
+
+            auto mediaInfo = getMediaInfoItems( fileInfo, EColumns::eMediaTitle );
+            retVal.insert( retVal.end(), mediaInfo.begin(), mediaInfo.end() );
+
+            auto transformInfo = transformItem( fileInfo );
+            auto transformedItem = STreeNodeItem( transformInfo.second, EColumns::eTransformName );
+            retVal.push_back( transformedItem );
+            return retVal;
+        }
+
         QStringList CTransformModel::headers() const
         {
-            return CDirModel::headers() << tr( "Is TV Show?" ) << tr( "Transformed Name" );
+            return CDirModel::headers() 
+                << tr( "Is TV Show?" )
+                << getMediaHeaders()
+                << tr( "New Title" );
         }
 
         void CTransformModel::postLoad( QTreeView * treeView ) const
         {
             if ( !treeView )
                 return;
-
-            treeView->resizeColumnToContents( EColumns::eIsTVShow );
-            treeView->resizeColumnToContents( EColumns::eTransformName );
         }
 
         void CTransformModel::attachTreeNodes( QStandardItem * nextParent, QStandardItem * prevParent, const STreeNode & ii )
@@ -874,7 +885,7 @@ namespace NMediaManager
 
             if ( !isTVShow && (isTVShow != isParentTVShow) )
             {
-                setChecked( ii.item( EColumns::eIsTVShow ), isParentTVShow );
+                setChecked( ii.item( static_cast< NCore::EColumns >( EColumns::eIsTVShow ) ), isParentTVShow );
                 nextParent->setData( isParentTVShow, eIsTVShowRole );
             }
         }
@@ -910,7 +921,7 @@ namespace NMediaManager
 
         }
 
-        bool CTransformModel::SetMKVTags( const QString & fileName, std::shared_ptr< STransformResult > & searchResults, QString & msg ) const
+        bool CTransformModel::setMKVTags( const QString & fileName, std::shared_ptr< STransformResult > & searchResults, QString & msg ) const
         {
             QString year;
             QString title = QFileInfo( fileName ).completeBaseName();
@@ -919,7 +930,7 @@ namespace NMediaManager
                 year = searchResults->getYear();
                 title = searchResults->getTitle();
             }
-            return CDirModel::SetMKVTags( fileName, title, year, &msg );
+            return CDirModel::setMKVTags( fileName, title, year, &msg );
         }
 
         bool CTransformModel::canAutoSearch( const QModelIndex & index ) const

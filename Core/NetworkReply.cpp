@@ -32,9 +32,6 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QRegularExpression>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonArray>
 #include <QImage>
 #include <QPixmap>
 #include "SABUtils/HashUtils.h"

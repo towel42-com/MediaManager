@@ -75,7 +75,7 @@ namespace NMediaManager
             {
                 auto regEx = QRegularExpression( ii, QRegularExpression::CaseInsensitiveOption);
                 auto match = regEx.match(retVal);
-                if (match.hasMatch())
+                while (match.hasMatch())
                 {
                     auto start = match.capturedStart( "prefix" );
                     if ( start == -1 )
@@ -84,8 +84,9 @@ namespace NMediaManager
                     if ( end == -1 )
                         end = match.capturedEnd( "word" );
 
-                    
                     retVal.remove( start, end-start );
+                    
+                    match = regEx.match( retVal, start );
                 }
             }
             return retVal;

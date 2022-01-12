@@ -33,6 +33,14 @@ namespace NMediaManager
         {
             Q_OBJECT
         public:
+            enum EColumns
+            {
+                eLanguage = NCore::EColumns::eFirstCustomColumn,
+                eForced,
+                eSDH,
+                eOnByDefault
+            };
+
             CMergeSRTModel( NUi::CBasePage * page, QObject * parent = nullptr );
             ~CMergeSRTModel();
 

@@ -398,7 +398,7 @@ namespace NMediaManager
             if ( fileInfo.isFile() )
             {
                 auto language = SLanguageInfo( fileInfo );
-                auto languageFileItem = STreeNodeItem( language.displayName(), EColumns::eLanguage );
+                auto languageFileItem = STreeNodeItem( language.displayName(), CMergeSRTModel::EColumns::eLanguage );
                 languageFileItem.setData( language.isoCode(), ECustomRoles::eISOCodeRole );
                 retVal.push_back( languageFileItem );
 
