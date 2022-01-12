@@ -28,6 +28,7 @@ set(qtproject_SRCS
     MergeSRTPage.cpp
     Preferences.cpp
     SelectTMDB.cpp
+    SetTags.cpp
     ProcessConfirm.cpp
     TransformMediaFileNamesPage.cpp
 )
@@ -40,6 +41,7 @@ set(qtproject_H
     MergeSRTPage.h
     Preferences.h
     SelectTMDB.h
+    SetTags.h
     ProcessConfirm.h
     TransformMediaFileNamesPage.h
 )
@@ -53,6 +55,7 @@ set(qtproject_UIS
     MainWindow.ui
     Preferences.ui
     SelectTMDB.ui
+    SetTags.ui
     ProcessConfirm.ui
 )
 
