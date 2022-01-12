@@ -504,12 +504,12 @@ namespace NMediaManager
             }
 
             auto searchInfo = getSearchInfo();
-            if ( fImpl->searchTMDBID->text().isEmpty() && !searchByName() )
-            {
-                disconnect();
-                fImpl->byName->setChecked( true );
-                connect();
-            }
+            //if ( fImpl->searchTMDBID->text().isEmpty() && !searchByName() )
+            //{
+            //    disconnect();
+            //    fImpl->byName->setChecked( true );
+            //    connect();
+            //}
 
             searchInfo->setSearchName( fImpl->searchName->text().trimmed() );
             searchInfo->setReleaseDate( fImpl->searchReleaseYear->text().trimmed());
