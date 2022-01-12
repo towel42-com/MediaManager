@@ -31,7 +31,6 @@
 
 class QNetworkAccessManager;
 class QNetworkReply;
-class QJsonObject;
 class QTreeWidgetItem;
 namespace NSABUtils
 {
