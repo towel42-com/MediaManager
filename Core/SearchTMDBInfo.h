@@ -99,9 +99,10 @@ namespace NMediaManager
             template< typename T >
             bool isMatch( const QString & releaseDate, const T & tmdbid, const QString & name ) const
             {
-                bool retVal = isMatchingDate( releaseDate )
-                    && isMatchingTMDBID( tmdbid )
-                    && isMatchingName( name )
+                auto retVal = ( tmdbIDSet() && isMatchingTMDBID( tmdbid ) )
+                    || ( isMatchingDate( releaseDate )
+                         && isMatchingTMDBID( tmdbid )
+                         && isMatchingName( name ) )
                     ;
                 return retVal;
             }
