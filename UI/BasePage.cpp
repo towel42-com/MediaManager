@@ -323,6 +323,7 @@ namespace NMediaManager
             auto fn = fModel->fileInfo( idx ).absoluteFilePath();
             CSetTags dlg( fn, this );
             dlg.exec();
+            fModel->reloadMediaTags( idx );
         }
     }
 }
