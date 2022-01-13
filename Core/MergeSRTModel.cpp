@@ -392,7 +392,7 @@ namespace NMediaManager
             return aOK;
         }
 
-        std::list< NMediaManager::NCore::STreeNodeItem > CMergeSRTModel::addItems( const QFileInfo & fileInfo )const
+        std::list< NMediaManager::NCore::STreeNodeItem > CMergeSRTModel::additionalitems( const QFileInfo & fileInfo )const
         {
             std::list< NMediaManager::NCore::STreeNodeItem > retVal;
             if ( fileInfo.isFile() )

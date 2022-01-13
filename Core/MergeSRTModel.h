@@ -48,7 +48,7 @@ namespace NMediaManager
             virtual std::pair< bool, QStandardItem * > processItem( const QStandardItem * item, QStandardItem * parentItem, bool displayOnly ) const override;
 
             virtual void preAddItems( const QFileInfo & fileInfo, std::list< NMediaManager::NCore::STreeNodeItem > & currItems ) const override;
-            virtual std::list< NMediaManager::NCore::STreeNodeItem > addItems( const QFileInfo & fileInfo ) const override;
+            virtual std::list< NMediaManager::NCore::STreeNodeItem > additionalitems( const QFileInfo & fileInfo ) const override;
             virtual void setupNewItem( const STreeNodeItem & nodeItem, const QStandardItem * nameItem, QStandardItem * item ) const override;
             virtual QStringList headers() const override;
             virtual void postLoad( QTreeView * treeView ) const override;

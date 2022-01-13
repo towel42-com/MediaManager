@@ -189,7 +189,9 @@ namespace NMediaManager
 
             virtual void clear();
 
-            std::unordered_map< QString, QString > getMediaTags( const QFileInfo & fi ) const;
+            virtual std::unordered_map< QString, QString > getMediaTags( const QFileInfo & fi ) const;
+            virtual void reloadMediaTags( const QModelIndex & idx );
+            virtual void setMediaTags( const QModelIndex & /*idx*/, const std::unordered_map< QString, QString > & /*tags*/ ) {}
         Q_SIGNALS:
             void sigDirReloaded( bool canceled );
             void sigProcessesFinished( bool status, bool showProcessResults, bool cancelled, bool reloadModel );
@@ -212,7 +214,9 @@ namespace NMediaManager
 
             virtual std::pair< bool, QStandardItem * > processItem( const QStandardItem * item, QStandardItem * parentItem, bool displayOnly ) const = 0;
             virtual void preAddItems( const QFileInfo & fileInfo, std::list< NMediaManager::NCore::STreeNodeItem > & currItems ) const = 0;
-            virtual std::list< NMediaManager::NCore::STreeNodeItem > addItems( const QFileInfo & fileInfo ) const = 0;
+            virtual bool showMediaItems() const { return false; };
+            virtual int firstMediaItemColumn() const { return -1; }
+            virtual std::list< NMediaManager::NCore::STreeNodeItem > additionalitems( const QFileInfo & fileInfo ) const;
             virtual std::list<NMediaManager::NCore::STreeNodeItem> getMediaInfoItems(  const QFileInfo & fileInfo, int firstColumn ) const;
 
             virtual void setupNewItem( const STreeNodeItem & nodeItem, const QStandardItem * nameItem, QStandardItem * item ) const = 0;

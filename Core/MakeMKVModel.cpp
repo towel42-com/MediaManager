@@ -123,12 +123,6 @@ namespace NMediaManager
                 ;
         }
 
-        std::list< NMediaManager::NCore::STreeNodeItem > CMakeMKVModel::addItems( const QFileInfo & fileInfo ) const
-        {
-            return getMediaInfoItems( fileInfo, EColumns::eMediaTitle );
-        }
-
-
         void CMakeMKVModel::preAddItems( const QFileInfo & /*fileInfo*/, std::list< NMediaManager::NCore::STreeNodeItem > & /*currItems*/ ) const
         {
             return;

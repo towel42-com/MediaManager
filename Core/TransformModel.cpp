@@ -844,7 +844,7 @@ namespace NMediaManager
             }
         }
 
-        std::list< NMediaManager::NCore::STreeNodeItem > CTransformModel::addItems( const QFileInfo & fileInfo ) const
+        std::list< NMediaManager::NCore::STreeNodeItem > CTransformModel::additionalitems( const QFileInfo & fileInfo ) const
         {
             std::list< NMediaManager::NCore::STreeNodeItem > retVal;
 
@@ -855,7 +855,8 @@ namespace NMediaManager
 
             retVal.push_back( isTVShowItem );
 
-            auto mediaInfo = getMediaInfoItems( fileInfo, EColumns::eMediaTitle );
+            auto mediaInfo = CDirModel::additionalitems( fileInfo );
+
             retVal.insert( retVal.end(), mediaInfo.begin(), mediaInfo.end() );
 
             auto transformInfo = transformItem( fileInfo );

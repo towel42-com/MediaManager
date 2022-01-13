@@ -437,7 +437,7 @@ namespace NMediaManager
             fItems.push_back( STreeNodeItem( fileInfo.lastModified().toString( "MM/dd/yyyy hh:mm:ss.zzz" ), EColumns::eFSModDate ) );
 
             model->preAddItems( fileInfo, fItems );
-            auto modelItems = model->addItems( fileInfo );
+            auto modelItems = model->additionalitems( fileInfo );
             fItems.insert( fItems.end(), modelItems.begin(), modelItems.end() );
         }
 
@@ -730,8 +730,32 @@ namespace NMediaManager
         {
             if ( !CPreferences::instance()->isMediaFile( fi ) )
                 return {};
+            NSABUtils::CAutoWaitCursor awc;
             return NSABUtils::getMediaTags( fi.absoluteFilePath(), NCore::CPreferences::instance()->getFFProbeEXE() );
         }
+
+        void CDirModel::reloadMediaTags( const QModelIndex & idx )
+        {
+            if ( !showMediaItems() )
+                return;
+
+            auto fi = fileInfo( idx );
+            if ( !CPreferences::instance()->isMediaFile( fi ) )
+                return;
+            
+            auto mediaInfo = getMediaTags( fi );
+            auto pos = firstMediaItemColumn();
+
+            QStandardItem * item = itemFromIndex( index( idx.row(), pos++, idx.parent() ) );
+            item->setText( mediaInfo["title"] );
+
+            item = itemFromIndex( index( idx.row(), pos++, idx.parent() ) );
+            item->setText( mediaInfo["date_recorded"] );
+
+            item = itemFromIndex( index( idx.row(), pos++, idx.parent() ) );
+            item->setText( mediaInfo["comment"] );
+        }
+
 
         bool CDirModel::process( const QModelIndex & idx, const std::function< void( int count, int eventsPerPath ) > & startProgress, const std::function< void( bool finalStep ) > & endProgress, QWidget * parent )
         {
@@ -794,6 +818,7 @@ namespace NMediaManager
                 ,{ "YEAR", year }
             };
 
+            NSABUtils::CAutoWaitCursor awc;
             return NSABUtils::setMediaTags( fileName, tags, CPreferences::instance()->getMKVPropEditEXE(), msg );
         }
 
@@ -887,6 +912,15 @@ namespace NMediaManager
         QStringList CDirModel::getMediaHeaders() const
         {
             return QStringList() << tr( "Title" ) << tr( "Media Date" ) << tr( "Comment" );
+        }
+
+        std::list< NMediaManager::NCore::STreeNodeItem > CDirModel::additionalitems( const QFileInfo & fileInfo ) const
+        {
+            if ( showMediaItems() )
+            {
+                return getMediaInfoItems( fileInfo, firstMediaItemColumn() );
+            }
+            return {};
         }
 
         std::list<NMediaManager::NCore::STreeNodeItem> CDirModel::getMediaInfoItems( const QFileInfo & fileInfo, int offset ) const

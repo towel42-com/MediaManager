@@ -84,7 +84,9 @@ namespace NMediaManager
             void slotMovieOutputFilePatternChanged( const QString & outPattern );
         private:
             virtual void preAddItems( const QFileInfo & fileInfo, std::list< NMediaManager::NCore::STreeNodeItem > & currItems ) const override;
-            virtual std::list< NMediaManager::NCore::STreeNodeItem > addItems( const QFileInfo & fileInfo ) const override;
+            virtual std::list< NMediaManager::NCore::STreeNodeItem > additionalitems( const QFileInfo & fileInfo ) const override;
+            virtual bool showMediaItems() const { return true; };
+            virtual int firstMediaItemColumn() const { return EColumns::eMediaTitle; }
 
             virtual void setupNewItem( const STreeNodeItem & nodeItem, const QStandardItem * nameItem, QStandardItem * item ) const override;
             virtual QStringList headers() const override;
