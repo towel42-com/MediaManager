@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2020 Scott Aron Bloom
+# Copyright (c) 2022 Scott Aron Bloom
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 SET( MAJOR_VERSION 0 )
-SET( MINOR_VERSION 20 )
+SET( MINOR_VERSION 21 )
 SET( APP_NAME "Media Manager" )
 SET( VENDOR   "Scott Aron Bloom" )
 SET( HOMEPAGE "www.towel42.com" )
