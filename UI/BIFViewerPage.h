@@ -80,6 +80,9 @@ namespace NMediaManager
 
             virtual bool eventFilter( QObject *obj, QEvent *event ) override;
 
+            virtual bool isDirBased() const override { return false; }
+            virtual bool isFileBased() const override { return true; }
+
             QMenu * menu();
             QToolBar *toolBar();
 
