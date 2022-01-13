@@ -24,6 +24,7 @@
 #include "ui_SetTags.h"
 #include "Core/Preferences.h"
 #include "SABUtils/MKVUtils.h"
+#include "SABUtils/AutoWaitCursor.h"
 
 #include <QMessageBox>
 #include <QTimer>
@@ -48,6 +49,7 @@ namespace NMediaManager
 
         void CSetTags::slotLoadTags()
         {
+            NSABUtils::CAutoWaitCursor awc;
             auto tags = NSABUtils::getMediaTags( fImpl->fileName->text(), NCore::CPreferences::instance()->getFFProbeEXE() );
             fImpl->title->setText( tags["title"] );
             fImpl->releaseDate->setText( tags["date_recorded"] );
@@ -64,6 +66,7 @@ namespace NMediaManager
             };
 
             QString msg;
+            NSABUtils::CAutoWaitCursor awc;
             if ( !NSABUtils::setMediaTags( fImpl->fileName->text(), tags, NCore::CPreferences::instance()->getMKVPropEditEXE(), &msg ) )
             {
                 QMessageBox::critical( this, tr( "Problem setting tags" ), msg, QMessageBox::Ok );
