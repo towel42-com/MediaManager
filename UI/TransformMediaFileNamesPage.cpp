@@ -127,7 +127,8 @@ namespace NMediaManager
 
         void CTransformMediaFileNamesPage::doubleClicked( const QModelIndex & idx )
         {
-            search( idx );
+            auto nameIdx = model()->index( idx.row(), 0, idx.parent() );
+            search( nameIdx );
         }
 
         void CTransformMediaFileNamesPage::slotAutoSearchForNewNames()
