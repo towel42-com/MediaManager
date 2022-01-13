@@ -86,20 +86,16 @@ namespace NMediaManager
             NCore::CPreferences::instance()->setExactMatchesOnly( value );
         }
 
-        QMenu * CTransformMediaFileNamesPage::contextMenu( const QModelIndex & idx )
+        bool CTransformMediaFileNamesPage::extendContextMenu( QMenu * menu, const QModelIndex & idx )
         {
             if ( !idx.isValid() )
-                return nullptr;
-
-            auto menu = new QMenu( this );
-            menu->setObjectName( "Context Menu" );
-            menu->setTitle( tr( "Context Menu" ) );
+                return false;
 
             auto nm = model()->index( idx.row(), NCore::EColumns::eFSName, idx.parent() ).data().toString();
-            auto action = menu->addAction( tr( "Search for '%1'..." ).arg( nm ), 
-                             [ idx, this ]()
+            auto action = menu->addAction( tr( "Search for '%1'..." ).arg( nm ),
+                                           [ idx, this ]()
             {
-                doubleClicked( idx );
+                search( idx );
             } );
             menu->setDefaultAction( action );
 
@@ -118,17 +114,11 @@ namespace NMediaManager
                 } );
             }
             menu->addAction( tr( "Set Tags..." ),
-                                [ idx, this ]()
+                             [ idx, this ]()
             {
                 setMKVTags( idx );
             } );
-            return menu;
-        }
-
-        void CTransformMediaFileNamesPage::doubleClicked( const QModelIndex & idx )
-        {
-            auto nameIdx = model()->index( idx.row(), 0, idx.parent() );
-            search( nameIdx );
+            return true;
         }
 
         void CTransformMediaFileNamesPage::slotAutoSearchForNewNames()

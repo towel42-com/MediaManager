@@ -68,12 +68,12 @@ namespace NMediaManager
             void setExactMatchesOnly( bool value );
             void setTreatAsTVByDefault( bool value );
 
-            virtual void doubleClicked( const QModelIndex & idx ) override;
-            void search( const QModelIndex & idx );
-            virtual QMenu * contextMenu( const QModelIndex & idx ) override;
+            virtual bool extendContextMenu( QMenu * menu, const QModelIndex & idx ) override;
 
             virtual QMenu * menu() override;
             virtual void setActive( bool isActive ) override;
+
+            void search( const QModelIndex & idx );
 
         Q_SIGNALS:
         public Q_SLOTS:

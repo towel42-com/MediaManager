@@ -67,8 +67,7 @@ namespace NMediaManager
             virtual void appendToLog( const QString & msg, std::pair<QString, bool> & previousText, bool stdOut, bool fromProcess );
 
             virtual void postProcessLog( const QString & string );
-            virtual void doubleClicked( const QModelIndex & idx );
-            virtual QMenu * contextMenu( const QModelIndex & idx );
+            virtual bool extendContextMenu( QMenu * menu, const QModelIndex & idx );
 
             NSABUtils::CDoubleProgressDlg * progressDlg() const { return fProgressDlg; }
 
@@ -99,6 +98,9 @@ namespace NMediaManager
             void sigStartStayAwake();
             void sigStopStayAwake();
         protected:
+            virtual QMenu * menuForIndex( const QModelIndex & idx ) final;
+            virtual void openLocation( const QModelIndex & idx ) final;
+            
             virtual QString getPageName() const final { return fPageName; }
             virtual NCore::CDirModel * createDirModel() = 0;
             virtual bool useSecondaryProgressBar() const { return false; }

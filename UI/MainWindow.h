@@ -25,6 +25,7 @@
 
 class QMenu;
 class QToolBar;
+class QUrl;
 
 #include <QMainWindow>
 #include <optional>

@@ -32,6 +32,7 @@
 #include <QSettings>
 #include <QMenu>
 #include <QTimer>
+#include <QDesktopServices>
 
 namespace NMediaManager
 {
@@ -264,17 +265,58 @@ namespace NMediaManager
             }
         }
 
-        void CBasePage::doubleClicked( const QModelIndex & /*idx*/ )
-        {}
-
-        QMenu * CBasePage::contextMenu( const QModelIndex & /*idx*/ )
+        bool CBasePage::extendContextMenu( QMenu * /*menu*/, const QModelIndex & /*idx*/ )
         {
-            return nullptr;
+            return false;
         }
 
         void CBasePage::slotDoubleClicked( const QModelIndex & idx )
         {
-            doubleClicked( idx );
+            auto menu = menuForIndex( idx );
+            auto defaultAction = menu ? menu->defaultAction() : nullptr;
+            if ( defaultAction )
+                defaultAction->trigger();
+            delete menu;
+        }
+
+        QMenu * CBasePage::menuForIndex( const QModelIndex & idx )
+        {
+            auto retVal = new QMenu( this );
+            retVal->setObjectName( "Context Menu" );
+            retVal->setTitle( tr( "Context Menu" ) );
+
+            QAction * separator = nullptr;
+            QAction * openLocationAction = nullptr;
+            if ( idx.isValid() )
+            {
+                openLocationAction = retVal->addAction( tr( "Open Location..." ),
+                                                        [ idx, this ]()
+                {
+                    openLocation( idx );
+                } );
+                separator = retVal->addSeparator();
+            }
+
+            bool extended = extendContextMenu( retVal, idx );
+            if ( !extended && separator )
+                delete separator;
+
+            if ( !retVal->defaultAction() && openLocationAction )
+                retVal->setDefaultAction( openLocationAction );
+
+            if ( !retVal->actions().count() )
+            {
+                delete retVal;
+                retVal = nullptr;
+            }
+            return retVal;
+        }
+
+        void CBasePage::openLocation( const QModelIndex & idx )
+        {
+            auto fi = fModel->fileInfo( idx );
+            if ( fi.exists() )
+                QDesktopServices::openUrl( QUrl::fromLocalFile( fi.absoluteFilePath() ) );
         }
 
         void CBasePage::slotContextMenu( const QPoint & pt )
@@ -283,13 +325,9 @@ namespace NMediaManager
                 return;
 
             auto idx = fImpl->filesView->indexAt( pt );
-            if ( idx.isValid() )
-            {
-                auto menu = contextMenu( idx );
-                if ( !menu )
-                    return;
+            auto menu = menuForIndex( idx );
+            if ( menu )
                 menu->exec( fImpl->filesView->viewport()->mapToGlobal( pt ) );
-            }
         }
 
         void CBasePage::appendSeparator()

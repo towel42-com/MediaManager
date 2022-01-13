@@ -38,6 +38,7 @@
 #include "SABUtils/DoubleProgressDlg.h"
 #include "SABUtils/StayAwake.h"
 #include "SABUtils/BackgroundFileCheck.h"
+#include "SABUtils/SelectFileUrl.h"
 
 #include <QSettings>
 #include <QFileInfo>
@@ -138,6 +139,8 @@ namespace NMediaManager
             addUIComponents( fImpl->transformMediaFileNamesTab, fImpl->transformMediaFileNamesPage );
             addUIComponents( fImpl->makeMKVTab, fImpl->makeMKVPage );
             addUIComponents( fImpl->mergeSRTTab, fImpl->mergeSRTPage );
+
+            new NSABUtils::CSelectFileUrl( this );
 
             QSettings settings;
             fImpl->tabWidget->setCurrentIndex( settings.value( "LastFunctionalityPage", 0 ).toInt() );
