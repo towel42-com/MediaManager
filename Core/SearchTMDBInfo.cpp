@@ -31,6 +31,7 @@
 #include <QRegularExpression>
 #include <QDebug>
 #include <QUrlQuery>
+#include <QFileInfo>
 
 namespace NMediaManager
 {
@@ -445,7 +446,12 @@ namespace NMediaManager
             return isTVType( fMediaType );
         }
 
-        bool SSearchTMDBInfo::isDiskTitle( const QString & name, int & titleNum )
+        bool SSearchTMDBInfo::isRippedFromMKV( const QFileInfo & fi, int * titleNum )
+        {
+            return isRippedFromMKV( fi.fileName(), titleNum );
+        }
+         
+        bool SSearchTMDBInfo::isRippedFromMKV( const QString & name, int * titleNum )
         {
             auto regExpStr = "^.*_t(?<num>\\d+)\\.mkv$";
             auto regExp = QRegularExpression( regExpStr );
@@ -454,9 +460,11 @@ namespace NMediaManager
             if ( match.hasMatch() )
             {
                 auto titleNumStr = match.captured( "num" );
-                titleNum = titleNumStr.toInt( &aOK );
+                int lclTitleNum = titleNumStr.toInt( &aOK );
                 if ( !aOK )
-                    titleNum = -1;
+                    lclTitleNum = -1;
+                if ( titleNum )
+                    *titleNum = lclTitleNum;
             }
             return aOK;
         }

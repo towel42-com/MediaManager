@@ -384,7 +384,7 @@ namespace NMediaManager
                 {
                     auto name = childIndex.data().toString();
                     int titleNum = -1;
-                    if ( NCore::SSearchTMDBInfo::isDiskTitle( name, titleNum ) )
+                    if ( NCore::SSearchTMDBInfo::isRippedFromMKV( name, &titleNum ) )
                     {
                         retVal[titleNum] = childIndex.data( NCore::ECustomRoles::eFullPathRole ).toString();
                     }
@@ -395,19 +395,25 @@ namespace NMediaManager
 
         QString CTransformModel::getSearchName( const QModelIndex & idx ) const
         {
+            if ( !idx.isValid() )
+                return QString();
+
             auto path = idx.data( ECustomRoles::eFullPathRole ).toString();
             auto pos = fDiskRipSearchMap.find( path );
             if ( pos != fDiskRipSearchMap.end() )
                 return (*pos).second;
+
+            if ( SSearchTMDBInfo::isRippedFromMKV( fileInfo( idx ) ) )
+                return getSearchName( idx.parent() );
+
+            auto nm = index( idx.row(), EColumns::eTransformName, idx.parent() ).data().toString();
+            if ( isAutoSetText( nm ) || nm.isEmpty() )
             {
-                auto nm = index( idx.row(), EColumns::eTransformName, idx.parent() ).data().toString();
-                if ( isAutoSetText( nm ) || nm.isEmpty() )
-                {
-                    nm = index( idx.row(), NCore::EColumns::eFSName, idx.parent() ).data( ECustomRoles::eFullPathRole ).toString();
-                    nm = nm.isEmpty() ? QString() : (QFileInfo( nm ).isDir() ? QFileInfo( nm ).fileName() : QFileInfo( nm ).completeBaseName());
-                }
-                return nm;
+                nm = index( idx.row(), NCore::EColumns::eFSName, idx.parent() ).data( ECustomRoles::eFullPathRole ).toString();
+                nm = nm.isEmpty() ? QString() : (QFileInfo( nm ).isDir() ? QFileInfo( nm ).fileName() : QFileInfo( nm ).completeBaseName());
             }
+
+            return nm;
         }
 
         bool CTransformModel::treatAsTVShow( const QFileInfo & fileInfo, bool isTVByDefault ) const

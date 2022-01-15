@@ -27,6 +27,8 @@
 #include <QString>
 #include <optional>
 #include <memory>
+class QFileInfo;
+
 namespace NMediaManager
 {
     namespace NCore
@@ -49,7 +51,8 @@ namespace NMediaManager
 
             static bool hasDiskNumber( QString & searchString, int & diskNum, std::shared_ptr< STransformResult > searchResult );
             static EMediaType looksLikeTVShow( const QString & searchString, QString * titleStr, QString * seasonStr = nullptr, QString * episodeStr = nullptr, QString * extraStr = nullptr );
-            static bool isDiskTitle( const QString & name, int & titleNum );
+            static bool isRippedFromMKV( const QString & name, int * titleNum=nullptr );
+            static bool isRippedFromMKV( const QFileInfo & fi, int * titleNum = nullptr );
 
             void updateSearchCriteria( bool updateSearchBy );
 
