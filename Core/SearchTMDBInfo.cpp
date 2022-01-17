@@ -402,11 +402,7 @@ namespace NMediaManager
         {
             if ( !fSearchByName )
                 return true;
-            if ( fExactMatchOnly )
-            {
-                return name.compare( fSearchName, Qt::CaseInsensitive ) == 0;
-            }
-            return NSABUtils::NStringUtils::isSimilar( name, fSearchName ); // if every word we are searching for is covered by name, we match
+            return NSABUtils::NStringUtils::isSimilar( name, fSearchName, fExactMatchOnly ); // if every word we are searching for is covered by name, we match.  For exact matches must be in same order
         }
 
         void SSearchTMDBInfo::extractReleaseDate()
