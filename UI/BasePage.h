@@ -62,7 +62,7 @@ namespace NMediaManager
             QTreeView * filesView() const;
             QPlainTextEdit * log() const;
 
-            virtual void appendSeparator();
+            virtual void appendSeparatorToLog();
             virtual void appendToLog( const QString & msg, bool stdOut );
             virtual void appendToLog( const QString & msg, std::pair<QString, bool> & previousText, bool stdOut, bool fromProcess );
 
@@ -81,7 +81,7 @@ namespace NMediaManager
             virtual QString selectFileFilter() const { return QString(); }
             virtual bool eventFilter( QObject * obj, QEvent * event ) override;
 
-            void setMKVTags( const QModelIndex & idx );
+            void editMediaTags( const QModelIndex & idx );
         public Q_SLOTS:
             void slotLoadFinished( bool canceled );
             void slotProcessingStarted();

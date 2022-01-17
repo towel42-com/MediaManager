@@ -193,9 +193,9 @@ namespace NMediaManager
                 connect( fModel.get(), &NCore::CDirModel::sigProcessingStarted, this, &CBasePage::slotProcessingStarted );
                 connect( fModel.get(), &NCore::CDirModel::sigProcessesFinished, this, &CBasePage::slotProcessesFinished );
             }
-            appendSeparator();
+            appendSeparatorToLog();
             appendToLog( tr( "Loading Directory: '%1'" ).arg( fDirName ), true );
-            appendSeparator();
+            appendSeparatorToLog();
             fModel->clear();
             filesView()->setModel( fModel.get() );
             setupModel();
@@ -273,10 +273,18 @@ namespace NMediaManager
         void CBasePage::slotDoubleClicked( const QModelIndex & idx )
         {
             auto menu = menuForIndex( idx );
-            auto defaultAction = menu ? menu->defaultAction() : nullptr;
-            if ( defaultAction )
-                defaultAction->trigger();
-            delete menu;
+            if ( !menu )
+                return;
+
+            QTimer::singleShot( 0, [ menu ]()
+            {
+                if ( !menu )
+                    return;
+                auto defaultAction = menu->defaultAction();
+                if ( defaultAction )
+                    defaultAction->trigger();
+                delete menu;
+            } );
         }
 
         QMenu * CBasePage::menuForIndex( const QModelIndex & idx )
@@ -300,6 +308,16 @@ namespace NMediaManager
             bool extended = extendContextMenu( retVal, idx );
             if ( !extended && separator )
                 delete separator;
+
+            if ( fModel->showMediaItems() )
+            {
+                retVal->addSeparator();
+                retVal->addAction( tr( "Set Tags..." ),
+                                 [ idx, this ]()
+                {
+                    editMediaTags( idx );
+                } );
+            }
 
             if ( !retVal->defaultAction() && openLocationAction )
                 retVal->setDefaultAction( openLocationAction );
@@ -330,7 +348,7 @@ namespace NMediaManager
                 menu->exec( fImpl->filesView->viewport()->mapToGlobal( pt ) );
         }
 
-        void CBasePage::appendSeparator()
+        void CBasePage::appendSeparatorToLog()
         {
             appendToLog( "================================", true );
         }
@@ -356,7 +374,7 @@ namespace NMediaManager
         void CBasePage::postProcessLog( const QString & /*string*/ )
         {}
 
-        void CBasePage::setMKVTags( const QModelIndex & idx )
+        void CBasePage::editMediaTags( const QModelIndex & idx )
         {
             auto fn = fModel->fileInfo( idx ).absoluteFilePath();
             CSetTags dlg( fn, this );
