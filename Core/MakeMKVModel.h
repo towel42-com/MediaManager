@@ -45,7 +45,6 @@ namespace NMediaManager
 
         private:
             virtual std::pair< bool, QStandardItem * > processItem( const QStandardItem * item, QStandardItem * parentItem, bool displayOnly ) const override;
-            virtual void preAddItems( const QFileInfo & fileInfo, std::list< NMediaManager::NCore::STreeNodeItem > & currItems ) const override;
             virtual bool showMediaItems() const { return true; };
             virtual int firstMediaItemColumn() const { return EColumns::eMediaTitle; }
             virtual QStringList headers() const override;
