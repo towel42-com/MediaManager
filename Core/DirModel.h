@@ -44,6 +44,7 @@ class QDirIterator;
 class QPlainTextEdit;
 class QProcess;
 class QFileInfo;
+class QDir;
 
 namespace NMediaManager
 {
@@ -83,6 +84,22 @@ namespace NMediaManager
             eFirstCustomColumn
         };
 
+        class CDirModelItem : public QStandardItem
+        {
+        public:
+            enum class EType
+            {
+                ePath = QStandardItem::UserType + 1,
+                eTitle,
+                eDate,
+                eComment
+            };
+            CDirModelItem( const QString & text, EType type );
+            int type() const { return static_cast< int >( fType ); }
+        private:
+            EType fType;
+        };
+
         struct STreeNodeItem
         {
             STreeNodeItem();
@@ -102,6 +119,7 @@ namespace NMediaManager
             std::list< std::pair< QVariant, int > > fRoles;
             EMediaType fMediaType;
             std::optional< bool > fCheckable;
+            std::optional< CDirModelItem::EType > fEditType;
         };
 
         struct STreeNode
@@ -189,9 +207,17 @@ namespace NMediaManager
 
             virtual void clear();
 
+            virtual bool showMediaItems() const { return false; };
+
             virtual std::unordered_map< QString, QString > getMediaTags( const QFileInfo & fi ) const;
             virtual void reloadMediaTags( const QModelIndex & idx );
             virtual void setMediaTags( const QModelIndex & /*idx*/, const std::unordered_map< QString, QString > & /*tags*/ ) {}
+
+            void updateDir( const QModelIndex & idx, const QDir & path );
+            void updatePath( const QModelIndex & idx, const QString & path );
+
+            bool isRootPath( const QString & path ) const;
+
         Q_SIGNALS:
             void sigDirReloaded( bool canceled );
             void sigProcessesFinished( bool status, bool showProcessResults, bool cancelled, bool reloadModel );
@@ -213,10 +239,9 @@ namespace NMediaManager
             NSABUtils::CDoubleProgressDlg * progressDlg() const;
 
             virtual std::pair< bool, QStandardItem * > processItem( const QStandardItem * item, QStandardItem * parentItem, bool displayOnly ) const = 0;
-            virtual void preAddItems( const QFileInfo & fileInfo, std::list< NMediaManager::NCore::STreeNodeItem > & currItems ) const = 0;
-            virtual bool showMediaItems() const { return false; };
+            virtual void postAddItems( const QFileInfo & fileInfo, std::list< NMediaManager::NCore::STreeNodeItem > & currItems ) const;
             virtual int firstMediaItemColumn() const { return -1; }
-            virtual std::list< NMediaManager::NCore::STreeNodeItem > additionalitems( const QFileInfo & fileInfo ) const;
+            virtual std::list< NMediaManager::NCore::STreeNodeItem > addAdditionalItems( const QFileInfo & fileInfo ) const;
             virtual std::list<NMediaManager::NCore::STreeNodeItem> getMediaInfoItems(  const QFileInfo & fileInfo, int firstColumn ) const;
 
             virtual void setupNewItem( const STreeNodeItem & nodeItem, const QStandardItem * nameItem, QStandardItem * item ) const = 0;
@@ -245,7 +270,8 @@ namespace NMediaManager
             virtual QString getMyTransformedName( const QStandardItem * item, bool parentsOnly ) const;
 
             void processFinished( const QString & msg, bool withError );
-            bool setMKVTags( const QString & fileName, QString title=QString(), const QString & year=QString(), QString * msg =nullptr ) const;
+            bool setMediaTags( const QString & fileName, const QString & title, const QString & year, QString * msg =nullptr ) const;
+            bool setMediaTag( const QString & filename, const std::pair< QString, QString > & tagData, QString * msg=nullptr ) const; //pair => tag, value
 
             void appendRow( QStandardItem * parent, QList< QStandardItem * > & items );
             static void appendError( QStandardItem * parent, QStandardItem * errorNode );

@@ -180,13 +180,63 @@ namespace NMediaManager
 
             postLoad( filesView() );
         }
-                
+
         void CDirModel::postReloadModel()
-        {
-        }
+        {}
 
         bool CDirModel::setData( const QModelIndex & idx, const QVariant & value, int role )
         {
+            if ( role == Qt::EditRole )
+            {
+                auto item = itemFromIndex( idx );
+                if ( !item )
+                    return false;
+
+                switch ( static_cast< CDirModelItem::EType >( item->type() ) )
+                {
+                    case CDirModelItem::EType::ePath:
+                    {
+                        auto fi = fileInfo( idx );
+                        if ( value.toString().isEmpty() )
+                        {
+                            return false;
+                        }
+                        auto currName = fi.absoluteFilePath();
+                        auto newName = fi.absoluteDir().absoluteFilePath( value.toString().trimmed() );
+                        if ( currName.compare( newName, Qt::CaseInsensitive ) == 0 )
+                            return false;
+
+                        auto file = QFile( currName );
+                        if ( !file.rename( newName ) )
+                        {
+                            QMessageBox::critical( nullptr, tr( "Could not rename file" ), tr( "Error renaming '%1' to '%2' please verify permissions. %3" ).arg( currName ).arg( newName ).arg( file.errorString() ) );
+                            return false;
+                        }
+
+                        updatePath( idx, newName );
+                    }
+                    break;
+                    case CDirModelItem::EType::eTitle:
+                    {
+                        if ( !setMediaTag( fileInfo( idx ).absoluteFilePath(), { "TITLE", value.toString() } ) )
+                            return false;
+                    }
+                    break;
+                    case CDirModelItem::EType::eDate:
+                    {
+                        if ( !setMediaTag( fileInfo( idx ).absoluteFilePath(), { "YEAR", value.toString() } ) )
+                             return false;
+                    }
+                    break;
+                    case CDirModelItem::EType::eComment:
+                    {
+                        if ( !setMediaTag( fileInfo( idx ).absoluteFilePath(), { "COMMENT", value.toString() } ) )
+                            return false;
+                    }
+                    break;
+                }
+            }
+
             return QStandardItemModel::setData( idx, value, role );
         }
 
@@ -254,8 +304,18 @@ namespace NMediaManager
             uint64_t numDirs = 0;
             uint64_t numFiles = 0;
             SIterateInfo info;
-            info.fPreDirFunction = [ &numDirs ]( const QFileInfo & /*dir*/ ) { numDirs++; return true; };
-            info.fPreFileFunction = [ &numFiles ]( const QFileInfo & /*file*/ ) { numFiles++; return false; };
+            info.fPreDirFunction = [ this, &numDirs ]( const QFileInfo & dirInfo ) 
+            { 
+                if ( isSkippedDirName( dirInfo ) )
+                    return false;
+                numDirs++;
+                return true; 
+            };
+            info.fPreFileFunction = [ &numFiles ]( const QFileInfo & /*file*/ ) 
+            {
+                numFiles++;
+                return false;
+            };
             std::optional< QDateTime > lastUpdate;
             iterateEveryFile( fileInfo, info, lastUpdate );
 
@@ -390,15 +450,15 @@ namespace NMediaManager
             return STreeNode( fileInfo, this );
         }
 
-        STreeNodeItem::STreeNodeItem() : 
+        STreeNodeItem::STreeNodeItem() :
             fMediaType( EMediaType::eUnknownType )
         {
 
         }
 
-        STreeNodeItem::STreeNodeItem( const QString & text, int nodeType ) : 
-            fText( text ), 
-            fType( static_cast< EColumns >( nodeType ) ), 
+        STreeNodeItem::STreeNodeItem( const QString & text, int nodeType ) :
+            fText( text ),
+            fType( static_cast<EColumns>(nodeType) ),
             fMediaType( EMediaType::eUnknownType )
         {
 
@@ -406,7 +466,7 @@ namespace NMediaManager
 
         QStandardItem * STreeNodeItem::createStandardItem() const
         {
-            auto retVal = new QStandardItem( fText );
+            auto retVal = (fEditType.has_value()) ? new CDirModelItem( fText, fEditType.value() ) : new QStandardItem( fText );
             retVal->setIcon( fIcon );
             if ( fAlignment.has_value() )
                 retVal->setTextAlignment( fAlignment.value() );
@@ -416,6 +476,8 @@ namespace NMediaManager
             }
             if ( fCheckable.has_value() )
                 retVal->setCheckable( fCheckable.value() );
+            if ( !fEditType.has_value() )
+                retVal->setEditable( false );
             return retVal;
         }
 
@@ -427,6 +489,7 @@ namespace NMediaManager
             nameItem.fIcon = model->iconProvider()->icon( fileInfo );
             nameItem.setData( fileInfo.absoluteFilePath(), ECustomRoles::eFullPathRole );
             nameItem.setData( fileInfo.isDir(), ECustomRoles::eIsDir );
+            nameItem.fEditType = CDirModelItem::EType::ePath;
             fItems.push_back( nameItem );
             fItems.push_back( STreeNodeItem( fileInfo.isFile() ? NSABUtils::NFileUtils::fileSizeString( fileInfo ) : QString(), EColumns::eFSSize ) );
             if ( fileInfo.isFile() )
@@ -436,9 +499,9 @@ namespace NMediaManager
             fItems.push_back( STreeNodeItem( model->iconProvider()->type( fileInfo ), EColumns::eFSType ) );
             fItems.push_back( STreeNodeItem( fileInfo.lastModified().toString( "MM/dd/yyyy hh:mm:ss.zzz" ), EColumns::eFSModDate ) );
 
-            model->preAddItems( fileInfo, fItems );
-            auto modelItems = model->additionalitems( fileInfo );
+            auto modelItems = model->addAdditionalItems( fileInfo );
             fItems.insert( fItems.end(), modelItems.begin(), modelItems.end() );
+            model->postAddItems( fileInfo, fItems );
         }
 
         QString STreeNode::name() const
@@ -449,12 +512,12 @@ namespace NMediaManager
         QStandardItem * STreeNode::item( EColumns column, bool createIfNecessary /*= true */ ) const
         {
             items( createIfNecessary );
-            return ( column >= fRealItems.count()) ? nullptr : fRealItems[int(column)];
+            return (column >= fRealItems.count()) ? nullptr : fRealItems[int( column )];
         }
 
         QStandardItem * STreeNode::rootItem( bool createIfNecessary /*= true */ ) const
         {
-            return item( static_cast< EColumns >(0), createIfNecessary );
+            return item( static_cast<EColumns>(0), createIfNecessary );
         }
 
         QList< QStandardItem * > STreeNode::items( bool createIfNecessary ) const
@@ -468,7 +531,7 @@ namespace NMediaManager
                     auto nameItem = fRealItems.isEmpty() ? nullptr : fRealItems.front();
 
                     fModel->setupNewItem( ii, nameItem, currItem );
-                    
+
                     fRealItems << currItem;
                 }
             }
@@ -500,15 +563,13 @@ namespace NMediaManager
         {
             if ( !item )
                 return QFileInfo();
-            return QFileInfo( item->data( ECustomRoles::eFullPathRole ).toString() );
+            auto baseItem = getItem( item, NCore::EColumns::eFSName );
+            auto path = baseItem->data( ECustomRoles::eFullPathRole ).toString();
+            return QFileInfo( path );
         }
 
         QStandardItem * CDirModel::getPathItemFromIndex( QModelIndex idx ) const
         {
-            if ( idx.column() != EColumns::eFSName )
-            {
-                idx = idx.model()->index( idx.row(), EColumns::eFSName, idx.parent() );
-            }
             return itemFromIndex( idx );
         }
 
@@ -542,7 +603,7 @@ namespace NMediaManager
 
         bool CDirModel::isMediaFile( const QStandardItem * item ) const
         {
-            return item && CPreferences::instance()->isMediaFile( QFileInfo( item->data( ECustomRoles::eFullPathRole ).toString() ) );
+            return item && CPreferences::instance()->isMediaFile( fileInfo( item ) );
         }
 
         bool CDirModel::isMediaFile( const QModelIndex & idx ) const
@@ -742,7 +803,7 @@ namespace NMediaManager
             auto fi = fileInfo( idx );
             if ( !CPreferences::instance()->isMediaFile( fi ) )
                 return;
-            
+
             auto mediaInfo = getMediaTags( fi );
             auto pos = firstMediaItemColumn();
 
@@ -810,16 +871,46 @@ namespace NMediaManager
             return item->checkState() != Qt::Unchecked;
         }
 
-        bool CDirModel::setMKVTags( const QString & fileName, QString title, const QString & year, QString * msg ) const
+        bool CDirModel::setMediaTags( const QString & fileName, const QString & title, const QString & year, QString * msg ) const
         {
+            NSABUtils::CAutoWaitCursor awc;
+
             std::unordered_map< QString, QString > tags =
             {
-                { "TITLE", title }
+                { "TITLE", ( title.isEmpty() ? QFileInfo( fileName ).completeBaseName() : title ) }
                 ,{ "YEAR", year }
             };
 
+            QString localMsg;
+            auto aOK = NSABUtils::setMediaTags( fileName, tags, CPreferences::instance()->getMKVPropEditEXE(), &localMsg );
+            if ( !aOK )
+            {
+                if ( msg )
+                    *msg = localMsg;
+                else
+                {
+                    QMessageBox::critical( nullptr, tr( "Could not set tag" ), tr( "Could not set one or more media tags on file '%3'. %4" ).arg( fileName ).arg( localMsg ) );
+                }
+            }
+            return aOK;
+        }
+
+        bool CDirModel::setMediaTag( const QString & fileName, const std::pair< QString, QString > & data, QString * msg ) const
+        {
             NSABUtils::CAutoWaitCursor awc;
-            return NSABUtils::setMediaTags( fileName, tags, CPreferences::instance()->getMKVPropEditEXE(), msg );
+            std::unordered_map< QString, QString > tags = { data };
+            QString localMsg;
+            auto aOK = NSABUtils::setMediaTags( fileName, tags, CPreferences::instance()->getMKVPropEditEXE(), &localMsg );
+            if ( !aOK )
+            {
+                if ( msg )
+                    *msg = localMsg;
+                else
+                {
+                    QMessageBox::critical( nullptr, tr( "Could not set tag" ), tr( "Could not set media tag '%1' to '%2' on file '%3'. %4" ).arg( data.first ).arg( data.second ).arg( fileName ).arg( localMsg ) );
+                }
+            }
+            return aOK;
         }
 
         void CDirModel::addProcessError( const QString & msg )
@@ -883,13 +974,13 @@ namespace NMediaManager
         {
             switch ( error )
             {
-            case QProcess::FailedToStart: return QObject::tr( "Failed to Start: The process failed to start.Either the invoked program is missing, or you may have insufficient permissions to invoke the program." );
-            case QProcess::Crashed: return QObject::tr( "Crashed: The process crashed some time after starting successfully." );
-            case QProcess::Timedout: return QObject::tr( "Timed out: The last waitFor...() function timed out.The state of QProcess is unchanged, and you can try calling waitFor...() again." );
-            case QProcess::WriteError: return QObject::tr( "Write Error: An error occurred when attempting to write to the process.For example, the process may not be running, or it may have closed its input channel." );
-            case QProcess::ReadError: return QObject::tr( "Read Error: An error occurred when attempting to read from the process.For example, the process may not be running." );
-            default:
-            case QProcess::UnknownError: return QObject::tr( "Unknown Error" );
+                case QProcess::FailedToStart: return QObject::tr( "Failed to Start: The process failed to start.Either the invoked program is missing, or you may have insufficient permissions to invoke the program." );
+                case QProcess::Crashed: return QObject::tr( "Crashed: The process crashed some time after starting successfully." );
+                case QProcess::Timedout: return QObject::tr( "Timed out: The last waitFor...() function timed out.The state of QProcess is unchanged, and you can try calling waitFor...() again." );
+                case QProcess::WriteError: return QObject::tr( "Write Error: An error occurred when attempting to write to the process.For example, the process may not be running, or it may have closed its input channel." );
+                case QProcess::ReadError: return QObject::tr( "Read Error: An error occurred when attempting to read from the process.For example, the process may not be running." );
+                default:
+                case QProcess::UnknownError: return QObject::tr( "Unknown Error" );
             }
         }
 
@@ -897,10 +988,10 @@ namespace NMediaManager
         {
             switch ( error )
             {
-            case QProcess::NormalExit: return QObject::tr( "Normal Exit: The process exited normally." );
-            case QProcess::CrashExit: return QObject::tr( "Crashed: The process crashed." );
-            default:
-            return QString();
+                case QProcess::NormalExit: return QObject::tr( "Normal Exit: The process exited normally." );
+                case QProcess::CrashExit: return QObject::tr( "Crashed: The process crashed." );
+                default:
+                    return QString();
             }
         }
 
@@ -914,7 +1005,7 @@ namespace NMediaManager
             return QStringList() << tr( "Title" ) << tr( "Media Date" ) << tr( "Comment" );
         }
 
-        std::list< NMediaManager::NCore::STreeNodeItem > CDirModel::additionalitems( const QFileInfo & fileInfo ) const
+        std::list< NMediaManager::NCore::STreeNodeItem > CDirModel::addAdditionalItems( const QFileInfo & fileInfo ) const
         {
             if ( showMediaItems() )
             {
@@ -928,8 +1019,11 @@ namespace NMediaManager
             std::list<NMediaManager::NCore::STreeNodeItem> retVal;
             auto mediaInfo = getMediaTags( fileInfo );
             retVal.push_back( STreeNodeItem( mediaInfo["title"], offset ) );
-            retVal.push_back( STreeNodeItem( mediaInfo["date_recorded"], offset+1 ) );
-            retVal.push_back( STreeNodeItem( mediaInfo["comment"], offset+2 ) );
+            retVal.back().fEditType = CDirModelItem::EType::eTitle;
+            retVal.push_back( STreeNodeItem( mediaInfo["date_recorded"], offset + 1 ) );
+            retVal.back().fEditType = CDirModelItem::EType::eDate;
+            retVal.push_back( STreeNodeItem( mediaInfo["comment"], offset + 2 ) );
+            retVal.back().fEditType = CDirModelItem::EType::eComment;
             return retVal;
         }
 
@@ -983,8 +1077,7 @@ namespace NMediaManager
         }
 
         void CDirModel::slotProcessStarted()
-        {
-        }
+        {}
 
         void CDirModel::slotProcesssStateChanged( QProcess::ProcessState newState )
         {
@@ -1030,9 +1123,10 @@ namespace NMediaManager
                 return;
             }
 
-            if ( fSetMKVTagsOnSuccess && !model->setMKVTags( fNewName ) )
+            QString msg;
+            if ( fSetMKVTagsOnSuccess && !model->setMediaTags( fNewName, QString(), QString(), &msg ) )
             {
-                auto errorItem = new QStandardItem( QString( "ERROR: %1: FAILED TO SET MKV Tags" ).arg( model->getDispName( fNewName ) ) );
+                auto errorItem = new QStandardItem( QString( "ERROR: %1: FAILED TO SET MKV Tags - %2" ).arg( model->getDispName( fNewName ) ).arg( msg ) );
                 errorItem->setData( ECustomRoles::eIsErrorNode, true );
                 CDirModel::appendError( fItem, errorItem );
 
@@ -1085,10 +1179,16 @@ namespace NMediaManager
         {
             return fBasePage->log();
         }
-        
+
         NSABUtils::CDoubleProgressDlg * CDirModel::progressDlg() const
         {
             return fBasePage->progressDlg();
+        }
+
+        void CDirModel::postAddItems( const QFileInfo & fileInfo, std::list< NMediaManager::NCore::STreeNodeItem > & currItems ) const
+        {
+            (void)fileInfo;
+            (void)currItems;
         }
 
         QTreeView * CDirModel::filesView() const
@@ -1112,5 +1212,46 @@ namespace NMediaManager
             NSABUtils::autoSize( filesView() );
         }
 
+        void CDirModel::updatePath( const QModelIndex & idx, const QString & path )
+        {
+            if ( QFileInfo( path ).isDir() )
+                updateDir( idx, path );
+            else
+            {
+                auto nameIndex = index( idx.row(), EColumns::eFSName, idx.parent() );
+                setData( nameIndex, path, ECustomRoles::eFullPathRole );
+            }
+        }
+
+        bool CDirModel::isRootPath( const QString & path ) const
+        {
+            if ( path.isEmpty() || QFileInfo( path ).isRelative() )
+                return false;
+
+            return QFileInfo( fRootPath ) == QFileInfo( path ).absoluteFilePath();
+        }
+
+        void CDirModel::updateDir( const QModelIndex & idx, const QDir & dir )
+        {
+            auto nameIndex = index( idx.row(), EColumns::eFSName, idx.parent() );
+            setData( nameIndex, dir.absolutePath(), ECustomRoles::eFullPathRole );
+
+            auto numRows = rowCount( idx );
+            for ( int ii = 0; ii < numRows; ++ii )
+            {
+                auto childIdx = index( ii, EColumns::eFSName, idx );
+                auto fileName = QFileInfo( data( childIdx, ECustomRoles::eFullPathRole ).toString() ).fileName();
+
+                auto newPath = dir.absoluteFilePath( fileName );
+                updatePath( childIdx, newPath );
+            }
+        }
+
+        CDirModelItem::CDirModelItem( const QString & text, EType type ) :
+            QStandardItem( text ),
+            fType( type )
+        {
+            setEditable( true );
+        }
     }
 }
