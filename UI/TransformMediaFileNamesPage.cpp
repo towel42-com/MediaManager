@@ -91,33 +91,30 @@ namespace NMediaManager
             if ( !idx.isValid() )
                 return false;
 
-            auto nm = model()->index( idx.row(), NCore::EColumns::eFSName, idx.parent() ).data().toString();
+            auto nameIdx = model()->index( idx.row(), NCore::EColumns::eFSName, idx.parent() );
+
+            auto nm = nameIdx.data().toString();
             auto action = menu->addAction( tr( "Search for '%1'..." ).arg( nm ),
-                                           [ idx, this ]()
+                                           [ nameIdx, this ]()
             {
-                search( idx );
+                search( nameIdx );
             } );
             menu->setDefaultAction( action );
 
-            auto searchResult = model()->getSearchResultInfo( idx );
+            auto searchResult = model()->getTransformResult( nameIdx, false );
             if ( searchResult )
             {
                 menu->addAction( tr( "Clear Search Result" ),
-                                 [ idx, this ]()
+                                 [ nameIdx, this ]()
                 {
-                    model()->clearSearchResult( idx );
+                    model()->clearSearchResult( nameIdx );
                 } );
                 menu->addAction( tr( "Transform Item..." ),
-                                 [ idx, this ]()
+                                 [ nameIdx, this ]()
                 {
-                    run( idx );
+                    run( nameIdx );
                 } );
             }
-            menu->addAction( tr( "Set Tags..." ),
-                             [ idx, this ]()
-            {
-                setMKVTags( idx );
-            } );
             return true;
         }
 
@@ -173,7 +170,7 @@ namespace NMediaManager
                 else
                 {
                     auto path = model()->filePath( childIndex );
-                    auto titleInfo = model()->getSearchResultInfo( childIndex );
+                    auto titleInfo = model()->getTransformResult( childIndex, false );
                     auto searchInfo = std::make_shared< NCore::SSearchTMDBInfo >( name, titleInfo );
                     searchInfo->setExactMatchOnly( NCore::CPreferences::instance()->getExactMatchesOnly() );
 
@@ -302,7 +299,7 @@ namespace NMediaManager
         void CTransformMediaFileNamesPage::search( const QModelIndex & idx )
         {
             auto baseIdx = model()->index( idx.row(), NCore::EColumns::eFSName, idx.parent() );
-            auto titleInfo = model()->getSearchResultInfo( idx );
+            auto titleInfo = model()->getTransformResult( idx, true );
 
             auto isDir = baseIdx.data( NCore::ECustomRoles::eIsDir ).toBool();
             auto fullPath = baseIdx.data( NCore::ECustomRoles::eFullPathRole ).toString();
