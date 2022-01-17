@@ -448,7 +448,7 @@ namespace NMediaManager
             fImpl->searchReleaseYear->setEnabled( byName );
             fImpl->searchSeason->setEnabled( fImpl->searchForTVShows->isChecked() && byName );
             fImpl->searchEpisode->setEnabled( fImpl->searchForTVShows->isChecked() && byName );
-            fImpl->searchTMDBID->setEnabled( !searchByName() );
+            fImpl->searchTMDBID->setEnabled( true );
             if ( !init )
                 slotSearchCriteriaChanged();
         }
