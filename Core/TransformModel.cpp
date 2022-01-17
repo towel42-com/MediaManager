@@ -62,10 +62,11 @@ namespace NMediaManager
                 if ( baseItem && idx.column() == EColumns::eIsTVShow )
                     baseItem->setData( isTVShow, eIsTVShowRole );
                 auto item = itemFromIndex( idx );
-                item->setText( isTVShow ? "Yes" : "No" );
+                // set Text calls updateItem, do not explicitly call it
+                item->setText( isTVShow ? "Yes" : "No" ); 
                 updateTransformPattern( item );
             }
-            return QStandardItemModel::setData( idx, value, role );
+            return CDirModel::setData( idx, value, role );
         }
   
         QString patternToRegExp( const QString & captureName, const QString & inPattern, const QString & value, bool removeOptional )
@@ -272,29 +273,28 @@ namespace NMediaManager
                     ext = fileInfo.suffix();
                 }
 
-                auto pos = fTransformResultMap.find( filePath );
-                if ( pos == fTransformResultMap.end() )
+                auto transformInfo = getTransformResult( filePath, false );
+                if ( !transformInfo )
                 {
                     if ( isValidName( fileInfo ) || isIgnoredPathName( fileInfo ) )
                         retVal.second = QString();
                 }
                 else
                 {
-                    auto searchResult = (*pos).second;
-                    if ( searchResult->isDeleteResult() )
+                    if ( transformInfo->isDeleteResult() )
                     {
                         retVal.first = true;
-                        retVal.second = searchResult->getTitle();
+                        retVal.second = transformInfo->getTitle();
                     }
                     else
                     {
-                        auto title = searchResult->getTitle();
-                        auto year = searchResult->getInitialYear();
-                        auto tmdbid = searchResult->fTMDBID;
-                        auto season = searchResult->fSeason;
-                        auto episode = searchResult->fEpisode;
-                        auto extraInfo = searchResult->fExtraInfo;
-                        auto episodeTitle = searchResult->fSubTitle;
+                        auto title = transformInfo->getTitle();
+                        auto year = transformInfo->getInitialYear();
+                        auto tmdbid = transformInfo->fTMDBID;
+                        auto season = transformInfo->fSeason;
+                        auto episode = transformInfo->fEpisode;
+                        auto extraInfo = transformInfo->fExtraInfo;
+                        auto episodeTitle = transformInfo->fSubTitle;
 
                         retVal.second = fileInfo.isDir() ? info.fOutDirPattern : info.fOutFilePattern;
                         retVal.second = replaceCapture( "title", retVal.second, title );
@@ -419,9 +419,9 @@ namespace NMediaManager
         bool CTransformModel::treatAsTVShow( const QFileInfo & fileInfo, bool isTVByDefault ) const
         {
             EMediaType mediaType = isTVByDefault ? EMediaType::eTVShow : EMediaType::eMovie;
-            auto pos = fTransformResultMap.find( fileInfo.absoluteFilePath() );
-            if ( pos != fTransformResultMap.end() )
-                mediaType = (*pos).second->mediaType();
+            auto transformInfo = getTransformResult( fileInfo, true );
+            if ( transformInfo )
+                mediaType = transformInfo->mediaType();
             return isTVType( mediaType );
         }
 
@@ -470,7 +470,7 @@ namespace NMediaManager
                     //auto txt = childIdx.data( ECustomRoles::eFullPathRole ).toString();
                     if ( !isSubtitleFile( childIdx ) )
                     {
-                        auto childInfo = getSearchResultInfo( childIdx );
+                        auto childInfo = getTransformResult( childIdx, false );
                         if ( !childInfo )
                         {
                             setSearchResult( childIdx, searchResult, applyToChildren );
@@ -478,18 +478,6 @@ namespace NMediaManager
                     }
                 }
             }
-        }
-
-        std::shared_ptr< STransformResult > CTransformModel::getSearchResultInfo( const QModelIndex & idx ) const
-        {
-            if ( !idx.isValid() )
-                return {};
-
-            auto fi = fileInfo( idx );
-            auto pos = fTransformResultMap.find( fi.absoluteFilePath() );
-            if ( pos == fTransformResultMap.end() )
-                return {};
-            return (*pos).second;
         }
 
         void CTransformModel::clearSearchResult( const QModelIndex & idx )
@@ -683,10 +671,16 @@ namespace NMediaManager
                             }
                             else if ( parentPathOK && !dirAlreadyExisted )
                             {
-                                auto pos = fTransformResultMap.find( oldName );
-                                auto searchInfo = (pos == fTransformResultMap.end()) ? std::shared_ptr< STransformResult >() : (*pos).second;
+                                auto transformResult = getTransformResult( oldName, true );
+                                while ( !transformResult && item->parent() )
+                                {
+                                    auto parentsOldName = computeTransformPath( item->parent(), true );
+                                    transformResult = getTransformResult( parentsOldName, true );
+                                    item = item->parent();
+                                }
+
                                 QString msg;
-                                auto aOK = setMKVTags( newName, searchInfo, msg );
+                                auto aOK = setMediaTags( newName, transformResult, msg );
                                 if ( progressDlg() )
                                 {
                                     progressDlg()->setValue( progressDlg()->value() + 1 );
@@ -809,7 +803,9 @@ namespace NMediaManager
             if ( !item || !transformedItem )
                 return;
 
-            transformedItem->setBackground( Qt::white );
+            auto nameItem = getItem( item, NCore::EColumns::eFSName );
+
+            transformedItem->setBackground( QBrush() );
 
             auto path = item->data( ECustomRoles::eFullPathRole ).toString();
             auto fileInfo = QFileInfo( path );
@@ -830,7 +826,7 @@ namespace NMediaManager
             }
         }
 
-        void CTransformModel::preAddItems( const QFileInfo & fileInfo, std::list< NMediaManager::NCore::STreeNodeItem > & currItems ) const
+        void CTransformModel::postAddItems( const QFileInfo & fileInfo, std::list< NMediaManager::NCore::STreeNodeItem > & currItems ) const
         {
             bool isTVShow = isTVType( SSearchTMDBInfo::looksLikeTVShow( fileInfo.fileName(), nullptr ) );
 
@@ -850,7 +846,7 @@ namespace NMediaManager
             }
         }
 
-        std::list< NMediaManager::NCore::STreeNodeItem > CTransformModel::additionalitems( const QFileInfo & fileInfo ) const
+        std::list< NMediaManager::NCore::STreeNodeItem > CTransformModel::addAdditionalItems( const QFileInfo & fileInfo ) const
         {
             std::list< NMediaManager::NCore::STreeNodeItem > retVal;
 
@@ -861,22 +857,23 @@ namespace NMediaManager
 
             retVal.push_back( isTVShowItem );
 
-            auto mediaInfo = CDirModel::additionalitems( fileInfo );
-
-            retVal.insert( retVal.end(), mediaInfo.begin(), mediaInfo.end() );
-
             auto transformInfo = transformItem( fileInfo );
             auto transformedItem = STreeNodeItem( transformInfo.second, EColumns::eTransformName );
             retVal.push_back( transformedItem );
+
+            auto mediaInfo = CDirModel::addAdditionalItems( fileInfo );
+            retVal.insert( retVal.end(), mediaInfo.begin(), mediaInfo.end() );
+
             return retVal;
         }
 
         QStringList CTransformModel::headers() const
         {
-            return CDirModel::headers() 
+            return CDirModel::headers()
                 << tr( "Is TV Show?" )
+                << tr( "New Title" )
                 << getMediaHeaders()
-                << tr( "New Title" );
+                ;
         }
 
         void CTransformModel::postLoad( QTreeView * treeView ) const
@@ -928,7 +925,7 @@ namespace NMediaManager
 
         }
 
-        bool CTransformModel::setMKVTags( const QString & fileName, std::shared_ptr< STransformResult > & searchResults, QString & msg ) const
+        bool CTransformModel::setMediaTags( const QString & fileName, std::shared_ptr< STransformResult > & searchResults, QString & msg ) const
         {
             QString year;
             QString title = QFileInfo( fileName ).completeBaseName();
@@ -937,7 +934,7 @@ namespace NMediaManager
                 year = searchResults->getYear();
                 title = searchResults->getTitle();
             }
-            return CDirModel::setMKVTags( fileName, title, year, &msg );
+            return CDirModel::setMediaTags( fileName, title, year, &msg );
         }
 
         bool CTransformModel::canAutoSearch( const QModelIndex & index ) const
@@ -973,5 +970,45 @@ namespace NMediaManager
 
             return hasFiles;
         }
+
+        std::shared_ptr< STransformResult > CTransformModel::getTransformResult( const QModelIndex & idx, bool checkParents ) const
+        {
+            if ( !idx.isValid() )
+                return {};
+
+            auto fi = fileInfo( idx );
+            return getTransformResult( fi, checkParents );
+        }
+
+        std::shared_ptr< STransformResult > CTransformModel::getTransformResult( const QFileInfo & fi, bool checkParents ) const
+        {
+            auto path = fi.absoluteFilePath();
+            if ( path.isEmpty() )
+                return {};
+
+            auto pos = fTransformResultMap.find( path );
+            if ( pos != fTransformResultMap.end() )
+                return (*pos).second;
+
+            if ( !checkParents )
+                return {};
+
+            if ( isRootPath( fi.absoluteFilePath() ) )
+                 return {};
+
+            auto regExStr = "^([A-Z]\\:(\\\\|\\/)|(\\/))$";
+            auto regEx = QRegularExpression( regExStr, QRegularExpression::CaseInsensitiveOption );
+            auto match = regEx.match( path );
+            if ( match.hasMatch() )
+                return {};
+
+            return getTransformResult( fi.absolutePath(), true );
+        }
+
+        std::shared_ptr< STransformResult > CTransformModel::getTransformResult( const QString & path, bool checkParents ) const
+        {
+            return getTransformResult( QFileInfo( path ), checkParents );
+        }
+
     }
 }

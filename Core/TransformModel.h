@@ -49,10 +49,10 @@ namespace NMediaManager
             enum EColumns
             {
                 eIsTVShow = NCore::EColumns::eFirstCustomColumn,
+                eTransformName,
                 eMediaTitle,
                 eMediaYear,
-                eMediaComment,
-                eTransformName
+                eMediaComment
             };
 
             CTransformModel( NUi::CBasePage * page, QObject * parent = nullptr );
@@ -60,7 +60,6 @@ namespace NMediaManager
 
             void setSearchResult( const QModelIndex & idx, std::shared_ptr< STransformResult > info, bool applyToChilren );
             void setSearchResult( QStandardItem * item, std::shared_ptr< STransformResult > info, bool applyToChilren );
-            std::shared_ptr< STransformResult > getSearchResultInfo( const QModelIndex & idx ) const;
             void clearSearchResult( const QModelIndex & idx );
 
             bool treatAsTVShow( const QFileInfo & fileInfo, bool defaultValue ) const;
@@ -75,6 +74,10 @@ namespace NMediaManager
             void setDeleteItem( const QModelIndex & idx );
             bool canAutoSearch( const QModelIndex & index ) const;
             bool canAutoSearch( const QFileInfo & info ) const;
+
+            std::shared_ptr< STransformResult > getTransformResult( const QModelIndex & idx, bool checkParents ) const;
+            std::shared_ptr< STransformResult > getTransformResult( const QString & path, bool checkParents ) const;
+            std::shared_ptr< STransformResult > getTransformResult( const QFileInfo & path, bool checkParents ) const;
         public Q_SLOTS:
             void slotPatternChanged();
 
@@ -83,8 +86,8 @@ namespace NMediaManager
             void slotMovieOutputDirPatternChanged( const QString & outPattern );
             void slotMovieOutputFilePatternChanged( const QString & outPattern );
         private:
-            virtual void preAddItems( const QFileInfo & fileInfo, std::list< NMediaManager::NCore::STreeNodeItem > & currItems ) const override;
-            virtual std::list< NMediaManager::NCore::STreeNodeItem > additionalitems( const QFileInfo & fileInfo ) const override;
+            virtual void postAddItems( const QFileInfo & fileInfo, std::list< NMediaManager::NCore::STreeNodeItem > & currItems ) const override;
+            virtual std::list< NMediaManager::NCore::STreeNodeItem > addAdditionalItems( const QFileInfo & fileInfo ) const override;
             virtual bool showMediaItems() const { return true; };
             virtual int firstMediaItemColumn() const { return EColumns::eMediaTitle; }
 
@@ -105,9 +108,10 @@ namespace NMediaManager
             virtual bool usesQueuedProcessing() const { return false; }
 
             std::pair< bool, QStandardItem * > processItem( const QStandardItem * item, QStandardItem * parentItem, bool displayOnly ) const override;
+
             QStandardItem * getTransformItem( const QStandardItem * parent ) const;
 
-            bool setMKVTags( const QString & fileName, std::shared_ptr< STransformResult > & searchResults, QString & msg ) const;
+            bool setMediaTags( const QString & fileName, std::shared_ptr< STransformResult > & searchResults, QString & msg ) const;
 
             bool isValidName( const QFileInfo & fi ) const;
             bool isValidName( const QString & absPath, bool isDir, std::optional< bool > isTVShow ) const;
