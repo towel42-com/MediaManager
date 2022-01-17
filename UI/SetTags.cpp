@@ -51,17 +51,17 @@ namespace NMediaManager
         {
             NSABUtils::CAutoWaitCursor awc;
             auto tags = NSABUtils::getMediaTags( fImpl->fileName->text(), NCore::CPreferences::instance()->getFFProbeEXE() );
-            fImpl->title->setText( tags["title"] );
-            fImpl->releaseDate->setText( tags["date_recorded"] );
-            fImpl->comments->setText( tags["comment"] );
+            fImpl->title->setText( tags["TITLE"] );
+            fImpl->releaseDate->setText( tags["DATE_RECORDED"] );
+            fImpl->comments->setText( tags["COMMENT"] );
         }
 
         void CSetTags::accept()
         {
             std::unordered_map< QString, QString > tags =
             {
-                { "TITLE", fImpl->title->text() }
-                ,{ "YEAR", fImpl->releaseDate->text() }
+                 { "TITLE", fImpl->title->text() }
+                ,{ "DATE_RECORDED", fImpl->releaseDate->text() }
                 ,{ "COMMENT", fImpl->comments->text() }
             };
 
