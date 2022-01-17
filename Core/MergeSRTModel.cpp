@@ -374,11 +374,6 @@ namespace NMediaManager
             return getItem( item, EColumns::eLanguage );
         }
 
-        void CMergeSRTModel::preAddItems( const QFileInfo & /*fileInfo*/, std::list< NMediaManager::NCore::STreeNodeItem > & /*currItems*/ ) const
-        {
-            return;
-        }
-
         bool CMergeSRTModel::postExtProcess( const SProcessInfo & info, QStringList & msgList )
         {
             bool aOK = CDirModel::postExtProcess( info, msgList );
@@ -392,7 +387,7 @@ namespace NMediaManager
             return aOK;
         }
 
-        std::list< NMediaManager::NCore::STreeNodeItem > CMergeSRTModel::additionalitems( const QFileInfo & fileInfo )const
+        std::list< NMediaManager::NCore::STreeNodeItem > CMergeSRTModel::addAdditionalItems( const QFileInfo & fileInfo )const
         {
             std::list< NMediaManager::NCore::STreeNodeItem > retVal;
             if ( fileInfo.isFile() )
