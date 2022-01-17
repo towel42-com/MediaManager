@@ -248,7 +248,9 @@ namespace NMediaManager
             Q_ASSERT( pos != fRequestTypeMap.end() );
             auto requestType = ERequestType::eUnknownRequest;
             if ( pos != fRequestTypeMap.end() )
-                requestType = ( *pos ).second;
+            {
+                requestType = (*pos).second;
+            }
             return requestType;
         }
 
@@ -377,8 +379,10 @@ namespace NMediaManager
             else if ( !reply->isCached() )
             {
                 fURLResultsCache[ reply->key() ] = reply->getData();
-                removeRequestType( reply );
             }
+
+            if ( !reply->isCached() )
+                removeRequestType( reply );
 
             checkIfStillSearching();
         }
