@@ -36,6 +36,7 @@
 #include "SABUtils/MKVUtils.h"
 
 #include "SABUtils/DoubleProgressDlg.h"
+#include "SABUtils/utils.h"
 
 #include <QDebug>
 #include <QUrl>
@@ -58,7 +59,6 @@
 
 #include <set>
 #include <list>
-#include "SABUtils/MD5.h"
 
 QDebug operator<<( QDebug dbg, const NMediaManager::NCore::STreeNode & node )
 {
@@ -214,6 +214,11 @@ namespace NMediaManager
                         }
 
                         updatePath( idx, newName );
+                    }
+                    break;
+                    case CDirModelItem::EType::eLength:
+                    {
+                        return false;
                     }
                     break;
                     case CDirModelItem::EType::eTitle:
@@ -792,7 +797,12 @@ namespace NMediaManager
             if ( !CPreferences::instance()->isMediaFile( fi ) )
                 return {};
             NSABUtils::CAutoWaitCursor awc;
-            return NSABUtils::getMediaTags( fi.absoluteFilePath(), NCore::CPreferences::instance()->getFFProbeEXE() );
+            auto retVal = NSABUtils::getMediaTags( fi.absoluteFilePath(), NCore::CPreferences::instance()->getFFProbeEXE() );
+
+            auto numSecs = NSABUtils::getNumberOfSeconds( fi.absoluteFilePath(), NCore::CPreferences::instance()->getFFProbeEXE() );
+            NSABUtils::CTimeString ts( numSecs * 1000 );
+            retVal["LENGTH"] = ts.toString( "hh:mm:ss" );
+            return retVal;
         }
 
         void CDirModel::reloadMediaTags( const QModelIndex & idx )
@@ -808,13 +818,16 @@ namespace NMediaManager
             auto pos = firstMediaItemColumn();
 
             QStandardItem * item = itemFromIndex( index( idx.row(), pos++, idx.parent() ) );
-            item->setText( mediaInfo["title"] );
+            item->setText( mediaInfo["TITLE"] );
 
             item = itemFromIndex( index( idx.row(), pos++, idx.parent() ) );
-            item->setText( mediaInfo["date_recorded"] );
+            item->setText( mediaInfo["LENGTH"] );
 
             item = itemFromIndex( index( idx.row(), pos++, idx.parent() ) );
-            item->setText( mediaInfo["comment"] );
+            item->setText( mediaInfo["DATE_RECORDED"] );
+
+            item = itemFromIndex( index( idx.row(), pos++, idx.parent() ) );
+            item->setText( mediaInfo["COMMENT"] );
         }
 
 
@@ -1002,7 +1015,7 @@ namespace NMediaManager
 
         QStringList CDirModel::getMediaHeaders() const
         {
-            return QStringList() << tr( "Title" ) << tr( "Media Date" ) << tr( "Comment" );
+            return QStringList() << tr( "Title" ) << tr( "Length" ) << tr( "Media Date" ) << tr( "Comment" );
         }
 
         std::list< NMediaManager::NCore::STreeNodeItem > CDirModel::addAdditionalItems( const QFileInfo & fileInfo ) const
@@ -1016,13 +1029,21 @@ namespace NMediaManager
 
         std::list<NMediaManager::NCore::STreeNodeItem> CDirModel::getMediaInfoItems( const QFileInfo & fileInfo, int offset ) const
         {
+            NSABUtils::CAutoWaitCursor awc;
+
             std::list<NMediaManager::NCore::STreeNodeItem> retVal;
             auto mediaInfo = getMediaTags( fileInfo );
-            retVal.push_back( STreeNodeItem( mediaInfo["title"], offset ) );
+
+            retVal.push_back( STreeNodeItem( mediaInfo["TITLE"], offset++ ) );
             retVal.back().fEditType = CDirModelItem::EType::eTitle;
-            retVal.push_back( STreeNodeItem( mediaInfo["date_recorded"], offset + 1 ) );
+
+            retVal.push_back( STreeNodeItem( mediaInfo["LENGTH"], offset++ ) );
+            retVal.back().fEditType = CDirModelItem::EType::eTitle;
+
+            retVal.push_back( STreeNodeItem( mediaInfo["DATE_RECORDED"], offset++ ) );
             retVal.back().fEditType = CDirModelItem::EType::eDate;
-            retVal.push_back( STreeNodeItem( mediaInfo["comment"], offset + 2 ) );
+
+            retVal.push_back( STreeNodeItem( mediaInfo["COMMENT"], offset++ ) );
             retVal.back().fEditType = CDirModelItem::EType::eComment;
             return retVal;
         }

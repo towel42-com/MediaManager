@@ -91,6 +91,7 @@ namespace NMediaManager
             {
                 ePath = QStandardItem::UserType + 1,
                 eTitle,
+                eLength,
                 eDate,
                 eComment
             };
