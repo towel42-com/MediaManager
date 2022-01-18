@@ -293,6 +293,7 @@ namespace NMediaManager
             if ( !fBIF )
                 return;
 
+            fImpl->bifFileValues->clear();
             new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "Magic Number" ) << tr( "00-07" ) << QString() << fBIF->magicNumber() );
             new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "Version" ) << tr( "08-11" ) << QString::number( std::get< 2 >( fBIF->version() ) ) << std::get< 1 >( fBIF->version() ) );
             new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "Number of BIF Images" ) << tr( "12-15" ) << QString::number( std::get< 2 >( fBIF->numImages() ) ) << std::get< 1 >( fBIF->numImages() ) );
