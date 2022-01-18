@@ -216,7 +216,7 @@ namespace NMediaManager
             return QString();
         }
 
-        void CBasePage::postNonQueuedRun( bool /*finalStep*/ )
+        void CBasePage::postNonQueuedRun( bool /*finalStep*/, bool /*canceled*/ )
         {
 
         }
@@ -245,9 +245,9 @@ namespace NMediaManager
                     {
                         setupProgressDlg( actionName, cancelName, count, eventsPerPath );
                     },
-                    [ this ]( bool finalStep )
+                    [ this ]( bool finalStep, bool canceled )
                     {
-                        postNonQueuedRun( finalStep );
+                        postNonQueuedRun( finalStep, canceled );
                     },
                     this );
             }
@@ -316,6 +316,11 @@ namespace NMediaManager
                                  [ idx, this ]()
                 {
                     editMediaTags( idx );
+                } );
+                retVal->addAction( tr( "Autoset Tags from File Name..." ),
+                                   [ idx, this ]()
+                {
+                    fModel->autoSetMediaTags( idx );
                 } );
             }
 
