@@ -21,43 +21,21 @@
 # SOFTWARE.
 
 set(qtproject_SRCS
-    BIFViewerPage.cpp
-    BasePage.cpp
-    MainWindow.cpp
-    MakeMKVPage.cpp
-    MergeSRTPage.cpp
-    SelectTMDB.cpp
-    SetTags.cpp
-    ProcessConfirm.cpp
-    TransformMediaFileNamesPage.cpp
+    Preferences.cpp
 )
 
 set(qtproject_H
-    BIFViewerPage.h
-    BasePage.h
-    MainWindow.h
-    MakeMKVPage.h
-    MergeSRTPage.h
-    SelectTMDB.h
-    SetTags.h
-    ProcessConfirm.h
-    TransformMediaFileNamesPage.h
+    Preferences.h
 )
 
 set(project_H
 )
 
 set(qtproject_UIS
-    BIFViewerPage.ui
-    BasePage.ui
-    MainWindow.ui
-    SelectTMDB.ui
-    SetTags.ui
-    ProcessConfirm.ui
+    Preferences.ui
 )
 
 set(qtproject_QRC
-    application.qrc
 )
 
 file(GLOB qtproject_QRC_SOURCES "resources/*")

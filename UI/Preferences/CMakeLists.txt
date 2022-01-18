@@ -20,45 +20,26 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-set(qtproject_SRCS
-    BIFViewerPage.cpp
-    BasePage.cpp
-    MainWindow.cpp
-    MakeMKVPage.cpp
-    MergeSRTPage.cpp
-    SelectTMDB.cpp
-    SetTags.cpp
-    ProcessConfirm.cpp
-    TransformMediaFileNamesPage.cpp
+cmake_minimum_required(VERSION 3.1)
+if(CMAKE_VERSION VERSION_LESS "3.7.0")
+    set(CMAKE_INCLUDE_CURRENT_DIR ON)
+endif()
+project( Preferences )
+
+include( include.cmake )
+include( ${CMAKE_SOURCE_DIR}/SABUtils/Project.cmake )
+
+add_library(Preferences STATIC
+    ${project_SRCS} 
+    ${project_H}  
+    ${qtproject_SRCS} 
+    ${qtproject_QRC} 
+    ${qtproject_QRC_SRCS} 
+    ${qtproject_UIS_H} 
+    ${qtproject_MOC_SRCS} 
+    ${qtproject_H} 
+    ${qtproject_UIS}
+    ${qtproject_QRC_SOURCES}
+    ${_CMAKE_FILES}
 )
-
-set(qtproject_H
-    BIFViewerPage.h
-    BasePage.h
-    MainWindow.h
-    MakeMKVPage.h
-    MergeSRTPage.h
-    SelectTMDB.h
-    SetTags.h
-    ProcessConfirm.h
-    TransformMediaFileNamesPage.h
-)
-
-set(project_H
-)
-
-set(qtproject_UIS
-    BIFViewerPage.ui
-    BasePage.ui
-    MainWindow.ui
-    SelectTMDB.ui
-    SetTags.ui
-    ProcessConfirm.ui
-)
-
-set(qtproject_QRC
-    application.qrc
-)
-
-file(GLOB qtproject_QRC_SOURCES "resources/*")
-
+set_target_properties( Preferences PROPERTIES FOLDER Libs )
