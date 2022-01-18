@@ -41,12 +41,12 @@ namespace NMediaManager
         {
             fSearchResultInfo = searchResult;
             fInitSearchString = text;
-            fMediaType = looksLikeTVShow( text, nullptr );
+            fMediaType = std::make_pair( looksLikeTVShow( text, nullptr ), true );
             updateSearchCriteria( true );
         }
 
         SSearchTMDBInfo::SSearchTMDBInfo() :
-            fMediaType( EMediaType::eUnknownType )
+            fMediaType( std::make_pair( EMediaType::eUnknownType, true ) )
         {
 
         }
@@ -287,7 +287,7 @@ namespace NMediaManager
 
         QString SSearchTMDBInfo::toString( bool forDebug ) const
         {
-            auto retVal = forDebug ? QString( "SSearchTMDBInfo(%1 (%2)-S%3E%4-%5-%6-%7)" ) : QString( "Search Name: '%1' - Release Date: %2 - Season: %3 - Episode: %4 - TMDB ID: %5 - Media Type: %6 - Exact Match Only: %7" );
+            auto retVal = forDebug ? QString( "SSearchTMDBInfo(%1 (%2)-S%3E%4-%5-%6-%7)" ) : QString( "Search Name: '%1' - Release Date: %2 - Season: %3 - Episode: %4 - TMDB ID: %5 - Media Type: %6 Auto Determined: %7 - Exact Match Only: %8" );
 
             retVal = retVal
                 .arg( searchName() )
@@ -295,7 +295,7 @@ namespace NMediaManager
                 .arg( forDebug ? QString::number( season() ) : (season() == -1) ? "<Not Set>" : QString::number( season() ) )
                 .arg( forDebug ? QString::number( episode() ) : (episode() == -1) ? "<Not Set>" : QString::number( episode() ) )
                 .arg( forDebug ? tmdbIDString() : tmdbIDString().isEmpty() ? "<Not Set>" : tmdbIDString() )
-                .arg( toEnumString( fMediaType ) )
+                .arg( toEnumString( fMediaType.first ) ).arg( fMediaType.second ? "Yes" : "No" )
                 .arg( forDebug ? QString("%1").arg( exactMatchOnly() ) :exactMatchOnly() ? "Yes" : "No" )
                 ;
 
@@ -439,7 +439,7 @@ namespace NMediaManager
 
         bool SSearchTMDBInfo::isTVMedia() const
         {
-            return isTVType( fMediaType );
+            return isTVType( fMediaType.first );
         }
 
         bool SSearchTMDBInfo::isRippedFromMKV( const QFileInfo & fi, int * titleNum )
@@ -468,8 +468,8 @@ namespace NMediaManager
         bool SSearchTMDBInfo::hasDiskNumber( QString & searchString, int & diskNum, std::shared_ptr< STransformResult > searchResultInfo )
         {
             QString diskStr;
-            auto regExpStr = "[^A-Za-z](?<fulltext>D(?<num>\\d+))(\\D|$)";
-            auto regExp = QRegularExpression( regExpStr );
+            auto regExpStr = "[^A-Za-z](?<fulltext>D(ISC|ISK)?_?(?<num>\\d+))(\\D|$)";
+            auto regExp = QRegularExpression( regExpStr, QRegularExpression::CaseInsensitiveOption );
             auto match = regExp.match( searchString );
             if ( match.hasMatch() )
             {

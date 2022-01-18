@@ -102,7 +102,7 @@ namespace NMediaManager
 
         Q_SIGNALS:
             void sigSearchFinished();
-            void sigAutoSearchFinished( const QString & path, bool remaining );
+            void sigAutoSearchFinished( const QString & path, SSearchTMDBInfo * searchInfo, bool remaining );
             void sigMessage( const QString & msg );
             void sigFakeRequestFinished( ERequestType requestType, const QString & url, const QByteArray & cachedReply );
         private:

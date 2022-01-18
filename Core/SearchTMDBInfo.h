@@ -46,7 +46,7 @@ namespace NMediaManager
 
         struct SSearchTMDBInfo
         {
-            SSearchTMDBInfo();;
+            SSearchTMDBInfo();
             SSearchTMDBInfo( const QString & searchString, std::shared_ptr< STransformResult > titleInfo );
 
             static bool hasDiskNumber( QString & searchString, int & diskNum, std::shared_ptr< STransformResult > searchResult );
@@ -68,8 +68,9 @@ namespace NMediaManager
             QString subTitle() const { return fSubTitle; }
 
             bool isTVMedia() const;
-            void setMediaType( EMediaType searchType ) { fMediaType = searchType; }
-            EMediaType mediaType() const { return fMediaType; }
+            void setMediaType( EMediaType searchType ) { fMediaType = std::make_pair( searchType, false ); }
+            EMediaType mediaType() const { return fMediaType.first; }
+            bool mediaTypeAutoDetermined() const { return fMediaType.second; }
 
             void setExactMatchOnly( bool exactMatchOnly ) { fExactMatchOnly = exactMatchOnly; }
             bool exactMatchOnly() const { return fExactMatchOnly; }
@@ -113,7 +114,7 @@ namespace NMediaManager
             template< typename T >
             bool isMatch( const QString & releaseDate, const T & tmdbid, const QString & name, EMediaType mediaType, const T & season, const T & episode ) const
             {
-                bool retVal = isMatch( releaseDate, tmdbid, name ) && (fMediaType == mediaType);
+                bool retVal = isMatch( releaseDate, tmdbid, name ) && (fMediaType.first == mediaType);
 
                 if ( isTVMedia() && retVal )
                     retVal = retVal && isSeasonMatch( season ) && isEpisodeMatch( episode );
@@ -144,7 +145,7 @@ namespace NMediaManager
             int fEpisode{ -1 };
             int fDiskNum{ -1 };
             QString fTMDBID;
-            EMediaType fMediaType;
+            std::pair< EMediaType, bool > fMediaType;
             bool fExactMatchOnly{ false };
             bool fSearchByName{ false };
 

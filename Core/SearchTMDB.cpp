@@ -425,7 +425,7 @@ namespace NMediaManager
             {
                 auto path = fCurrentQueuedSearch.value().first;
                 //qDebug() << "Sending autoSearchFinished " << path;
-                emit sigAutoSearchFinished( path, !fSearchQueue.empty() );
+                emit sigAutoSearchFinished( path, fSearchInfo.get(), !fSearchQueue.empty() );
                 fCurrentQueuedSearch.reset();
                 fSearchInfo.reset();
                 startAutoSearchTimer();
@@ -745,8 +745,14 @@ namespace NMediaManager
             url.setHost( "api.themoviedb.org" );
 
             auto path = QString( "/3/tv/%1" ).arg( tmdbid );
+            bool hasEpisode = fSearchInfo->episode() != -1;
             if ( seasonNum == -1 )
                 seasonNum = fSearchInfo->season();
+            if ( seasonNum == -1 && fSearchInfo->episode() != -1 )
+            {
+                seasonNum = 1;
+                fSearchInfo->setSeason( 1 );
+            }
             std::shared_ptr< STransformResult > seasonInfo;
             if ( seasonNum != -1 )
             {
@@ -826,17 +832,21 @@ namespace NMediaManager
             seasonInfo->fEpisode = QString( "%1 Episode%2" ).arg( episodes.count() ).arg( episodes.count() == 1 ? "" : "s" );
             seasonInfo->fSeasonTMDBID = doc.object().contains( "id" ) ? QString::number( doc.object()["id"].toInt() ) : QString();
 
+            // season match
             if ( ( fSearchInfo->episode() == -1 ) && ( fSearchInfo->season() != -1 ) )
             {
                 addResult( seasonInfo );
             }
 
             bool episodeFound = false;
-            for ( auto &&ii : episodes )
+            if ( fSearchInfo->episode() != -1 )
             {
-                episodeFound = loadEpisodeDetails( ii.toObject(), seasonInfo ) || episodeFound;
-                if ( episodeFound )
-                    break;
+                for ( auto && ii : episodes )
+                {
+                    episodeFound = loadEpisodeDetails( ii.toObject(), seasonInfo ) || episodeFound;
+                    if ( episodeFound )
+                        break;
+                }
             }
             if ( episodeFound || ( fSearchInfo->episode() == -1 ) )
                 fSeasonInfoReplies.second = true;
