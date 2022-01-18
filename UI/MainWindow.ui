@@ -82,37 +82,8 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
-      <widget class="QWidget" name="transformMediaFileNamesTab">
-       <attribute name="icon">
-        <iconset resource="application.qrc">
-         <normaloff>:/resources/rename.png</normaloff>:/resources/rename.png</iconset>
-       </attribute>
-       <attribute name="title">
-        <string>Media Namer</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_3">
-        <property name="spacing">
-         <number>0</number>
-        </property>
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>0</number>
-        </property>
-        <property name="bottomMargin">
-         <number>0</number>
-        </property>
-        <item>
-         <widget class="NMediaManager::NUi::CTransformMediaFileNamesPage" name="transformMediaFileNamesPage" native="true"/>
-        </item>
-       </layout>
-      </widget>
       <widget class="QWidget" name="makeMKVTab">
        <attribute name="icon">
         <iconset resource="application.qrc">
@@ -165,6 +136,35 @@
         </property>
         <item>
          <widget class="NMediaManager::NUi::CMergeSRTPage" name="mergeSRTPage" native="true"/>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="transformMediaFileNamesTab">
+       <attribute name="icon">
+        <iconset resource="application.qrc">
+         <normaloff>:/resources/rename.png</normaloff>:/resources/rename.png</iconset>
+       </attribute>
+       <attribute name="title">
+        <string>Media Namer</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="NMediaManager::NUi::CTransformMediaFileNamesPage" name="transformMediaFileNamesPage" native="true"/>
         </item>
        </layout>
       </widget>

@@ -21,7 +21,7 @@
 // SOFTWARE.
 
 #include "MainWindow.h"
-#include "Preferences.h"
+#include "Preferences/Preferences.h"
 
 #include "ui_MainWindow.h"
 
@@ -142,9 +142,6 @@ namespace NMediaManager
 
             new NSABUtils::CSelectFileUrl( this );
 
-            QSettings settings;
-            fImpl->tabWidget->setCurrentIndex( settings.value( "LastFunctionalityPage", 0 ).toInt() );
-
             QTimer::singleShot( 0, this, &CMainWindow::slotDirectoryChangedImmediate );
             //QTimer::singleShot( 10, this, &CMainWindow::slotDirectoryChanged );
 
@@ -155,8 +152,6 @@ namespace NMediaManager
         CMainWindow::~CMainWindow()
         {
             saveSettings();
-            QSettings settings;
-            settings.setValue( "LastFunctionalityPage", fImpl->tabWidget->currentIndex() );
         }
 
         bool CMainWindow::isActivePageFileBased() const
@@ -208,12 +203,19 @@ namespace NMediaManager
         {
             fImpl->directory->addItems( NCore::CPreferences::instance()->getDirectories(), true );
             fImpl->fileName->addItems( NCore::CPreferences::instance()->getFileNames(), true );
+
+            QSettings settings;
+            auto renamerPage = fImpl->tabWidget->indexOf( fImpl->transformMediaFileNamesTab );
+
+            fImpl->tabWidget->setCurrentIndex( settings.value( "LastFunctionalityPage", renamerPage ).toInt() );
         }
 
         void CMainWindow::saveSettings()
         {
             NCore::CPreferences::instance()->setDirectories( fImpl->directory->getAllText() );
             NCore::CPreferences::instance()->setFileNames( fImpl->fileName->getAllText() );
+            QSettings settings;
+            settings.setValue( "LastFunctionalityPage", fImpl->tabWidget->currentIndex() );
         }
 
         void CMainWindow::slotWindowChanged()
