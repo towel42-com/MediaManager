@@ -53,7 +53,7 @@ namespace NMediaManager
 
         QString CMakeMKVPage::secondaryProgressLabel() const
         {
-            return tr( "Current Times (seconds):" );
+            return tr( "Current (seconds):" );
         }
 
         QString CMakeMKVPage::loadTitleName() const
