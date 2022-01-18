@@ -179,10 +179,10 @@ namespace NMediaManager
             QFileInfo fileInfo( const QStandardItem * item ) const;
             QString filePath( const QStandardItem * item ) const;
 
-            QStandardItem * getPathItemFromIndex( QModelIndex idx ) const;
+            QStandardItem * getPathItemFromIndex( const QModelIndex & idx ) const;
             QStandardItem * getItemFromPath( const QFileInfo & fi ) const;
 
-            bool process( const QModelIndex & idx, const std::function< void( int count, int eventsPerPath ) > & startProgress, const std::function< void( bool finalStep ) > & endProgress, QWidget * parent );
+            bool process( const QModelIndex & idx, const std::function< void( int count, int eventsPerPath ) > & startProgress, const std::function< void( bool finalStep, bool canceled ) > & endProgress, QWidget * parent );
 
             void setNameFilters( const QStringList & filters );
             void reloadModel();
@@ -212,7 +212,10 @@ namespace NMediaManager
 
             virtual std::unordered_map< QString, QString > getMediaTags( const QFileInfo & fi ) const;
             virtual void reloadMediaTags( const QModelIndex & idx );
-            virtual void setMediaTags( const QModelIndex & /*idx*/, const std::unordered_map< QString, QString > & /*tags*/ ) {}
+            virtual bool autoSetMediaTags( const QModelIndex & idx, QString * msg = nullptr );
+
+            bool setMediaTags( const QString & fileName, const QString & title, const QString & year, QString * msg = nullptr ) const;
+            bool setMediaTag( const QString & filename, const std::pair< QString, QString > & tagData, QString * msg = nullptr ) const; //pair => tag, value
 
             void updateDir( const QModelIndex & idx, const QDir & path );
             void updatePath( const QModelIndex & idx, const QString & path );
@@ -271,8 +274,6 @@ namespace NMediaManager
             virtual QString getMyTransformedName( const QStandardItem * item, bool parentsOnly ) const;
 
             void processFinished( const QString & msg, bool withError );
-            bool setMediaTags( const QString & fileName, const QString & title, const QString & year, QString * msg =nullptr ) const;
-            bool setMediaTag( const QString & filename, const std::pair< QString, QString > & tagData, QString * msg=nullptr ) const; //pair => tag, value
 
             void appendRow( QStandardItem * parent, QList< QStandardItem * > & items );
             static void appendError( QStandardItem * parent, QStandardItem * errorNode );
