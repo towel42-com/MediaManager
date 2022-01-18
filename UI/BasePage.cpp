@@ -258,8 +258,10 @@ namespace NMediaManager
             auto sizes = fImpl->vsplitter->sizes();
             if ( sizes.back() == 0 )
             {
-                sizes.front() -= 30;
-                sizes.back() = 30;
+                auto totalHeight = fImpl->vsplitter->size().height();
+                auto fortyPercent = totalHeight * 40 / 100;
+                sizes.front() -= fortyPercent;
+                sizes.back() = fortyPercent;
 
                 fImpl->vsplitter->setSizes( sizes );
             }
