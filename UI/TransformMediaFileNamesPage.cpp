@@ -69,10 +69,10 @@ namespace NMediaManager
             return dynamic_cast<NCore::CTransformModel *>(fModel.get());
         }
 
-        void CTransformMediaFileNamesPage::postNonQueuedRun( bool finalStep )
+        void CTransformMediaFileNamesPage::postNonQueuedRun( bool finalStep, bool canceled )
         {
             emit sigStopStayAwake();
-            if ( finalStep )
+            if ( finalStep && !canceled )
                 load();
         }
 
@@ -135,7 +135,7 @@ namespace NMediaManager
             model()->computeEpisodesForDiskNumbers();
 
             auto rootIdx = model()->index( 0, 0 );
-            bool somethingToSearchFor = autoSearchForNewNames( rootIdx );
+            bool somethingToSearchFor = autoSearchForNewNames( rootIdx, true, {} );
             fProgressDlg->setValue( fSearchesCompleted );
             if ( !somethingToSearchFor )
             {
@@ -145,55 +145,70 @@ namespace NMediaManager
             }
         }
 
-        bool CTransformMediaFileNamesPage::autoSearchForNewNames( const QModelIndex & parentIdx )
+        bool CTransformMediaFileNamesPage::autoSearchForNewNames( const QModelIndex & index, bool searchChildren, std::optional< NCore::EMediaType > mediaType )
         {
             bool retVal = false;
-            auto rowCount = model()->rowCount( parentIdx );
-            for ( int ii = 0; ii < rowCount; ++ii )
+
+            emit sigStartStayAwake();
+            auto parentName = model()->getSearchName( index );
+
+            auto name = model()->getSearchName( index );
+            if ( NCore::CPreferences::instance()->isPathToDelete( index.data( NCore::ECustomRoles::eFullPathRole ).toString() ) )
+            {
+                appendToLog( QString( "Deleting file '%1'" ).arg( index.data( NCore::ECustomRoles::eFullPathRole ).toString() ), true );
+                model()->setDeleteItem( index );
+            }
+            else
+            {
+                auto path = model()->filePath( index );
+                auto titleInfo = model()->getTransformResult( index, false );
+                auto searchInfo = std::make_shared< NCore::SSearchTMDBInfo >( name, titleInfo );
+                searchInfo->setExactMatchOnly( NCore::CPreferences::instance()->getExactMatchesOnly() );
+                if ( mediaType.has_value() )
+                    searchInfo->setMediaType( mediaType.value() );
+
+                if ( model()->canAutoSearch( index ) )
+                {
+                    auto msg = tr( "Adding Background Search for '%1'" ).arg( QDir( fDirName ).relativeFilePath( path ) );
+                    appendToLog( msg + QString( "\n\t%1\n" ).arg( searchInfo->toString( false ) ), true );
+                    fProgressDlg->setLabelText( msg );
+                    fProgressDlg->setValue( fProgressDlg->value() + 1 );
+                    qApp->processEvents();
+
+                    fSearchTMDB->addSearch( path, searchInfo );
+                    retVal = true;
+                }
+            }
+            auto rowCount = model()->rowCount( index );
+            for ( int ii = 0; searchChildren && ( ii < rowCount ); ++ii )
             {
                 if ( fProgressDlg->wasCanceled() )
                 {
                     fSearchTMDB->clearSearchCache();
                     break;
                 }
-
-                emit sigStartStayAwake();
-                auto parentName = model()->getSearchName( parentIdx );
-
-                auto childIndex = model()->index( ii, 0, parentIdx );
-                auto name = model()->getSearchName( childIndex );
-                if ( NCore::CPreferences::instance()->isPathToDelete( childIndex.data( NCore::ECustomRoles::eFullPathRole ).toString() ) )
-                {
-                    appendToLog( QString( "Deleting file '%1'" ).arg( childIndex.data( NCore::ECustomRoles::eFullPathRole ).toString() ), true );
-                    model()->setDeleteItem( childIndex );
-                }
-                else
-                {
-                    auto path = model()->filePath( childIndex );
-                    auto titleInfo = model()->getTransformResult( childIndex, false );
-                    auto searchInfo = std::make_shared< NCore::SSearchTMDBInfo >( name, titleInfo );
-                    searchInfo->setExactMatchOnly( NCore::CPreferences::instance()->getExactMatchesOnly() );
-
-                    if ( model()->canAutoSearch( childIndex ) )
-                    {
-                        auto msg = tr( "Adding Background Search for '%1'" ).arg( QDir( fDirName ).relativeFilePath( path ) );
-                        appendToLog( msg + QString( "\n\t%1\n" ).arg( searchInfo->toString( false ) ), true );
-                        fProgressDlg->setLabelText( msg );
-                        fProgressDlg->setValue( fProgressDlg->value() + 1 );
-                        qApp->processEvents();
-
-                        fSearchTMDB->addSearch( path, searchInfo );
-                        retVal = true;
-                    }
-                }
-                retVal = autoSearchForNewNames( childIndex ) || retVal;
+                auto childIndex = model()->index( ii, 0, index );
+                retVal = autoSearchForNewNames( childIndex, searchChildren, mediaType ) || retVal;
             }
             return retVal;
         }
 
-        void CTransformMediaFileNamesPage::slotAutoSearchFinished( const QString &path, bool searchesRemaining )
+        void CTransformMediaFileNamesPage::slotAutoSearchFinished( const QString &path, NCore::SSearchTMDBInfo * searchInfo, bool searchesRemaining )
         {
             auto results = fSearchTMDB->getResult( path );
+            if ( !fProgressDlg->wasCanceled() && results.empty() && searchInfo && searchInfo->mediaTypeAutoDetermined() )
+            {
+                auto item = model()->getItemFromPath( path );
+                auto index = item ? model()->indexFromItem( item ) : QModelIndex();
+                if ( index.isValid() )
+                {
+                    auto currMediaType = searchInfo->mediaType();
+                    auto newMediaType = (currMediaType == NCore::EMediaType::eMovie) ? NCore::EMediaType::eTVShow : NCore::EMediaType::eMovie;
+                    autoSearchForNewNames( index, false, newMediaType );
+                    searchesRemaining = true;
+                    fProgressDlg->setMaximum( fProgressDlg->primaryMax() + 1 );
+                }
+            }
 
             searchesRemaining = searchesRemaining && !fProgressDlg->wasCanceled();
 

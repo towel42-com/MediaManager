@@ -26,6 +26,7 @@
 #include "BasePage.h"
 
 #include <unordered_map>
+#include <optional>
 
 namespace NMediaManager
 {
@@ -35,6 +36,7 @@ namespace NMediaManager
         struct STransformResult;
         class CTransformModel;
         class CSearchTMDB;
+        enum class EMediaType;
     }
 }
 
@@ -63,7 +65,7 @@ namespace NMediaManager
             virtual void setupModel() override;
 
             virtual void postLoadFinished( bool canceled ) override;
-            virtual void postNonQueuedRun( bool finalStep ) override;
+            virtual void postNonQueuedRun( bool finalStep, bool canceled ) override;
 
             void setExactMatchesOnly( bool value );
             void setTreatAsTVByDefault( bool value );
@@ -79,13 +81,13 @@ namespace NMediaManager
         public Q_SLOTS:
         protected Q_SLOTS:
             void slotAutoSearchForNewNames();
-            void slotAutoSearchFinished( const QString & path, bool searchesRemaining );
+            void slotAutoSearchFinished( const QString & path, NCore::SSearchTMDBInfo * searchInfo, bool searchesRemaining );
             void slotTreatAsTVShowByDefault();
             void slotExactMatchesOnly();
             void slotMenuAboutToShow();
         protected:
             virtual void loadSettings() override;
-            [[nodiscard]] bool autoSearchForNewNames( const QModelIndex & rootIdx );
+            bool autoSearchForNewNames( const QModelIndex & rootIdx, bool searchChildren, std::optional< NCore::EMediaType > mediaType );
             
             NCore::CTransformModel * model();
 
