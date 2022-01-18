@@ -722,7 +722,7 @@ namespace NMediaManager
         {
             return CDirModel::headers()
                 << tr( "Is TV Show?" )
-                << tr( "New Title" )
+                << tr( "New Name" )
                 << getMediaHeaders()
                 ;
         }
