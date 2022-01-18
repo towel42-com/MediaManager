@@ -22,9 +22,13 @@
 
 #include "TransformResult.h"
 #include "SearchTMDBInfo.h"
+#include "PatternInfo.h"
 
 #include "SABUtils/StringUtils.h"
 #include "SABUtils/QtUtils.h"
+
+#include <QRegularExpression>
+#include <QFileInfo>
 
 namespace NMediaManager
 {
@@ -125,6 +129,97 @@ namespace NMediaManager
             if ( fMediaType != EMediaType::eTVEpisode )
                 return QString();
             return fSeason;
+        }
+
+                // do not include <> in the capture name
+        QString replaceCapture( const QString & captureName, const QString & returnPattern, const QString & value )
+        {
+            if ( captureName.isEmpty() )
+                return returnPattern;
+
+            // see if the capture name exists in the return pattern
+            auto capRegEx = QString( "\\<%1\\>" ).arg( captureName );
+            auto regExp = QRegularExpression( capRegEx );
+
+            int start = -1;
+            int replLength = -1;
+
+            auto match = regExp.match( returnPattern );
+            if ( !match.hasMatch() )
+                return returnPattern;
+            else
+            {
+                start = match.capturedStart( 0 );
+                replLength = match.capturedLength( 0 );
+            }
+
+            // its in there..now lets see if its optional
+            auto optRegExStr = QString( "\\{(?<replText>[^{}]+)\\}\\:%1" ).arg( capRegEx );
+            regExp = QRegularExpression( optRegExStr );
+            match = regExp.match( returnPattern );
+            bool optional = match.hasMatch();
+            QString replText = value;
+            if ( optional )
+            {
+                start = match.capturedStart( 0 );
+                replLength = match.capturedLength( 0 );
+
+                replText = match.captured( "replText" );
+                if ( value.isEmpty() )
+                    replText.clear();
+                else
+                {
+                    replText = replaceCapture( captureName, replText, value );;
+                }
+            }
+            auto retVal = returnPattern;
+            retVal.replace( start, replLength, replText );
+            return retVal;
+        }
+
+        void cleanFileName( QString & inFile, bool isDir )
+        {
+            if ( inFile.isEmpty() )
+                return;
+
+            inFile.replace( QRegularExpression( "^(([A-Za-z]\\:)|(\\/)|(\\\\))+" ), "" );
+
+            auto regExStr = QString( "(?<hours>\\d{1,2}):(?<minutes>\\d{2})" );
+            inFile.replace( QRegularExpression( regExStr ), "\\1\\2" );
+
+            regExStr = "\\s*\\:\\s*";
+            inFile.replace( QRegularExpression( regExStr ), " - " );
+
+            regExStr = "[\\:\\<\\>\\\"\\|\\?\\*";
+            if ( !isDir )
+                regExStr += "\\/\\\\";
+            regExStr += "]";
+            inFile.replace( QRegularExpression( regExStr ), "" );
+        }
+
+        QString STransformResult::transformedName( const QFileInfo & fileInfo, const SPatternInfo & patternInfo, bool titleOnly ) const
+        {
+            auto title = getTitle();
+            auto year = getInitialYear();
+            auto tmdbid = fTMDBID;
+            auto season = fSeason;
+            auto episode = fEpisode;
+            auto extraInfo = fExtraInfo;
+            auto episodeTitle = fSubTitle;
+
+            QString retVal = fileInfo.isDir() ? patternInfo.dirPattern() : patternInfo.filePattern();
+            retVal = replaceCapture( "title", retVal, title );
+            retVal = replaceCapture( "year", retVal, year );
+            retVal = replaceCapture( "tmdbid", retVal, tmdbid );
+            retVal = replaceCapture( "season", retVal, QString( "%1" ).arg( season, fileInfo.isDir() ? 1 : 2, QChar( '0' ) ) );
+            retVal = replaceCapture( "episode", retVal, QString( "%1" ).arg( episode, fileInfo.isDir() ? 1 : 2, QChar( '0' ) ) );
+            retVal = replaceCapture( "episode_title", retVal, episodeTitle );
+            retVal = replaceCapture( "extra_info", retVal, extraInfo );
+
+            cleanFileName( retVal, fileInfo.isDir() );
+            if ( !titleOnly && !fileInfo.isDir() )
+                retVal += "." + fileInfo.suffix();
+            return retVal;
         }
 
         void STransformResult::removeChild( std::shared_ptr< STransformResult > info )

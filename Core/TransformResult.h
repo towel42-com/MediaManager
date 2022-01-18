@@ -28,10 +28,13 @@
 #include <memory>
 #include <list>
 
+class QFileInfo;
+
 namespace NMediaManager
 {
     namespace NCore
     {
+        struct SPatternInfo;
         struct SSearchTMDBInfo;
         enum class ETitleInfo
         {
@@ -57,7 +60,6 @@ namespace NMediaManager
         QString toEnumString( EMediaType infoType );
         bool isTVType( EMediaType infoType );
 
-
         struct STransformResult
         {
             STransformResult( EMediaType type );
@@ -76,6 +78,7 @@ namespace NMediaManager
             QString getSeason() const;
             QString getEpisode() const;
 
+            QString transformedName( const QFileInfo & fileInfo, const SPatternInfo & info, bool titleOnly ) const;
             void removeChild( std::shared_ptr< STransformResult > info );
 
             QString toString( bool forDebug ) const;
