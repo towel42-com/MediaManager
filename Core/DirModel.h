@@ -268,7 +268,7 @@ namespace NMediaManager
             virtual void postFileFunction( bool aOK, const QFileInfo & fileInfo ) = 0;
             virtual bool preFileFunction( const QFileInfo & fileInfo, std::unordered_set<QString> & alreadyAdded, TParentTree & tree ) = 0;
 
-            virtual void attachTreeNodes( QStandardItem * nextParent, QStandardItem * prevParent, const STreeNode & treeNode ) = 0;
+            virtual void attachTreeNodes( QStandardItem * nextParent, QStandardItem *& prevParent, const STreeNode & treeNode ) = 0;
 
             virtual QString computeTransformPath( const QStandardItem * item, bool parentsOnly ) const final;
             virtual QString getMyTransformedName( const QStandardItem * item, bool parentsOnly ) const;
@@ -337,5 +337,8 @@ namespace NMediaManager
         };
     }
 }
+
+QDebug operator<<( QDebug dbg, const NMediaManager::NCore::STreeNode & node );
+QDebug operator<<( QDebug dbg, const NMediaManager::NCore::TParentTree & parentTree );
 #endif
 

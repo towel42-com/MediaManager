@@ -148,7 +148,7 @@ namespace NMediaManager
             return true;
         }
 
-        void CMakeMKVModel::attachTreeNodes( QStandardItem * /*nextParent*/, QStandardItem * /*prevParent*/, const STreeNode & /*treeNode*/ )
+        void CMakeMKVModel::attachTreeNodes( QStandardItem * /*nextParent*/, QStandardItem *& /*prevParent*/, const STreeNode & /*treeNode*/ )
         {
 
         }

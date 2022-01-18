@@ -176,7 +176,7 @@ namespace NMediaManager
             }
         }
 
-        QFileInfoList CMergeSRTModel::getMKVFilesInDir( const QDir & dir ) const
+        QFileInfoList CMergeSRTModel::getSRTFilesInDir( const QDir & dir ) const
         {
             //qDebug() << dir.absolutePath();
 
@@ -185,7 +185,7 @@ namespace NMediaManager
             auto subDirs = dir.entryInfoList( QDir::Filter::AllDirs | QDir::Filter::NoDotAndDotDot );
             for ( auto && ii : subDirs )
             {
-                srtFiles << getMKVFilesInDir( QDir( ii.absoluteFilePath() ) );
+                srtFiles << getSRTFilesInDir( QDir( ii.absoluteFilePath() ) );
             }
             return srtFiles;
         }
@@ -197,7 +197,7 @@ namespace NMediaManager
 
             auto dir = fi.absoluteDir();
             //qDebug().noquote().nospace() << "Finding SRT files for '" << getDispName( fi ) << "' in dir '" << getDispName( dir.absolutePath() ) << "'";
-            auto srtFiles = getMKVFilesInDir( dir );
+            auto srtFiles = getSRTFilesInDir( dir );
 
             //qDebug().noquote().nospace() << "Found '" << srtFiles.count() << "' SRT Files";
 
@@ -446,7 +446,7 @@ namespace NMediaManager
             return mkvFiles.count();
         }
 
-        void CMergeSRTModel::attachTreeNodes( QStandardItem * /*nextParent*/, QStandardItem * prevParent, const STreeNode & treeNode )
+        void CMergeSRTModel::attachTreeNodes( QStandardItem * /*nextParent*/, QStandardItem *& prevParent, const STreeNode & treeNode )
         {
             if ( treeNode.fIsFile )
             {
@@ -478,6 +478,8 @@ namespace NMediaManager
         {
             auto dir = fileInfo.absoluteDir();
             auto srtFiles = getSRTFilesForMKV( fileInfo );
+            for ( auto && ii : tree )
+                qDebug() << ii;
             for ( auto && ii : srtFiles )
             {
                 //qDebug() << ii.absoluteFilePath();
@@ -487,6 +489,8 @@ namespace NMediaManager
                 tree.push_back( std::move( getItemRow( ii ) ) );
             }
 
+            for ( auto && ii : tree )
+                qDebug() << ii;
             return !srtFiles.isEmpty();
         }
 

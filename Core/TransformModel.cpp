@@ -733,7 +733,7 @@ namespace NMediaManager
                 return;
         }
 
-        void CTransformModel::attachTreeNodes( QStandardItem * nextParent, QStandardItem * prevParent, const STreeNode & ii )
+        void CTransformModel::attachTreeNodes( QStandardItem * nextParent, QStandardItem *& prevParent, const STreeNode & ii )
         {
             bool isTVShow = nextParent->data( eIsTVShowRole ).toBool();
             bool isParentTVShow = prevParent->data( eIsTVShowRole ).toBool();

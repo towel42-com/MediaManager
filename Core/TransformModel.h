@@ -85,7 +85,7 @@ namespace NMediaManager
             virtual QStringList headers() const override;
 
             virtual void postLoad( QTreeView * treeView ) const override;
-            virtual void attachTreeNodes( QStandardItem * nextParent, QStandardItem * prevParent, const STreeNode & treeNode ) override;
+            virtual void attachTreeNodes( QStandardItem * nextParent, QStandardItem *& prevParent, const STreeNode & treeNode ) override;
             virtual int computeNumberOfItems() const override;
 
             virtual void postReloadModel() override;

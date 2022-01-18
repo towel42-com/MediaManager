@@ -51,7 +51,7 @@ namespace NMediaManager
             virtual void setupNewItem( const STreeNodeItem & nodeItem, const QStandardItem * nameItem, QStandardItem * item ) const override;
             virtual QStringList headers() const override;
             virtual void postLoad( QTreeView * treeView ) const override;
-            virtual void attachTreeNodes( QStandardItem * nextParent, QStandardItem * prevParent, const STreeNode & treeNode ) override;
+            virtual void attachTreeNodes( QStandardItem * nextParent, QStandardItem *& prevParent, const STreeNode & treeNode ) override;
             virtual int computeNumberOfItems() const override;
 
             virtual bool preFileFunction( const QFileInfo & fileInfo, std::unordered_set<QString> & alreadyAdded, TParentTree & tree ) override;
@@ -65,7 +65,7 @@ namespace NMediaManager
             virtual QString getProgressLabel( const SProcessInfo & processInfo ) const override;
             QList< QFileInfo > getSRTFilesForMKV( const QFileInfo & fi ) const;
 
-            QFileInfoList getMKVFilesInDir( const QDir & dir ) const;
+            QFileInfoList getSRTFilesInDir( const QDir & dir ) const;
 
             void autoDetermineLanguageAttributes( QStandardItem * parent );
 
