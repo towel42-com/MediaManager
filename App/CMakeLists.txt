@@ -49,6 +49,7 @@ target_link_libraries( MediaManager
                  Qt5::Multimedia
                  SABUtils
                  UI
+                 Preferences
                  Core
           )
 

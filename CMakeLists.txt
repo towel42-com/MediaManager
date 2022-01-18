@@ -64,6 +64,7 @@ set_target_properties( gmock_main PROPERTIES FOLDER 3rdParty/google )
 set_target_properties( gtest PROPERTIES FOLDER 3rdParty/google )
 set_target_properties( gtest_main PROPERTIES FOLDER 3rdParty/google )
 add_subdirectory( UI )
+add_subdirectory( UI/Preferences )
 add_subdirectory( Core )
 add_subdirectory( App )
 
