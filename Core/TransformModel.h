@@ -24,22 +24,12 @@
 #define _TRANSFORMMODEL_H
 
 #include "DirModel.h"
+#include "PatternInfo.h"
 
 namespace NMediaManager
 {
     namespace NCore
     {
-        struct SPatternInfo
-        {
-            friend class CTransformModel;
-            bool isValidName( const QString & name, bool isDir ) const;
-            bool isValidName( const QFileInfo & fi ) const;
-
-        private:
-            QString fOutFilePattern;
-            QString fOutDirPattern;
-        };
-
         using TTitleMap = std::unordered_map< QString, std::map< int, std::map< int, QString > > >;
 
         class CTransformModel : public CDirModel

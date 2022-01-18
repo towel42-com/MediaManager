@@ -68,41 +68,6 @@ namespace NMediaManager
             }
             return CDirModel::setData( idx, value, role );
         }
-  
-        QString patternToRegExp( const QString & captureName, const QString & inPattern, const QString & value, bool removeOptional )
-        {
-            if ( captureName.isEmpty() || inPattern.isEmpty() )
-                return inPattern;
-
-            // see if the capture name exists in the return pattern
-            auto capRegEx = QString( "\\\\\\((?<optname>.*)\\\\\\)(\\\\)?\\:\\<%1\\>" ).arg( captureName );
-            auto regExp = QRegularExpression( capRegEx );
-            auto retVal = inPattern;
-            retVal = retVal.replace( regExp, removeOptional ? "\\1" : "(\\1)?" );
-
-            capRegEx = QString( "\\<%1\\>" ).arg( captureName );
-            regExp = QRegularExpression( capRegEx );
-            retVal = retVal.replace( regExp, value );
-
-            return retVal;
-        }
-
-        QString patternToRegExp( const QString & pattern, bool removeOptional )
-        {
-            QString retVal = pattern;
-            retVal.replace( "(", "\\(" );
-            retVal.replace( ")", "\\)" );
-            retVal.replace( ":", "\\:" );
-
-            retVal = patternToRegExp( "title", retVal, ".*", removeOptional );
-            retVal = patternToRegExp( "year", retVal, "((\\d{2}){1,2})", removeOptional );
-            retVal = patternToRegExp( "tmdbid", retVal, "\\d+", removeOptional );
-            retVal = patternToRegExp( "season", retVal, "\\d+", removeOptional );
-            retVal = patternToRegExp( "episode", retVal, "\\d+", removeOptional );
-            retVal = patternToRegExp( "episode_title", retVal, ".*", removeOptional );
-            retVal = patternToRegExp( "extra_info", retVal, ".*", removeOptional );
-            return retVal;
-        }
 
         bool CTransformModel::isValidName( const QFileInfo & fi ) const
         {
@@ -120,129 +85,32 @@ namespace NMediaManager
             return false;
         }
 
-        bool SPatternInfo::isValidName( const QFileInfo & fi ) const
-        {
-            return isValidName( fi.fileName(), fi.isDir() );
-        }
-
-        bool SPatternInfo::isValidName( const QString & name, bool isDir ) const
-        {
-            if ( name.isEmpty() )
-                return false;
-            QStringList patterns;
-            if ( isDir )
-            {
-                patterns
-                    << patternToRegExp( fOutDirPattern, false )
-                    << "(.*)\\s\\(((\\d{2}){1,2}\\))\\s(-\\s(.*)\\s)?\\[(tmdbid=\\d+)|(imdbid=tt.*)\\]"
-                    ;
-            }
-            else
-            {
-                patterns << patternToRegExp( fOutFilePattern, false )
-                    ;
-            }
-            for ( auto && ii : patterns )
-            {
-                QRegularExpression regExp( ii );
-                if ( !ii.isEmpty() && regExp.match( name ).hasMatch() )
-                    return true;
-            }
-            return false;
-        }
-
         void CTransformModel::slotTVOutputFilePatternChanged( const QString & outPattern )
         {
-            fTVPatterns.fOutFilePattern = outPattern;
+            fTVPatterns.setFilePattern( outPattern );
             // need to emit datachanged on column 4 for all known indexes
             transformPatternChanged();
         }
 
         void CTransformModel::slotTVOutputDirPatternChanged( const QString & outPattern )
         {
-            fTVPatterns.fOutDirPattern = outPattern;
+            fTVPatterns.setDirPattern(outPattern);
             // need to emit datachanged on column 4 for all known indexes
             transformPatternChanged();
         }
 
         void CTransformModel::slotMovieOutputFilePatternChanged( const QString & outPattern )
         {
-            fMoviePatterns.fOutFilePattern = outPattern;
+            fMoviePatterns.setFilePattern(outPattern);
             // need to emit datachanged on column 4 for all known indexes
             transformPatternChanged();
         }
 
         void CTransformModel::slotMovieOutputDirPatternChanged( const QString & outPattern )
         {
-            fMoviePatterns.fOutDirPattern = outPattern;
+            fMoviePatterns.setDirPattern(outPattern);
             // need to emit datachanged on column 4 for all known indexes
             transformPatternChanged();
-        }
-
-        // do not include <> in the capture name
-        QString replaceCapture( const QString & captureName, const QString & returnPattern, const QString & value )
-        {
-            if ( captureName.isEmpty() )
-                return returnPattern;
-
-            // see if the capture name exists in the return pattern
-            auto capRegEx = QString( "\\<%1\\>" ).arg( captureName );
-            auto regExp = QRegularExpression( capRegEx );
-
-            int start = -1;
-            int replLength = -1;
-
-            auto match = regExp.match( returnPattern );
-            if ( !match.hasMatch() )
-                return returnPattern;
-            else
-            {
-                start = match.capturedStart( 0 );
-                replLength = match.capturedLength( 0 );
-            }
-
-            // its in there..now lets see if its optional
-            auto optRegExStr = QString( "\\{(?<replText>[^{}]+)\\}\\:%1" ).arg( capRegEx );
-            regExp = QRegularExpression( optRegExStr );
-            match = regExp.match( returnPattern );
-            bool optional = match.hasMatch();
-            QString replText = value;
-            if ( optional )
-            {
-                start = match.capturedStart( 0 );
-                replLength = match.capturedLength( 0 );
-
-                replText = match.captured( "replText" );
-                if ( value.isEmpty() )
-                    replText.clear();
-                else
-                {
-                    replText = replaceCapture( captureName, replText, value );;
-                }
-            }
-            auto retVal = returnPattern;
-            retVal.replace( start, replLength, replText );
-            return retVal;
-        }
-
-        void cleanFileName( QString & inFile, bool isDir )
-        {
-            if ( inFile.isEmpty() )
-                return;
-
-            inFile.replace( QRegularExpression( "^(([A-Za-z]\\:)|(\\/)|(\\\\))+" ), "" );
-
-            auto regExStr = QString( "(?<hours>\\d{1,2}):(?<minutes>\\d{2})" );
-            inFile.replace( QRegularExpression( regExStr ), "\\1\\2" );
-            
-            regExStr = "\\s*\\:\\s*";
-            inFile.replace( QRegularExpression( regExStr ), " - " );
-
-            regExStr = "[\\:\\<\\>\\\"\\|\\?\\*";
-            if ( !isDir )
-                regExStr += "\\/\\\\";
-            regExStr += "]";
-            inFile.replace( QRegularExpression( regExStr ), "" );
         }
 
         std::pair< bool, QString > CTransformModel::transformItem( const QFileInfo & fileInfo ) const
@@ -253,7 +121,7 @@ namespace NMediaManager
                 return transformItem( fileInfo, fMoviePatterns );
         }
 
-        std::pair< bool, QString > CTransformModel::transformItem( const QFileInfo & fileInfo, const SPatternInfo & info ) const
+        std::pair< bool, QString > CTransformModel::transformItem( const QFileInfo & fileInfo, const SPatternInfo & patternInfo ) const
         {
             auto filePath = fileInfo.absoluteFilePath();
 
@@ -266,11 +134,9 @@ namespace NMediaManager
             if ( pos == (fileInfo.isDir() ? fDirMapping.end() : fFileMapping.end()) )
             {
                 QString fn = fileInfo.fileName();
-                QString ext = QString();
                 if ( !fileInfo.isDir() )
                 {
                     fn = fileInfo.fileName();
-                    ext = fileInfo.suffix();
                 }
 
                 auto transformInfo = getTransformResult( filePath, false );
@@ -288,26 +154,7 @@ namespace NMediaManager
                     }
                     else
                     {
-                        auto title = transformInfo->getTitle();
-                        auto year = transformInfo->getInitialYear();
-                        auto tmdbid = transformInfo->fTMDBID;
-                        auto season = transformInfo->fSeason;
-                        auto episode = transformInfo->fEpisode;
-                        auto extraInfo = transformInfo->fExtraInfo;
-                        auto episodeTitle = transformInfo->fSubTitle;
-
-                        retVal.second = fileInfo.isDir() ? info.fOutDirPattern : info.fOutFilePattern;
-                        retVal.second = replaceCapture( "title", retVal.second, title );
-                        retVal.second = replaceCapture( "year", retVal.second, year );
-                        retVal.second = replaceCapture( "tmdbid", retVal.second, tmdbid );
-                        retVal.second = replaceCapture( "season", retVal.second, QString( "%1" ).arg( season, fileInfo.isDir() ? 1 : 2, QChar( '0' ) ) );
-                        retVal.second = replaceCapture( "episode", retVal.second, QString( "%1" ).arg( episode, fileInfo.isDir() ? 1 : 2, QChar( '0' ) ) );
-                        retVal.second = replaceCapture( "episode_title", retVal.second, episodeTitle );
-                        retVal.second = replaceCapture( "extra_info", retVal.second, extraInfo );
-
-                        cleanFileName( retVal.second, fileInfo.isDir() );
-                        if ( !fileInfo.isDir() )
-                            retVal.second += "." + ext;
+                        retVal.second = transformInfo->transformedName( fileInfo, patternInfo, false );
                         retVal.first = true;
                     }
                 }
@@ -338,7 +185,11 @@ namespace NMediaManager
                 {
                     for ( auto && kk : jj.second )
                     {
-                        auto searchName = QString( "S%2E%3" ).arg( seasonNum, 2, 10, QChar( '0' ) ).arg( episodeNum, 2, 10, QChar( '0' ) );
+                        QString searchName;
+                        if ( seasonNum > 0 )
+                            searchName = QString( "S%2E%3" ).arg( seasonNum, 2, 10, QChar( '0' ) ).arg( episodeNum, 2, 10, QChar( '0' ) );
+                        else
+                            searchName = QString( "E%3" ).arg( episodeNum, 2, 10, QChar( '0' ) );
                         if ( !title.isEmpty() )
                             searchName = title + " - " + searchName;
                         //qDebug() << kk.second << " = " << searchName;
@@ -932,7 +783,7 @@ namespace NMediaManager
             if ( searchResults )
             {
                 year = searchResults->getYear();
-                title = searchResults->getTitle();
+                title = searchResults->transformedName( fileName, searchResults->isTVShow() ? fTVPatterns : fMoviePatterns, true );
             }
             return CDirModel::setMediaTags( fileName, title, year, &msg );
         }
