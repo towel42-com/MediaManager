@@ -20,42 +20,46 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef __UI_PREFERENCES_H
-#define __UI_PREFERENCES_H
+#include "TransformationSettings.h"
+#include "Core/Preferences.h"
 
-#include <QDialog>
+#include "ui_TransformationSettings.h"
 
-class QTreeWidgetItem;
+#include <QSettings>
+#include <QStringListModel>
+#include <QInputDialog>
+#include <QFileDialog>
+#include <QMessageBox>
+
+#include "SABUtils/ButtonEnabler.h"
+#include "SABUtils/UtilityModels.h"
+#include "SABUtils/QtUtils.h"
+
 namespace NMediaManager
 {
     namespace NUi
     {
-        class CBasePrefPage;
-        namespace Ui { class CPreferences; };
-        class CPreferences : public QDialog
+        CTransformationSettings::CTransformationSettings( QWidget * parent )
+            : CBasePrefPage( parent ),
+            fImpl( new Ui::CTransformationSettings )
         {
-            Q_OBJECT
-        public:
-            CPreferences( QWidget * parent = 0 );
-            ~CPreferences();
-        public Q_SLOTS:
-            void slotPageSelectorCurrChanged( QTreeWidgetItem * current, QTreeWidgetItem * previous );
-            void slotPageSelectorItemActived( QTreeWidgetItem * item );
-            void slotPageSelectorSelectionChanged();
-            void accept() override;
-        private:
-            static QString keyForItem( QTreeWidgetItem * item );
+            fImpl->setupUi( this );
+        }
 
-            void loadSettings();
-            void saveSettings();
+        CTransformationSettings::~CTransformationSettings()
+        {
+        }
 
-            void addPage( CBasePrefPage * page );
-            void loadPages();
 
-            std::unordered_map< QString, QTreeWidgetItem* > fItemMap;
-            std::unordered_map< QTreeWidgetItem *, CBasePrefPage * > fPageMap;
-            std::unique_ptr< Ui::CPreferences > fImpl;
-        };
+        void CTransformationSettings::load()
+        {
+            fImpl->treatAsTVShowByDefault->setChecked( NCore::CPreferences::instance()->getTreatAsTVShowByDefault() );
+            fImpl->exactMatchesOnly->setChecked( NCore::CPreferences::instance()->getExactMatchesOnly() );
+        }
+
+        void CTransformationSettings::save()
+        {
+            NCore::CPreferences::instance()->setTreatAsTVShowByDefault( fImpl->treatAsTVShowByDefault->isChecked() );
+        }
     }
 }
-#endif 

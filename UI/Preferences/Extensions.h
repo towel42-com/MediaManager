@@ -20,41 +20,31 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef __UI_PREFERENCES_H
-#define __UI_PREFERENCES_H
+#ifndef __UI_EXTENSIONS_H
+#define __UI_EXTENSIONS_H
 
-#include <QDialog>
-
-class QTreeWidgetItem;
+#include "BasePrefPage.h"
 namespace NMediaManager
 {
     namespace NUi
     {
-        class CBasePrefPage;
-        namespace Ui { class CPreferences; };
-        class CPreferences : public QDialog
+        namespace Ui { class CExtensions; };
+        class CExtensions : public CBasePrefPage
         {
             Q_OBJECT
         public:
-            CPreferences( QWidget * parent = 0 );
-            ~CPreferences();
+            CExtensions( QWidget * parent = 0 );
+            ~CExtensions();
+
+            void load();
+            void save();
+            virtual QStringList pageName() const override
+            {
+                return QStringList( { "Extensions" } );
+            }
         public Q_SLOTS:
-            void slotPageSelectorCurrChanged( QTreeWidgetItem * current, QTreeWidgetItem * previous );
-            void slotPageSelectorItemActived( QTreeWidgetItem * item );
-            void slotPageSelectorSelectionChanged();
-            void accept() override;
         private:
-            static QString keyForItem( QTreeWidgetItem * item );
-
-            void loadSettings();
-            void saveSettings();
-
-            void addPage( CBasePrefPage * page );
-            void loadPages();
-
-            std::unordered_map< QString, QTreeWidgetItem* > fItemMap;
-            std::unordered_map< QTreeWidgetItem *, CBasePrefPage * > fPageMap;
-            std::unique_ptr< Ui::CPreferences > fImpl;
+            std::unique_ptr< Ui::CExtensions > fImpl;
         };
     }
 }

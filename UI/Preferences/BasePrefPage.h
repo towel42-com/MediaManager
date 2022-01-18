@@ -20,41 +20,32 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef __UI_PREFERENCES_H
-#define __UI_PREFERENCES_H
+#ifndef __UI_BASEPREFPAGE_H
+#define __UI_BASEPREFPAGE_H
 
-#include <QDialog>
+#include <QWidget>
 
-class QTreeWidgetItem;
+class QStringListModel;
+class QListView;
+
 namespace NMediaManager
 {
     namespace NUi
     {
-        class CBasePrefPage;
-        namespace Ui { class CPreferences; };
-        class CPreferences : public QDialog
+        class CBasePrefPage : public QWidget
         {
             Q_OBJECT
         public:
-            CPreferences( QWidget * parent = 0 );
-            ~CPreferences();
+            CBasePrefPage( QWidget * parent = 0 );
+            ~CBasePrefPage();
+
+            virtual void load() = 0;
+            virtual void save() = 0;
+            virtual QStringList pageName() const = 0;
         public Q_SLOTS:
-            void slotPageSelectorCurrChanged( QTreeWidgetItem * current, QTreeWidgetItem * previous );
-            void slotPageSelectorItemActived( QTreeWidgetItem * item );
-            void slotPageSelectorSelectionChanged();
-            void accept() override;
-        private:
-            static QString keyForItem( QTreeWidgetItem * item );
-
-            void loadSettings();
-            void saveSettings();
-
-            void addPage( CBasePrefPage * page );
-            void loadPages();
-
-            std::unordered_map< QString, QTreeWidgetItem* > fItemMap;
-            std::unordered_map< QTreeWidgetItem *, CBasePrefPage * > fPageMap;
-            std::unique_ptr< Ui::CPreferences > fImpl;
+        protected:
+            void addString( const QString & title, const QString & label, QStringListModel * model, QListView * listView, bool splitWords );
+            void delString( QStringListModel * listModel, QListView * listView );
         };
     }
 }

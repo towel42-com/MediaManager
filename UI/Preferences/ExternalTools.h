@@ -20,41 +20,52 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef __UI_PREFERENCES_H
-#define __UI_PREFERENCES_H
+#ifndef __UI_EXTERNALTOOLS_H
+#define __UI_EXTERNALTOOLS_H
 
-#include <QDialog>
+#include "BasePrefPage.h"
 
+namespace NSABUtils
+{
+    class CKeyValuePairModel;
+}
+class QStringListModel;
+class QLineEdit;
+class QListView;
 class QTreeWidgetItem;
 namespace NMediaManager
 {
     namespace NUi
     {
-        class CBasePrefPage;
-        namespace Ui { class CPreferences; };
-        class CPreferences : public QDialog
+        namespace Ui { class CExternalTools; };
+        class CExternalTools : public CBasePrefPage
         {
             Q_OBJECT
         public:
-            CPreferences( QWidget * parent = 0 );
-            ~CPreferences();
+            CExternalTools( QWidget * parent = 0 );
+            ~CExternalTools();
+
+            void load();
+            void save();
+            virtual QStringList pageName() const override
+            {
+                return QStringList( { "External Tools" } );
+            }
         public Q_SLOTS:
-            void slotPageSelectorCurrChanged( QTreeWidgetItem * current, QTreeWidgetItem * previous );
-            void slotPageSelectorItemActived( QTreeWidgetItem * item );
-            void slotPageSelectorSelectionChanged();
-            void accept() override;
+            void slotSelectMKVMergeExe();
+            void slotSelectMKVPropEditExe();
+            void slotSelectFFMpegExe();
+            void slotSelectFFProbeExe();
+
+            void slotFFToolChanged();
+            void slotMKVNixToolChanged();
         private:
-            static QString keyForItem( QTreeWidgetItem * item );
+            void mkvnixToolChanged( QLineEdit * le );
+            void fftoolToolChanged( QLineEdit * le );
 
-            void loadSettings();
-            void saveSettings();
 
-            void addPage( CBasePrefPage * page );
-            void loadPages();
-
-            std::unordered_map< QString, QTreeWidgetItem* > fItemMap;
-            std::unordered_map< QTreeWidgetItem *, CBasePrefPage * > fPageMap;
-            std::unique_ptr< Ui::CPreferences > fImpl;
+            void updateOtherTool( QObject * sender, const std::pair< QLineEdit *, QString > & lhs, const std::pair< QLineEdit *, QString > & rhs );
+            std::unique_ptr< Ui::CExternalTools > fImpl;
         };
     }
 }

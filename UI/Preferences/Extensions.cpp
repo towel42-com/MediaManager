@@ -20,42 +20,36 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef __UI_PREFERENCES_H
-#define __UI_PREFERENCES_H
+#include "Extensions.h"
+#include "Core/Preferences.h"
 
-#include <QDialog>
+#include "ui_Extensions.h"
 
-class QTreeWidgetItem;
 namespace NMediaManager
 {
     namespace NUi
     {
-        class CBasePrefPage;
-        namespace Ui { class CPreferences; };
-        class CPreferences : public QDialog
+        CExtensions::CExtensions( QWidget * parent )
+            : CBasePrefPage( parent ),
+            fImpl( new Ui::CExtensions )
         {
-            Q_OBJECT
-        public:
-            CPreferences( QWidget * parent = 0 );
-            ~CPreferences();
-        public Q_SLOTS:
-            void slotPageSelectorCurrChanged( QTreeWidgetItem * current, QTreeWidgetItem * previous );
-            void slotPageSelectorItemActived( QTreeWidgetItem * item );
-            void slotPageSelectorSelectionChanged();
-            void accept() override;
-        private:
-            static QString keyForItem( QTreeWidgetItem * item );
+            fImpl->setupUi( this );
+        }
 
-            void loadSettings();
-            void saveSettings();
+        CExtensions::~CExtensions()
+        {
+        }
 
-            void addPage( CBasePrefPage * page );
-            void loadPages();
+        void CExtensions::load()
+        {
+            fImpl->mediaExtensions->setText( NCore::CPreferences::instance()->getMediaExtensions().join( ";" ) );
+            fImpl->subtitleExtensions->setText( NCore::CPreferences::instance()->getSubtitleExtensions().join( ";" ) );
+        }
 
-            std::unordered_map< QString, QTreeWidgetItem* > fItemMap;
-            std::unordered_map< QTreeWidgetItem *, CBasePrefPage * > fPageMap;
-            std::unique_ptr< Ui::CPreferences > fImpl;
-        };
+        void CExtensions::save()
+        {
+            NCore::CPreferences::instance()->setMediaExtensions( fImpl->mediaExtensions->text() );
+            NCore::CPreferences::instance()->setSubtitleExtensions( fImpl->subtitleExtensions->text() );
+        }
     }
 }
-#endif 

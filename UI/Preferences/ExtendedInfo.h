@@ -20,41 +20,36 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef __UI_PREFERENCES_H
-#define __UI_PREFERENCES_H
+#ifndef __UI_EXTENDEDINFO_H
+#define __UI_EXTENDEDINFO_H
 
-#include <QDialog>
+#include "BasePrefPage.h"
 
-class QTreeWidgetItem;
+class QStringListModel;
 namespace NMediaManager
 {
     namespace NUi
     {
-        class CBasePrefPage;
-        namespace Ui { class CPreferences; };
-        class CPreferences : public QDialog
+        namespace Ui { class CExtendedInfo; };
+        class CExtendedInfo : public CBasePrefPage
         {
             Q_OBJECT
         public:
-            CPreferences( QWidget * parent = 0 );
-            ~CPreferences();
+            CExtendedInfo( QWidget * parent = 0 );
+            ~CExtendedInfo();
+
+            virtual void load() override;
+            virtual void save() override;
+            virtual QStringList pageName() const override
+            {
+                return QStringList( { "Known Strings", "Extended/Extra Information" } );
+            }
         public Q_SLOTS:
-            void slotPageSelectorCurrChanged( QTreeWidgetItem * current, QTreeWidgetItem * previous );
-            void slotPageSelectorItemActived( QTreeWidgetItem * item );
-            void slotPageSelectorSelectionChanged();
-            void accept() override;
+            void slotAddExtraString();
+            void slotDelExtraString();
         private:
-            static QString keyForItem( QTreeWidgetItem * item );
-
-            void loadSettings();
-            void saveSettings();
-
-            void addPage( CBasePrefPage * page );
-            void loadPages();
-
-            std::unordered_map< QString, QTreeWidgetItem* > fItemMap;
-            std::unordered_map< QTreeWidgetItem *, CBasePrefPage * > fPageMap;
-            std::unique_ptr< Ui::CPreferences > fImpl;
+            QStringListModel * fExtraStringModel{ nullptr };
+            std::unique_ptr< Ui::CExtendedInfo > fImpl;
         };
     }
 }

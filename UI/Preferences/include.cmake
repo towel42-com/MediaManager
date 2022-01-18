@@ -21,18 +21,53 @@
 # SOFTWARE.
 
 set(qtproject_SRCS
+    BasePrefPage.cpp
+    ExtendedInfo.cpp
+    Extensions.cpp
+    ExternalTools.cpp
+    IgnoredPaths.cpp
+    KnownAbbreviations.cpp
+    MovieSettings.cpp
+    PathsToDelete.cpp
     Preferences.cpp
+    RemoveFromPaths.cpp
+    SkippedPaths.cpp
+    TransformationSettings.cpp
+    TVShowSettings.cpp
 )
 
 set(qtproject_H
+    BasePrefPage.h
+    ExtendedInfo.h
+    Extensions.h
+    ExternalTools.h
+    IgnoredPaths.h
+    KnownAbbreviations.h
+    MovieSettings.h
+    PathsToDelete.h
     Preferences.h
+    RemoveFromPaths.h
+    SkippedPaths.h
+    TransformationSettings.h
+    TVShowSettings.h
 )
 
 set(project_H
 )
 
 set(qtproject_UIS
+    ExtendedInfo.ui
+    Extensions.ui
+    ExternalTools.ui
+    IgnoredPaths.ui
+    KnownAbbreviations.ui
+    MovieSettings.ui
+    PathsToDelete.ui
     Preferences.ui
+    RemoveFromPaths.ui
+    SkippedPaths.ui
+    TransformationSettings.ui
+    TVShowSettings.ui   
 )
 
 set(qtproject_QRC

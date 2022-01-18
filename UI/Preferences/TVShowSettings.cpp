@@ -20,42 +20,46 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef __UI_PREFERENCES_H
-#define __UI_PREFERENCES_H
+#include "TVShowSettings.h"
+#include "Core/Preferences.h"
 
-#include <QDialog>
+#include "ui_TVShowSettings.h"
 
-class QTreeWidgetItem;
+#include <QSettings>
+#include <QStringListModel>
+#include <QInputDialog>
+#include <QFileDialog>
+#include <QMessageBox>
+
+#include "SABUtils/ButtonEnabler.h"
+#include "SABUtils/UtilityModels.h"
+#include "SABUtils/QtUtils.h"
+
 namespace NMediaManager
 {
     namespace NUi
     {
-        class CBasePrefPage;
-        namespace Ui { class CPreferences; };
-        class CPreferences : public QDialog
+        CTVShowSettings::CTVShowSettings( QWidget * parent )
+            : CBasePrefPage( parent ),
+            fImpl( new Ui::CTVShowSettings )
         {
-            Q_OBJECT
-        public:
-            CPreferences( QWidget * parent = 0 );
-            ~CPreferences();
-        public Q_SLOTS:
-            void slotPageSelectorCurrChanged( QTreeWidgetItem * current, QTreeWidgetItem * previous );
-            void slotPageSelectorItemActived( QTreeWidgetItem * item );
-            void slotPageSelectorSelectionChanged();
-            void accept() override;
-        private:
-            static QString keyForItem( QTreeWidgetItem * item );
+            fImpl->setupUi( this );
+        }
 
-            void loadSettings();
-            void saveSettings();
+        CTVShowSettings::~CTVShowSettings()
+        {
+        }
 
-            void addPage( CBasePrefPage * page );
-            void loadPages();
+        void CTVShowSettings::load()
+        {
+            fImpl->tvOutFilePattern->setText( NCore::CPreferences::instance()->getTVOutFilePattern() );
+            fImpl->tvOutDirPattern->setText( NCore::CPreferences::instance()->getTVOutDirPattern() );
+        }
 
-            std::unordered_map< QString, QTreeWidgetItem* > fItemMap;
-            std::unordered_map< QTreeWidgetItem *, CBasePrefPage * > fPageMap;
-            std::unique_ptr< Ui::CPreferences > fImpl;
-        };
+        void CTVShowSettings::save()
+        {
+            NCore::CPreferences::instance()->setTVOutFilePattern( fImpl->tvOutFilePattern->text() );
+            NCore::CPreferences::instance()->setTVOutDirPattern( fImpl->tvOutDirPattern->text() );
+        }
     }
 }
-#endif 

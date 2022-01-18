@@ -20,42 +20,36 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef __UI_PREFERENCES_H
-#define __UI_PREFERENCES_H
+#include "MovieSettings.h"
+#include "Core/Preferences.h"
 
-#include <QDialog>
+#include "ui_MovieSettings.h"
 
-class QTreeWidgetItem;
 namespace NMediaManager
 {
     namespace NUi
     {
-        class CBasePrefPage;
-        namespace Ui { class CPreferences; };
-        class CPreferences : public QDialog
+        CMovieSettings::CMovieSettings( QWidget * parent )
+            : CBasePrefPage( parent ),
+            fImpl( new Ui::CMovieSettings )
         {
-            Q_OBJECT
-        public:
-            CPreferences( QWidget * parent = 0 );
-            ~CPreferences();
-        public Q_SLOTS:
-            void slotPageSelectorCurrChanged( QTreeWidgetItem * current, QTreeWidgetItem * previous );
-            void slotPageSelectorItemActived( QTreeWidgetItem * item );
-            void slotPageSelectorSelectionChanged();
-            void accept() override;
-        private:
-            static QString keyForItem( QTreeWidgetItem * item );
+            fImpl->setupUi( this );
+        }
 
-            void loadSettings();
-            void saveSettings();
+        CMovieSettings::~CMovieSettings()
+        {
+        }
 
-            void addPage( CBasePrefPage * page );
-            void loadPages();
+        void CMovieSettings::load()
+        {
+            fImpl->movieOutFilePattern->setText( NCore::CPreferences::instance()->getMovieOutFilePattern() );
+            fImpl->movieOutDirPattern->setText( NCore::CPreferences::instance()->getMovieOutDirPattern() );
+        }
 
-            std::unordered_map< QString, QTreeWidgetItem* > fItemMap;
-            std::unordered_map< QTreeWidgetItem *, CBasePrefPage * > fPageMap;
-            std::unique_ptr< Ui::CPreferences > fImpl;
-        };
+        void CMovieSettings::save()
+        {
+            NCore::CPreferences::instance()->setMovieOutFilePattern( fImpl->movieOutFilePattern->text() );
+            NCore::CPreferences::instance()->setMovieOutDirPattern( fImpl->movieOutDirPattern->text() );
+        }
     }
 }
-#endif 

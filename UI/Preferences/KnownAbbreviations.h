@@ -20,41 +20,38 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef __UI_PREFERENCES_H
-#define __UI_PREFERENCES_H
+#ifndef __KNOWNABBREVIATIONS_H
+#define __KNOWNABBREVIATIONS_H
 
-#include <QDialog>
-
-class QTreeWidgetItem;
+#include "BasePrefPage.h"
+namespace NSABUtils
+{
+    class CKeyValuePairModel;
+}
 namespace NMediaManager
 {
     namespace NUi
     {
-        class CBasePrefPage;
-        namespace Ui { class CPreferences; };
-        class CPreferences : public QDialog
+        namespace Ui { class CKnownAbbreviations; };
+        class CKnownAbbreviations : public CBasePrefPage
         {
             Q_OBJECT
         public:
-            CPreferences( QWidget * parent = 0 );
-            ~CPreferences();
+            CKnownAbbreviations( QWidget * parent = 0 );
+            ~CKnownAbbreviations();
+
+            void load();
+            void save();
+            virtual QStringList pageName() const override
+            {
+                return QStringList( { "Known Strings", "Known Abbreviations" } );
+            }
         public Q_SLOTS:
-            void slotPageSelectorCurrChanged( QTreeWidgetItem * current, QTreeWidgetItem * previous );
-            void slotPageSelectorItemActived( QTreeWidgetItem * item );
-            void slotPageSelectorSelectionChanged();
-            void accept() override;
+            void slotAddAbbreviation();
+            void slotDelAbbreviation();
         private:
-            static QString keyForItem( QTreeWidgetItem * item );
-
-            void loadSettings();
-            void saveSettings();
-
-            void addPage( CBasePrefPage * page );
-            void loadPages();
-
-            std::unordered_map< QString, QTreeWidgetItem* > fItemMap;
-            std::unordered_map< QTreeWidgetItem *, CBasePrefPage * > fPageMap;
-            std::unique_ptr< Ui::CPreferences > fImpl;
+            NSABUtils::CKeyValuePairModel * fAbbreviationsModel{ nullptr };
+            std::unique_ptr< Ui::CKnownAbbreviations > fImpl;
         };
     }
 }
