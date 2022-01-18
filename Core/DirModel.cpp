@@ -229,7 +229,7 @@ namespace NMediaManager
                     break;
                     case CDirModelItem::EType::eDate:
                     {
-                        if ( !setMediaTag( fileInfo( idx ).absoluteFilePath(), { "YEAR", value.toString() } ) )
+                        if ( !setMediaTag( fileInfo( idx ).absoluteFilePath(), { "DATE_RECORDED", value.toString() } ) )
                              return false;
                     }
                     break;
@@ -573,7 +573,7 @@ namespace NMediaManager
             return QFileInfo( path );
         }
 
-        QStandardItem * CDirModel::getPathItemFromIndex( QModelIndex idx ) const
+        QStandardItem * CDirModel::getPathItemFromIndex( const QModelIndex & idx ) const
         {
             return itemFromIndex( idx );
         }
@@ -831,13 +831,13 @@ namespace NMediaManager
         }
 
 
-        bool CDirModel::process( const QModelIndex & idx, const std::function< void( int count, int eventsPerPath ) > & startProgress, const std::function< void( bool finalStep ) > & endProgress, QWidget * parent )
+        bool CDirModel::process( const QModelIndex & idx, const std::function< void( int count, int eventsPerPath ) > & startProgress, const std::function< void( bool finalStep, bool canceled ) > & endProgress, QWidget * parent )
         {
             process( idx, true );
             if ( fProcessResults.second && fProcessResults.second->rowCount() == 0 )
             {
                 QMessageBox::information( parent, tr( "Nothing to change" ), tr( "No files or directories could be processed" ) );
-                endProgress( true );
+                endProgress( true, false );
                 return false;
             }
 
@@ -856,7 +856,7 @@ namespace NMediaManager
             {
                 showProcessResults( tr( "Error While Processing:" ), tr( "Issues:" ), QMessageBox::Critical, QDialogButtonBox::Ok, parent );
             }
-            endProgress( !usesQueuedProcessing() );
+            endProgress( !usesQueuedProcessing(), false );
             return fProcessResults.first;
         }
 
@@ -884,6 +884,32 @@ namespace NMediaManager
             return item->checkState() != Qt::Unchecked;
         }
 
+        bool CDirModel::autoSetMediaTags( const QModelIndex & idx, QString * msg )
+        {
+            auto fi = fileInfo( idx );
+            if ( !CPreferences::instance()->isMediaFile( fi ) )
+                return false;
+
+            auto baseName = fi.completeBaseName();
+
+            auto searchPath = fi;
+            QString year;
+            while ( year.isEmpty() && !isRootPath( searchPath.absoluteFilePath() ) )
+            {
+                SSearchTMDBInfo searchInfo( searchPath.completeBaseName(), {} );
+                year = searchInfo.releaseDateString();
+                searchPath = searchPath.absolutePath();
+            }
+
+            if ( setMediaTags( fi.absoluteFilePath(), baseName, year, msg ) )
+            {
+                reloadMediaTags( idx );
+                return true;
+            }
+            return false;
+        }
+
+
         bool CDirModel::setMediaTags( const QString & fileName, const QString & title, const QString & year, QString * msg ) const
         {
             NSABUtils::CAutoWaitCursor awc;
@@ -891,7 +917,7 @@ namespace NMediaManager
             std::unordered_map< QString, QString > tags =
             {
                 { "TITLE", ( title.isEmpty() ? QFileInfo( fileName ).completeBaseName() : title ) }
-                ,{ "YEAR", year }
+                ,{ "DATE_RECORDED", year }
             };
 
             QString localMsg;
