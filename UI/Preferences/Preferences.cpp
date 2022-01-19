@@ -62,8 +62,6 @@ namespace NMediaManager
             connect( fImpl->pageSelector, &QTreeWidget::itemSelectionChanged, this, &CPreferences::slotPageSelectorSelectionChanged );
 
             loadPages();
-
-
             loadSettings();
             fImpl->pageSelector->expandAll();
 
@@ -91,20 +89,24 @@ namespace NMediaManager
 
         void CPreferences::accept()
         {
-            for ( auto && ii : fPageMap )
-            {
-                ii.second->save();
-            }
             saveSettings();
             QDialog::accept();
         }
 
         void CPreferences::loadSettings()
         {
+            for ( auto && ii : fPageMap )
+            {
+                ii.second->load();
+            }
         }
 
         void CPreferences::saveSettings()
         {
+            for ( auto && ii : fPageMap )
+            {
+                ii.second->save();
+            }
         }
 
         void CPreferences::loadPages()
@@ -125,7 +127,6 @@ namespace NMediaManager
         void CPreferences::addPage( CBasePrefPage * page )
         {
             fImpl->stackedWidget->addWidget( page );
-            page->load();
             auto name = page->pageName();
             Q_ASSERT( !name.isEmpty() );
             if ( name.isEmpty() )
