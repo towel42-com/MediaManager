@@ -71,6 +71,7 @@ namespace NMediaManager
             virtual void slotStartStayAwake();
             virtual void slotFileCheckFinished( bool aOK, const QString & msg );
         private:
+            virtual bool nativeEvent(const QByteArray & eventType, void * message, long * result) override;
             CBasePage * getCurrentBasePage() const;
    
             bool isActivePageFileBased() const;

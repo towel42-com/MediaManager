@@ -29,6 +29,7 @@
 #include "Core/DirModel.h"
 #include "Core/SearchTMDBInfo.h"
 #include "Core/SearchTMDB.h"
+#include "SABUtils/FileUtils.h"
 
 #include "SABUtils/QtUtils.h"
 #include "SABUtils/utils.h"
@@ -53,7 +54,10 @@
 #include <QThreadPool>
 
 #include <QProgressBar>
-#include "SABUtils/FileUtils.h"
+#ifdef Q_OS_WINDOWS
+#include <qt_windows.h>
+#include <windowsx.h>
+#endif
 
 namespace NMediaManager
 {
@@ -152,6 +156,27 @@ namespace NMediaManager
         CMainWindow::~CMainWindow()
         {
             saveSettings();
+        }
+
+        bool CMainWindow::nativeEvent(const QByteArray & eventType, void * message, long * result)
+        {
+            if (eventType == "windows_generic_MSG")
+            {
+#ifdef Q_OS_WINDOWS
+                MSG * msg = static_cast<MSG *>(message);
+                if (msg->message == WM_NCLBUTTONDOWN)
+                {
+                    auto hitTest = static_cast<int>(msg->wParam);
+                    if (hitTest == HTCAPTION)
+                    {
+                        auto title = windowTitle();
+                        auto pt = mapFromGlobal(QPoint(GET_X_LPARAM(msg->lParam), GET_Y_LPARAM(msg->lParam)));
+                        NSABUtils::launchIfURLClicked(title, pt, fImpl->menubar->font());
+                    }
+                }
+#endif
+            }
+            return QMainWindow::nativeEvent(eventType, message, result);
         }
 
         bool CMainWindow::isActivePageFileBased() const
