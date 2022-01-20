@@ -23,6 +23,8 @@
 #ifndef _DIRMODEL_H
 #define _DIRMODEL_H
 
+#include "DirNodeItem.h"
+
 #include <QStandardItemModel>
 #include <QFileInfo> // filedevice
 #include <unordered_set>
@@ -31,6 +33,7 @@
 #include <QMessageBox> // needed for icon type
 #include <QDialogButtonBox> // StandardButtons
 #include <QDateTime>
+#include <QDir>
 
 namespace NSABUtils
 {
@@ -75,58 +78,28 @@ namespace NMediaManager
             eIsErrorNode
         };
 
-        enum EColumns
+        enum class EType
         {
-            eFSName,
-            eFSSize,
-            eFSType,
-            eFSModDate,
-            eFirstCustomColumn
+            ePath = QStandardItem::UserType + 1,
+            eTitle,
+            eLength,
+            eDate,
+            eComment
         };
 
         class CDirModelItem : public QStandardItem
         {
         public:
-            enum class EType
-            {
-                ePath = QStandardItem::UserType + 1,
-                eTitle,
-                eLength,
-                eDate,
-                eComment
-            };
             CDirModelItem( const QString & text, EType type );
             int type() const { return static_cast< int >( fType ); }
         private:
             EType fType;
         };
 
-        struct STreeNodeItem
-        {
-            STreeNodeItem();
-            STreeNodeItem( const QString & text, int nodeType );
-
-            void setData( QVariant value, int role )
-            {
-                return fRoles.push_back( std::make_pair( value, role ) );
-            }
-
-            QStandardItem * createStandardItem() const;
-
-            QString fText;
-            EColumns fType{ EColumns::eFSName };
-            QIcon fIcon;
-            std::optional< Qt::Alignment > fAlignment;
-            std::list< std::pair< QVariant, int > > fRoles;
-            EMediaType fMediaType;
-            std::optional< bool > fCheckable;
-            std::optional< CDirModelItem::EType > fEditType;
-        };
-
         struct STreeNode
         {
             STreeNode() {}
-            STreeNode( const QFileInfo & file, const CDirModel * model );
+            STreeNode( const QFileInfo & file, const CDirModel * model, bool isRoot );
 
             ~STreeNode()
             {}
@@ -140,7 +113,7 @@ namespace NMediaManager
             bool fIsFile{ false };
         private:
             const CDirModel * fModel{ nullptr };
-            std::list< STreeNodeItem > fItems;
+            std::list< SDirNodeItem > fItems;
             mutable QList< QStandardItem * > fRealItems;
         };
 
@@ -163,7 +136,7 @@ namespace NMediaManager
 
         class CDirModel : public QStandardItemModel
         {
-            friend struct STreeNodeItem;
+            friend struct SDirNodeItem;
             friend struct STreeNode;
             friend struct SProcessInfo;
             Q_OBJECT
@@ -221,7 +194,7 @@ namespace NMediaManager
             void updatePath( const QModelIndex & idx, const QString & path );
 
             bool isRootPath( const QString & path ) const;
-
+            bool isRootPath( const QFileInfo & path ) const;
         Q_SIGNALS:
             void sigDirReloaded( bool canceled );
             void sigProcessesFinished( bool status, bool showProcessResults, bool cancelled, bool reloadModel );
@@ -243,12 +216,12 @@ namespace NMediaManager
             NSABUtils::CDoubleProgressDlg * progressDlg() const;
 
             virtual std::pair< bool, QStandardItem * > processItem( const QStandardItem * item, QStandardItem * parentItem, bool displayOnly ) const = 0;
-            virtual void postAddItems( const QFileInfo & fileInfo, std::list< NMediaManager::NCore::STreeNodeItem > & currItems ) const;
+            virtual void postAddItems( const QFileInfo & fileInfo, std::list< NMediaManager::NCore::SDirNodeItem > & currItems ) const;
             virtual int firstMediaItemColumn() const { return -1; }
-            virtual std::list< NMediaManager::NCore::STreeNodeItem > addAdditionalItems( const QFileInfo & fileInfo ) const;
-            virtual std::list<NMediaManager::NCore::STreeNodeItem> getMediaInfoItems(  const QFileInfo & fileInfo, int firstColumn ) const;
+            virtual std::list< NMediaManager::NCore::SDirNodeItem > addAdditionalItems( const QFileInfo & fileInfo ) const;
+            virtual std::list<NMediaManager::NCore::SDirNodeItem> getMediaInfoItems(  const QFileInfo & fileInfo, int firstColumn ) const;
 
-            virtual void setupNewItem( const STreeNodeItem & nodeItem, const QStandardItem * nameItem, QStandardItem * item ) const = 0;
+            virtual void setupNewItem( const SDirNodeItem & nodeItem, const QStandardItem * nameItem, QStandardItem * item ) const = 0;
             virtual QStringList headers() const;
             virtual void postLoad() const final;
             virtual void postLoad( QTreeView * treeView ) const = 0;
@@ -316,7 +289,7 @@ namespace NMediaManager
 
             void addProcessError( const QString & msg );
 
-            QString fRootPath;
+            QDir fRootPath;
             QStringList fNameFilter;
 
             QFileIconProvider * fIconProvider{ nullptr };
