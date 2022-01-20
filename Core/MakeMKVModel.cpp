@@ -123,7 +123,7 @@ namespace NMediaManager
                 ;
         }
 
-        void CMakeMKVModel::setupNewItem( const STreeNodeItem & /*nodeItem*/, const QStandardItem * /*nameItem*/, QStandardItem * /*item*/ ) const
+        void CMakeMKVModel::setupNewItem( const SDirNodeItem & /*nodeItem*/, const QStandardItem * /*nameItem*/, QStandardItem * /*item*/ ) const
         {
 
         }

@@ -387,25 +387,25 @@ namespace NMediaManager
             return aOK;
         }
 
-        std::list< NMediaManager::NCore::STreeNodeItem > CMergeSRTModel::addAdditionalItems( const QFileInfo & fileInfo )const
+        std::list< NMediaManager::NCore::SDirNodeItem > CMergeSRTModel::addAdditionalItems( const QFileInfo & fileInfo )const
         {
-            std::list< NMediaManager::NCore::STreeNodeItem > retVal;
+            std::list< NMediaManager::NCore::SDirNodeItem > retVal;
             if ( fileInfo.isFile() )
             {
                 auto language = SLanguageInfo( fileInfo );
-                auto languageFileItem = STreeNodeItem( language.displayName(), CMergeSRTModel::EColumns::eLanguage );
+                auto languageFileItem = SDirNodeItem( language.displayName(), CMergeSRTModel::EColumns::eLanguage );
                 languageFileItem.setData( language.isoCode(), ECustomRoles::eISOCodeRole );
                 retVal.push_back( languageFileItem );
 
-                auto forcedItem = STreeNodeItem( QString(), EColumns::eForced );
+                auto forcedItem = SDirNodeItem( QString(), EColumns::eForced );
                 forcedItem.fCheckable = true;
                 retVal.push_back( forcedItem );
 
-                auto sdhItem = STreeNodeItem( QString(), EColumns::eSDH );
+                auto sdhItem = SDirNodeItem( QString(), EColumns::eSDH );
                 sdhItem.fCheckable = true;
                 retVal.push_back( sdhItem );
 
-                auto onByDefaultItem = STreeNodeItem( QString(), EColumns::eOnByDefault );
+                auto onByDefaultItem = SDirNodeItem( QString(), EColumns::eOnByDefault );
                 onByDefaultItem.fCheckable = true;
                 retVal.push_back( onByDefaultItem );
             }
@@ -416,7 +416,7 @@ namespace NMediaManager
             return retVal;
         }
 
-        void CMergeSRTModel::setupNewItem( const STreeNodeItem & nodeItem, const QStandardItem * /*nameItem*/, QStandardItem * item ) const
+        void CMergeSRTModel::setupNewItem( const SDirNodeItem & nodeItem, const QStandardItem * /*nameItem*/, QStandardItem * item ) const
         {
             if ( (nodeItem.fType == EColumns::eLanguage) && (item->text().isEmpty()) )
             {
