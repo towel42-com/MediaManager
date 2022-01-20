@@ -21,7 +21,7 @@
 // SOFTWARE.
 
 #include "UI/MainWindow.h"
-
+#include "SABUtils/ValidateOpenSSL.h"
 #include "Version.h"
 
 #include <QApplication>
@@ -29,10 +29,12 @@
 #include <QFile>
 #include <QTextStream>
 #include <QFileInfo>
+#include <QMessageBox>
 
-QFile * gOutFile{ nullptr };
+
 void myMessageOutput( QtMsgType type, const QMessageLogContext & context, const QString & msg )
 {
+    static QFile * sOutFile{ nullptr };
     QByteArray localMsg = msg.toLocal8Bit();
     QString realMsg = QString( "%1 (%2:%3, %4)" ).arg( localMsg.constData() ).arg( (QFileInfo( context.file ).fileName()) ).arg( context.line ).arg( context.function );
 
@@ -89,6 +91,13 @@ int main( int argc, char ** argv )
     appl.setOrganizationDomain(QString::fromStdString(NVersion::HOMEPAGE ));
 
     qInstallMessageHandler( myMessageOutput );
+
+    auto aOK = NSABUtils::validateOpenSSL( true );
+    if ( !aOK.first )
+    {
+        QMessageBox::critical(nullptr, QObject::tr("Could not find OpenSSL libraries"), aOK.second );
+        return -1;
+    }
 
     QString bifName;
     for ( int ii = 1; ii < argc; ++ii )
