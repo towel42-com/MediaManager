@@ -331,9 +331,9 @@ namespace NMediaManager
             }
         }
 
-        void CTransformModel::clearSearchResult( const QModelIndex & idx )
+        void CTransformModel::clearSearchResult( const QModelIndex & idx, bool recursive )
         {
-            setSearchResult( idx, {}, false );
+            setSearchResult( idx, {}, recursive );
         }
 
         std::pair< bool, QStandardItem * > CTransformModel::processItem( const QStandardItem * item, QStandardItem * parentItem, bool displayOnly ) const
@@ -677,14 +677,14 @@ namespace NMediaManager
             }
         }
 
-        void CTransformModel::postAddItems( const QFileInfo & fileInfo, std::list< NMediaManager::NCore::STreeNodeItem > & currItems ) const
+        void CTransformModel::postAddItems( const QFileInfo & fileInfo, std::list< NMediaManager::NCore::SDirNodeItem > & currItems ) const
         {
             bool isTVShow = isTVType( SSearchTMDBInfo::looksLikeTVShow( fileInfo.fileName(), nullptr ) );
 
             currItems.front().setData( isTVShow, ECustomRoles::eIsTVShowRole );
         }
 
-        void CTransformModel::setupNewItem( const STreeNodeItem & nodeItem, const QStandardItem * nameItem, QStandardItem * item ) const
+        void CTransformModel::setupNewItem( const SDirNodeItem & nodeItem, const QStandardItem * nameItem, QStandardItem * item ) const
         {
             if ( nodeItem.fType == EColumns::eIsTVShow )
                 setChecked( item, isTVType( nodeItem.fMediaType ) );
@@ -697,19 +697,19 @@ namespace NMediaManager
             }
         }
 
-        std::list< NMediaManager::NCore::STreeNodeItem > CTransformModel::addAdditionalItems( const QFileInfo & fileInfo ) const
+        std::list< NMediaManager::NCore::SDirNodeItem > CTransformModel::addAdditionalItems( const QFileInfo & fileInfo ) const
         {
-            std::list< NMediaManager::NCore::STreeNodeItem > retVal;
+            std::list< NMediaManager::NCore::SDirNodeItem > retVal;
 
             auto mediaType = SSearchTMDBInfo::looksLikeTVShow( fileInfo.fileName(), nullptr );
-            auto isTVShowItem = STreeNodeItem( QString(), EColumns::eIsTVShow );
+            auto isTVShowItem = SDirNodeItem( QString(), EColumns::eIsTVShow );
             isTVShowItem.fMediaType = mediaType;
             isTVShowItem.fCheckable = true;
 
             retVal.push_back( isTVShowItem );
 
             auto transformInfo = transformItem( fileInfo );
-            auto transformedItem = STreeNodeItem( transformInfo.second, EColumns::eTransformName );
+            auto transformedItem = SDirNodeItem( transformInfo.second, EColumns::eTransformName );
             retVal.push_back( transformedItem );
 
             auto mediaInfo = CDirModel::addAdditionalItems( fileInfo );
