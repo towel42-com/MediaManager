@@ -34,6 +34,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED true)
 find_package(Threads)
 find_package(Qt5 COMPONENTS Core Widgets Multimedia REQUIRED)
 find_package(Deploy REQUIRED)
+find_package(CheckOpenSSL REQUIRED)
 find_package(AddUnitTest REQUIRED)
 find_package(Git REQUIRED)
 
@@ -45,7 +46,6 @@ string(TIMESTAMP BUILD_DATE "%m/%d/%Y")
 
 CreateVersion(GIT_VERSION_INFO ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/SABUtils/Modules/Version.h.in
 	${MAJOR_VERSION} ${MINOR_VERSION} ${APP_NAME} ${VENDOR} ${HOMEPAGE} ${EMAIL} ${BUILD_DATE})
-	
 
 CheckOpenSSL()
 

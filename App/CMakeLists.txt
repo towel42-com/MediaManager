@@ -55,6 +55,7 @@ target_link_libraries( MediaManager
 
 DeployQt( MediaManager . )
 DeploySystem( MediaManager . )
+DeployOpenSSL( MediaManager . )
 
 INSTALL( TARGETS ${PROJECT_NAME} RUNTIME DESTINATION . )
 INSTALL( FILES ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.pdb DESTINATION . CONFIGURATIONS Debug RelWithDebInfo )
