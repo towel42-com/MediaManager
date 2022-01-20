@@ -319,11 +319,14 @@ namespace NMediaManager
                 {
                     editMediaTags( idx );
                 } );
-                retVal->addAction( tr( "Autoset Tags from File Name..." ),
-                                   [ idx, this ]()
+                if ( fModel->fileInfo( idx ).isFile() )
                 {
-                    fModel->autoSetMediaTags( idx );
-                } );
+                    retVal->addAction( tr( "Autoset Tags from File Name..." ),
+                                       [ idx, this ]()
+                    {
+                        fModel->autoSetMediaTags( idx );
+                    } );
+                }
             }
 
             if ( !retVal->defaultAction() && openLocationAction )

@@ -97,9 +97,19 @@ namespace NMediaManager
             auto action = menu->addAction( tr( "Search for '%1'..." ).arg( nm ),
                                            [ nameIdx, this ]()
             {
-                search( nameIdx );
+                manualSearch( nameIdx );
             } );
             menu->setDefaultAction( action );
+
+            if ( model()->canAutoSearch( nameIdx ) )
+            {
+                action = menu->addAction( tr( "Auto-Search for '%1'..." ).arg( nm ),
+                                          [ nameIdx, this ]()
+                {
+                    autoSearchForNewNames( nameIdx, false, {} );
+                } );
+            }
+            menu->addSeparator();
 
             auto searchResult = model()->getTransformResult( nameIdx, false );
             if ( searchResult )
@@ -107,8 +117,16 @@ namespace NMediaManager
                 menu->addAction( tr( "Clear Search Result" ),
                                  [ nameIdx, this ]()
                 {
-                    model()->clearSearchResult( nameIdx );
+                    model()->clearSearchResult( nameIdx, false );
                 } );
+                if ( model()->rowCount( nameIdx ) )
+                {
+                    menu->addAction( tr( "Clear Search Result (Including Children)" ),
+                                     [ nameIdx, this ]()
+                    {
+                        model()->clearSearchResult( nameIdx, true );
+                    } );
+                }
                 menu->addAction( tr( "Transform Item..." ),
                                  [ nameIdx, this ]()
                 {
@@ -311,7 +329,7 @@ namespace NMediaManager
             CBasePage::setupModel();
         }
 
-        void CTransformMediaFileNamesPage::search( const QModelIndex & idx )
+        void CTransformMediaFileNamesPage::manualSearch( const QModelIndex & idx )
         {
             auto baseIdx = model()->index( idx.row(), NCore::EColumns::eFSName, idx.parent() );
             auto titleInfo = model()->getTransformResult( idx, true );

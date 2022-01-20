@@ -75,8 +75,6 @@ namespace NMediaManager
             virtual QMenu * menu() override;
             virtual void setActive( bool isActive ) override;
 
-            void search( const QModelIndex & idx );
-
         Q_SIGNALS:
         public Q_SLOTS:
         protected Q_SLOTS:
@@ -86,6 +84,8 @@ namespace NMediaManager
             void slotExactMatchesOnly();
             void slotMenuAboutToShow();
         protected:
+            void manualSearch( const QModelIndex & idx );
+
             virtual void loadSettings() override;
             bool autoSearchForNewNames( const QModelIndex & rootIdx, bool searchChildren, std::optional< NCore::EMediaType > mediaType );
             
