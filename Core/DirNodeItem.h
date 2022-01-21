@@ -31,29 +31,7 @@ class QStandardItem;
 
 #include <list>
 
-//#include <QStandardItemModel>
-//#include <QFileInfo> // filedevice
-//#include <unordered_set>
 #include <optional>
-//#include <QProcess> // qprocess enums
-//#include <QMessageBox> // needed for icon type
-//#include <QDialogButtonBox> // StandardButtons
-//#include <QDateTime>
-//
-//namespace NSABUtils
-//{
-//    class CDoubleProgressDlg;
-//}
-
-//class QTreeView;
-//class QMediaPlaylist;
-//class QFileIconProvider;
-//class QDirIterator;
-//class QPlainTextEdit;
-//class QProcess;
-//class QFileInfo;
-//class QDir;
-
 namespace NMediaManager
 {
     namespace NUi
