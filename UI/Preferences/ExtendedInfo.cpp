@@ -53,7 +53,7 @@ namespace NMediaManager
 
         void CExtendedInfo::slotAddExtraString()
         {
-            addString( tr( "Add Known String For Extended Information" ), tr( "String:" ), fExtraStringModel, fImpl->knownExtraStrings, true );
+            addString( tr( "Add Known String For Extended Information" ), tr( "String:" ), fExtraStringModel, fImpl->knownExtraStrings, false );
         }
 
         void CExtendedInfo::slotDelExtraString()
