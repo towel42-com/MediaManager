@@ -49,7 +49,7 @@
 #include <QTimer>
 #include <QTreeView>
 #include <QApplication>
-
+#include <QBrush>
 #include <QDirIterator>
 #include <QPlainTextEdit>
 #include <QMessageBox>
@@ -92,6 +92,9 @@ namespace NMediaManager
 {
     namespace NCore
     {
+        const QString kNoItems = "<NO ITEMS>";
+        const QString kDeleteThis = "<DELETE THIS>";
+
         CDirModel::CDirModel( NUi::CBasePage * page, QObject * parent /*= 0*/ ) :
             QStandardItemModel( parent ),
             fBasePage( page )
@@ -122,9 +125,10 @@ namespace NMediaManager
             reloadModel();
         }
 
-        bool CDirModel::isAutoSetText( const QString & text )
+        bool CDirModel::isAutoSetText(const QString & text)
         {
-            return (text == "<NO MATCH>") || (text == "<NO AUTO MATCH>");
+            return (text == kNoItems)
+                || (text == kDeleteThis);
         }
 
         void CDirModel::setNameFilters( const QStringList & filters )
@@ -481,7 +485,7 @@ namespace NMediaManager
 
         QString STreeNode::name() const
         {
-            return rootItem() ? rootItem()->text() : "<NO ITEMS>";
+            return rootItem() ? rootItem()->text() : kNoItems;
         }
 
         QStandardItem * STreeNode::item( EColumns column, bool createIfNecessary /*= true */ ) const
@@ -534,7 +538,24 @@ namespace NMediaManager
             return nullptr;
         }
 
-        QFileInfo CDirModel::fileInfo( const QStandardItem * item ) const
+        QVariant CDirModel::data(const QModelIndex & idx, int role) const
+        {
+            if (role == Qt::DecorationRole)
+            {
+                auto basePixmap = QStandardItemModel::data(idx, role);
+                auto pixmap = getRowDecoration(idx, basePixmap);
+                return pixmap;
+            }
+            if (role == Qt::BackgroundRole)
+            {
+                auto clr = getRowBackground(idx);
+                if (!clr.isNull())
+                    return clr;
+            }
+            return QStandardItemModel::data(idx, role);
+        }
+
+        QFileInfo CDirModel::fileInfo(const QStandardItem * item) const
         {
             if ( !item )
                 return QFileInfo();
@@ -617,7 +638,7 @@ namespace NMediaManager
                 return item->data( ECustomRoles::eFullPathRole ).toString();
 
             auto parentDir = computeTransformPath( item->parent(), false );
-            if ( parentDir == "<DELETE THIS>" )
+            if ( parentDir == kDeleteThis )
                 return parentDir;
 
             auto myName = getMyTransformedName( item, transformParentsOnly );
@@ -625,7 +646,7 @@ namespace NMediaManager
             if ( myName.isEmpty() || parentDir.isEmpty() )
                 return QString();
 
-            if ( myName == "<DELETE THIS>" )
+            if ( myName == kDeleteThis )
                 return myName;
 
             auto retVal = QDir( parentDir ).absoluteFilePath( myName );
@@ -676,8 +697,7 @@ namespace NMediaManager
                 errorItem->setIcon( icon );
                 return false;
             }
-            else
-                return true;
+            return true;
         }
 
         bool CDirModel::process( const QStandardItem * item, bool displayOnly, QStandardItem * parentItem )
@@ -764,20 +784,32 @@ namespace NMediaManager
 
         std::unordered_map< QString, QString > CDirModel::getMediaTags( const QFileInfo & fi ) const
         {
+            if (!canShowMediaInfo())
+                return {};
+
             if ( !CPreferences::instance()->isMediaFile( fi ) )
                 return {};
-            NSABUtils::CAutoWaitCursor awc;
-            auto retVal = NSABUtils::getMediaTags( fi.absoluteFilePath(), NCore::CPreferences::instance()->getFFProbeEXE() );
 
-            auto numSecs = NSABUtils::getNumberOfSeconds( fi.absoluteFilePath(), NCore::CPreferences::instance()->getFFProbeEXE() );
+            auto ffprobeExe = NCore::CPreferences::instance()->getFFProbeEXE();
+
+            NSABUtils::CAutoWaitCursor awc;
+            auto retVal = NSABUtils::getMediaTags( fi.absoluteFilePath(), ffprobeExe );
+
+            auto numSecs = NSABUtils::getNumberOfSeconds( fi.absoluteFilePath(), ffprobeExe);
             NSABUtils::CTimeString ts( numSecs * 1000 );
             retVal["LENGTH"] = ts.toString( "hh:mm:ss" );
             return retVal;
         }
 
-        void CDirModel::reloadMediaTags( const QModelIndex & idx )
+        bool CDirModel::canShowMediaInfo() const
         {
-            if ( !showMediaItems() )
+            auto ffprobeExe = NCore::CPreferences::instance()->getFFProbeEXE();
+            return !ffprobeExe.isEmpty() && QFileInfo(ffprobeExe).isExecutable();
+        }
+
+        void CDirModel::reloadMediaTags(const QModelIndex & idx)
+        {
+            if ( !showMediaItems() || !canShowMediaInfo() )
                 return;
 
             auto fi = fileInfo( idx );
@@ -800,6 +832,27 @@ namespace NMediaManager
             item->setText( mediaInfo["COMMENT"] );
         }
 
+        std::list<NMediaManager::NCore::SDirNodeItem> CDirModel::getMediaInfoItems(const QFileInfo & fileInfo, int offset) const
+        {
+            if (!canShowMediaInfo())
+                return {};
+
+            std::list<NMediaManager::NCore::SDirNodeItem> retVal;
+            auto mediaInfo = getMediaTags(fileInfo);
+
+            retVal.emplace_back(mediaInfo["TITLE"], offset++);
+            retVal.back().fEditType = EType::eTitle;
+
+            retVal.emplace_back(mediaInfo["LENGTH"], offset++);
+            retVal.back().fEditType = EType::eLength;
+
+            retVal.emplace_back(mediaInfo["DATE_RECORDED"], offset++);
+            retVal.back().fEditType = EType::eDate;
+
+            retVal.emplace_back(mediaInfo["COMMENT"], offset++);
+            retVal.back().fEditType = EType::eComment;
+            return retVal;
+        }
 
         bool CDirModel::process( const QModelIndex & idx, const std::function< void( int count, int eventsPerPath ) > & startProgress, const std::function< void( bool finalStep, bool canceled ) > & endProgress, QWidget * parent )
         {
@@ -1011,37 +1064,18 @@ namespace NMediaManager
 
         QStringList CDirModel::getMediaHeaders() const
         {
-            return QStringList() << tr( "Title" ) << tr( "Length" ) << tr( "Media Date" ) << tr( "Comment" );
+            if (!canShowMediaInfo())
+                return {};
+            return QStringList() << tr("Title") << tr("Length") << tr("Media Date") << tr("Comment");
         }
 
         std::list< NMediaManager::NCore::SDirNodeItem > CDirModel::addAdditionalItems( const QFileInfo & fileInfo ) const
         {
-            if ( showMediaItems() )
+            if ( showMediaItems() && canShowMediaInfo() )
             {
                 return getMediaInfoItems( fileInfo, firstMediaItemColumn() );
             }
             return {};
-        }
-
-        std::list<NMediaManager::NCore::SDirNodeItem> CDirModel::getMediaInfoItems( const QFileInfo & fileInfo, int offset ) const
-        {
-            NSABUtils::CAutoWaitCursor awc;
-
-            std::list<NMediaManager::NCore::SDirNodeItem> retVal;
-            auto mediaInfo = getMediaTags( fileInfo );
-
-            retVal.emplace_back(mediaInfo["TITLE"], offset++);
-            retVal.back().fEditType = EType::eTitle;
-
-            retVal.emplace_back(mediaInfo["LENGTH"], offset++);
-            retVal.back().fEditType = EType::eTitle;
-
-            retVal.emplace_back(mediaInfo["DATE_RECORDED"], offset++);
-            retVal.back().fEditType = EType::eDate;
-
-            retVal.emplace_back(mediaInfo["COMMENT"], offset++);
-            retVal.back().fEditType = EType::eComment;
-            return retVal;
         }
 
         QStringList CDirModel::headers() const

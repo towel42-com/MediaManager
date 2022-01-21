@@ -62,6 +62,10 @@ namespace NMediaManager
         class CDirModel;
         enum class EMediaType;
 
+        extern const QString kNoItems;
+        extern const QString kNoMatch;
+        extern const QString kDeleteThis;
+
         enum ECustomRoles
         {
             eFullPathRole = Qt::UserRole + 1,
@@ -155,6 +159,10 @@ namespace NMediaManager
             QStandardItem * getPathItemFromIndex( const QModelIndex & idx ) const;
             QStandardItem * getItemFromPath( const QFileInfo & fi ) const;
 
+            virtual QVariant data(const QModelIndex & idx, int role) const final;
+            virtual QVariant getRowBackground(const QModelIndex & /*idx*/) const { return QVariant(); }
+            virtual QVariant getRowDecoration(const QModelIndex & /*idx*/, const QVariant & baseDecoration) const { return baseDecoration; }
+
             bool process( const QModelIndex & idx, const std::function< void( int count, int eventsPerPath ) > & startProgress, const std::function< void( bool finalStep, bool canceled ) > & endProgress, QWidget * parent );
 
             void setNameFilters( const QStringList & filters );
@@ -183,8 +191,9 @@ namespace NMediaManager
 
             virtual bool showMediaItems() const { return false; };
 
+            bool canShowMediaInfo() const;
             virtual std::unordered_map< QString, QString > getMediaTags( const QFileInfo & fi ) const;
-            virtual void reloadMediaTags( const QModelIndex & idx );
+            virtual void reloadMediaTags(const QModelIndex & idx);
             virtual bool autoSetMediaTags( const QModelIndex & idx, QString * msg = nullptr );
 
             bool setMediaTags( const QString & fileName, const QString & title, const QString & year, QString * msg = nullptr ) const;

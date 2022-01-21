@@ -48,13 +48,15 @@ namespace NMediaManager
             CTransformModel( NUi::CBasePage * page, QObject * parent = nullptr );
             ~CTransformModel();
 
+            virtual bool setData(const QModelIndex & idx, const QVariant & value, int role) override;
+            virtual QVariant getRowBackground(const QModelIndex & idx) const override;
+            virtual QVariant getRowDecoration(const QModelIndex & idx, const QVariant & baseDecoration) const override;
+
             void setSearchResult( const QModelIndex & idx, std::shared_ptr< STransformResult > info, bool applyToChilren );
             void setSearchResult( QStandardItem * item, std::shared_ptr< STransformResult > info, bool applyToChilren );
             void clearSearchResult( const QModelIndex & idx, bool recursive );
 
             bool treatAsTVShow( const QFileInfo & fileInfo, bool defaultValue ) const;
-            virtual bool setData( const QModelIndex & idx, const QVariant & value, int role ) override;
-
             virtual int eventsPerPath() const override { return 5; }// get timestamp, create parent paths, rename, setting tag info, settimestamp}
             virtual void clear() override;
 
@@ -76,10 +78,11 @@ namespace NMediaManager
             void slotMovieOutputDirPatternChanged( const QString & outPattern );
             void slotMovieOutputFilePatternChanged( const QString & outPattern );
         private:
+            bool transformCorrect(const QModelIndex & idx) const;
             virtual void postAddItems( const QFileInfo & fileInfo, std::list< NMediaManager::NCore::SDirNodeItem > & currItems ) const override;
             virtual std::list< NMediaManager::NCore::SDirNodeItem > addAdditionalItems( const QFileInfo & fileInfo ) const override;
-            virtual bool showMediaItems() const override { return true; };
-            virtual int firstMediaItemColumn() const override { return EColumns::eMediaTitle; }
+            bool showMediaItems() const override { return true; };
+            int firstMediaItemColumn() const override { return EColumns::eMediaTitle; }
 
             virtual void setupNewItem( const SDirNodeItem & nodeItem, const QStandardItem * nameItem, QStandardItem * item ) const override;
             virtual QStringList headers() const override;
@@ -89,13 +92,13 @@ namespace NMediaManager
             virtual int computeNumberOfItems() const override;
 
             virtual void postReloadModel() override;
-            virtual QString getMyTransformedName( const QStandardItem * item, bool transformParentsOnly ) const override;
+            QString getMyTransformedName( const QStandardItem * item, bool transformParentsOnly ) const override;
 
             // model overrides during iteration
-            virtual void postFileFunction( bool /*aOK*/, const QFileInfo & /*fileInfo*/ ) override;
-            virtual bool preFileFunction( const QFileInfo & /*fileInfo*/, std::unordered_set<QString> & /*alreadyAdded*/, TParentTree & /*tree*/ ) override;
+            void postFileFunction( bool /*aOK*/, const QFileInfo & /*fileInfo*/ ) override;
+            bool preFileFunction( const QFileInfo & /*fileInfo*/, std::unordered_set<QString> & /*alreadyAdded*/, TParentTree & /*tree*/ ) override;
 
-            virtual bool usesQueuedProcessing() const override { return false; }
+            bool usesQueuedProcessing() const override { return false; }
 
             std::pair< bool, QStandardItem * > processItem( const QStandardItem * item, QStandardItem * parentItem, bool displayOnly ) const override;
 
