@@ -23,6 +23,7 @@
 #include "TransformResult.h"
 #include "SearchTMDBInfo.h"
 #include "PatternInfo.h"
+#include "DirModel.h"
 
 #include "SABUtils/StringUtils.h"
 #include "SABUtils/QtUtils.h"
@@ -43,7 +44,7 @@ namespace NMediaManager
         QString STransformResult::getTitle() const
         {
             if ( isDeleteResult() )
-                return "<DELETE THIS>";
+                return kDeleteThis;
             return NSABUtils::NStringUtils::transformTitle( fTitle );
         }
 
