@@ -164,14 +164,15 @@ namespace NMediaManager
             {
 #ifdef Q_OS_WINDOWS
                 MSG * msg = static_cast<MSG *>(message);
-                if (msg->message == WM_NCLBUTTONDOWN)
+                if (msg->message == WM_NCLBUTTONDBLCLK)
                 {
                     auto hitTest = static_cast<int>(msg->wParam);
                     if (hitTest == HTCAPTION)
                     {
                         auto title = windowTitle();
                         auto pt = mapFromGlobal(QPoint(GET_X_LPARAM(msg->lParam), GET_Y_LPARAM(msg->lParam)));
-                        NSABUtils::launchIfURLClicked(title, pt, fImpl->menubar->font());
+                        if ( NSABUtils::launchIfURLClicked(title, pt, fImpl->menubar->font()) )
+                            return true;
                     }
                 }
 #endif
