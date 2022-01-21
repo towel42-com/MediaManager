@@ -115,16 +115,16 @@ namespace NMediaManager
         QString SSearchTMDBInfo::smartTrim( const QString &string, bool stripInnerSeparators )
         {
             auto retVal = string;
-            auto pos = retVal.indexOf( QRegularExpression( "[^\\.\\s\\-\\_]" ) );
+            auto pos = retVal.indexOf( QRegularExpression( R"([^\.\s\-\_])" ) );
             if ( pos != -1 )
                 retVal = retVal.mid( pos );
 
-            pos = retVal.lastIndexOf( QRegularExpression( "[^\\.\\s\\-\\_]" ) );
+            pos = retVal.lastIndexOf( QRegularExpression( R"([^\.\s\-\_])" ) );
             if ( pos != -1 )
                 retVal = retVal.left( pos + 1 );
             if ( stripInnerSeparators )
             {
-                retVal.replace( QRegularExpression( "\\.|(\\s{2,})|-|\\:|_" ), " " );
+                retVal.replace( QRegularExpression( R"(\.|(\s{2,})|-|\:|_)" ), " " );
                 retVal = retVal.trimmed();
             }
             return retVal;
@@ -134,10 +134,10 @@ namespace NMediaManager
         {
             QStringList retVal;
             int posStart = 0;
-            for( auto ii = positions.begin(); ii != positions.end(); ++ii )
+            for(const auto & position : positions)
             {
-                auto curr = smartTrim( inString.mid( posStart, ( *ii ).first - posStart ) );
-                posStart = ( *ii ).first + ( *ii ).second;
+                auto curr = smartTrim( inString.mid( posStart, position.first - posStart ) );
+                posStart = position.first + position.second;
                 retVal << curr;
             }
             auto curr = smartTrim( inString.mid( posStart ) );
@@ -170,8 +170,8 @@ namespace NMediaManager
                 if ( seasonStr )
                     *seasonStr = smartTrim( match.captured( "season" ) );
                 if ( match.capturedStart( "garbage" ) != -1 )
-                    positions.push_back( std::make_pair( match.capturedStart( "garbage" ) - 1, match.capturedLength( "garbage" ) + 1 ) );
-                positions.push_back( std::make_pair( match.capturedStart( "season" ) - 1, match.capturedLength( "season" ) + 1 ) );
+                    positions.emplace_back( match.capturedStart( "garbage" ) - 1, match.capturedLength( "garbage" ) + 1);
+                positions.emplace_back( match.capturedStart( "season" ) - 1, match.capturedLength( "season" ) + 1);
 
                 retVal = EMediaType::eTVSeason;
             }
@@ -185,7 +185,7 @@ namespace NMediaManager
                     *episodeStr = smartTrim( match.captured( "episode" ) );
 
                 if ( match.capturedStart( "garbage" ) != -1 )
-                    positions.push_back( std::make_pair( match.capturedStart( "garbage" ) - 1, match.capturedLength( "garbage" ) + 1 ) );
+                    positions.emplace_back( match.capturedStart( "garbage" ) - 1, match.capturedLength( "garbage" ) + 1);
                 auto pos = std::make_pair( match.capturedStart( "episode" ) - 1, match.capturedLength( "episode" ) + 1 );
 
                 if ( positions.empty() || ( positions.front().first < match.capturedStart( "episode" ) ) )
@@ -207,7 +207,7 @@ namespace NMediaManager
                 }
             }
 
-            regExpStr = ".*\\s??(?<seasonsuffix>-\\s??Season\\s?(?<season>\\d+))";
+            regExpStr = R"(.*\s??(?<seasonsuffix>-\s??Season\s?(?<season>\d+)))";
             regExp = QRegularExpression( regExpStr, QRegularExpression::PatternOption::CaseInsensitiveOption );
             match = regExp.match( localRetVal );
             if ( match.hasMatch() )
@@ -411,7 +411,7 @@ namespace NMediaManager
             //(?<!\d)
             //(?<fulltext>[[|\(|\W|^](?<releaseDate>((\d{2}){1,2}))((?<suffix>\]|\))|\W|$))
 
-            auto regExpStr = "(?<fulltext>(([\\(\\[]|^)|(?<!(\\d|t)))(?<releaseDate>\\d{2}|\\d{4})(\\D|\\)|\\]|$))";
+            auto regExpStr = R"((?<fulltext>(([\(\[]|^)|(?<!(\d|t)))(?<releaseDate>\d{2}|\d{4})(\D|\)|\]|$)))";
             auto regExp = QRegularExpression( regExpStr );
             auto match = regExp.match( fSearchName );
             if ( match.hasMatch() )
@@ -529,7 +529,7 @@ namespace NMediaManager
 
         void SSearchTMDBInfo::extractTMDBID()
         {
-            auto regExp = QRegularExpression( "(?<fulltext>\\[tmdbid=(?<tmdbid>\\d+)\\])" );
+            auto regExp = QRegularExpression( R"((?<fulltext>\[tmdbid=(?<tmdbid>\d+)\]))" );
             auto match = regExp.match( fSearchName );
             if ( match.hasMatch() )
             {

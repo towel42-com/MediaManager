@@ -110,7 +110,7 @@ namespace NMediaManager
                 uniqueSRTFiles.insert( md5 );
 #endif
                 auto languageItem = getLanguageItem( child );
-                tmp[languageItem->text()].push_back( { child, isLangFormat } );
+                tmp[languageItem->text()].emplace_back(child, isLangFormat);
             }
 
             bool allLangFiles = true;

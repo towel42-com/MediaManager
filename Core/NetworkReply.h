@@ -98,7 +98,7 @@ namespace NMediaManager
         {
             if ( !lhs || !rhs )
                 return lhs.get() == rhs.get();
-            return *lhs.get() == *rhs.get();
+            return *lhs == *rhs;
         }
     }
 }

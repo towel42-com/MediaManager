@@ -52,7 +52,7 @@ namespace NMediaManager
         {
             Q_OBJECT
         public:
-            CMainWindow( QWidget *parent = 0 );
+            CMainWindow( QWidget *parent = nullptr );
             ~CMainWindow();
 
             bool setBIFFileName( const QString &name );

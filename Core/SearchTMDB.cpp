@@ -91,7 +91,7 @@ namespace NMediaManager
         {
             //qDebug() << "AddSearch: " << filePath << searchInfo->searchName();
 
-            fSearchQueue.push_back( std::make_pair( filePath, searchInfo ) );
+            fSearchQueue.emplace_back( filePath, searchInfo);
             startAutoSearchTimer();
 
             //qDebug() << "AddSearch After: SearchTMBD" << *this;

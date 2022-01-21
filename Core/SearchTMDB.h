@@ -61,7 +61,7 @@ namespace NMediaManager
         {
             Q_OBJECT
         public:
-            CSearchTMDB( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::optional< QString > & configuration, QObject * parent = 0 );
+            CSearchTMDB( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::optional< QString > & configuration, QObject * parent = nullptr );
             ~CSearchTMDB();
 
             void setSkipImages( bool value ) { fSkipImages = value; }

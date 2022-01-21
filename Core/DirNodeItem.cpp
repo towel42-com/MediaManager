@@ -47,7 +47,7 @@ namespace NMediaManager
 
         void SDirNodeItem::setData( const QVariant & value, int role )
         {
-            return fRoles.push_back( std::make_pair( value, role ) );
+            fRoles.emplace_back( value, role);
         }
 
         QStandardItem * SDirNodeItem::createStandardItem() const

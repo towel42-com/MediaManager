@@ -40,7 +40,7 @@ namespace NMediaManager
             Q_OBJECT
 
         public:
-            CProcessConfirm( const QString &title, const QString &label, QWidget *parent = 0 );
+            CProcessConfirm( const QString &title, const QString &label, QWidget *parent = nullptr );
             ~CProcessConfirm();
 
             void setTitle( const QString &title );

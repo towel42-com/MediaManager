@@ -45,8 +45,8 @@ namespace NMediaManager
 
         private:
             virtual std::pair< bool, QStandardItem * > processItem( const QStandardItem * item, QStandardItem * parentItem, bool displayOnly ) const override;
-            virtual bool showMediaItems() const { return true; };
-            virtual int firstMediaItemColumn() const { return EColumns::eMediaTitle; }
+            virtual bool showMediaItems() const override { return true; };
+            virtual int firstMediaItemColumn() const override { return EColumns::eMediaTitle; }
             virtual QStringList headers() const override;
             virtual void setupNewItem( const SDirNodeItem & /*nodeItem*/, const QStandardItem * /*nameItem*/, QStandardItem * /*item*/ ) const override;
             virtual QString getProgressLabel( const SProcessInfo & processInfo ) const override;
@@ -58,7 +58,7 @@ namespace NMediaManager
 
             virtual void attachTreeNodes( QStandardItem * /*nextParent*/, QStandardItem *& /*prevParent*/, const STreeNode & /*treeNode*/ ) override;
 
-            virtual bool usesQueuedProcessing() const { return true; }
+            virtual bool usesQueuedProcessing() const override { return true; }
 
             int64_t getNumberOfSeconds( const QString & fileName ) const;
         };

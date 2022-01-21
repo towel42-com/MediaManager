@@ -60,7 +60,7 @@ namespace NMediaManager
             virtual void postProcess( bool /*displayOnly*/ ) override;
             virtual bool postExtProcess( const SProcessInfo & info, QStringList & msgList ) override;
 
-            virtual bool usesQueuedProcessing() const { return true; }
+            virtual bool usesQueuedProcessing() const override { return true; }
 
             virtual QString getProgressLabel( const SProcessInfo & processInfo ) const override;
             QList< QFileInfo > getSRTFilesForMKV( const QFileInfo & fi ) const;

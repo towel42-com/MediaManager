@@ -61,7 +61,7 @@ namespace NMediaManager
         {
             Q_OBJECT
         public:
-            CBIFViewerPage( QWidget *parent = 0 );
+            CBIFViewerPage( QWidget *parent = nullptr );
             ~CBIFViewerPage();
 
             virtual void setActive( bool isActive ) override;
@@ -83,8 +83,8 @@ namespace NMediaManager
             virtual bool isDirBased() const override { return false; }
             virtual bool isFileBased() const override { return true; }
 
-            QMenu * menu();
-            QToolBar *toolBar();
+            virtual QMenu * menu() override;
+            virtual QToolBar *toolBar() override;
 
             virtual QString selectFileFilter() const override;
         public Q_SLOTS:
@@ -114,7 +114,7 @@ namespace NMediaManager
             void clear();
             void formatBIFTable();
             void loadSettings( bool init );
-            void saveSettings();
+            virtual void saveSettings() override;
         
             QTimer *fResizeTimer{ nullptr };
             std::shared_ptr< NSABUtils::NBIF::CFile > fBIF;

@@ -466,13 +466,13 @@ namespace NMediaManager
             nameItem.setData( fileInfo.isDir(), ECustomRoles::eIsDir );
             nameItem.fEditType = EType::ePath;
             fItems.push_back( nameItem );
-            fItems.push_back( SDirNodeItem( fileInfo.isFile() ? NSABUtils::NFileUtils::fileSizeString( fileInfo ) : QString(), EColumns::eFSSize ) );
+            fItems.emplace_back(fileInfo.isFile() ? NSABUtils::NFileUtils::fileSizeString( fileInfo ) : QString(), EColumns::eFSSize);
             if ( fileInfo.isFile() )
             {
                 fItems.back().fAlignment = Qt::AlignRight | Qt::AlignVCenter;
             }
-            fItems.push_back( SDirNodeItem( model->iconProvider()->type( fileInfo ), EColumns::eFSType ) );
-            fItems.push_back( SDirNodeItem( fileInfo.lastModified().toString( "MM/dd/yyyy hh:mm:ss.zzz" ), EColumns::eFSModDate ) );
+            fItems.emplace_back(model->iconProvider()->type( fileInfo ), EColumns::eFSType);
+            fItems.emplace_back(fileInfo.lastModified().toString( "MM/dd/yyyy hh:mm:ss.zzz" ), EColumns::eFSModDate);
 
             auto modelItems = model->addAdditionalItems( fileInfo );
             fItems.insert( fItems.end(), modelItems.begin(), modelItems.end() );
@@ -1030,16 +1030,16 @@ namespace NMediaManager
             std::list<NMediaManager::NCore::SDirNodeItem> retVal;
             auto mediaInfo = getMediaTags( fileInfo );
 
-            retVal.push_back( SDirNodeItem( mediaInfo["TITLE"], offset++ ) );
+            retVal.emplace_back(mediaInfo["TITLE"], offset++);
             retVal.back().fEditType = EType::eTitle;
 
-            retVal.push_back( SDirNodeItem( mediaInfo["LENGTH"], offset++ ) );
+            retVal.emplace_back(mediaInfo["LENGTH"], offset++);
             retVal.back().fEditType = EType::eTitle;
 
-            retVal.push_back( SDirNodeItem( mediaInfo["DATE_RECORDED"], offset++ ) );
+            retVal.emplace_back(mediaInfo["DATE_RECORDED"], offset++);
             retVal.back().fEditType = EType::eDate;
 
-            retVal.push_back( SDirNodeItem( mediaInfo["COMMENT"], offset++ ) );
+            retVal.emplace_back(mediaInfo["COMMENT"], offset++);
             retVal.back().fEditType = EType::eComment;
             return retVal;
         }

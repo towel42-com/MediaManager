@@ -287,7 +287,7 @@ namespace NMediaManager
         {
             QSettings settings;
             settings.beginGroup( "Transform" );
-            QStringList realValues = values;
+            const QStringList& realValues = values;
             settings.setValue( "PathsToDelete", realValues );
         }
 
@@ -475,7 +475,7 @@ namespace NMediaManager
                 else
                     nonRegExs << QRegularExpression::escape( ii );
             }
-            auto primRegEx = "((?<prefix>\\[|\\()|\\W)(?<word>" + nonRegExs.join("|") + ")((?<suffix>\\]|\\))|\\W|$)";
+            auto primRegEx = R"(((?<prefix>\[|\()|\W)(?<word>)" + nonRegExs.join("|") + R"()((?<suffix>\]|\))|\W|$))";
             retVal << primRegEx;
 
             return retVal;

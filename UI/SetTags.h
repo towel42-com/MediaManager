@@ -24,27 +24,10 @@
 #define _SETTAGS_H
 
 #include <QDialog>
-//#include <QStringList>
-//#include <QDate>
-//#include <optional>
 #include <memory>
-//
-//class QNetworkAccessManager;
-//class QNetworkReply;
-//class QTreeWidgetItem;
-//namespace NSABUtils
-//{
-//    class CButtonEnabler;
-//}
 
 namespace NMediaManager
 {
-    //namespace NCore
-    //{
-    //    class CSearchTMDB;
-    //    struct SSearchTMDBInfo;
-    //    struct STransformResult;
-    //}
     namespace NUi
     {
         namespace Ui { class CSetTags; };
@@ -52,7 +35,7 @@ namespace NMediaManager
         {
             Q_OBJECT
         public:
-            CSetTags( const QString & fileName, QWidget *parent = 0 );
+            CSetTags( const QString & fileName, QWidget *parent = nullptr );
             ~CSetTags();
             virtual void accept() override;
         public Q_SLOTS:

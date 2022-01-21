@@ -382,8 +382,8 @@ namespace NMediaManager
             if ( fFileName.isEmpty() )
                 return;
 
-            auto regExp1 = QRegularExpression( "(?<num>\\d+)_(?<langname>\\S+)" );
-            auto regExp2 = QRegularExpression( "(?<filename>\\s+)\\.(?<isocode>[A-Za-z]{2})(?<country>_[A-Za-z]{2}(\\d+)?)?" );
+            auto regExp1 = QRegularExpression( R"((?<num>\d+)_(?<langname>\S+))" );
+            auto regExp2 = QRegularExpression( R"((?<filename>\s+)\.(?<isocode>[A-Za-z]{2})(?<country>_[A-Za-z]{2}(\d+)?)?)" );
             auto match1 = regExp1.match( fFileName );
             QRegularExpressionMatch match2;
             QString num;

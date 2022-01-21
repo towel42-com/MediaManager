@@ -78,8 +78,8 @@ namespace NMediaManager
         private:
             virtual void postAddItems( const QFileInfo & fileInfo, std::list< NMediaManager::NCore::SDirNodeItem > & currItems ) const override;
             virtual std::list< NMediaManager::NCore::SDirNodeItem > addAdditionalItems( const QFileInfo & fileInfo ) const override;
-            virtual bool showMediaItems() const { return true; };
-            virtual int firstMediaItemColumn() const { return EColumns::eMediaTitle; }
+            virtual bool showMediaItems() const override { return true; };
+            virtual int firstMediaItemColumn() const override { return EColumns::eMediaTitle; }
 
             virtual void setupNewItem( const SDirNodeItem & nodeItem, const QStandardItem * nameItem, QStandardItem * item ) const override;
             virtual QStringList headers() const override;
@@ -89,13 +89,13 @@ namespace NMediaManager
             virtual int computeNumberOfItems() const override;
 
             virtual void postReloadModel() override;
-            virtual QString getMyTransformedName( const QStandardItem * item, bool transformParentsOnly ) const;
+            virtual QString getMyTransformedName( const QStandardItem * item, bool transformParentsOnly ) const override;
 
             // model overrides during iteration
-            virtual void postFileFunction( bool /*aOK*/, const QFileInfo & /*fileInfo*/ );
-            virtual bool preFileFunction( const QFileInfo & /*fileInfo*/, std::unordered_set<QString> & /*alreadyAdded*/, TParentTree & /*tree*/ );
+            virtual void postFileFunction( bool /*aOK*/, const QFileInfo & /*fileInfo*/ ) override;
+            virtual bool preFileFunction( const QFileInfo & /*fileInfo*/, std::unordered_set<QString> & /*alreadyAdded*/, TParentTree & /*tree*/ ) override;
 
-            virtual bool usesQueuedProcessing() const { return false; }
+            virtual bool usesQueuedProcessing() const override { return false; }
 
             std::pair< bool, QStandardItem * > processItem( const QStandardItem * item, QStandardItem * parentItem, bool displayOnly ) const override;
 

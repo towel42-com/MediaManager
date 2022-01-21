@@ -48,7 +48,7 @@ namespace NMediaManager
         {
             Q_OBJECT
         public:
-            CTransformMediaFileNamesPage( QWidget *parent = 0 );
+            CTransformMediaFileNamesPage( QWidget *parent = nullptr );
             ~CTransformMediaFileNamesPage();
 
             virtual bool useSecondaryProgressBar() const override { return false; }

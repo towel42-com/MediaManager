@@ -154,7 +154,7 @@ namespace NMediaManager
             }
 
             // its in there..now lets see if its optional
-            auto optRegExStr = QString( "\\{(?<replText>[^{}]+)\\}\\:%1" ).arg( capRegEx );
+            auto optRegExStr = QString( R"(\{(?<replText>[^{}]+)\}\:%1)" ).arg( capRegEx );
             regExp = QRegularExpression( optRegExStr );
             match = regExp.match( returnPattern );
             bool optional = match.hasMatch();
@@ -182,17 +182,17 @@ namespace NMediaManager
             if ( inFile.isEmpty() )
                 return;
 
-            inFile.replace( QRegularExpression( "^(([A-Za-z]\\:)|(\\/)|(\\\\))+" ), "" );
+            inFile.replace( QRegularExpression( R"(^(([A-Za-z]\:)|(\/)|(\\))+)" ), "" );
 
             auto regExStr = QString( "(?<hours>\\d{1,2}):(?<minutes>\\d{2})" );
             inFile.replace( QRegularExpression( regExStr ), "\\1\\2" );
 
-            regExStr = "\\s*\\:\\s*";
+            regExStr = R"(\s*\:\s*)";
             inFile.replace( QRegularExpression( regExStr ), " - " );
 
-            regExStr = "[\\:\\<\\>\\\"\\|\\?\\*";
+            regExStr = R"([\:\<\>\"\|\?\*)";
             if ( !isDir )
-                regExStr += "\\/\\\\";
+                regExStr += R"(\/\\)";
             regExStr += "]";
             inFile.replace( QRegularExpression( regExStr ), "" );
         }

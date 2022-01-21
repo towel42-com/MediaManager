@@ -449,7 +449,7 @@ namespace NMediaManager
                                 auto mySubPath = transFormItem->text();
                                 if ( (mySubPath.indexOf( "/" ) != -1) || (mySubPath.indexOf( "\\" ) != -1) )
                                 {
-                                    auto pos = mySubPath.lastIndexOf( QRegularExpression( "[\\/\\\\]" ) );
+                                    auto pos = mySubPath.lastIndexOf( QRegularExpression( R"([\/\\])" ) );
                                     auto myParentPath = mySubPath.left( pos );
 
                                     auto parentPath = computeTransformPath( item->parent(), false );
@@ -847,7 +847,7 @@ namespace NMediaManager
             if ( isRootPath( fi.absoluteFilePath() ) )
                  return {};
 
-            auto regExStr = "^([A-Z]\\:(\\\\|\\/)|(\\/))$";
+            auto regExStr = R"(^([A-Z]\:(\\|\/)|(\/))$)";
             auto regEx = QRegularExpression( regExStr, QRegularExpression::CaseInsensitiveOption );
             auto match = regEx.match( path );
             if ( match.hasMatch() )

@@ -91,7 +91,7 @@ namespace NMediaManager
         {
         public:
             CDirModelItem( const QString & text, EType type );
-            int type() const { return static_cast< int >( fType ); }
+            virtual int type() const override { return static_cast< int >( fType ); }
         private:
             EType fType;
         };
