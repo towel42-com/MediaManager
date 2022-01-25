@@ -761,6 +761,7 @@ namespace NMediaManager
                     aOK = true;
                 else if ( fileInfo.isDir() || isMediaFile(idx))
                 {
+                    QStringList msgs;
                     auto isTVShow = treatAsTVShow(fileInfo, isChecked(path, EColumns::eIsTVShow));
                     if (canAutoSearch(fileInfo, false))
                     {
@@ -770,7 +771,7 @@ namespace NMediaManager
                         else if (!transformInfo.first)
                         {
                             aOK = false;
-                            msg = tr("Could not properly transform item");
+                            msgs << tr("Could not properly transform item");
                         }
                     }
 
@@ -783,20 +784,20 @@ namespace NMediaManager
                             if (tagName.isEmpty())
                             {
                                 aOK = false;
-                                msg = tr("File is missing 'Title' Meta Tag");
+                                msgs << tr("File is missing 'Title' Meta Tag");
                             }
                             else if (STransformResult::cleanFileName(tagName, fileInfo.isDir()) != STransformResult::cleanFileName(fileInfo))
                             {
                                 aOK = false;
-                                msg = tr("File's basename '%1' does not match 'Title' Meta Tag '%2'").arg(fileInfo.completeBaseName()).arg(tagName);
+                                msgs << tr("File's basename '%1' does not match 'Title' Meta Tag '%2'").arg(fileInfo.completeBaseName()).arg(tagName);
                             }
                         }
-                        else if (NCore::CPreferences::instance()->getVerifyMediaDate())
+                        if (NCore::CPreferences::instance()->getVerifyMediaDate())
                         {
                             if (tagYear.isEmpty())
                             {
                                 aOK = false;
-                                msg = tr("File is missing 'Year' Meta Tag");
+                                msgs << tr("File is missing 'Year' Meta Tag");
                             }
                             else 
                             {
@@ -804,11 +805,12 @@ namespace NMediaManager
                                 if (tagYear != mediaYear )
                                 {
                                     aOK = false;
-                                    msg = tr("File's 'Date' Media Tag '%1' does not match the expected year of '%2'").arg(tagYear).arg(mediaYear);
+                                    msgs << tr("File's 'Date' Media Tag '%1' does not match the expected year of '%2'").arg(tagYear).arg(mediaYear);
                                 }
                             }
                         }
                     }
+                    msg = msgs.join("\n");
                 }
                 fTransformCorrectMap[fileInfo.absoluteFilePath()] = std::make_pair(aOK, msg);
             }
