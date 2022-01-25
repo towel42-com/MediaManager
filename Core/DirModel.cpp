@@ -486,7 +486,7 @@ namespace NMediaManager
             fModel(model)
         {
             fIsFile = fileInfo.isFile();
-            qDebug() << fileInfo.absoluteFilePath() << isRoot;
+            //qDebug() << fileInfo.absoluteFilePath() << isRoot;
             auto nameItem = SDirNodeItem(isRoot ? QDir::toNativeSeparators(fileInfo.canonicalFilePath()) : fileInfo.fileName(), EColumns::eFSName);
             nameItem.fIcon = model->iconProvider()->icon(fileInfo);
             nameItem.setData(fileInfo.absoluteFilePath(), ECustomRoles::eFullPathRole);
