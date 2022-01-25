@@ -39,12 +39,12 @@ namespace NMediaManager
                 return inPattern;
 
             // see if the capture name exists in the return pattern
-            auto capRegEx = QString( "\\\\\\((?<optname>.*)\\\\\\)(\\\\)?\\:\\<%1\\>" ).arg( captureName );
+            auto capRegEx = QString(R"({(?<optname>.*)}(\\)?\:\<%1\>)").arg(captureName);
             auto regExp = QRegularExpression( capRegEx );
             auto retVal = inPattern;
-            retVal = retVal.replace( regExp, removeOptional ? "\\1" : "(\\1)?" );
+            retVal = retVal.replace( regExp, removeOptional ? R"(\1)" : R"((\1)?)" );
 
-            capRegEx = QString( "\\<%1\\>" ).arg( captureName );
+            capRegEx = QString( R"(\<%1\>)" ).arg( captureName );
             regExp = QRegularExpression( capRegEx );
             retVal = retVal.replace( regExp, value );
 
@@ -81,13 +81,16 @@ namespace NMediaManager
             if ( isDir )
             {
                 patterns
-                    << patternToRegExp( dirPattern(), false )
+                    << patternToRegExp( dirPattern(), true )
+                    << patternToRegExp(dirPattern(), false)
                     << "(.*)\\s\\(((\\d{2}){1,2}\\))\\s(-\\s(.*)\\s)?\\[(tmdbid=\\d+)|(imdbid=tt.*)\\]"
                     ;
             }
             else
             {
-                patterns << patternToRegExp( filePattern(), false )
+                patterns 
+                    << patternToRegExp( filePattern(), true )
+                    << patternToRegExp(filePattern(), false)
                     ;
             }
             for ( auto && ii : patterns )
