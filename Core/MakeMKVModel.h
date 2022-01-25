@@ -51,6 +51,7 @@ namespace NMediaManager
             virtual void postLoad( QTreeView * /*treeView*/ ) override;
             virtual void preLoad(QTreeView * /*treeView*/) override;
             virtual int computeNumberOfItems() const override;
+            virtual void postProcess(bool /*displayOnly*/) override;
 
             virtual void postFileFunction( bool aOK, const QFileInfo & fileInfo ) override;
             virtual bool preFileFunction( const QFileInfo & fileInfo, std::unordered_set<QString> & alreadyAdded, TParentTree & tree ) override;

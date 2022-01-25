@@ -138,6 +138,12 @@ namespace NMediaManager
             CDirModel::preLoad(treeView);
         }
 
+        void CMakeMKVModel::postProcess(bool /*displayOnly*/)
+        {
+            if (progressDlg())
+                progressDlg()->setValue(0);
+        }
+
         int CMakeMKVModel::computeNumberOfItems() const
         {
             return NSABUtils::itemCount( fProcessResults.second.get(), true );
