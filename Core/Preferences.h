@@ -74,11 +74,34 @@ namespace NMediaManager
             QStringList getIgnoredPaths() const;
             void setIgnoredPaths( const QStringList & paths );
 
-            QStringList getPathsToDelete() const;
-            void setPathsToDelete( const QStringList & paths );
+            bool getVerifyMediaTags() const;
+            void setVerifyMediaTags(bool value);
 
-            bool deleteKnownPaths() const;
-            void setDeleteKnownPaths( bool paths );
+            bool getVerifyMediaTitle() const;
+            void setVerifyMediaTitle(bool value);
+
+            bool getVerifyMediaDate() const;
+            void setVerifyMediaDate(bool value);
+
+            QStringList getCustomPathsToDelete() const;
+            void setCustomPathsToDelete( const QStringList & paths );
+
+            bool deleteCustom() const;
+            void setDeleteCustom(bool deleteCustom);
+
+            bool deleteEXE() const;
+            void setDeleteEXE( bool deleteEXEs );
+
+            bool deleteNFO() const;
+            void setDeleteNFO(bool deleteNFO);
+
+            bool deleteBAK() const;
+            void setDeleteBAK(bool deleteBAK);
+
+            bool deleteTXT() const;
+            void setDeleteTXT(bool deleteTXT);
+
+            QStringList getExtensionsToDelete() const;
             bool isPathToDelete( const QString & path ) const;
 
             void setMediaExtensions( const QString & value );

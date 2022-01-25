@@ -76,7 +76,7 @@ namespace NMediaManager
             if ( forTV )
                 return "<title> - S<season>E<episode>{ - <episode_title>}:<episode_title>{ - <extra_info>}:<extra_info>";
             else
-                return "<title>";
+                return "<title>{ - <extra_info>}:<extra_info>";
         }
 
         void CPreferences::setTreatAsTVShowByDefault( bool value )
@@ -283,36 +283,153 @@ namespace NMediaManager
             return settings.value( "IgnoredFileNames", defaultValues ).toStringList();
         }
 
-        void CPreferences::setPathsToDelete( const QStringList & values )
+        bool CPreferences::getVerifyMediaTags() const
+        {
+            QSettings settings;
+            settings.beginGroup("Transform");
+            return settings.value("VerifyMediaTags", true).toBool();
+        }
+
+        void CPreferences::setVerifyMediaTags(bool value)
+        {
+            QSettings settings;
+            settings.beginGroup("Transform");
+            settings.setValue("VerifyMediaTags", value);
+        }
+
+        bool CPreferences::getVerifyMediaTitle() const
+        {
+            QSettings settings;
+            settings.beginGroup("Transform");
+            return settings.value("VerifyMediaTitle", true).toBool();
+        }
+        
+        void CPreferences::setVerifyMediaTitle(bool value)
+        {
+            QSettings settings;
+            settings.beginGroup("Transform");
+            settings.setValue("VerifyMediaTitle", value);
+        }
+
+        bool CPreferences::getVerifyMediaDate() const
+        {
+            QSettings settings;
+            settings.beginGroup("Transform");
+            return settings.value("VerifyMediaDate", true).toBool();
+        }
+        
+        void CPreferences::setVerifyMediaDate(bool value)
+        {
+            QSettings settings;
+            settings.beginGroup("Transform");
+            settings.setValue("VerifyMediaDate", value);
+        }
+
+        void CPreferences::setDeleteCustom(bool value)
+        {
+            QSettings settings;
+            settings.beginGroup("Transform");
+            settings.setValue("DeleteCustom", value);
+        }
+
+        bool CPreferences::deleteCustom() const
+        {
+            QSettings settings;
+            settings.beginGroup("Transform");
+            return settings.value("DeleteCustom", true).toBool();
+        }
+
+        void CPreferences::setDeleteEXE( bool value )
         {
             QSettings settings;
             settings.beginGroup( "Transform" );
+            settings.setValue( "DeleteEXE", value );
+        }
+
+        bool CPreferences::deleteEXE() const
+        {
+            QSettings settings;
+            settings.beginGroup("Transform");
+            return settings.value("DeleteEXE", true).toBool();
+        }
+
+        void CPreferences::setDeleteNFO(bool value)
+        {
+            QSettings settings;
+            settings.beginGroup("Transform");
+            settings.setValue("DeleteNFO", value);
+        }
+
+        bool CPreferences::deleteNFO() const
+        {
+            QSettings settings;
+            settings.beginGroup("Transform");
+            return settings.value("DeleteNFO", true).toBool();
+        }
+
+        void CPreferences::setDeleteBAK(bool value)
+        {
+            QSettings settings;
+            settings.beginGroup("Transform");
+            settings.setValue("DeleteBAK", value);
+        }
+
+        bool CPreferences::deleteBAK() const
+        {
+            QSettings settings;
+            settings.beginGroup("Transform");
+            return settings.value("DeleteBAK", true).toBool();
+        }
+
+        void CPreferences::setDeleteTXT(bool value)
+        {
+            QSettings settings;
+            settings.beginGroup("Transform");
+            settings.setValue("DeleteTXT", value);
+        }
+
+        bool CPreferences::deleteTXT() const
+        {
+            QSettings settings;
+            settings.beginGroup("Transform");
+            return settings.value("DeleteTXT", true).toBool();
+        }
+
+        void CPreferences::setCustomPathsToDelete(const QStringList & values)
+        {
+            QSettings settings;
+            settings.beginGroup("Transform");
             const QStringList& realValues = values;
-            settings.setValue( "PathsToDelete", realValues );
+            settings.setValue("CustomToDelete", realValues);
         }
 
-        QStringList CPreferences::getPathsToDelete() const
+        QStringList CPreferences::getCustomPathsToDelete() const
         {
             QSettings settings;
-            settings.beginGroup( "Transform" );
-            static auto defaultValues = QStringList( { "*.txt", "*.exe", "*.nfo" } );
-            return settings.value( "PathsToDelete", defaultValues ).toStringList();
+            settings.beginGroup("Transform");
+            return settings.value("CustomToDelete", QStringList()).toStringList();
         }
 
-        void CPreferences::setDeleteKnownPaths( bool value )
+        QStringList CPreferences::getExtensionsToDelete() const
         {
-            QSettings settings;
-            settings.beginGroup( "Transform" );
-            settings.setValue( "DeleteKnownPaths", value );
+            QStringList retVal;
+            if (deleteEXE())
+                retVal << "*.exe";
+            if (deleteBAK())
+                retVal << "*.bak";
+            if (deleteNFO())
+                retVal << "*.nfo";
+            if (deleteTXT())
+                retVal << "*.txt";
+            if (deleteCustom())
+                retVal << getCustomPathsToDelete();
+            return retVal;
         }
 
         bool CPreferences::isPathToDelete( const QString & path ) const
         {
-            if ( !deleteKnownPaths() )
-                return false;
-
             auto fn = QFileInfo( path ).fileName();
-            auto toDelete = getPathsToDelete();
+            auto toDelete = getExtensionsToDelete();
             for ( auto && ii : toDelete )
             {
                 auto regExStr = QRegularExpression::wildcardToRegularExpression( ii );
@@ -326,13 +443,6 @@ namespace NMediaManager
                     return true;
             }
             return false;
-        }
-
-        bool CPreferences::deleteKnownPaths() const
-        {
-            QSettings settings;
-            settings.beginGroup( "Transform" );
-            return settings.value( "DeleteKnownPaths", true ).toBool();
         }
 
         void CPreferences::setMediaExtensions( const QString &value )
