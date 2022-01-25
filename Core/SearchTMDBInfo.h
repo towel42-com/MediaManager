@@ -132,6 +132,7 @@ namespace NMediaManager
             bool isMatchingName( const QString & name ) const;
 
 
+            static QString stripExistingExtraInfo( const QString & string, QString & extended );
             static QString stripKnownExtendedData( const QString & string, QString & extended );
             static QString stripKnownData( const QString & string );
             static QString replaceKnownAbbreviations( const QString & string );

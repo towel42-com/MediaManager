@@ -92,8 +92,22 @@ namespace NMediaManager
             }
             return retVal;
         }
+        
+        QString SSearchTMDBInfo::stripExistingExtraInfo(const QString & string, QString & extendedData)
+        {
+            auto regExStr = R"((?<total>( - )(?<extendedData>[^\[\(]+))$)";
+            auto regEx = QRegularExpression(regExStr);
+            QString retVal = string;
+            auto match = regEx.match(retVal);
+            if (match.hasMatch())
+            {
+                extendedData = match.captured("extendedData");
+                retVal.remove( match.capturedStart("total"), match.capturedLength("total") );
+            }
+            return retVal;
+        }
 
-        QString SSearchTMDBInfo::stripKnownExtendedData(const QString & string, QString & extendedData )
+        QString SSearchTMDBInfo::stripKnownExtendedData(const QString & string, QString & extendedData)
         {
             QString retVal = string;
             auto knownStrings = CPreferences::instance()->getKnownExtendedStrings();
@@ -230,7 +244,8 @@ namespace NMediaManager
         {
             QString extendedInfo;
 
-            fSearchName = smartTrim( stripKnownData( fInitSearchString ) );
+            fSearchName = smartTrim( stripExistingExtraInfo( fInitSearchString, extendedInfo ) );
+            fSearchName = smartTrim( stripKnownData( fSearchName ) );
             fSearchName = smartTrim( stripKnownExtendedData( fSearchName, extendedInfo ) );
             fSearchName = smartTrim( replaceKnownAbbreviations( fSearchName ) );
 
