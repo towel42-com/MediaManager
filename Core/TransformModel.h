@@ -115,7 +115,7 @@ namespace NMediaManager
 
             bool setMediaTags( const QString & fileName, std::shared_ptr< STransformResult > & searchResults, QString & msg ) const;
 
-            bool isValidName( const QFileInfo & fi ) const;
+            bool isValidName(const QFileInfo & fi, std::optional< bool > isTVShow = {} ) const;
             bool isValidName( const QString & absPath, bool isDir, std::optional< bool > isTVShow ) const;
 
             void transformPatternChanged();

@@ -123,14 +123,15 @@ namespace NMediaManager
             return baseDecoration;
         }
 
-        bool CTransformModel::isValidName(const QFileInfo & fi) const
+        bool CTransformModel::isValidName(const QFileInfo & fi, std::optional< bool > isTVShow ) const
         {
-            return isValidName( fi.fileName(), fi.isDir(), {} );
+            return isValidName( fi.fileName(), fi.isDir(), isTVShow );
         }
 
-        bool CTransformModel::isValidName( const QString & path, bool isDir, std::optional< bool > isChecked ) const
+        bool CTransformModel::isValidName( const QString & path, bool isDir, std::optional< bool > isTVShow ) const
         {
-            bool defaultAsTVShow = isChecked.has_value() ? isChecked.value() : this->isChecked( path, EColumns::eIsTVShow );
+            bool defaultAsTVShow = isTVShow.has_value() ? isTVShow.value() : this->isChecked( path, EColumns::eIsTVShow );
+
             bool asTVShow = treatAsTVShow( path, defaultAsTVShow );
             if ( (!asTVShow && fMoviePatterns.isValidName( path, isDir ))
                  || (asTVShow && fTVPatterns.isValidName( path, isDir )) )
@@ -493,7 +494,15 @@ namespace NMediaManager
                             }
                             else
                             {
-                                aOK = QFile( oldFileInfo.absoluteFilePath() ).remove();
+                                auto parentDir = oldFileInfo.absoluteDir();
+                                auto pathToDelete = oldFileInfo.absoluteFilePath();
+                                aOK = QFile( pathToDelete ).remove();
+                                auto peerFiles = parentDir.entryInfoList( QStringList() << "*" << "*.*", QDir::NoDotAndDotDot | QDir::Files);
+                                if (aOK && peerFiles.isEmpty())
+                                {
+                                    oldName = parentDir.absolutePath();
+                                    aOK = parentDir.removeRecursively();
+                                }
                             }
                             if ( !aOK )
                             {
@@ -775,7 +784,7 @@ namespace NMediaManager
                         }
                     }
 
-                    if (aOK && fileInfo.isFile() && canShowMediaInfo() && NCore::CPreferences::instance()->getVerifyMediaTags())
+                    if (aOK && fileInfo.isFile() && canShowMediaInfo() && isValidName(fileInfo, isTVShow) && NCore::CPreferences::instance()->getVerifyMediaTags())
                     {
                         auto tagName = index(idx.row(), getMediaTitleLoc(), idx.parent()).data().toString();
                         auto tagYear = index(idx.row(), getMediaDateLoc(), idx.parent()).data().toString();
@@ -965,7 +974,7 @@ namespace NMediaManager
             bool hasFiles = false;
             for ( auto && ii : files )
             {
-                qDebug() << ii.absoluteFilePath();
+                //qDebug() << ii.absoluteFilePath();
                 if (!recursive && ii.isDir())
                     continue;
                 if ( canAutoSearch( ii, recursive ) )
