@@ -463,8 +463,8 @@ namespace NMediaManager
         {
             auto dir = fileInfo.absoluteDir();
             auto srtFiles = getSRTFilesForMKV( fileInfo );
-            for ( auto && ii : tree )
-                qDebug() << ii;
+            //for ( auto && ii : tree )
+            //    qDebug() << ii;
             for ( auto && ii : srtFiles )
             {
                 //qDebug() << ii.absoluteFilePath();
@@ -474,8 +474,8 @@ namespace NMediaManager
                 tree.push_back( std::move( getItemRow( ii ) ) );
             }
 
-            for ( auto && ii : tree )
-                qDebug() << ii;
+            //for ( auto && ii : tree )
+            //    qDebug() << ii;
             return !srtFiles.isEmpty();
         }
 
