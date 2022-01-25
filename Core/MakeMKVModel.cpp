@@ -113,7 +113,8 @@ namespace NMediaManager
 
         QString CMakeMKVModel::getProgressLabel( const SProcessInfo & processInfo ) const
         {
-            return QString( "Converting '%1' to '%2'" ).arg( getDispName( processInfo.fOldName ) ).arg( getDispName( processInfo.fNewName ) );
+            auto retVal = QString("Converting to MKV<ul><li>%1</li>to<li>%2</li></ul>").arg(getDispName(processInfo.fOldName)).arg(getDispName(processInfo.fNewName));
+            return retVal;
         }
 
         QStringList CMakeMKVModel::headers() const
