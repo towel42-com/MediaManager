@@ -175,7 +175,7 @@ namespace NMediaManager
 
             EMediaType retVal = EMediaType::eUnknownType; // default is a movie
 
-            auto regExpStr = QString( "S(?<garbage>EASON)?(?<season>\\d{1,4})" );
+            auto regExpStr = QString( R"((^|[^A-Z])S(?<garbage>EASON)?(?<season>\d{1,4}))" );
             auto regExp = QRegularExpression( regExpStr, QRegularExpression::PatternOption::CaseInsensitiveOption );
             auto match = regExp.match( localRetVal );
             std::list< std::pair< int, int > > positions;
@@ -190,7 +190,7 @@ namespace NMediaManager
                 retVal = EMediaType::eTVSeason;
             }
 
-            regExpStr = "E(?<garbage>EPISODE)?(?<episode>\\d{1,4})";
+            regExpStr = R"((^|[^A-Z])E(?<garbage>PISODE)?(?<episode>\d{1,4}))";
             regExp = QRegularExpression( regExpStr, QRegularExpression::PatternOption::CaseInsensitiveOption );
             match = regExp.match( localRetVal );
             if ( match.hasMatch() )
