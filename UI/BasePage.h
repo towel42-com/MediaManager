@@ -70,6 +70,7 @@ namespace NMediaManager
             virtual bool extendContextMenu( QMenu * menu, const QModelIndex & idx );
 
             NSABUtils::CDoubleProgressDlg * progressDlg() const { return fProgressDlg; }
+            bool progressCanceled() const;
 
             virtual QMenu * menu() { return nullptr; }
             virtual QToolBar * toolBar() { return nullptr; }

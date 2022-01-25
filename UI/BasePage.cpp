@@ -189,7 +189,7 @@ namespace NMediaManager
             if ( !fModel )
             {
                 fModel.reset( createDirModel() );
-                connect( fModel.get(), &NCore::CDirModel::sigDirReloaded, this, &CBasePage::slotLoadFinished );
+                connect( fModel.get(), &NCore::CDirModel::sigDirLoadFinished, this, &CBasePage::slotLoadFinished );
                 connect( fModel.get(), &NCore::CDirModel::sigProcessingStarted, this, &CBasePage::slotProcessingStarted );
                 connect( fModel.get(), &NCore::CDirModel::sigProcessesFinished, this, &CBasePage::slotProcessesFinished );
             }
@@ -272,7 +272,12 @@ namespace NMediaManager
             return false;
         }
 
-        void CBasePage::slotDoubleClicked( const QModelIndex & idx )
+        bool CBasePage::progressCanceled() const
+        {
+            return fProgressDlg && fProgressDlg->wasCanceled();
+        }
+
+        void CBasePage::slotDoubleClicked(const QModelIndex & idx)
         {
             auto menu = menuForIndex( idx );
             if ( !menu )
