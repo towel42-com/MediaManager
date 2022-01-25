@@ -161,6 +161,7 @@ namespace NMediaManager
 
             virtual QVariant data(const QModelIndex & idx, int role) const final;
             virtual QVariant getRowBackground(const QModelIndex & /*idx*/) const { return QVariant(); }
+            virtual QVariant getToolTip(const QModelIndex & /*idx*/) const { return QVariant(); }
             virtual QVariant getRowDecoration(const QModelIndex & /*idx*/, const QVariant & baseDecoration) const { return baseDecoration; }
 
             bool process( const QModelIndex & idx, const std::function< void( int count, int eventsPerPath ) > & startProgress, const std::function< void( bool finalStep, bool canceled ) > & endProgress, QWidget * parent );
@@ -173,9 +174,11 @@ namespace NMediaManager
 
             bool isMediaFile( const QStandardItem * item ) const;
             bool isMediaFile( const QModelIndex & fi ) const;
+            bool isMediaFile(const QFileInfo & fi) const;
 
             bool isSubtitleFile( const QStandardItem * item, bool * isLangFileFormat = nullptr ) const;
             bool isSubtitleFile( const QModelIndex & idx, bool * isLangFileFormat = nullptr ) const;
+            bool isSubtitleFile(const QFileInfo & fileInfo, bool * isLangFileFormat) const;
 
             virtual int eventsPerPath() const { return 1; }
 
@@ -199,17 +202,19 @@ namespace NMediaManager
             bool setMediaTags( const QString & fileName, const QString & title, const QString & year, QString * msg = nullptr ) const;
             bool setMediaTag( const QString & filename, const std::pair< QString, QString > & tagData, QString * msg = nullptr ) const; //pair => tag, value
 
-            void updateDir( const QModelIndex & idx, const QDir & path );
-            void updatePath( const QModelIndex & idx, const QString & path );
+            virtual void updatePath( const QModelIndex & idx, const QString & oldPath, const QString & newPath) final;
+            virtual void updateFile(const QModelIndex &idx, const QString & oldFile, const QString & newFile);
+            virtual void updateDir(const QModelIndex & idx, const QDir & oldDir, const QDir & newDir);
 
             bool isRootPath( const QString & path ) const;
             bool isRootPath( const QFileInfo & path ) const;
         Q_SIGNALS:
-            void sigDirReloaded( bool canceled );
+            void sigDirLoadFinished( bool canceled );
             void sigProcessesFinished( bool status, bool showProcessResults, bool cancelled, bool reloadModel );
             void sigProcessingStarted();
         public Q_SLOTS:
             void slotLoadRootDirectory();
+
             void slotRunNextProcessInQueue();
             void slotProcessErrorOccured( QProcess::ProcessError error );
             void slotProcessFinished( int exitCode, QProcess::ExitStatus exitStatus );
@@ -220,6 +225,9 @@ namespace NMediaManager
             void slotProcesssStateChanged( QProcess::ProcessState newState );
             void slotProgressCanceled();
         protected:
+            QString getMediaYear(const QFileInfo & fi) const;
+            bool progressCanceled() const;
+
             QPlainTextEdit * log() const;
             QTreeView * filesView() const;
             NSABUtils::CDoubleProgressDlg * progressDlg() const;
@@ -227,19 +235,27 @@ namespace NMediaManager
             virtual std::pair< bool, QStandardItem * > processItem( const QStandardItem * item, QStandardItem * parentItem, bool displayOnly ) const = 0;
             virtual void postAddItems( const QFileInfo & fileInfo, std::list< NMediaManager::NCore::SDirNodeItem > & currItems ) const;
             virtual int firstMediaItemColumn() const { return -1; }
+            virtual int getMediaTitleLoc() const;
+            virtual int getMediaLengthLoc() const;
+            virtual int getMediaDateLoc() const;
+            virtual int getMediaCommentLoc() const;
             virtual std::list< NMediaManager::NCore::SDirNodeItem > addAdditionalItems( const QFileInfo & fileInfo ) const;
             virtual std::list<NMediaManager::NCore::SDirNodeItem> getMediaInfoItems(  const QFileInfo & fileInfo, int firstColumn ) const;
 
             virtual void setupNewItem( const SDirNodeItem & nodeItem, const QStandardItem * nameItem, QStandardItem * item ) const = 0;
             virtual QStringList headers() const;
-            virtual void postLoad() const final;
-            virtual void postLoad( QTreeView * treeView ) const = 0;
+            virtual void preLoad() final;
+            virtual void postLoad( bool aOK ) final;
+            virtual void postLoad( QTreeView * treeView );
+            virtual void preLoad( QTreeView * treeView );
+
+            virtual bool isLoading() const final { return fLoading; }
 
             QStringList getMediaHeaders() const;
 
             virtual void resizeColumns() const;
 
-            virtual void postReloadModel();
+            virtual void postReloadModelRequest();
             virtual int computeNumberOfItems() const = 0;
             virtual void postProcess( bool /*displayOnly*/ );
             virtual bool postExtProcess( const SProcessInfo & info, QStringList & msgList );
@@ -316,6 +332,7 @@ namespace NMediaManager
 
             bool fProcessFinishedHandled{ false };
             mutable bool fFirstProcess{ true };
+            mutable bool fLoading{ false };
         };
     }
 }
