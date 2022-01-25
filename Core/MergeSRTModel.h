@@ -50,7 +50,8 @@ namespace NMediaManager
             virtual std::list< NMediaManager::NCore::SDirNodeItem > addAdditionalItems( const QFileInfo & fileInfo ) const override;
             virtual void setupNewItem( const SDirNodeItem & nodeItem, const QStandardItem * nameItem, QStandardItem * item ) const override;
             virtual QStringList headers() const override;
-            virtual void postLoad( QTreeView * treeView ) const override;
+            virtual void postLoad( QTreeView * treeView ) override;
+            virtual void preLoad(QTreeView * treeView) override;
             virtual void attachTreeNodes( QStandardItem * nextParent, QStandardItem *& prevParent, const STreeNode & treeNode ) override;
             virtual int computeNumberOfItems() const override;
 

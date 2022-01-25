@@ -128,9 +128,14 @@ namespace NMediaManager
 
         }
 
-        void CMakeMKVModel::postLoad( QTreeView * /*treeView*/ ) const
+        void CMakeMKVModel::postLoad( QTreeView * treeView)
         {
+            CDirModel::postLoad(treeView);
+        }
 
+        void CMakeMKVModel::preLoad(QTreeView * treeView)
+        {
+            CDirModel::preLoad(treeView);
         }
 
         int CMakeMKVModel::computeNumberOfItems() const

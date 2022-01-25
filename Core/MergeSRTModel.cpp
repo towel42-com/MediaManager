@@ -94,21 +94,6 @@ namespace NMediaManager
                 if ( !CPreferences::instance()->isSubtitleFile( fullPath, &isLangFormat ) )
                     continue;
 
-#ifdef _CHECK_FOR_UNIQUE_SRT_DATA
-                auto md5 = child->data( ECustomRoles::eMD5 ).toString();
-                if ( md5.isEmpty() )
-                {
-                    md5 = NUtils::getMd5( fullPath, true );
-                    child->setData( md5, ECustomRoles::eMD5 );
-                }
-
-                auto pos = uniqueSRTFiles.find( md5 );
-                if ( pos != uniqueSRTFiles.end() )
-                {
-                    continue;
-                }
-                uniqueSRTFiles.insert( md5 );
-#endif
                 auto languageItem = getLanguageItem( child );
                 tmp[languageItem->text()].emplace_back(child, isLangFormat);
             }
@@ -426,20 +411,20 @@ namespace NMediaManager
 
         QStringList CMergeSRTModel::headers() const
         {
-            return CDirModel::headers() << tr( "Language" ) << tr( "Forced?" ) << tr( "Hearing Impaired?" ) << tr( "On by Default?" );
+            return CDirModel::headers() 
+                << tr( "Language" ) << tr( "Forced?" ) << tr( "Hearing Impaired?" ) << tr( "On by Default?" );
         }
 
-        void CMergeSRTModel::postLoad( QTreeView * treeView ) const
+        void CMergeSRTModel::postLoad( QTreeView * treeView )
         {
-            if ( !treeView )
-                return;
-
-            treeView->resizeColumnToContents( EColumns::eLanguage );
-            treeView->resizeColumnToContents( EColumns::eForced );
-            treeView->resizeColumnToContents( EColumns::eSDH );
-            treeView->resizeColumnToContents( EColumns::eOnByDefault );
+            CDirModel::postLoad(treeView);
         }
 
+        void CMergeSRTModel::preLoad(QTreeView * treeView)
+        {
+            CDirModel::preLoad(treeView);
+        }
+                
         int CMergeSRTModel::computeNumberOfItems() const
         {
             auto mkvFiles = getChildMKVFiles( invisibleRootItem(), true );
