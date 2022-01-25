@@ -178,27 +178,34 @@ namespace NMediaManager
             return retVal;
         }
 
-        void cleanFileName( QString & inFile, bool isDir )
+        QString STransformResult::cleanFileName( const QString & inFile, bool isDir )
         {
             if ( inFile.isEmpty() )
-                return;
+                return inFile;
 
-            inFile.replace( QRegularExpression( R"(^(([A-Za-z]\:)|(\/)|(\\))+)" ), "" );
+            QString retVal = inFile;
+            retVal.replace( QRegularExpression( R"(^(([A-Za-z]\:)|(\/)|(\\))+)" ), "" );
 
             auto regExStr = QString( "(?<hours>\\d{1,2}):(?<minutes>\\d{2})" );
-            inFile.replace( QRegularExpression( regExStr ), "\\1\\2" );
+            retVal.replace( QRegularExpression( regExStr ), "\\1\\2" );
 
             regExStr = R"(\s*\:\s*)";
-            inFile.replace( QRegularExpression( regExStr ), " - " );
+            retVal.replace( QRegularExpression( regExStr ), " - " );
 
             regExStr = R"([\:\<\>\"\|\?\*)";
             if ( !isDir )
                 regExStr += R"(\/\\)";
             regExStr += "]";
-            inFile.replace( QRegularExpression( regExStr ), "" );
+            retVal.replace( QRegularExpression( regExStr ), "" );
+            return retVal;
         }
 
-        QString STransformResult::transformedName( const QFileInfo & fileInfo, const SPatternInfo & patternInfo, bool titleOnly ) const
+        QString STransformResult::cleanFileName(const QFileInfo & fi)
+        {
+            return cleanFileName(fi.completeBaseName(), fi.isDir());
+        }
+
+        QString STransformResult::transformedName(const QFileInfo & fileInfo, const SPatternInfo & patternInfo, bool titleOnly) const
         {
             auto title = getTitle();
             auto year = getInitialYear();
@@ -217,7 +224,7 @@ namespace NMediaManager
             retVal = replaceCapture( "episode_title", retVal, episodeTitle );
             retVal = replaceCapture( "extra_info", retVal, extraInfo );
 
-            cleanFileName( retVal, fileInfo.isDir() );
+            retVal = cleanFileName( retVal, fileInfo.isDir() );
             if ( !titleOnly && !fileInfo.isDir() )
                 retVal += "." + fileInfo.suffix();
             return retVal;

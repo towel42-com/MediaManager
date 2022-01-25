@@ -89,6 +89,9 @@ namespace NMediaManager
 
             const STransformResult * getTVShowInfo() const; // not to be saved, only used and ignored
 
+            [[nodiscard]] static QString cleanFileName(const QString & inFile, bool isDir);
+            [[nodiscard]] static QString cleanFileName(const QFileInfo & fi);
+
             QString fTitle;
             QString fReleaseDate;
             QString fTMDBID;
