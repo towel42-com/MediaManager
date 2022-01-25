@@ -28,10 +28,9 @@ class QVariant;
 class QStandardItem;
 
 #include <QIcon>
-
 #include <list>
-
 #include <optional>
+
 namespace NMediaManager
 {
     namespace NUi
