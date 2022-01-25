@@ -40,9 +40,7 @@ namespace NMediaManager
             {
                 eIsTVShow = NCore::EColumns::eFirstCustomColumn,
                 eTransformName,
-                eMediaTitle,
-                eMediaYear,
-                eMediaComment
+                eMediaColumnLoc
             };
 
             CTransformModel( NUi::CBasePage * page, QObject * parent = nullptr );
@@ -50,22 +48,28 @@ namespace NMediaManager
 
             virtual bool setData(const QModelIndex & idx, const QVariant & value, int role) override;
             virtual QVariant getRowBackground(const QModelIndex & idx) const override;
+            virtual QVariant getToolTip(const QModelIndex & /*idx*/) const override;
             virtual QVariant getRowDecoration(const QModelIndex & idx, const QVariant & baseDecoration) const override;
 
-            void setSearchResult( const QModelIndex & idx, std::shared_ptr< STransformResult > info, bool applyToChilren );
-            void setSearchResult( QStandardItem * item, std::shared_ptr< STransformResult > info, bool applyToChilren );
+            void setSearchResult( const QModelIndex & idx, std::shared_ptr< STransformResult > info, bool applyToChilren, bool forceSet );
+            void setSearchResult( QStandardItem * item, std::shared_ptr< STransformResult > info, bool applyToChilren, bool forceSet);
             void clearSearchResult( const QModelIndex & idx, bool recursive );
 
             bool treatAsTVShow( const QFileInfo & fileInfo, bool defaultValue ) const;
             virtual int eventsPerPath() const override { return 5; }// get timestamp, create parent paths, rename, setting tag info, settimestamp}
             virtual void clear() override;
+            void clearResults();
+            void clearStatusResults();
 
             void computeEpisodesForDiskNumbers();
             virtual QString getSearchName( const QModelIndex & idx ) const;
 
+            bool inAutoSearch() const { return fInAutoSearch; }
+            void setInAutoSearch(bool val);
+
             void setDeleteItem( const QModelIndex & idx );
-            bool canAutoSearch( const QModelIndex & index ) const;
-            bool canAutoSearch( const QFileInfo & info ) const;
+            bool canAutoSearch( const QModelIndex & index, bool recursive ) const;
+            bool canAutoSearch( const QFileInfo & info, bool recursive) const;
 
             std::shared_ptr< STransformResult > getTransformResult( const QModelIndex & idx, bool checkParents ) const;
             std::shared_ptr< STransformResult > getTransformResult( const QString & path, bool checkParents ) const;
@@ -77,21 +81,26 @@ namespace NMediaManager
             void slotTVOutputDirPatternChanged( const QString & outPattern );
             void slotMovieOutputDirPatternChanged( const QString & outPattern );
             void slotMovieOutputFilePatternChanged( const QString & outPattern );
+            void slotDataChanged(const QModelIndex & start, const QModelIndex & end, const QVector<int> &roles);
         private:
-            bool transformCorrect(const QModelIndex & idx) const;
+            virtual void updateFile(const QModelIndex &idx, const QString & oldFile, const QString & newFile) override;
+            virtual void updateDir(const QModelIndex & idx, const QDir & oldDir, const QDir & newDir) override;
             virtual void postAddItems( const QFileInfo & fileInfo, std::list< NMediaManager::NCore::SDirNodeItem > & currItems ) const override;
             virtual std::list< NMediaManager::NCore::SDirNodeItem > addAdditionalItems( const QFileInfo & fileInfo ) const override;
             bool showMediaItems() const override { return true; };
-            int firstMediaItemColumn() const override { return EColumns::eMediaTitle; }
+            int firstMediaItemColumn() const override { return EColumns::eMediaColumnLoc; }
+
+            std::pair< bool, QString > transformCorrect(const QModelIndex & idx) const;
 
             virtual void setupNewItem( const SDirNodeItem & nodeItem, const QStandardItem * nameItem, QStandardItem * item ) const override;
             virtual QStringList headers() const override;
 
-            virtual void postLoad( QTreeView * treeView ) const override;
+            virtual void postLoad( QTreeView * treeView ) override;
+            virtual void preLoad(QTreeView * treeView) override;
             virtual void attachTreeNodes( QStandardItem * nextParent, QStandardItem *& prevParent, const STreeNode & treeNode ) override;
             virtual int computeNumberOfItems() const override;
 
-            virtual void postReloadModel() override;
+            virtual void postReloadModelRequest() override;
             QString getMyTransformedName( const QStandardItem * item, bool transformParentsOnly ) const override;
 
             // model overrides during iteration
@@ -109,7 +118,6 @@ namespace NMediaManager
             bool isValidName( const QFileInfo & fi ) const;
             bool isValidName( const QString & absPath, bool isDir, std::optional< bool > isTVShow ) const;
 
-            void clearResults();
             void transformPatternChanged();
             void transformPatternChanged( const QStandardItem * parent );
 
@@ -128,12 +136,13 @@ namespace NMediaManager
 
             mutable std::map< QString, std::pair< bool, QString > > fFileMapping;
             mutable std::map< QString, std::pair< bool, QString > > fDirMapping;
-            std::map< QString, std::shared_ptr< STransformResult > > fTransformResultMap;
+            std::unordered_map< QString, std::shared_ptr< STransformResult > > fTransformResultMap;
+            mutable std::unordered_map< QString, std::pair< bool, QString > > fTransformCorrectMap;
             std::unordered_map< QString, QString > fDiskRipSearchMap;
 
             //bool fTreatAsTVShowByDefault{ false };
             QTimer * fPatternTimer{ nullptr };
-
+            bool fInAutoSearch{ false };
         };
     }
 }

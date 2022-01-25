@@ -49,6 +49,7 @@ namespace NMediaManager
             fPatternTimer->setInterval( 50 );
             fPatternTimer->setSingleShot( true );
             connect( fPatternTimer, &QTimer::timeout, this, &CTransformModel::slotPatternChanged );
+            connect(this, &QStandardItemModel::dataChanged, this, &CTransformModel::slotDataChanged);
         }
 
         CTransformModel::~CTransformModel()
@@ -70,15 +71,50 @@ namespace NMediaManager
             return CDirModel::setData( idx, value, role );
         }
 
+        void CTransformModel::slotDataChanged(const QModelIndex & start, const QModelIndex & end, const QVector<int> &/*roles*/)
+        {
+            std::unordered_set< QString > handled;
+            for (int ii = start.row(); ii <= end.row(); ++ii)
+            {
+                for (int jj = start.column(); jj <= end.column(); ++jj)
+                {
+                    auto fi = fileInfo(index(ii, jj, start.parent()));
+                    if (handled.find(fi.absoluteFilePath()) != handled.end())
+                        continue;
+
+                    auto pos = fTransformCorrectMap.find(fi.absoluteFilePath());
+                    if (pos != fTransformCorrectMap.end())
+                        fTransformCorrectMap.erase(pos);
+
+                    handled.insert(fi.absoluteFilePath());
+                }
+            }
+        }
+
         QVariant CTransformModel::getRowBackground(const QModelIndex & idx) const
         {
+            if (fInAutoSearch || fLoading)
+                return QVariant();
+
             if (idx.column() != NCore::EColumns::eFSName)
             {
                 return getRowBackground(index(idx.row(), NCore::EColumns::eFSName, idx.parent()));
             }
-            if (!transformCorrect(idx))
-                return QColor(Qt::red);
-            return QBrush();
+            return transformCorrect(idx).first ? QVariant() : QColor(Qt::red);
+        }
+
+        QVariant CTransformModel::getToolTip( const QModelIndex & idx ) const 
+        {
+            if (fInAutoSearch || fLoading)
+                return QVariant();
+
+            if (idx.column() != NCore::EColumns::eFSName)
+            {
+                return getToolTip(index(idx.row(), NCore::EColumns::eFSName, idx.parent()));
+            }
+
+            auto info = transformCorrect(idx);
+            return info.second.isEmpty() ? QVariant() : info.second;
         }
 
         QVariant CTransformModel::getRowDecoration(const QModelIndex & idx, const QVariant & baseDecoration) const
@@ -157,8 +193,11 @@ namespace NMediaManager
                 auto transformInfo = getTransformResult( filePath, false );
                 if ( !transformInfo )
                 {
-                    if ( isValidName( fileInfo ) || isIgnoredPathName( fileInfo ) )
+                    if (isValidName(fileInfo) || isIgnoredPathName(fileInfo))
+                    {
+                        retVal.first = true;
                         retVal.second = QString();
+                    }
                 }
                 else
                 {
@@ -178,6 +217,9 @@ namespace NMediaManager
                     fDirMapping[filePath] = retVal;
                 else
                     fFileMapping[filePath] = retVal;
+                auto pos = fTransformCorrectMap.find(filePath);
+                if (pos != fTransformCorrectMap.end())
+                    fTransformCorrectMap.erase(pos);
             }
             else
                 retVal = (*pos).second;
@@ -274,12 +316,16 @@ namespace NMediaManager
                 return getSearchName( idx.parent() );
 
             auto nm = index( idx.row(), EColumns::eTransformName, idx.parent() ).data().toString();
-            if ( CDirModel::isAutoSetText( nm ) || nm.isEmpty() )
+            if ( isAutoSetText( nm ) || nm.isEmpty() )
             {
                 nm = index( idx.row(), NCore::EColumns::eFSName, idx.parent() ).data( ECustomRoles::eFullPathRole ).toString();
                 nm = nm.isEmpty() ? QString() : (QFileInfo( nm ).isDir() ? QFileInfo( nm ).fileName() : QFileInfo( nm ).completeBaseName());
             }
-
+            else if (!nm.isEmpty() && QFileInfo(path).isFile())
+            {
+                nm = QFileInfo(nm).completeBaseName();
+            }
+            
             return nm;
         }
 
@@ -292,19 +338,26 @@ namespace NMediaManager
             return isTVType( mediaType );
         }
 
-        void CTransformModel::setSearchResult( QStandardItem * item, std::shared_ptr< STransformResult > searchResult, bool applyToChildren )
+        void CTransformModel::setInAutoSearch(bool val)
+        {
+            beginResetModel();
+            fInAutoSearch = val;
+            endResetModel();
+        }
+
+        void CTransformModel::setDeleteItem(const QModelIndex & idx)
+        {
+            auto searchResult = std::make_shared< STransformResult >(EMediaType::eDeleteFileType);
+            setSearchResult(idx, searchResult, false, true);
+        }
+
+        void CTransformModel::setSearchResult( QStandardItem * item, std::shared_ptr< STransformResult > searchResult, bool applyToChildren, bool forceSet)
         {
             auto idx = indexFromItem( item );
-            setSearchResult( idx, searchResult, applyToChildren );
+            setSearchResult( idx, searchResult, applyToChildren, forceSet);
         }
 
-        void CTransformModel::setDeleteItem( const QModelIndex & idx )
-        {
-            auto searchResult = std::make_shared< STransformResult >( EMediaType::eDeleteFileType );
-            setSearchResult( idx, searchResult, false );
-        }
-
-        void CTransformModel::setSearchResult( const QModelIndex & idx, std::shared_ptr< STransformResult > searchResult, bool applyToChildren )
+        void CTransformModel::setSearchResult( const QModelIndex & idx, std::shared_ptr< STransformResult > searchResult, bool applyToChildren, bool forceSet )
         {
             if ( !idx.isValid() )
                 return;
@@ -335,12 +388,12 @@ namespace NMediaManager
 
                     // exception for "SRT" files that are of the form X_XXXX.ext dont transform
                     //auto txt = childIdx.data( ECustomRoles::eFullPathRole ).toString();
-                    if ( !isSubtitleFile( childIdx ) )
+                    if ( forceSet || !isSubtitleFile( childIdx ) )
                     {
                         auto childInfo = getTransformResult( childIdx, false );
-                        if ( !childInfo )
+                        if ( forceSet || !childInfo )
                         {
-                            setSearchResult( childIdx, searchResult, applyToChildren );
+                            setSearchResult( childIdx, searchResult, applyToChildren, forceSet );
                         }
                     }
                 }
@@ -349,7 +402,7 @@ namespace NMediaManager
 
         void CTransformModel::clearSearchResult( const QModelIndex & idx, bool recursive )
         {
-            setSearchResult( idx, {}, recursive );
+            setSearchResult( idx, {}, recursive, true );
         }
 
         std::pair< bool, QStandardItem * > CTransformModel::processItem( const QStandardItem * item, QStandardItem * parentItem, bool displayOnly ) const
@@ -491,24 +544,19 @@ namespace NMediaManager
                             QString errorMsg;
                             if ( parentPathOK )
                             {
-                                if ( newFileInfo.exists() )
+                                if (newFileInfo.exists() && newFileInfo.isFile() && oldFileInfo.isFile() && newFileInfo != oldFileInfo )
                                 {
-                                    if ( newFileInfo.isFile() && oldFileInfo.isFile() )
+                                    if (NSABUtils::NFileUtils::CFileCompare(oldFileInfo, newFileInfo).compare())
                                     {
-                                        if ( NSABUtils::NFileUtils::CFileCompare( oldFileInfo, newFileInfo ).compare() )
-                                        {
-                                            aOK = QFile( oldName ).remove();
-                                            if ( !aOK )
-                                                errorMsg = QString( "Destination file '%1' exists and is identical to the new '%2' file, but the old file can not be deleted" ).arg( oldName ).arg( newName );
-                                        }
-                                        else
-                                        {
-                                            aOK = false;
-                                            errorMsg = QString( "Destination file Exists - Old Size: %1 New Size: %2" ).arg( NSABUtils::NFileUtils::fileSizeString( oldName, false ) ).arg( NSABUtils::NFileUtils::fileSizeString( newName, false ) );
-                                        }
+                                        aOK = QFile(oldName).remove();
+                                        if (!aOK)
+                                            errorMsg = QString("Destination file '%1' exists and is identical to the new '%2' file, but the old file can not be deleted").arg(oldName).arg(newName);
                                     }
                                     else
-                                        aOK = true;
+                                    {
+                                        aOK = false;
+                                        errorMsg = QString("Destination file Exists - Old Size: %1 New Size: %2").arg(NSABUtils::NFileUtils::fileSizeString(oldName, false)).arg(NSABUtils::NFileUtils::fileSizeString(newName, false));
+                                    }
                                 }
                                 else
                                 {
@@ -619,11 +667,21 @@ namespace NMediaManager
             CDirModel::clear();
         }
 
+        void CTransformModel::clearStatusResults()
+        {
+            beginResetModel();
+            fTransformCorrectMap.clear();
+            fTransformResultMap.clear();
+            endResetModel();
+            if ( filesView() )
+                filesView()->expandAll();
+        }
+
         void CTransformModel::clearResults()
         {
+            clearStatusResults();
             fFileMapping.clear();
             fDirMapping.clear();
-            fTransformResultMap.clear();
             fDiskRipSearchMap.clear();
         }
 
@@ -676,6 +734,7 @@ namespace NMediaManager
 
             auto transformInfo = transformItem( fileInfo );
             auto currText = item->text();
+            transformedItem->setText(QString());
             if ( !transformInfo.first || (currText != transformInfo.second) )
             {
                 if ( transformedItem->text() != transformInfo.second )
@@ -683,45 +742,83 @@ namespace NMediaManager
             }
         }
 
-        bool CTransformModel::transformCorrect(const QModelIndex & idx) const
+        std::pair< bool, QString > CTransformModel::transformCorrect(const QModelIndex & idx) const
         {
             if (!idx.parent().isValid())
-                return true;
+                return { true, QString() };
 
             if (idx.column() != NCore::EColumns::eFSName)
                 return transformCorrect(index(idx.row(), NCore::EColumns::eFSName, idx.parent()));
 
             auto fileInfo = this->fileInfo(idx);
-            if (isIgnoredPathName(fileInfo) && !CPreferences::instance()->isSubtitleFile(fileInfo))
-                return true;
-
-            auto path = idx.data(ECustomRoles::eFullPathRole).toString();
-            auto isTVShow = treatAsTVShow(fileInfo, isChecked(path, EColumns::eIsTVShow));
-            if (canAutoSearch(fileInfo)) 
+            bool aOK = true;
+            QString msg;
+            auto path = fileInfo.absoluteFilePath();
+            auto pos = fTransformCorrectMap.find( path );
+            if (pos == fTransformCorrectMap.end())
             {
-                auto transformInfo = transformItem(fileInfo);
-                if (transformInfo.second == kDeleteThis)
-                    return true;
-
-                if (!transformInfo.first)
-                    return false;
-
-                if (canShowMediaInfo())
+                if (isIgnoredPathName(fileInfo) && !CPreferences::instance()->isSubtitleFile(fileInfo))
+                    aOK = true;
+                else if ( fileInfo.isDir() || isMediaFile(idx))
                 {
-                    auto tagName = index(idx.row(), EColumns::eMediaTitle, idx.parent()).data().toString();
-                    if (tagName.isEmpty())
-                        return false;
+                    auto isTVShow = treatAsTVShow(fileInfo, isChecked(path, EColumns::eIsTVShow));
+                    if (canAutoSearch(fileInfo, false))
+                    {
+                        auto transformInfo = transformItem(fileInfo);
+                        if (transformInfo.second == kDeleteThis)
+                            aOK = true;
+                        else if (!transformInfo.first)
+                        {
+                            aOK = false;
+                            msg = tr("Could not properly transform item");
+                        }
+                    }
 
-                    auto tagYear = index(idx.row(), EColumns::eMediaYear, idx.parent()).data().toString();
-                    if (tagYear.isEmpty())
-                        return false;
-
-                    if (tagName != fileInfo.completeBaseName())
-                        return false;
+                    if (aOK && fileInfo.isFile() && canShowMediaInfo() && NCore::CPreferences::instance()->getVerifyMediaTags())
+                    {
+                        auto tagName = index(idx.row(), getMediaTitleLoc(), idx.parent()).data().toString();
+                        auto tagYear = index(idx.row(), getMediaDateLoc(), idx.parent()).data().toString();
+                        if (NCore::CPreferences::instance()->getVerifyMediaTitle())
+                        {
+                            if (tagName.isEmpty())
+                            {
+                                aOK = false;
+                                msg = tr("File is missing 'Title' Meta Tag");
+                            }
+                            else if (STransformResult::cleanFileName(tagName, fileInfo.isDir()) != STransformResult::cleanFileName(fileInfo))
+                            {
+                                aOK = false;
+                                msg = tr("File's basename '%1' does not match 'Title' Meta Tag '%2'").arg(fileInfo.completeBaseName()).arg(tagName);
+                            }
+                        }
+                        else if (NCore::CPreferences::instance()->getVerifyMediaDate())
+                        {
+                            if (tagYear.isEmpty())
+                            {
+                                aOK = false;
+                                msg = tr("File is missing 'Year' Meta Tag");
+                            }
+                            else 
+                            {
+                                auto mediaYear = getMediaYear(fileInfo);
+                                if (tagYear != mediaYear )
+                                {
+                                    aOK = false;
+                                    msg = tr("File's 'Date' Media Tag '%1' does not match the expected year of '%2'").arg(tagYear).arg(mediaYear);
+                                }
+                            }
+                        }
+                    }
                 }
+                fTransformCorrectMap[fileInfo.absoluteFilePath()] = std::make_pair(aOK, msg);
+            }
+            else
+            {
+                aOK = (*pos).second.first;
+                msg = (*pos).second.second;
             }
 
-            return false;
+            return { aOK, msg };
         }
 
         void CTransformModel::postAddItems( const QFileInfo & fileInfo, std::list< NMediaManager::NCore::SDirNodeItem > & currItems ) const
@@ -774,10 +871,14 @@ namespace NMediaManager
                 ;
         }
 
-        void CTransformModel::postLoad( QTreeView * treeView ) const
+        void CTransformModel::postLoad( QTreeView * treeView )
         {
-            if ( !treeView )
-                return;
+            CDirModel::postLoad(treeView);
+        }
+
+        void CTransformModel::preLoad(QTreeView * treeView)
+        {
+            CDirModel::preLoad(treeView);
         }
 
         void CTransformModel::attachTreeNodes( QStandardItem * nextParent, QStandardItem *& prevParent, const STreeNode & ii )
@@ -797,7 +898,7 @@ namespace NMediaManager
             return NSABUtils::itemCount( fProcessResults.second.get(), true );
         }
 
-        void CTransformModel::postReloadModel()
+        void CTransformModel::postReloadModelRequest()
         {
             fPatternTimer->stop(); // if its runinng when this timer stops its realoaded anyway
         }
@@ -806,7 +907,7 @@ namespace NMediaManager
         {
             auto transformItem = transformParentsOnly ? nullptr : getTransformItem( item );
             auto myName = transformItem ? transformItem->text() : QString();
-            if ( myName.isEmpty() || isAutoSetText( myName ) )
+            if ( myName.isEmpty() || ( myName == kNoItems ) || ( myName == kNoMatch ) )
             {
                 myName = item->text();
             }
@@ -835,21 +936,24 @@ namespace NMediaManager
             return CDirModel::setMediaTags( fileName, title, year, &msg );
         }
 
-        bool CTransformModel::canAutoSearch( const QModelIndex & index ) const
+        bool CTransformModel::canAutoSearch( const QModelIndex & index, bool recursive) const
         {
             auto path = index.data( ECustomRoles::eFullPathRole ).toString();
             if ( path.isEmpty() )
                 return false;
-            return canAutoSearch( QFileInfo( path ) );
+            return canAutoSearch( QFileInfo( path ), recursive );
         }
 
-        bool CTransformModel::canAutoSearch( const QFileInfo & fileInfo ) const
+        bool CTransformModel::canAutoSearch( const QFileInfo & fileInfo, bool recursive) const
         {
             if ( CPreferences::instance()->isIgnoredPath( fileInfo ) || CPreferences::instance()->isSkippedPath( fileInfo ) )
                 return false;
 
             bool isLangFormat;
             if ( CPreferences::instance()->isSubtitleFile( fileInfo, &isLangFormat ) && !isLangFormat )
+                return false;
+
+            if (fileInfo.isFile() && !isMediaFile(fileInfo))
                 return false;
 
             if ( !fileInfo.isDir() )
@@ -859,7 +963,10 @@ namespace NMediaManager
             bool hasFiles = false;
             for ( auto && ii : files )
             {
-                if ( canAutoSearch( ii ) )
+                qDebug() << ii.absoluteFilePath();
+                if (!recursive && ii.isDir())
+                    continue;
+                if ( canAutoSearch( ii, recursive ) )
                 {
                     hasFiles = true;
                     break;
@@ -906,6 +1013,44 @@ namespace NMediaManager
         std::shared_ptr< STransformResult > CTransformModel::getTransformResult( const QString & path, bool checkParents ) const
         {
             return getTransformResult( QFileInfo( path ), checkParents );
+        }
+
+        void CTransformModel::updateFile(const QModelIndex &idx, const QString & oldFile, const QString & newFile)
+        {
+            CDirModel::updatePath(idx, oldFile, newFile);
+            auto pos = fFileMapping.find(oldFile);
+            if (pos != fFileMapping.end())
+            {
+                fFileMapping[newFile] = (*pos).second;
+                fFileMapping.erase(pos);
+            }
+            
+            auto pos2 = fTransformResultMap.find(oldFile);
+            if (pos2 != fTransformResultMap.end())
+            {
+                fTransformResultMap[newFile] = (*pos2).second;
+                fTransformResultMap.erase(pos2);
+            }
+            fDiskRipSearchMap.clear();
+            computeEpisodesForDiskNumbers();
+        }
+
+        void CTransformModel::updateDir(const QModelIndex & idx, const QDir & oldDir, const QDir & newDir)
+        {
+            CDirModel::updateDir(idx, oldDir, newDir);
+            auto pos = fDirMapping.find(oldDir.absolutePath());
+            if (pos != fDirMapping.end())
+            {
+                fDirMapping[newDir.absolutePath()] = (*pos).second;
+                fDirMapping.erase(pos);
+            }
+
+            auto pos2 = fTransformResultMap.find(oldDir.absolutePath());
+            if (pos2 != fTransformResultMap.end())
+            {
+                fTransformResultMap[newDir.absolutePath()] = (*pos2).second;
+                fTransformResultMap.erase(pos2);
+            }
         }
 
     }
