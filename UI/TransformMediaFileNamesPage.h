@@ -67,9 +67,6 @@ namespace NMediaManager
             virtual void postLoadFinished( bool canceled ) override;
             virtual void postNonQueuedRun( bool finalStep, bool canceled ) override;
 
-            void setExactMatchesOnly( bool value );
-            void setTreatAsTVByDefault( bool value );
-
             virtual bool extendContextMenu( QMenu * menu, const QModelIndex & idx ) override;
 
             virtual QMenu * menu() override;
@@ -80,8 +77,6 @@ namespace NMediaManager
         protected Q_SLOTS:
             void slotAutoSearchForNewNames();
             void slotAutoSearchFinished( const QString & path, NCore::SSearchTMDBInfo * searchInfo, bool searchesRemaining );
-            void slotTreatAsTVShowByDefault();
-            void slotExactMatchesOnly();
             void slotMenuAboutToShow();
         protected:
             void manualSearch( const QModelIndex & idx );
@@ -96,7 +91,14 @@ namespace NMediaManager
             QMenu * fMenu{ nullptr };
             QAction * fTreatAsTVShowByDefaultAction{ nullptr };
             QAction * fExactMatchesOnlyAction{ nullptr };
-            QAction * fDeleteKnownPaths{ nullptr };
+            QAction * fDeleteEXE{ nullptr };
+            QAction * fDeleteTXT{ nullptr };
+            QAction * fDeleteBAK{ nullptr };
+            QAction * fDeleteNFO{ nullptr };
+            QAction * fDeleteCustom{ nullptr };
+            QAction * fVerifyMediaTitle{ nullptr };
+            QAction * fVerifyMediaDate{ nullptr };
+            QAction * fVerifyMediaTags{ nullptr };
         };
     }
 }
