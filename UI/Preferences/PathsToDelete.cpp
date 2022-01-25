@@ -64,12 +64,22 @@ namespace NMediaManager
 
         void CPathsToDelete::load()
         {
-            fPathsToDeleteModel->setStringList( NCore::CPreferences::instance()->getPathsToDelete() );
+            fPathsToDeleteModel->setStringList( NCore::CPreferences::instance()->getCustomPathsToDelete() );
+            fImpl->deleteEXE->setChecked( NCore::CPreferences::instance()->deleteEXE());
+            fImpl->deleteTXT->setChecked(NCore::CPreferences::instance()->deleteTXT());
+            fImpl->deleteNFO->setChecked(NCore::CPreferences::instance()->deleteNFO());
+            fImpl->deleteBAK->setChecked(NCore::CPreferences::instance()->deleteBAK());
+            fImpl->deleteCustom->setChecked(NCore::CPreferences::instance()->deleteCustom());
         }
 
         void CPathsToDelete::save()
         {
-            NCore::CPreferences::instance()->setPathsToDelete( fPathsToDeleteModel->stringList() );
+            NCore::CPreferences::instance()->setCustomPathsToDelete( fPathsToDeleteModel->stringList() );
+            NCore::CPreferences::instance()->setDeleteEXE(fImpl->deleteEXE->isChecked());
+            NCore::CPreferences::instance()->setDeleteTXT(fImpl->deleteTXT->isChecked());
+            NCore::CPreferences::instance()->setDeleteNFO(fImpl->deleteNFO->isChecked());
+            NCore::CPreferences::instance()->setDeleteBAK(fImpl->deleteBAK->isChecked());
+            NCore::CPreferences::instance()->setDeleteCustom(fImpl->deleteCustom->isChecked());
         }
     }
 }

@@ -155,6 +155,8 @@ namespace NMediaManager
                 else
                 {
                     item = parentItem = (*pos).second;
+                    if ( ( ii + 1 ) == name.count() )
+                        fPageMap[item] = page;
                 }
             }
         }

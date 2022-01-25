@@ -15,12 +15,54 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QGroupBox" name="groupBox_6">
+    <widget class="QCheckBox" name="deleteEXE">
+     <property name="text">
+      <string>Delete Executables (*.exe)?</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="deleteTXT">
+     <property name="text">
+      <string>Delete Text Files (*.txt)?</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="deleteNFO">
+     <property name="text">
+      <string>Delete NFO Files (*.nfo)?</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="deleteBAK">
+     <property name="text">
+      <string>Delete Backup Files (*.bak)?</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="deleteCustom">
      <property name="title">
-      <string>Paths to Delete</string>
+      <string>Custom Paths to Delete</string>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
      </property>
      <layout class="QGridLayout" name="gridLayout_12">
-      <item row="2" column="1">
+      <item row="5" column="1">
+       <widget class="QToolButton" name="btnDelPathToDelete">
+        <property name="text">
+         <string>...</string>
+        </property>
+        <property name="icon">
+         <iconset resource="../../SABUtils/resources/SABUtils.qrc">
+          <normaloff>:/SABUtilsResources/delete.png</normaloff>:/SABUtilsResources/delete.png</iconset>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="1">
        <spacer name="verticalSpacer_11">
         <property name="orientation">
          <enum>Qt::Vertical</enum>
@@ -33,21 +75,7 @@
         </property>
        </spacer>
       </item>
-      <item row="1" column="1">
-       <widget class="QToolButton" name="btnDelPathToDelete">
-        <property name="text">
-         <string>...</string>
-        </property>
-        <property name="icon">
-         <iconset resource="../../SABUtils/resources/SABUtils.qrc">
-          <normaloff>:/SABUtilsResources/delete.png</normaloff>:/SABUtilsResources/delete.png</iconset>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0" rowspan="3">
-       <widget class="QListView" name="pathsToDelete"/>
-      </item>
-      <item row="0" column="1">
+      <item row="4" column="1">
        <widget class="QToolButton" name="btnAddPathToDelete">
         <property name="text">
          <string>...</string>
@@ -58,7 +86,10 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="0">
+      <item row="4" column="0" rowspan="3">
+       <widget class="QListView" name="pathsToDelete"/>
+      </item>
+      <item row="3" column="0" colspan="2">
        <widget class="QLabel" name="label_13">
         <property name="text">
          <string>glob expressions (*,? etc are acceptable)</string>
@@ -70,6 +101,15 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>deleteEXE</tabstop>
+  <tabstop>deleteTXT</tabstop>
+  <tabstop>deleteNFO</tabstop>
+  <tabstop>deleteBAK</tabstop>
+  <tabstop>pathsToDelete</tabstop>
+  <tabstop>btnAddPathToDelete</tabstop>
+  <tabstop>btnDelPathToDelete</tabstop>
+ </tabstops>
  <resources>
   <include location="../../SABUtils/resources/SABUtils.qrc"/>
  </resources>
