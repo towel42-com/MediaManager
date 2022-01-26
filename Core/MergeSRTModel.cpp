@@ -31,6 +31,7 @@
 #include <QDir>
 #include <QTimer>
 #include <QTreeView>
+#include <algorithm>
 
 namespace NMediaManager
 {
@@ -70,32 +71,46 @@ namespace NMediaManager
             return retVal;
         }
 
+        std::list< QStandardItem * > CMergeSRTModel::getChildFiles(const QStandardItem * item, const QString & ext ) const
+        {
+            auto childCount = item->rowCount();
+            std::list< QStandardItem * > retVal;
+            for (int ii = 0; ii < childCount; ++ii)
+            {
+                auto child = item->child(ii);
+                if (!child)
+                    continue;
+
+                if (child->data(ECustomRoles::eIsDir).toBool())
+                    continue;
+
+                auto fullPath = child->data(ECustomRoles::eFullPathRole).toString();
+                if (QFileInfo(fullPath).suffix() != ext)
+                    continue;
+                retVal.push_back(child);
+            }
+            return retVal;
+        }
+
         std::unordered_map< QString, std::vector< QStandardItem * > > CMergeSRTModel::getChildSRTFiles( const QStandardItem * item, bool sort ) const
         {
             if ( !item )
                 return {};
 
             auto childCount = item->rowCount();
+            auto srtFiles = getChildFiles(item, "srt");
             //qDebug() << item->text() << childCount;
             std::unordered_map< QString, std::vector< std::pair< QStandardItem *, bool > > > tmp; // language to <item,bool>
             std::unordered_set< QString > uniqueSRTFiles;
-            for ( int ii = 0; ii < childCount; ++ii )
+            for ( auto && ii : srtFiles )
             {
-                auto child = item->child( ii );
-                if ( !child )
-                    continue;
-
-                if ( child->data( ECustomRoles::eIsDir ).toBool() )
-                    continue;
-
-
-                auto fullPath = child->data( ECustomRoles::eFullPathRole ).toString();
+                auto fullPath = ii->data(ECustomRoles::eFullPathRole).toString();
                 bool isLangFormat;
-                if ( !CPreferences::instance()->isSubtitleFile( fullPath, &isLangFormat ) )
+                if ( !isSubtitleFile(fullPath, &isLangFormat) )
                     continue;
 
-                auto languageItem = getLanguageItem( child );
-                tmp[languageItem->text()].emplace_back(child, isLangFormat);
+                auto languageItem = getLanguageItem( ii );
+                tmp[languageItem->text()].emplace_back(ii, isLangFormat);
             }
 
             bool allLangFiles = true;
@@ -136,29 +151,111 @@ namespace NMediaManager
                 return;
 
             auto srtFiles = getChildSRTFiles( mediaFileNode, true ); // map of language to files sorted by filesize
-
-            for ( auto && ii : srtFiles )
+            if (!srtFiles.empty())
             {
-                if ( ii.second.size() == 3 )
+                for (auto && ii : srtFiles)
                 {
-                    // smallest is "Forced"
-                    // mid is normal
-                    // largest is "SDH"
-                    setChecked( getItem( ii.second[0], EColumns::eForced ), ECustomRoles::eForcedSubTitleRole, true );
-                    setChecked( getItem( ii.second[2], EColumns::eSDH ), ECustomRoles::eHearingImparedRole, true );
-                }
-                else if ( ii.second.size() == 2 )
-                {
-                    // if 2 
-                    // smallest is normal
-                    // largest is sdh
-                    setChecked( getItem( ii.second[1], EColumns::eSDH ), ECustomRoles::eHearingImparedRole, true );
-                }
-                else if ( ii.second.size() == 1 )
-                {
-                    // do nothing
+                    if (ii.second.size() == 3)
+                    {
+                        // smallest is "Forced"
+                        // mid is normal
+                        // largest is "SDH"
+                        setChecked(getItem(ii.second[0], EColumns::eForced), ECustomRoles::eForcedSubTitleRole, true);
+                        setChecked(getItem(ii.second[2], EColumns::eSDH), ECustomRoles::eHearingImparedRole, true);
+                    }
+                    else if (ii.second.size() == 2)
+                    {
+                        // if 2 
+                        // smallest is normal
+                        // largest is sdh
+                        setChecked(getItem(ii.second[1], EColumns::eSDH), ECustomRoles::eHearingImparedRole, true);
+                    }
+                    else if (ii.second.size() == 1)
+                    {
+                        // do nothing
+                    }
                 }
             }
+        }
+
+        std::list< std::pair< QStandardItem *, QStandardItem * > > CMergeSRTModel::pairSubIDX(const std::list< QStandardItem * > & idxFiles, const std::list< QStandardItem * > & subFiles) const
+        {
+            if (idxFiles.empty() || subFiles.empty() || (idxFiles.size() != subFiles.size()))
+                return {};
+
+            std::unordered_map< QString, QStandardItem * > subMap;
+            for (auto && ii : subFiles)
+            {
+                auto baseName = QFileInfo( ii->data(ECustomRoles::eFullPathRole).toString() ).completeBaseName();
+                subMap[baseName] = ii;
+            }
+
+            std::list< std::pair< QStandardItem *, QStandardItem * > > retVal;
+            for (auto && ii : idxFiles)
+            {
+                auto baseName = QFileInfo(ii->data(ECustomRoles::eFullPathRole).toString()).completeBaseName();
+                auto pos = subMap.find(baseName);
+                if (pos == subMap.end())
+                    continue;
+                retVal.emplace_back( std::make_pair( ii, (*pos).second ) );
+            }
+            return retVal;
+        }
+
+        std::list< std::pair< QFileInfo, QFileInfo > > CMergeSRTModel::getIDXSUBFilesInDir(const QDir & dir) const
+        {
+            //qDebug() << dir.absolutePath();
+            std::list< std::pair< QFileInfo, QFileInfo > > retVal;
+
+            auto subFiles = dir.entryInfoList(QStringList() << "*.sub");
+            std::unordered_map< QString, QFileInfo > subMap;
+            for (auto && ii : subFiles)
+            {
+                auto baseName = ii.completeBaseName();
+                subMap[baseName] = ii;
+            }
+
+            auto idxFiles = dir.entryInfoList(QStringList() << "*.idx");
+            for (auto && ii : idxFiles)
+            {
+                auto baseName = ii.completeBaseName();
+                auto pos = subMap.find(baseName);
+                if ( pos == subMap.end() )
+                    continue;
+
+                retVal.emplace_back( std::make_pair(ii, (*pos).second) );
+            }
+
+            auto subDirs = dir.entryInfoList(QDir::Filter::AllDirs | QDir::Filter::NoDotAndDotDot);
+            for (auto && ii : subDirs)
+            {
+                auto sub = getIDXSUBFilesInDir( QDir(ii.absoluteFilePath() ) );
+                retVal.insert(retVal.end(), sub.begin(), sub.end());
+            }
+            return retVal;
+        }
+
+        std::optional< std::pair< QFileInfo, QFileInfo > > CMergeSRTModel::getIDXSUBFilesForMKV(const QFileInfo & fi) const
+        {
+            if (!fi.exists() || !fi.isFile())
+                return {};
+
+            auto dir = fi.absoluteDir();
+            //qDebug().noquote().nospace() << "Finding SRT files for '" << getDispName( fi ) << "' in dir '" << getDispName( dir.absolutePath() ) << "'";
+            auto idxSubPairs = getIDXSUBFilesInDir( dir );
+
+            if (idxSubPairs.empty() )
+                return {};
+            if (idxSubPairs.size() == 1 )
+                return idxSubPairs.front();
+
+            std::map< QString, QFileInfo > nameBasedMap;
+            for (auto && ii : idxSubPairs)
+            {
+                if (ii.first.completeBaseName().compare(fi.completeBaseName(), Qt::CaseInsensitive) == 0)
+                    return ii;
+            }
+            return {};
         }
 
         QFileInfoList CMergeSRTModel::getSRTFilesInDir( const QDir & dir ) const
@@ -198,31 +295,337 @@ namespace NMediaManager
             QList< QFileInfo > languageFiles;
             QList< QFileInfo > unknownFiles;
 
-            for ( auto && ii : srtFiles )
+            std::map< QString, QFileInfo > nameBasedMap;
+            for (auto && ii : srtFiles)
             {
-                //qDebug().noquote().nospace() << "Checking '" << getDispName( ii ) << "'";
-                //qDebug().noquote().nospace() << "Checking '" << fi.completeBaseName() << "' against '" << ii.completeBaseName() << "'";
-                if ( fi.completeBaseName().contains( ii.completeBaseName(), Qt::CaseSensitivity::CaseInsensitive ) )
+                auto langInfo = SLanguageInfo(ii);
+                if ( langInfo.knownLanguage() && ( langInfo.baseName() != ii.completeBaseName() ) )
+                    nameBasedMap[langInfo.baseName()] = ii;
+            }
+            auto pos = nameBasedMap.find(fi.completeBaseName());
+            if (pos != nameBasedMap.end())
+            {
+                namebasedFiles << (*pos).second;
+            }
+            else if ( nameBasedMap.size() != srtFiles.size() ) // there are no non-named based srt files
+            {
+                for (auto && ii : srtFiles)
                 {
-                    //qDebug().noquote().nospace() << "'" << getDispName( ii ) << "' is NAME based";
-                    namebasedFiles.push_back( ii );
-                }
-                else
-                {
-                    auto langInfo = SLanguageInfo( ii );
-                    if ( langInfo.knownLanguage() )
+                    //qDebug().noquote().nospace() << "Checking '" << getDispName( ii ) << "'";
+                    //qDebug().noquote().nospace() << "Checking '" << fi.completeBaseName() << "' against '" << ii.completeBaseName() << "'";
+                    auto langInfo = SLanguageInfo(ii);
+                    if (langInfo.isNameBasedLangFile())
+                        continue;
+                    if (langInfo.knownLanguage())
                     {
                         //qDebug().noquote().nospace() << "'" << getDispName( ii ) << "' is LANGUAGE based";
-                        languageFiles.push_back( ii );
+                        languageFiles.push_back(ii);
                     }
                     else
                     {
                         //qDebug().noquote().nospace() << "'" << getDispName( ii ) << "' is UNKNOWN type of filename";
-                        unknownFiles.push_back( ii );
+                        unknownFiles.push_back(ii);
                     }
                 }
             }
             return namebasedFiles << languageFiles;
+        }
+
+        QStandardItem * CMergeSRTModel::processSUBIDXSubTitle(QStandardItem * mkvFile, const std::list< std::pair< QStandardItem *, QStandardItem * > > & subidxFiles, QStandardItem * parentItem, bool displayOnly) const
+        {
+            SProcessInfo processInfo;
+            processInfo.fSetMKVTagsOnSuccess = true;
+            processInfo.fOldName = computeTransformPath(mkvFile, true);
+            auto oldFI = QFileInfo(processInfo.fOldName);
+
+            processInfo.fNewName = oldFI.absoluteDir().absoluteFilePath(oldFI.fileName() + ".new");// prevents the emby system from picking it up
+            processInfo.fItem = new QStandardItem(QString("'%1' => '%2'").arg(getDispName(processInfo.fOldName)).arg(getDispName(processInfo.fNewName)));
+            if (parentItem)
+                parentItem->appendRow(processInfo.fItem);
+            else
+                fProcessResults.second->appendRow(processInfo.fItem);
+
+            std::list< std::pair< std::pair< QStandardItem *, QStandardItem * >, SLanguageInfo > > allLangInfos;
+            std::unordered_map<  QStandardItem *, std::unordered_map< int, std::pair< bool, bool > > > langMap;
+            for (auto && ii : subidxFiles)
+            {
+                auto idxItem = new QStandardItem(tr("IDX File: %1").arg(ii.first->text()));
+                processInfo.fItem->appendRow(idxItem);
+                auto path = ii.first->data(ECustomRoles::eFullPathRole).toString();
+                auto langInfo = SLanguageInfo(QFileInfo(path));
+                allLangInfos.emplace_back( std::make_pair(ii, langInfo ));
+                auto langs = langInfo.allLanguageInfos();
+
+                for (auto && currLang : langs)
+                {
+                    auto dispName = currLang.first;
+                    auto && currLangInfos = currLang.second;
+
+                    for (size_t fileNum = 0; fileNum < currLangInfos.size(); ++fileNum)
+                    {
+                        auto && lang = currLangInfos[fileNum].fLanguage;
+                        auto index = currLangInfos[fileNum].fIndex;
+
+                        auto label = tr("'%1' Index: %2 - Forced : %4 SDH : %5")
+                            .arg(lang->displayName())
+                            .arg(index);
+
+                        if (currLangInfos.size() == 3)
+                        {
+                            if (fileNum == 0)
+                            {
+                                label = label.arg("Yes").arg("No");
+                                langMap[ii.first][index] = std::make_pair(true, false);
+                            }
+                            else if (fileNum == 1)
+                            {
+                                label = label.arg("No").arg("No");
+                                langMap[ii.first][index] = std::make_pair(false, false);
+                            }
+                            else
+                            {
+                                label = label.arg("No").arg("Yes");
+                                langMap[ii.first][index] = std::make_pair(false, true);
+                            }
+                        }
+                        else if (currLangInfos.size() == 2)
+                        {
+                            if (fileNum == 0)
+                            {
+                                label = label.arg("No").arg("No");
+                                langMap[ii.first][index] = std::make_pair(false, false);
+                            }
+                            else
+                            {
+                                label = label.arg("No").arg("Yes");
+                                langMap[ii.first][index] = std::make_pair(false, true);
+                            }
+                        }
+                        else
+                        {
+                            label = label.arg("No").arg("No");
+                            langMap[ii.first][index] = std::make_pair(false, false);
+                        }
+                        auto langItem = new QStandardItem(label);
+                        idxItem->appendRow(langItem);
+                    }
+                }
+            }
+
+            if (!displayOnly)
+            {
+                processInfo.fCmd = CPreferences::instance()->getMKVMergeEXE();
+                bool aOK = true;
+                if (processInfo.fCmd.isEmpty() || !QFileInfo(processInfo.fCmd).isExecutable())
+                {
+                    QStandardItem * errorItem = nullptr;
+                    if (processInfo.fCmd.isEmpty())
+                        errorItem = new QStandardItem(QString("ERROR: mkvmerge is not set properly"));
+                    else
+                        errorItem = new QStandardItem(QString("ERROR: mkvmerge '%1' is not an executable").arg(processInfo.fCmd));
+
+                    errorItem->setData(ECustomRoles::eIsErrorNode, true);
+                    appendError(processInfo.fItem, errorItem);
+
+                    QIcon icon;
+                    icon.addFile(QString::fromUtf8(":/resources/error.png"), QSize(), QIcon::Normal, QIcon::Off);
+                    errorItem->setIcon(icon);
+                    aOK = false;
+                }
+
+                aOK = aOK && checkProcessItemExists(processInfo.fOldName, processInfo.fItem);
+                for (auto && ii : subidxFiles)
+                {
+                    if (!aOK)
+                        break;
+                    aOK = aOK && checkProcessItemExists(ii.first->data(ECustomRoles::eFullPathRole).toString(), processInfo.fItem);
+                    aOK = aOK && checkProcessItemExists(ii.second->data(ECustomRoles::eFullPathRole).toString(), processInfo.fItem);
+                }
+
+                 //aOK = the MKV and SRT exist and the cmd is an executable
+                processInfo.fTimeStamps = NSABUtils::NFileUtils::timeStamps(processInfo.fOldName);
+
+                processInfo.fArgs = QStringList()
+                    << "--ui-language" << "en"
+                    << "--priority" << "lower"
+                    << "--output" << processInfo.fNewName
+                    << "--language" << "0:en"
+                    << "--language" << "1:en"
+                    << "--language" << "3:en"
+                    << "(" << processInfo.fOldName << ")"
+                    << "--title" << oldFI.completeBaseName()
+                    ;
+
+                QStringList trackOrder = { "0:0", "0:1", "0:3" };
+                int langFileCnt = 1;
+                for (auto && langInfo : allLangInfos)
+                {
+                    int nextTrack = 1;
+                    std::list< SMultLangInfo > orderByIdx;
+                    auto currIDX = langInfo.first.first->data(ECustomRoles::eFullPathRole).toString();
+                    auto currSUB = langInfo.first.second->data(ECustomRoles::eFullPathRole).toString();
+                    auto langs = langInfo.second.allLanguageInfos();
+                    for (auto && ii : langs)
+                    {
+                        for (auto && jj : ii.second)
+                            orderByIdx.push_back(jj);
+                    }
+
+                    orderByIdx.sort(
+                        [](const SMultLangInfo & lhs, const SMultLangInfo & rhs)
+                        {
+                            return lhs.fIndex < rhs.fIndex;
+                        });
+
+                    for (auto && ii : orderByIdx)
+                    {
+                        bool sdh = false;
+                        bool forced = false;
+
+                        auto langPos = langMap.find(langInfo.first.first);
+                        if (langPos != langMap.end())
+                        {
+                            auto indexPos = (*langPos).second.find(ii.fIndex);
+                            if (indexPos != (*langPos).second.end())
+                            {
+                                sdh = (*indexPos).second.first;
+                                forced = (*indexPos).second.second;
+                            }
+                        }
+                        processInfo.fArgs
+                            << "--language"
+                            << QString("%1:%2").arg(ii.fIndex).arg(ii.fLanguage->isoCode())
+                            << "--default-track"
+                            << QString( "%1:%2" ).arg( ii.fIndex ).arg( "no" )
+                            << "--hearing-impaired-flag"
+                            << QString("%1:%2").arg(ii.fIndex).arg(sdh ? "yes" : "no")
+                            << "--forced-track"
+                            << QString("%1:%2").arg(ii.fIndex).arg(forced ? "yes" : "no")
+                            ;
+                        trackOrder << QString("%1:%2").arg( langFileCnt ).arg(ii.fIndex);
+                    }
+                    processInfo.fArgs
+                        << "(" << currIDX << ")"
+                        << "(" << currSUB << ")"
+                        ;
+                    processInfo.fAncillary.push_back(currIDX);
+                    processInfo.fAncillary.push_back(currSUB);
+
+                    langFileCnt++;
+                }
+                processInfo.fArgs << "--track-order" << trackOrder.join(",");
+                fProcessQueue.push_back(processInfo);
+                QTimer::singleShot(0, this, &CMergeSRTModel::slotRunNextProcessInQueue);
+            }
+            return processInfo.fItem;
+        }
+
+        QStandardItem * CMergeSRTModel::processSRTSubTitle(QStandardItem * mkvFile, const std::unordered_map< QString, std::vector< QStandardItem * > > & srtFiles, QStandardItem * parentItem, bool displayOnly ) const
+        {
+            SProcessInfo processInfo;
+            processInfo.fSetMKVTagsOnSuccess = true;
+            processInfo.fOldName = computeTransformPath(mkvFile, true);
+            auto oldFI = QFileInfo(processInfo.fOldName);
+
+            processInfo.fNewName = oldFI.absoluteDir().absoluteFilePath(oldFI.fileName() + ".new");// prevents the emby system from picking it up
+
+            processInfo.fItem = new QStandardItem(QString("'%1' => '%2'").arg(getDispName(processInfo.fOldName)).arg(getDispName(processInfo.fNewName)));
+            if (parentItem)
+                parentItem->appendRow(processInfo.fItem);
+            else
+                fProcessResults.second->appendRow(processInfo.fItem);
+
+            for (auto && ii : srtFiles)
+            {
+                auto languageItem = new QStandardItem(tr("Language: %1").arg(ii.first));
+                processInfo.fItem->appendRow(languageItem);
+                for (auto && jj : ii.second)
+                {
+                    auto defaultItem = getItem(jj, EColumns::eOnByDefault);
+                    auto forcedItem = getItem(jj, EColumns::eForced);
+                    auto sdhItem = getItem(jj, EColumns::eSDH);
+
+                    auto srtFileItem = new QStandardItem(tr("'%2' - Default: %3 Forced : %4 SDH : %5")
+                        .arg(jj->text())
+                        .arg((defaultItem && defaultItem->checkState() == Qt::Checked) ? "Yes" : "No")
+                        .arg((forcedItem && forcedItem->checkState() == Qt::Checked) ? "Yes" : "No")
+                        .arg((sdhItem && sdhItem->checkState() == Qt::Checked) ? "Yes" : "No"));
+                    languageItem->appendRow(srtFileItem);
+                }
+            }
+
+            if (!displayOnly)
+            {
+                processInfo.fCmd = CPreferences::instance()->getMKVMergeEXE();
+                bool aOK = true;
+                if (processInfo.fCmd.isEmpty() || !QFileInfo(processInfo.fCmd).isExecutable())
+                {
+                    QStandardItem * errorItem = nullptr;
+                    if (processInfo.fCmd.isEmpty())
+                        errorItem = new QStandardItem(QString("ERROR: mkvmerge is not set properly"));
+                    else
+                        errorItem = new QStandardItem(QString("ERROR: mkvmerge '%1' is not an executable").arg(processInfo.fCmd));
+
+                    errorItem->setData(ECustomRoles::eIsErrorNode, true);
+                    appendError(processInfo.fItem, errorItem);
+
+                    QIcon icon;
+                    icon.addFile(QString::fromUtf8(":/resources/error.png"), QSize(), QIcon::Normal, QIcon::Off);
+                    errorItem->setIcon(icon);
+                    aOK = false;
+                }
+                aOK = aOK && checkProcessItemExists(processInfo.fOldName, processInfo.fItem);
+                for (auto && ii : srtFiles)
+                {
+                    if (!aOK)
+                        break;
+                    for (auto && jj : ii.second)
+                    {
+                        aOK = aOK && checkProcessItemExists(jj->data(ECustomRoles::eFullPathRole).toString(), processInfo.fItem);
+                    }
+                }
+                // aOK = the MKV and SRT exist and the cmd is an executable
+                processInfo.fTimeStamps = NSABUtils::NFileUtils::timeStamps(processInfo.fOldName);
+
+
+                processInfo.fArgs = QStringList()
+                    << "--ui-language" << "en"
+                    << "--priority" << "lower"
+                    << "--output" << processInfo.fNewName
+                    << "--language" << "0:en"
+                    << "--language" << "1:en"
+                    << "(" << processInfo.fOldName << ")"
+                    << "--title" << oldFI.completeBaseName()
+                    ;
+                QStringList trackOrder = { "0:0", "0:1" };
+                int nextTrack = 1;
+                for (auto && ii : srtFiles)
+                {
+                    for (auto && jj : ii.second)
+                    {
+                        //qDebug() << jj->text();
+                        auto langItem = getItem(jj, EColumns::eLanguage);
+                        auto srtFile = jj->data(ECustomRoles::eFullPathRole).toString();
+                        processInfo.fArgs
+                            << "--language"
+                            << "0:" + langItem->data(ECustomRoles::eISOCodeRole).toString()
+                            << "--default-track"
+                            << "0:" + QString(jj->data(ECustomRoles::eDefaultTrackRole).toBool() ? "yes" : "no")
+                            << "--hearing-impaired-flag"
+                            << "0:" + QString(jj->data(ECustomRoles::eHearingImparedRole).toBool() ? "yes" : "no")
+                            << "--forced-track"
+                            << "0:" + QString(jj->data(ECustomRoles::eForcedSubTitleRole).toBool() ? "yes" : "no")
+                            << "(" << srtFile << ")"
+                            ;
+                        processInfo.fAncillary.push_back(srtFile);
+                        trackOrder << QString("%1:0").arg(nextTrack++);
+                    }
+                }
+                processInfo.fArgs << "--track-order" << trackOrder.join(",");
+                fProcessQueue.push_back(processInfo);
+                QTimer::singleShot(0, this, &CMergeSRTModel::slotRunNextProcessInQueue);
+            }
+            return processInfo.fItem;
         }
 
         std::pair< bool, QStandardItem * > CMergeSRTModel::processItem( const QStandardItem * item, QStandardItem * parentItem, bool displayOnly ) const
@@ -240,113 +643,16 @@ namespace NMediaManager
             for ( auto && mkvFile : mkvFiles )
             {
                 auto srtFiles = getChildSRTFiles( mkvFile, false );
-                if ( srtFiles.empty() )
-                    return std::make_pair( true, nullptr );
-
-                SProcessInfo processInfo;
-                processInfo.fSetMKVTagsOnSuccess = true;
-                processInfo.fOldName = computeTransformPath( mkvFile, true );
-                auto oldFI = QFileInfo( processInfo.fOldName );
-
-                processInfo.fNewName = oldFI.absoluteDir().absoluteFilePath( oldFI.fileName() + ".new" );// prevents the emby system from picking it up
-
-                processInfo.fItem = new QStandardItem( QString( "'%1' => '%2'" ).arg( getDispName( processInfo.fOldName ) ).arg( getDispName( processInfo.fNewName ) ) );
-                if ( parentItem )
-                    parentItem->appendRow( processInfo.fItem );
+                if ( !srtFiles.empty() )
+                    myItem = processSRTSubTitle( mkvFile, srtFiles, parentItem, displayOnly );
                 else
-                    fProcessResults.second->appendRow( processInfo.fItem );
-
-                for ( auto && ii : srtFiles )
                 {
-                    auto languageItem = new QStandardItem( tr( "Language: %1" ).arg( ii.first ) );
-                    processInfo.fItem->appendRow( languageItem );
-                    for ( auto && jj : ii.second )
-                    {
-                        auto defaultItem = getItem( jj, EColumns::eOnByDefault );
-                        auto forcedItem = getItem( jj, EColumns::eForced );
-                        auto sdhItem = getItem( jj, EColumns::eSDH );
-
-                        auto srtFileItem = new QStandardItem( tr( "'%2' - Default: %3 Forced : %4 SDH : %5" )
-                                                              .arg( jj->text() )
-                                                              .arg( (defaultItem && defaultItem->checkState() == Qt::Checked) ? "Yes" : "No" )
-                                                              .arg( (forcedItem && forcedItem->checkState() == Qt::Checked) ? "Yes" : "No" )
-                                                              .arg( (sdhItem && sdhItem->checkState() == Qt::Checked) ? "Yes" : "No" ) );
-                        languageItem->appendRow( srtFileItem );
-                    }
+                    auto idxFiles = getChildFiles(mkvFile, "idx");
+                    auto subFiles = getChildFiles(mkvFile, "sub");
+                    auto subIDXPairFiles = pairSubIDX(idxFiles, subFiles);
+                    if (!subIDXPairFiles.empty())
+                        myItem = processSUBIDXSubTitle(mkvFile, subIDXPairFiles, parentItem, displayOnly);
                 }
-
-                if ( !displayOnly )
-                {
-                    processInfo.fCmd = CPreferences::instance()->getMKVMergeEXE();
-                    bool aOK = true;
-                    if ( processInfo.fCmd.isEmpty() || !QFileInfo( processInfo.fCmd ).isExecutable() )
-                    {
-                        QStandardItem * errorItem = nullptr;
-                        if ( processInfo.fCmd.isEmpty() )
-                            errorItem = new QStandardItem( QString( "ERROR: mkvmerge is not set properly" ) );
-                        else
-                            errorItem = new QStandardItem( QString( "ERROR: mkvmerge '%1' is not an executable" ).arg( processInfo.fCmd ) );
-
-                        errorItem->setData( ECustomRoles::eIsErrorNode, true );
-                        appendError( processInfo.fItem, errorItem );
-
-                        QIcon icon;
-                        icon.addFile( QString::fromUtf8( ":/resources/error.png" ), QSize(), QIcon::Normal, QIcon::Off );
-                        errorItem->setIcon( icon );
-                        aOK = false;
-                    }
-                    aOK = aOK && checkProcessItemExists( processInfo.fOldName, processInfo.fItem );
-                    for ( auto && ii : srtFiles )
-                    {
-                        if ( !aOK )
-                            break;
-                        for ( auto && jj : ii.second )
-                        {
-                            aOK = aOK && checkProcessItemExists( jj->data( ECustomRoles::eFullPathRole ).toString(), processInfo.fItem );
-                        }
-                    }
-                    // aOK = the MKV and SRT exist and the cmd is an executable
-                    processInfo.fTimeStamps = NSABUtils::NFileUtils::timeStamps( processInfo.fOldName );
-
-
-                    processInfo.fArgs = QStringList()
-                        << "--ui-language" << "en"
-                        << "--priority" << "lower"
-                        << "--output" << processInfo.fNewName
-                        << "--language" << "0:en"
-                        << "--language" << "1:en"
-                        << "(" << processInfo.fOldName << ")"
-                        << "--title" << oldFI.completeBaseName()
-                        ;
-                    QStringList trackOrder = { "0:0", "0:1" };
-                    int nextTrack = 1;
-                    for ( auto && ii : srtFiles )
-                    {
-                        for ( auto && jj : ii.second )
-                        {
-                            //qDebug() << jj->text();
-                            auto langItem = getItem( jj, EColumns::eLanguage );
-                            auto srtFile = jj->data( ECustomRoles::eFullPathRole ).toString();
-                            processInfo.fArgs
-                                << "--language"
-                                << "0:" + langItem->data( ECustomRoles::eISOCodeRole ).toString()
-                                << "--default-track"
-                                << "0:" + QString( jj->data( ECustomRoles::eDefaultTrackRole ).toBool() ? "yes" : "no" )
-                                << "--hearing-impaired-flag"
-                                << "0:" + QString( jj->data( ECustomRoles::eHearingImparedRole ).toBool() ? "yes" : "no" )
-                                << "--forced-track"
-                                << "0:" + QString( jj->data( ECustomRoles::eForcedSubTitleRole ).toBool() ? "yes" : "no" )
-                                << "(" << srtFile << ")"
-                                ;
-                            processInfo.fAncillary.push_back( srtFile );
-                            trackOrder << QString( "%1:0" ).arg( nextTrack++ );
-                        }
-                    }
-                    processInfo.fArgs << "--track-order" << trackOrder.join( "," );
-                    fProcessQueue.push_back( processInfo );
-                    QTimer::singleShot( 0, this, &CMergeSRTModel::slotRunNextProcessInQueue );
-                }
-                myItem = processInfo.fItem;
             }
             if ( mkvFiles.count() > 1 )
                 return std::make_pair( aOK, myItem );
@@ -372,14 +678,26 @@ namespace NMediaManager
             return aOK;
         }
 
+        bool CMergeSRTModel::isSubtitleFile(const QFileInfo & fileInfo, bool * isLangFileFormat) const
+        {
+            if (!CDirModel::isSubtitleFile(fileInfo, isLangFileFormat))
+                return false;
+            return fileInfo.suffix() != "sub";
+        }
+
         std::list< NMediaManager::NCore::SDirNodeItem > CMergeSRTModel::addAdditionalItems( const QFileInfo & fileInfo )const
         {
             std::list< NMediaManager::NCore::SDirNodeItem > retVal;
             if ( fileInfo.isFile() )
             {
                 auto language = SLanguageInfo( fileInfo );
-                auto languageFileItem = SDirNodeItem( language.displayName(), CMergeSRTModel::EColumns::eLanguage );
-                languageFileItem.setData( language.isoCode(), ECustomRoles::eISOCodeRole );
+                auto langName = language.displayName();
+                if (!isSubtitleFile(fileInfo))
+                    langName.clear();
+
+                auto languageFileItem = SDirNodeItem( langName, CMergeSRTModel::EColumns::eLanguage );
+                if ( !language.isMultiLanguage() )
+                    languageFileItem.setData( language.isoCode(), ECustomRoles::eISOCodeRole );
                 retVal.push_back( languageFileItem );
 
                 auto forcedItem = SDirNodeItem( QString(), EColumns::eForced );
@@ -391,7 +709,7 @@ namespace NMediaManager
                 retVal.push_back( sdhItem );
 
                 auto onByDefaultItem = SDirNodeItem( QString(), EColumns::eOnByDefault );
-                onByDefaultItem.fCheckable = true;
+                onByDefaultItem.fCheckable = !language.isMultiLanguage();
                 retVal.push_back( onByDefaultItem );
             }
             else
@@ -401,11 +719,13 @@ namespace NMediaManager
             return retVal;
         }
 
-        void CMergeSRTModel::setupNewItem( const SDirNodeItem & nodeItem, const QStandardItem * /*nameItem*/, QStandardItem * item ) const
+        void CMergeSRTModel::setupNewItem( const SDirNodeItem & nodeItem, const QStandardItem * nameItem, QStandardItem * item ) const
         {
             if ( (nodeItem.fType == EColumns::eLanguage) && (item->text().isEmpty()) )
             {
-                item->setBackground( Qt::red );
+                auto path = nameItem->data(ECustomRoles::eFullPathRole).toString();
+                if ( isSubtitleFile( path ) )
+                    item->setBackground( Qt::red );
             }
         }
 
@@ -435,9 +755,9 @@ namespace NMediaManager
         {
             if ( treeNode.fIsFile )
             {
-                auto isSRT = CPreferences::instance()->isSubtitleFile( treeNode.name() );
+                auto isSubFile = CPreferences::instance()->isSubtitleFile( treeNode.name() );
                 auto useAsParent =
-                    [ isSRT, this ]( QStandardItem * item )
+                    [isSubFile, this ]( QStandardItem * item )
                 {
                     if ( !item )
                         return true;
@@ -446,7 +766,7 @@ namespace NMediaManager
                         return true;
 
                     auto path = item->data( ECustomRoles::eFullPathRole ).toString();
-                    if ( isSRT )
+                    if (isSubFile)
                     {
                         return CPreferences::instance()->isMediaFile( path );
                     }
@@ -462,21 +782,34 @@ namespace NMediaManager
         bool CMergeSRTModel::preFileFunction( const QFileInfo & fileInfo, std::unordered_set<QString> & alreadyAdded, TParentTree & tree )
         {
             auto dir = fileInfo.absoluteDir();
+            //qDebug() << fileInfo;
             auto srtFiles = getSRTFilesForMKV( fileInfo );
-            //for ( auto && ii : tree )
-            //    qDebug() << ii;
-            for ( auto && ii : srtFiles )
+            if (!srtFiles.isEmpty())
             {
-                //qDebug() << ii.absoluteFilePath();
-                if ( alreadyAdded.find( ii.absoluteFilePath() ) != alreadyAdded.end() )
-                    continue;
-                alreadyAdded.insert( ii.absoluteFilePath() );
-                tree.push_back( std::move( getItemRow( ii ) ) );
-            }
+                //for ( auto && ii : tree )
+                //    qDebug() << ii;
+                for (auto && ii : srtFiles)
+                {
+                    //qDebug() << ii.absoluteFilePath();
+                    if (alreadyAdded.find(ii.absoluteFilePath()) != alreadyAdded.end())
+                        continue;
+                    alreadyAdded.insert(ii.absoluteFilePath());
+                    tree.push_back(std::move(getItemRow(ii)));
+                }
 
-            //for ( auto && ii : tree )
-            //    qDebug() << ii;
-            return !srtFiles.isEmpty();
+                //for ( auto && ii : tree )
+                //    qDebug() << ii;
+                return true;
+            }
+            auto idxSub = getIDXSUBFilesForMKV(fileInfo);
+            if (idxSub.has_value())
+            {
+                tree.emplace_back(getItemRow(idxSub.value().first));
+                tree.emplace_back(getItemRow(idxSub.value().second));
+                return true;
+            }
+            
+            return false;
         }
 
         void CMergeSRTModel::postFileFunction( bool aOK, const QFileInfo & fileInfo )

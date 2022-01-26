@@ -46,6 +46,9 @@ namespace NMediaManager
 
         private:
             virtual std::pair< bool, QStandardItem * > processItem( const QStandardItem * item, QStandardItem * parentItem, bool displayOnly ) const override;
+            QStandardItem * processSRTSubTitle(QStandardItem * mkvFile, const std::unordered_map< QString, std::vector< QStandardItem * > > & srtFiles, QStandardItem * parentItem, bool displayOnly) const;
+            QStandardItem * processSUBIDXSubTitle(QStandardItem * mkvFile, const std::list< std::pair< QStandardItem *, QStandardItem * > > & subidxFiles, QStandardItem * parentItem, bool displayOnly) const;
+            std::list< std::pair< QStandardItem *, QStandardItem * > > pairSubIDX(const std::list< QStandardItem * > & idxFiles, const std::list< QStandardItem * > & subFiles) const;
 
             virtual std::list< NMediaManager::NCore::SDirNodeItem > addAdditionalItems( const QFileInfo & fileInfo ) const override;
             virtual void setupNewItem( const SDirNodeItem & nodeItem, const QStandardItem * nameItem, QStandardItem * item ) const override;
@@ -64,14 +67,20 @@ namespace NMediaManager
             virtual bool usesQueuedProcessing() const override { return true; }
 
             virtual QString getProgressLabel( const SProcessInfo & processInfo ) const override;
-            QList< QFileInfo > getSRTFilesForMKV( const QFileInfo & fi ) const;
 
-            QFileInfoList getSRTFilesInDir( const QDir & dir ) const;
+            bool isSubtitleFile(const QFileInfo & fileInfo, bool * isLangFileFormat = nullptr) const;
+
+            QList< QFileInfo > getSRTFilesForMKV( const QFileInfo & fi ) const;
+            QFileInfoList getSRTFilesInDir(const QDir & dir) const;
+
+            std::optional< std::pair< QFileInfo, QFileInfo > > getIDXSUBFilesForMKV(const QFileInfo & fi) const;
+            std::list< std::pair< QFileInfo, QFileInfo > > getIDXSUBFilesInDir(const QDir & dir) const;
 
             void autoDetermineLanguageAttributes( QStandardItem * parent );
 
             std::unordered_map< QString, std::vector< QStandardItem * > > getChildSRTFiles( const QStandardItem * item, bool sort ) const; // item should be a MKV file
-            QList< QStandardItem * > getChildMKVFiles( const QStandardItem * item, bool goBelowDirs ) const; // item should be a dir file
+            std::list< QStandardItem * > getChildFiles(const QStandardItem * item, const QString & ext) const;
+            QList< QStandardItem * > getChildMKVFiles(const QStandardItem * item, bool goBelowDirs) const; // item should be a dir file
 
             QStandardItem * getLanguageItem( const QStandardItem * parent ) const;
         };
