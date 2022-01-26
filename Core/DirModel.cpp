@@ -120,6 +120,8 @@ namespace NMediaManager
             connect(fProcess, &QProcess::readyReadStandardOutput, this, &CDirModel::slotProcessStandardOutput);
             connect(fProcess, &QProcess::started, this, &CDirModel::slotProcessStarted);
             connect(fProcess, &QProcess::stateChanged, this, &CDirModel::slotProcesssStateChanged);
+
+            connect(this, &QStandardItemModel::dataChanged, this, &CDirModel::slotDataChanged);
         }
 
         CDirModel::~CDirModel()
@@ -209,6 +211,11 @@ namespace NMediaManager
 
         void CDirModel::postReloadModelRequest()
         {
+        }
+
+        int CDirModel::computeNumberOfItems() const
+        {
+            return NSABUtils::itemCount(fProcessResults.second.get(), true);
         }
 
         bool CDirModel::setData(const QModelIndex & idx, const QVariant & value, int role)
@@ -566,16 +573,22 @@ namespace NMediaManager
             if (role == Qt::DecorationRole)
             {
                 auto basePixmap = QStandardItemModel::data(idx, role);
-                auto pixmap = getRowDecoration(idx, basePixmap);
+                auto pixmap = getPathDecoration(idx, basePixmap);
                 return pixmap;
             }
-            if (role == Qt::BackgroundRole)
+            else if (role == Qt::BackgroundRole)
             {
-                auto clr = getRowBackground(idx);
+                auto clr = getItemBackground(idx);
                 if (!clr.isNull())
                     return clr;
             }
-            if (role == Qt::ToolTipRole)
+            else if (role == Qt::ForegroundRole)
+            {
+                auto clr = getItemForeground(idx);
+                if (!clr.isNull())
+                    return clr;
+            }
+            else if (role == Qt::ToolTipRole)
             {
                 auto text = getToolTip(idx);
                 if (!text.isNull())
@@ -840,7 +853,12 @@ namespace NMediaManager
 
         void CDirModel::reloadMediaTags(const QModelIndex & idx)
         {
-            if ( !showMediaItems() || !canShowMediaInfo() )
+            reloadMediaTags(idx, false);
+        }
+
+        void CDirModel::reloadMediaTags(const QModelIndex & idx, bool force)
+        {
+            if ( !force && ( !showMediaItems() || !canShowMediaInfo() ) )
                 return;
 
             auto fi = fileInfo( idx );
@@ -848,19 +866,21 @@ namespace NMediaManager
                 return;
 
             auto mediaInfo = getMediaTags( fi );
-            auto pos = firstMediaItemColumn();
 
-            QStandardItem * item = itemFromIndex( index( idx.row(), pos++, idx.parent() ) );
+            QStandardItem * item = itemFromIndex( index( idx.row(), getMediaTitleLoc(), idx.parent() ) );
             item->setText( mediaInfo["TITLE"] );
 
-            item = itemFromIndex( index( idx.row(), pos++, idx.parent() ) );
+            item = itemFromIndex( index( idx.row(), getMediaLengthLoc(), idx.parent() ) );
             item->setText( mediaInfo["LENGTH"] );
 
-            item = itemFromIndex( index( idx.row(), pos++, idx.parent() ) );
+            item = itemFromIndex( index( idx.row(), getMediaDateLoc(), idx.parent() ) );
             item->setText( mediaInfo["DATE_RECORDED"] );
 
-            item = itemFromIndex( index( idx.row(), pos++, idx.parent() ) );
+            item = itemFromIndex( index( idx.row(), getMediaCommentLoc(), idx.parent() ) );
             item->setText( mediaInfo["COMMENT"] );
+
+            clearItemStatusCache( idx );
+            clearPathStatusCache( fi );
         }
 
         std::list<NMediaManager::NCore::SDirNodeItem> CDirModel::getMediaInfoItems(const QFileInfo & fileInfo, int offset) const
@@ -1285,6 +1305,11 @@ namespace NMediaManager
             (void)currItems;
         }
 
+        int CDirModel::lastMediaItemColumn() const
+        {
+            return getMediaCommentLoc();
+        }
+
         int CDirModel::getMediaTitleLoc() const
         {
             if (!canShowMediaInfo())
@@ -1342,6 +1367,12 @@ namespace NMediaManager
             return isRootPath( QFileInfo( path ) );
         }
 
+        bool CDirModel::isRootPath(const QModelIndex & idx) const
+        {
+            auto fi = fileInfo(idx);
+            return isRootPath( fi );
+        }
+
         bool CDirModel::isRootPath( const QFileInfo & path ) const
         {
             if ( path.isFile() )
@@ -1388,5 +1419,161 @@ namespace NMediaManager
                 updatePath( childIdx, oldPath, newPath );
             }
         }
+
+        void CDirModel::slotDataChanged(const QModelIndex & start, const QModelIndex & end, const QVector<int> &/*roles*/)
+        {
+            std::unordered_set< QString > handled;
+            for (int ii = start.row(); ii <= end.row(); ++ii)
+            {
+                for (int jj = start.column(); jj <= end.column(); ++jj)
+                {
+                    auto fi = fileInfo(index(ii, jj, start.parent()));
+                    if (handled.find(fi.absoluteFilePath()) != handled.end())
+                        continue;
+
+                    clearPathStatusCache(fi);
+
+                    handled.insert(fi.absoluteFilePath());
+                }
+            }
+        }
+
+        bool CDirModel::canComputeStatus() const
+        {
+            return !fLoading;
+        }
+
+        std::optional< TItemStatus > CDirModel::getIndexStatus(const QModelIndex & idx) const
+        {
+            auto itemStatus = getItemStatus(idx);
+            if (!itemStatus.has_value())
+            {
+                auto fi = fileInfo(idx);
+                itemStatus = getPathStatus(fi);
+            }
+            return itemStatus;
+        }
+
+        std::optional< TItemStatus > CDirModel::computeItemStatus(const QModelIndex & idx) const
+        {
+            (void)idx;
+            return {};
+        }
+
+        std::optional< TItemStatus > CDirModel::getItemStatus(const QModelIndex & idx) const
+        {
+            auto fi = fileInfo(idx);
+
+            static bool sUseCache = true;
+
+            auto pos = fItemStatusCache.find(fi.absoluteFilePath());
+            if ( sUseCache && ( pos != fItemStatusCache.end() ) )
+            {
+                auto pos2 = (*pos).second.find(idx.column());
+                if (pos2 != (*pos).second.end())
+                    return (*pos2).second;
+            }
+
+            if ( !canComputeStatus() )
+                return {};
+
+
+            auto retVal = computeItemStatus(idx);
+            if (retVal.has_value())
+            {
+                fItemStatusCache[ fi.absoluteFilePath() ][ idx.column() ] = retVal.value();
+            }
+            return retVal;
+        }
+
+        std::optional< TItemStatus > CDirModel::computePathStatus(const QFileInfo & fi) const
+        {
+            (void)fi;
+            return {};
+        }
+
+        std::optional< TItemStatus > CDirModel::getPathStatus(const QFileInfo & fi) const
+        {
+            static bool sUseCache = true;
+
+            auto pos = fPathStatusCache.find( fi.absoluteFilePath() );
+            if (sUseCache && ( pos != fPathStatusCache.end() ) )
+                return (*pos).second;
+
+            if ( !canComputeStatus() )
+                return {};
+
+            auto retVal = computePathStatus( fi );
+            if ( retVal.has_value() )
+            {
+                fPathStatusCache[ fi.absoluteFilePath() ] = retVal.value();
+            }
+            return retVal;
+        }
+            
+        QVariant CDirModel::getItemBackground(const QModelIndex & idx) const
+        {
+            auto itemStatus = getIndexStatus(idx);
+            if ( itemStatus.has_value() )
+                return CPreferences::instance()->getColorForStatus(itemStatus.value().first, true);
+            return QVariant();
+        }
+
+        QVariant CDirModel::getItemForeground(const QModelIndex & idx) const
+        {
+            auto itemStatus = getIndexStatus(idx);
+            if (itemStatus.has_value())
+                return CPreferences::instance()->getColorForStatus(itemStatus.value().first, false);
+            return QVariant();
+        }
+
+        QVariant CDirModel::getToolTip(const QModelIndex & idx) const
+        {
+            auto itemStatus = getIndexStatus(idx);
+            if (itemStatus.has_value())
+                return itemStatus.value().second;
+            return QVariant();
+        }
+
+        QVariant CDirModel::getPathDecoration(const QModelIndex & idx, const QVariant & baseDecoration) const
+        {
+            (void)idx;
+            return baseDecoration;
+        }
+
+        void CDirModel::clearItemStatusCache(const QModelIndex & idx) const
+        {
+            auto fi = fileInfo( idx );
+            auto pos = fItemStatusCache.find( fi.absoluteFilePath() );
+            if ( pos == fItemStatusCache.end() )
+                return;
+
+            auto pos2 = (*pos).second.find( idx.column() );
+            if ( pos2 == (*pos).second.end() )
+                return;
+
+            (*pos).second.erase( pos2 );
+        }
+
+        void CDirModel::clearPathStatusCache(const QFileInfo & fi) const
+        {
+            auto pos = fPathStatusCache.find(fi.absoluteFilePath());
+            if ( pos != fPathStatusCache.end() )
+                fPathStatusCache.erase(pos);
+        }
+
+        void CDirModel::clearPathStatusCache(const QString & path) const
+        {
+            return clearPathStatusCache( QFileInfo(path) );
+        }
+
+        void CDirModel::resetStatusCaches()
+        {
+            beginResetModel();
+            fPathStatusCache.clear();
+            fItemStatusCache.clear();
+            endResetModel();
+        }
+
     }
 }

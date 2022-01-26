@@ -42,15 +42,14 @@ namespace NMediaManager
             ~CMakeMKVModel();
 
         private:
-            virtual std::pair< bool, QStandardItem * > processItem( const QStandardItem * item, QStandardItem * parentItem, bool displayOnly ) const override;
+            virtual std::pair< bool, QStandardItem * > processItem( const QStandardItem * item, QStandardItem * parentResultItem, bool displayOnly ) override;
             virtual bool showMediaItems() const override { return true; };
             virtual int firstMediaItemColumn() const override { return EColumns::eMediaColumnLoc; }
             virtual QStringList headers() const override;
-            virtual void setupNewItem( const SDirNodeItem & /*nodeItem*/, const QStandardItem * /*nameItem*/, QStandardItem * /*item*/ ) const override;
+            virtual void setupNewItem( const SDirNodeItem & /*nodeItem*/, const QStandardItem * /*nameItem*/, QStandardItem * /*item*/ )  const override;
             virtual QString getProgressLabel( const SProcessInfo & processInfo ) const override;
             virtual void postLoad( QTreeView * /*treeView*/ ) override;
             virtual void preLoad(QTreeView * /*treeView*/) override;
-            virtual int computeNumberOfItems() const override;
             virtual void postProcess(bool /*displayOnly*/) override;
 
             virtual void postFileFunction( bool aOK, const QFileInfo & fileInfo ) override;

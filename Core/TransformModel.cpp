@@ -49,7 +49,6 @@ namespace NMediaManager
             fPatternTimer->setInterval( 50 );
             fPatternTimer->setSingleShot( true );
             connect( fPatternTimer, &QTimer::timeout, this, &CTransformModel::slotPatternChanged );
-            connect(this, &QStandardItemModel::dataChanged, this, &CTransformModel::slotDataChanged);
         }
 
         CTransformModel::~CTransformModel()
@@ -69,58 +68,6 @@ namespace NMediaManager
                 updateTransformPattern( item );
             }
             return CDirModel::setData( idx, value, role );
-        }
-
-        void CTransformModel::slotDataChanged(const QModelIndex & start, const QModelIndex & end, const QVector<int> &/*roles*/)
-        {
-            std::unordered_set< QString > handled;
-            for (int ii = start.row(); ii <= end.row(); ++ii)
-            {
-                for (int jj = start.column(); jj <= end.column(); ++jj)
-                {
-                    auto fi = fileInfo(index(ii, jj, start.parent()));
-                    if (handled.find(fi.absoluteFilePath()) != handled.end())
-                        continue;
-
-                    auto pos = fTransformCorrectMap.find(fi.absoluteFilePath());
-                    if (pos != fTransformCorrectMap.end())
-                        fTransformCorrectMap.erase(pos);
-
-                    handled.insert(fi.absoluteFilePath());
-                }
-            }
-        }
-
-        QVariant CTransformModel::getRowBackground(const QModelIndex & idx) const
-        {
-            if (fInAutoSearch || fLoading)
-                return QVariant();
-
-            if (idx.column() != NCore::EColumns::eFSName)
-            {
-                return getRowBackground(index(idx.row(), NCore::EColumns::eFSName, idx.parent()));
-            }
-            return transformCorrect(idx).first ? QVariant() : QColor(Qt::red);
-        }
-
-        QVariant CTransformModel::getToolTip( const QModelIndex & idx ) const 
-        {
-            if (fInAutoSearch || fLoading)
-                return QVariant();
-
-            if (idx.column() != NCore::EColumns::eFSName)
-            {
-                return getToolTip(index(idx.row(), NCore::EColumns::eFSName, idx.parent()));
-            }
-
-            auto info = transformCorrect(idx);
-            return info.second.isEmpty() ? QVariant() : info.second;
-        }
-
-        QVariant CTransformModel::getRowDecoration(const QModelIndex & idx, const QVariant & baseDecoration) const
-        {
-            (void)idx;  
-            return baseDecoration;
         }
 
         bool CTransformModel::isValidName(const QFileInfo & fi, std::optional< bool > isTVShow ) const
@@ -218,9 +165,7 @@ namespace NMediaManager
                     fDirMapping[filePath] = retVal;
                 else
                     fFileMapping[filePath] = retVal;
-                auto pos = fTransformCorrectMap.find(filePath);
-                if (pos != fTransformCorrectMap.end())
-                    fTransformCorrectMap.erase(pos);
+                clearPathStatusCache(filePath);
             }
             else
                 retVal = (*pos).second;
@@ -406,7 +351,7 @@ namespace NMediaManager
             setSearchResult( idx, {}, recursive, true );
         }
 
-        std::pair< bool, QStandardItem * > CTransformModel::processItem( const QStandardItem * item, QStandardItem * parentItem, bool displayOnly ) const
+        std::pair< bool, QStandardItem * > CTransformModel::processItem( const QStandardItem * item, QStandardItem * parentResultItem, bool displayOnly )
         {
             QStandardItem * myItem = nullptr;
             bool aOK = true;
@@ -426,8 +371,8 @@ namespace NMediaManager
 
                 myItem->setData( oldName, ECustomRoles::eOldName );
                 myItem->setData( newName, ECustomRoles::eNewName );
-                if ( parentItem )
-                    parentItem->appendRow( myItem );
+                if ( parentResultItem )
+                    parentResultItem->appendRow( myItem );
                 else
                     fProcessResults.second->appendRow( myItem );
 
@@ -487,6 +432,7 @@ namespace NMediaManager
                         }
                         else if ( oldFileInfo.exists() && removeIt )
                         {
+                            QString errorMsg;
                             if ( oldFileInfo.isDir() )
                             {
                                 auto dir = QDir( oldName );
@@ -496,7 +442,10 @@ namespace NMediaManager
                             {
                                 auto parentDir = oldFileInfo.absoluteDir();
                                 auto pathToDelete = oldFileInfo.absoluteFilePath();
-                                aOK = QFile( pathToDelete ).remove();
+                                auto file = QFile(pathToDelete);
+                                aOK = file.remove();
+                                if ( !aOK ) 
+                                    errorMsg = file.errorString();
                                 auto peerFiles = parentDir.entryInfoList( QStringList() << "*" << "*.*", QDir::NoDotAndDotDot | QDir::Files);
                                 if (aOK && peerFiles.isEmpty())
                                 {
@@ -506,7 +455,7 @@ namespace NMediaManager
                             }
                             if ( !aOK )
                             {
-                                auto errorItem = new QStandardItem( QString( "ERROR: Failed to Remove '%1'" ).arg( oldName ) );
+                                auto errorItem = new QStandardItem( QString( "ERROR: Failed to Remove '%1' - '%2'" ).arg( oldName ).arg( errorMsg ) );
                                 errorItem->setData( ECustomRoles::eIsErrorNode, true );
                                 appendError( myItem, errorItem );
                             }
@@ -679,7 +628,7 @@ namespace NMediaManager
         void CTransformModel::clearStatusResults()
         {
             beginResetModel();
-            fTransformCorrectMap.clear();
+            CDirModel::resetStatusCaches();
             fTransformResultMap.clear();
             endResetModel();
             if ( filesView() )
@@ -718,7 +667,7 @@ namespace NMediaManager
             }
         }
 
-        void CTransformModel::updateTransformPattern( const QStandardItem * item )const
+        void CTransformModel::updateTransformPattern( const QStandardItem * item ) const
         {
             if ( item != invisibleRootItem() )
             {
@@ -751,85 +700,43 @@ namespace NMediaManager
             }
         }
 
-        std::pair< bool, QString > CTransformModel::transformCorrect(const QModelIndex & idx) const
+        bool CTransformModel::canComputeStatus() const
         {
-            if (!idx.parent().isValid())
-                return { true, QString() };
+            return !fInAutoSearch && CDirModel::canComputeStatus();
+        }
 
-            if (idx.column() != NCore::EColumns::eFSName)
-                return transformCorrect(index(idx.row(), NCore::EColumns::eFSName, idx.parent()));
+        std::optional< TItemStatus > CTransformModel::computePathStatus(const QFileInfo & fileInfo) const
+        {
+            if ( fInAutoSearch || fLoading )
+                return {};
 
-            auto fileInfo = this->fileInfo(idx);
-            bool aOK = true;
-            QString msg;
+            if (isRootPath(fileInfo))
+                return {};
+
+            TItemStatus retVal = { NCore::EItemStatus::eOK, QString() };
             auto path = fileInfo.absoluteFilePath();
-            auto pos = fTransformCorrectMap.find( path );
-            if (pos == fTransformCorrectMap.end())
+        
+            if (isIgnoredPathName(fileInfo) && !CPreferences::instance()->isSubtitleFile(fileInfo))
+                retVal.first = EItemStatus::eOK;
+            else if ( fileInfo.isDir() || isMediaFile(fileInfo))
             {
-                if (isIgnoredPathName(fileInfo) && !CPreferences::instance()->isSubtitleFile(fileInfo))
-                    aOK = true;
-                else if ( fileInfo.isDir() || isMediaFile(idx))
+                QStringList msgs;
+                auto isTVShow = treatAsTVShow(fileInfo, isChecked(path, EColumns::eIsTVShow));
+                if (canAutoSearch(fileInfo, false))
                 {
-                    QStringList msgs;
-                    auto isTVShow = treatAsTVShow(fileInfo, isChecked(path, EColumns::eIsTVShow));
-                    if (canAutoSearch(fileInfo, false))
+                    auto transformInfo = transformItem(fileInfo);
+                    if (transformInfo.second == kDeleteThis)
+                        retVal.first = NCore::EItemStatus::eOK;
+                    else if (!transformInfo.first)
                     {
-                        auto transformInfo = transformItem(fileInfo);
-                        if (transformInfo.second == kDeleteThis)
-                            aOK = true;
-                        else if (!transformInfo.first)
-                        {
-                            aOK = false;
-                            msgs << tr("Could not properly transform item");
-                        }
+                        retVal.first = NCore::EItemStatus::eError;
+                        msgs << tr("Could not properly transform item");
                     }
-
-                    if (aOK && fileInfo.isFile() && canShowMediaInfo() && isValidName(fileInfo, isTVShow) && NCore::CPreferences::instance()->getVerifyMediaTags())
-                    {
-                        auto tagName = index(idx.row(), getMediaTitleLoc(), idx.parent()).data().toString();
-                        auto tagYear = index(idx.row(), getMediaDateLoc(), idx.parent()).data().toString();
-                        if (NCore::CPreferences::instance()->getVerifyMediaTitle())
-                        {
-                            if (tagName.isEmpty())
-                            {
-                                aOK = false;
-                                msgs << tr("File is missing 'Title' Meta Tag");
-                            }
-                            else if (STransformResult::cleanFileName(tagName, fileInfo.isDir()) != STransformResult::cleanFileName(fileInfo))
-                            {
-                                aOK = false;
-                                msgs << tr("File's basename '%1' does not match 'Title' Meta Tag '%2'").arg(fileInfo.completeBaseName()).arg(tagName);
-                            }
-                        }
-                        if (NCore::CPreferences::instance()->getVerifyMediaDate())
-                        {
-                            if (tagYear.isEmpty())
-                            {
-                                aOK = false;
-                                msgs << tr("File is missing 'Year' Meta Tag");
-                            }
-                            else 
-                            {
-                                auto mediaYear = getMediaYear(fileInfo);
-                                if (tagYear != mediaYear )
-                                {
-                                    aOK = false;
-                                    msgs << tr("File's 'Date' Media Tag '%1' does not match the expected year of '%2'").arg(tagYear).arg(mediaYear);
-                                }
-                            }
-                        }
-                    }
-                    msg = msgs.join("\n");
                 }
-                fTransformCorrectMap[fileInfo.absoluteFilePath()] = std::make_pair(aOK, msg);
-            }
-            else
-            {
-                aOK = (*pos).second.first;
-                msg = (*pos).second.second;
+                retVal.second = msgs.join("\n");
             }
 
-            return { aOK, msg };
+            return retVal;
         }
 
         void CTransformModel::postAddItems( const QFileInfo & fileInfo, std::list< NMediaManager::NCore::SDirNodeItem > & currItems ) const
@@ -904,11 +811,6 @@ namespace NMediaManager
             }
         }
 
-        int CTransformModel::computeNumberOfItems() const
-        {
-            return NSABUtils::itemCount( fProcessResults.second.get(), true );
-        }
-
         void CTransformModel::postReloadModelRequest()
         {
             fPatternTimer->stop(); // if its runinng when this timer stops its realoaded anyway
@@ -925,14 +827,14 @@ namespace NMediaManager
             return myName;
         }
 
-        bool CTransformModel::preFileFunction( const QFileInfo & /*fileInfo*/, std::unordered_set<QString> & /*alreadyAdded*/, TParentTree & /*tree*/ )
-        {
-            return true;
-        }
-
         void CTransformModel::postFileFunction( bool /*aOK*/, const QFileInfo & /*fileInfo*/ )
         {
 
+        }
+
+        bool CTransformModel::preFileFunction(const QFileInfo & /*fileInfo*/, std::unordered_set<QString> & /*alreadyAdded*/, TParentTree & /*tree*/)
+        {
+            return true;
         }
 
         bool CTransformModel::setMediaTags( const QString & fileName, std::shared_ptr< STransformResult > & searchResults, QString & msg ) const

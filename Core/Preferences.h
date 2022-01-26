@@ -34,6 +34,15 @@ namespace NMediaManager
 {
     namespace NCore
     {
+        enum class EItemStatus
+        {
+            eOK,
+            eWarning,
+            eError
+        };
+
+        QString toString(EItemStatus status);
+
         class CPreferences
         {
             CPreferences();
@@ -167,6 +176,9 @@ namespace NMediaManager
 
             int gifDelay() const;
             void setGIFDelay( int delay );
+
+            QColor getColorForStatus( EItemStatus status, bool background ) const;
+            void setColorForStatus( EItemStatus, bool background, const QColor & value );
         private:
             bool pathMatches( const QFileInfo & fileInfo, const QStringList & values ) const;
             bool containsValue( const QString & value, const QStringList & values ) const;

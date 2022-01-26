@@ -113,6 +113,33 @@ namespace NMediaManager
             settings.setValue( "Directories", dir );
         }
 
+        QColor CPreferences::getColorForStatus(EItemStatus status, bool background ) const
+        {
+            QSettings settings;
+            settings.beginGroup("Colors");
+            QColor defaultColor = QColor();
+            switch (status)
+            {
+            case EItemStatus::eOK:
+                defaultColor = background ? Qt::white : Qt::black;
+                break;
+            case EItemStatus::eError:
+                defaultColor = background ? Qt::red : Qt::black;
+                break;
+            case EItemStatus::eWarning:
+                defaultColor = background ? Qt::yellow : Qt::black;
+                break;
+            };
+            return settings.value( QString("%1-%2ground").arg( toString( status ) ).arg( background ? "Back" : "Fore" ), defaultColor ).value< QColor >();
+        }
+            
+        void CPreferences::setColorForStatus(EItemStatus status, bool background, const QColor & value)
+        {
+            QSettings settings;
+            settings.beginGroup("Colors");
+            settings.setValue(QString("%1-%2ground").arg(toString(status)).arg(background ? "Back" : "Fore"), value );
+        }
+
         QStringList CPreferences::getDirectories() const
         {
             QSettings settings;
@@ -879,6 +906,17 @@ namespace NMediaManager
                 *isLangFileFormat = SLanguageInfo::isLangFileFormat( fi );
             }
             return true;
+        }
+
+        QString toString(EItemStatus status)
+        {
+            switch (status)
+            {
+            case EItemStatus::eOK: return "OK";
+            case EItemStatus::eWarning: return "Warning";
+            case EItemStatus::eError: return "Error";
+            }
+            return QString();
         }
    }
 }

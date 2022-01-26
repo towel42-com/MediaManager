@@ -48,7 +48,7 @@ namespace NMediaManager
             return NSABUtils::getNumberOfSeconds( fileName, NCore::CPreferences::instance()->getFFProbeEXE() );
         }
 
-        std::pair< bool, QStandardItem * > CMakeMKVModel::processItem( const QStandardItem * item, QStandardItem * parentItem, bool displayOnly ) const
+        std::pair< bool, QStandardItem * > CMakeMKVModel::processItem( const QStandardItem * item, QStandardItem * parentResultItem, bool displayOnly )
         {
             if ( item->data( ECustomRoles::eIsDir ).toBool() )
                 return std::make_pair( true, nullptr );
@@ -61,8 +61,8 @@ namespace NMediaManager
             processInfo.fItem = new QStandardItem( QString( "Convert '%1' => '%2'" ).arg( getDispName( processInfo.fOldName ) ).arg( getDispName( processInfo.fNewName ) ) );
             processInfo.fItem->setData( processInfo.fOldName, ECustomRoles::eOldName );
             processInfo.fItem->setData( processInfo.fNewName, ECustomRoles::eNewName );
-            if ( parentItem )
-                parentItem->appendRow( processInfo.fItem );
+            if ( parentResultItem )
+                parentResultItem->appendRow( processInfo.fItem );
             else
                 fProcessResults.second->appendRow( processInfo.fItem );
 
@@ -120,13 +120,12 @@ namespace NMediaManager
         QStringList CMakeMKVModel::headers() const
         {
             return CDirModel::headers()
-                << tr( "Title" ) << tr( "Media Date" ) << tr( "Comment" )
+                << getMediaHeaders();
                 ;
         }
 
         void CMakeMKVModel::setupNewItem( const SDirNodeItem & /*nodeItem*/, const QStandardItem * /*nameItem*/, QStandardItem * /*item*/ ) const
         {
-
         }
 
         void CMakeMKVModel::postLoad( QTreeView * treeView)
@@ -143,11 +142,6 @@ namespace NMediaManager
         {
             if (progressDlg())
                 progressDlg()->setValue(0);
-        }
-
-        int CMakeMKVModel::computeNumberOfItems() const
-        {
-            return NSABUtils::itemCount( fProcessResults.second.get(), true );
         }
 
         void CMakeMKVModel::postFileFunction( bool /*aOK*/, const QFileInfo & /*fileInfo*/ )

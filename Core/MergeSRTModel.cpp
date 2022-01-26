@@ -628,7 +628,7 @@ namespace NMediaManager
             return processInfo.fItem;
         }
 
-        std::pair< bool, QStandardItem * > CMergeSRTModel::processItem( const QStandardItem * item, QStandardItem * parentItem, bool displayOnly ) const
+        std::pair< bool, QStandardItem * > CMergeSRTModel::processItem( const QStandardItem * item, QStandardItem * parentResultItem, bool displayOnly )
         {
             if ( !item->data( ECustomRoles::eIsDir ).toBool() )
                 return std::make_pair( true, nullptr );
@@ -644,20 +644,20 @@ namespace NMediaManager
             {
                 auto srtFiles = getChildSRTFiles( mkvFile, false );
                 if ( !srtFiles.empty() )
-                    myItem = processSRTSubTitle( mkvFile, srtFiles, parentItem, displayOnly );
+                    myItem = processSRTSubTitle( mkvFile, srtFiles, parentResultItem, displayOnly );
                 else
                 {
                     auto idxFiles = getChildFiles(mkvFile, "idx");
                     auto subFiles = getChildFiles(mkvFile, "sub");
                     auto subIDXPairFiles = pairSubIDX(idxFiles, subFiles);
                     if (!subIDXPairFiles.empty())
-                        myItem = processSUBIDXSubTitle(mkvFile, subIDXPairFiles, parentItem, displayOnly);
+                        myItem = processSUBIDXSubTitle(mkvFile, subIDXPairFiles, parentResultItem, displayOnly);
                 }
             }
             if ( mkvFiles.count() > 1 )
                 return std::make_pair( aOK, myItem );
             else
-                return std::make_pair( aOK, parentItem );
+                return std::make_pair( aOK, parentResultItem );
         }
 
         QStandardItem * CMergeSRTModel::getLanguageItem( const QStandardItem * item ) const

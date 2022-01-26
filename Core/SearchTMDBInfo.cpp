@@ -95,7 +95,7 @@ namespace NMediaManager
         
         QString SSearchTMDBInfo::stripExistingExtraInfo(const QString & string, QString & extendedData)
         {
-            auto regExStr = R"((?<total>( - )(?<extendedData>[^\[\(]+))$)";
+            auto regExStr = R"([\)\]\s*(?<total>( - )(?<extendedData>[^\[\(]+))$)";
             auto regEx = QRegularExpression(regExStr);
             QString retVal = string;
             auto match = regEx.match(retVal);
@@ -138,7 +138,7 @@ namespace NMediaManager
                 retVal = retVal.left( pos + 1 );
             if ( stripInnerSeparators )
             {
-                retVal.replace( QRegularExpression( R"(\.|(\s{2,})|-|\:|_)" ), " " );
+                retVal.replace( QRegularExpression( R"(\.|(\s{2,})|-|\:|_)" ), "" );
                 retVal = retVal.trimmed();
             }
             return retVal;

@@ -47,9 +47,9 @@ namespace NMediaManager
             ~CTransformModel();
 
             virtual bool setData(const QModelIndex & idx, const QVariant & value, int role) override;
-            virtual QVariant getRowBackground(const QModelIndex & idx) const override;
-            virtual QVariant getToolTip(const QModelIndex & /*idx*/) const override;
-            virtual QVariant getRowDecoration(const QModelIndex & idx, const QVariant & baseDecoration) const override;
+
+            virtual std::optional< TItemStatus > computePathStatus(const QFileInfo & fi) const override;
+            virtual bool canComputeStatus() const override;
 
             void setSearchResult( const QModelIndex & idx, std::shared_ptr< STransformResult > info, bool applyToChilren, bool forceSet );
             void setSearchResult( QStandardItem * item, std::shared_ptr< STransformResult > info, bool applyToChilren, bool forceSet);
@@ -81,14 +81,13 @@ namespace NMediaManager
             void slotTVOutputDirPatternChanged( const QString & outPattern );
             void slotMovieOutputDirPatternChanged( const QString & outPattern );
             void slotMovieOutputFilePatternChanged( const QString & outPattern );
-            void slotDataChanged(const QModelIndex & start, const QModelIndex & end, const QVector<int> &roles);
         private:
             virtual void updateFile(const QModelIndex &idx, const QString & oldFile, const QString & newFile) override;
             virtual void updateDir(const QModelIndex & idx, const QDir & oldDir, const QDir & newDir) override;
             virtual void postAddItems( const QFileInfo & fileInfo, std::list< NMediaManager::NCore::SDirNodeItem > & currItems ) const override;
             virtual std::list< NMediaManager::NCore::SDirNodeItem > addAdditionalItems( const QFileInfo & fileInfo ) const override;
-            bool showMediaItems() const override { return true; };
-            int firstMediaItemColumn() const override { return EColumns::eMediaColumnLoc; }
+            virtual bool showMediaItems() const override { return true; };
+            virtual int firstMediaItemColumn() const override { return EColumns::eMediaColumnLoc; }
 
             std::pair< bool, QString > transformCorrect(const QModelIndex & idx) const;
 
@@ -98,18 +97,17 @@ namespace NMediaManager
             virtual void postLoad( QTreeView * treeView ) override;
             virtual void preLoad(QTreeView * treeView) override;
             virtual void attachTreeNodes( QStandardItem * nextParent, QStandardItem *& prevParent, const STreeNode & treeNode ) override;
-            virtual int computeNumberOfItems() const override;
 
             virtual void postReloadModelRequest() override;
             QString getMyTransformedName( const QStandardItem * item, bool transformParentsOnly ) const override;
 
             // model overrides during iteration
-            void postFileFunction( bool /*aOK*/, const QFileInfo & /*fileInfo*/ ) override;
-            bool preFileFunction( const QFileInfo & /*fileInfo*/, std::unordered_set<QString> & /*alreadyAdded*/, TParentTree & /*tree*/ ) override;
+            virtual void postFileFunction( bool /*aOK*/, const QFileInfo & /*fileInfo*/ ) override;
+            virtual bool preFileFunction( const QFileInfo & /*fileInfo*/, std::unordered_set<QString> & /*alreadyAdded*/, TParentTree & /*tree*/ ) override;
 
-            bool usesQueuedProcessing() const override { return false; }
+            virtual bool usesQueuedProcessing() const override { return false; }
 
-            std::pair< bool, QStandardItem * > processItem( const QStandardItem * item, QStandardItem * parentItem, bool displayOnly ) const override;
+            virtual std::pair< bool, QStandardItem * > processItem( const QStandardItem * item, QStandardItem * parentResultItem, bool displayOnly ) override;
 
             QStandardItem * getTransformItem( const QStandardItem * parent ) const;
 
@@ -123,7 +121,6 @@ namespace NMediaManager
 
             void updateTransformPattern( const QStandardItem * item ) const;
             void updateTransformPattern( const QStandardItem * transformedItem, QStandardItem * item ) const;
-
             [[nodiscard]] std::pair< bool, QString > transformItem( const QFileInfo & path ) const;
             [[nodiscard]] std::pair< bool, QString > transformItem( const QFileInfo & fileInfo, const SPatternInfo & patternInfo ) const;
 
@@ -137,7 +134,6 @@ namespace NMediaManager
             mutable std::map< QString, std::pair< bool, QString > > fFileMapping;
             mutable std::map< QString, std::pair< bool, QString > > fDirMapping;
             std::unordered_map< QString, std::shared_ptr< STransformResult > > fTransformResultMap;
-            mutable std::unordered_map< QString, std::pair< bool, QString > > fTransformCorrectMap;
             std::unordered_map< QString, QString > fDiskRipSearchMap;
 
             //bool fTreatAsTVShowByDefault{ false };

@@ -25,6 +25,7 @@ set(qtproject_SRCS
     DirNodeItem.cpp
     MergeSRTModel.cpp
     MakeMKVModel.cpp
+    TagsModel.cpp
     TransformModel.cpp
     LanguageInfo.cpp
     NetworkReply.cpp
@@ -40,6 +41,7 @@ set(qtproject_H
     DirModel.h
     MergeSRTModel.h
     MakeMKVModel.h
+    TagsModel.h
     TransformModel.h
 )
 
