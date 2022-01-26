@@ -20,8 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef _TRANSFORMMEDIAFILENAMESPAGE_H
-#define _TRANSFORMMEDIAFILENAMESPAGE_H
+#ifndef _TRANSFORMSPAGE_H
+#define _TRANSFORMSPAGE_H
 
 #include "BasePage.h"
 
@@ -44,12 +44,12 @@ namespace NMediaManager
 {
     namespace NUi
     {
-        class CTransformMediaFileNamesPage : public CBasePage
+        class CTransformPage : public CBasePage
         {
             Q_OBJECT
         public:
-            CTransformMediaFileNamesPage( QWidget *parent = nullptr );
-            ~CTransformMediaFileNamesPage();
+            CTransformPage( QWidget *parent = nullptr );
+            ~CTransformPage();
 
             virtual bool useSecondaryProgressBar() const override { return false; }
 
@@ -70,8 +70,6 @@ namespace NMediaManager
             virtual bool extendContextMenu( QMenu * menu, const QModelIndex & idx ) override;
 
             virtual QMenu * menu() override;
-            virtual void setActive( bool isActive ) override;
-
         Q_SIGNALS:
         public Q_SLOTS:
         protected Q_SLOTS:
@@ -96,9 +94,6 @@ namespace NMediaManager
             QAction * fDeleteBAK{ nullptr };
             QAction * fDeleteNFO{ nullptr };
             QAction * fDeleteCustom{ nullptr };
-            QAction * fVerifyMediaTitle{ nullptr };
-            QAction * fVerifyMediaDate{ nullptr };
-            QAction * fVerifyMediaTags{ nullptr };
         };
     }
 }

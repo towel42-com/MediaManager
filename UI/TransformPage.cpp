@@ -20,7 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "TransformMediaFileNamesPage.h"
+#include "TransformPage.h"
 #include "SelectTMDB.h"
 #include "Core/Preferences.h"
 #include "Core/TransformModel.h"
@@ -42,25 +42,25 @@ namespace NMediaManager
 {
     namespace NUi
     {
-        CTransformMediaFileNamesPage::CTransformMediaFileNamesPage( QWidget *parent )
+        CTransformPage::CTransformPage( QWidget *parent )
             : CBasePage( "Transform", parent )
         {
             fSearchTMDB = new NCore::CSearchTMDB( nullptr, std::optional<QString>(), this );
             fSearchTMDB->setSkipImages( true );
-            connect( fSearchTMDB, &NCore::CSearchTMDB::sigAutoSearchFinished, this, &CTransformMediaFileNamesPage::slotAutoSearchFinished );
+            connect( fSearchTMDB, &NCore::CSearchTMDB::sigAutoSearchFinished, this, &CTransformPage::slotAutoSearchFinished );
         }
 
-        CTransformMediaFileNamesPage::~CTransformMediaFileNamesPage()
+        CTransformPage::~CTransformPage()
         {
             saveSettings();
         }
 
-        void CTransformMediaFileNamesPage::loadSettings()
+        void CTransformPage::loadSettings()
         {
             CBasePage::loadSettings();
         }
 
-        NMediaManager::NCore::CTransformModel * CTransformMediaFileNamesPage::model()
+        NMediaManager::NCore::CTransformModel * CTransformPage::model()
         {
             if ( !fModel )
                 return nullptr;
@@ -68,14 +68,14 @@ namespace NMediaManager
             return dynamic_cast<NCore::CTransformModel *>(fModel.get());
         }
 
-        void CTransformMediaFileNamesPage::postNonQueuedRun( bool finalStep, bool canceled )
+        void CTransformPage::postNonQueuedRun( bool finalStep, bool canceled )
         {
             emit sigStopStayAwake();
             if ( finalStep && !canceled )
                 load();
         }
 
-        bool CTransformMediaFileNamesPage::extendContextMenu( QMenu * menu, const QModelIndex & idx )
+        bool CTransformPage::extendContextMenu( QMenu * menu, const QModelIndex & idx )
         {
             if ( !idx.isValid() )
                 return false;
@@ -84,19 +84,19 @@ namespace NMediaManager
 
             auto nm = nameIdx.data().toString();
             auto action = menu->addAction( tr( "Search for '%1'..." ).arg( nm ),
-                                           [ nameIdx, this ]()
-            {
-                manualSearch( nameIdx );
-            } );
+                [ nameIdx, this ]()
+                {
+                    manualSearch( nameIdx );
+                } );
             menu->setDefaultAction( action );
 
             if ( model()->canAutoSearch( nameIdx, false ) )
             {
-                action = menu->addAction( tr( "Auto-Search for '%1'..." ).arg( nm ),
-                                          [ nameIdx, this ]()
-                {
-                    autoSearchForNewNames( nameIdx, false, {} );
-                } );
+                action = menu->addAction( tr( "Auto-Search for '%1'" ).arg( nm ),
+                    [ nameIdx, this ]()
+                    {
+                        autoSearchForNewNames( nameIdx, false, {} );
+                    } );
             }
             menu->addSeparator();
 
@@ -104,29 +104,35 @@ namespace NMediaManager
             if ( searchResult )
             {
                 menu->addAction( tr( "Clear Search Result" ),
-                                 [ nameIdx, this ]()
-                {
-                    model()->clearSearchResult( nameIdx, false );
-                } );
+                    [ nameIdx, this ]()
+                    {
+                        model()->clearSearchResult( nameIdx, false );
+                    } );
                 if ( model()->rowCount( nameIdx ) )
                 {
                     menu->addAction( tr( "Clear Search Result (Including Children)" ),
-                                     [ nameIdx, this ]()
-                    {
-                        model()->clearSearchResult( nameIdx, true );
-                    } );
+                        [ nameIdx, this ]()
+                        {
+                            model()->clearSearchResult( nameIdx, true );
+                        } );
+
+                    menu->addAction( tr( "Apply Search Results to Children" ),
+                        [ nameIdx, searchResult, this]()
+                        {
+                            model()->setSearchResult(nameIdx, searchResult, true, true);
+                        });
                 }
                 menu->addSeparator();
                 menu->addAction(tr("Transform Item..."),
-                                 [ nameIdx, this ]()
-                {
-                    run( nameIdx );
-                } );
+                    [ nameIdx, this ]()
+                    {
+                        run( nameIdx );
+                    } );
             }
             return true;
         }
 
-        void CTransformMediaFileNamesPage::slotAutoSearchForNewNames()
+        void CTransformPage::slotAutoSearchForNewNames()
         {
             if ( !model() || !model()->rowCount() )
             {
@@ -157,7 +163,7 @@ namespace NMediaManager
             }
         }
 
-        bool CTransformMediaFileNamesPage::autoSearchForNewNames( const QModelIndex & index, bool searchChildren, std::optional< NCore::EMediaType > mediaType )
+        bool CTransformPage::autoSearchForNewNames( const QModelIndex & index, bool searchChildren, std::optional< NCore::EMediaType > mediaType )
         {
             bool retVal = false;
 
@@ -172,15 +178,15 @@ namespace NMediaManager
             }
             else
             {
-                auto path = model()->filePath( index );
-                auto titleInfo = model()->getTransformResult( index, false );
-                auto searchInfo = std::make_shared< NCore::SSearchTMDBInfo >( name, titleInfo );
-                searchInfo->setExactMatchOnly( NCore::CPreferences::instance()->getExactMatchesOnly() );
-                if ( mediaType.has_value() )
-                    searchInfo->setMediaType( mediaType.value() );
-
-                if ( model()->canAutoSearch( index, false ) )
+                if (model()->canAutoSearch(index, false))
                 {
+                    auto path = model()->filePath(index);
+                    auto titleInfo = model()->getTransformResult( index, false );
+                    auto searchInfo = std::make_shared< NCore::SSearchTMDBInfo >( name, titleInfo );
+                    searchInfo->setExactMatchOnly( NCore::CPreferences::instance()->getExactMatchesOnly() );
+                    if ( mediaType.has_value() )
+                        searchInfo->setMediaType( mediaType.value() );
+
                     auto msg = tr( "Adding Background Search for '%1'" ).arg( QDir( fDirName ).relativeFilePath( path ) );
                     appendToLog( msg + QString( "\n\t%1\n" ).arg( searchInfo->toString( false ) ), true );
                     fProgressDlg->setLabelText( msg );
@@ -205,7 +211,7 @@ namespace NMediaManager
             return retVal;
         }
 
-        void CTransformMediaFileNamesPage::slotAutoSearchFinished( const QString &path, NCore::SSearchTMDBInfo * searchInfo, bool searchesRemaining )
+        void CTransformPage::slotAutoSearchFinished( const QString &path, NCore::SSearchTMDBInfo * searchInfo, bool searchesRemaining )
         {
             auto results = fSearchTMDB->getResult( path );
             if ( !progressCanceled() && results.empty() && searchInfo && searchInfo->mediaTypeAutoDetermined() )
@@ -271,51 +277,51 @@ namespace NMediaManager
             }
         }
 
-        void CTransformMediaFileNamesPage::postLoadFinished( bool canceled )
+        void CTransformPage::postLoadFinished( bool canceled )
         {
             if ( !canceled )
-                QTimer::singleShot( 0, this, &CTransformMediaFileNamesPage::slotAutoSearchForNewNames );
+                QTimer::singleShot( 0, this, &CTransformPage::slotAutoSearchForNewNames );
         }
 
-        NCore::CDirModel * CTransformMediaFileNamesPage::createDirModel()
+        NCore::CDirModel * CTransformPage::createDirModel()
         {
             return new NCore::CTransformModel( this );
         }
 
-        QString CTransformMediaFileNamesPage::loadTitleName() const
+        QString CTransformPage::loadTitleName() const
         {
             return tr( "Finding Files" );
         }
 
-        QString CTransformMediaFileNamesPage::loadCancelName() const
+        QString CTransformPage::loadCancelName() const
         {
             return tr( "Cancel" );
         }
 
-        QString CTransformMediaFileNamesPage::actionTitleName() const
+        QString CTransformPage::actionTitleName() const
         {
             return tr( "Renaming Files..." );
         }
 
-        QString CTransformMediaFileNamesPage::actionCancelName() const
+        QString CTransformPage::actionCancelName() const
         {
             return tr( "Abort Rename" );
         }
 
-        QString CTransformMediaFileNamesPage::actionErrorName() const
+        QString CTransformPage::actionErrorName() const
         {
-            return tr( "Error While Creating MKV:" );
+            return tr( "Error while Transforming Media:" );
         }
 
 
-        QStringList CTransformMediaFileNamesPage::dirModelFilter() const
+        QStringList CTransformPage::dirModelFilter() const
         {
             auto retVal = NCore::CPreferences::instance()->getMediaExtensions() << NCore::CPreferences::instance()->getSubtitleExtensions();
             retVal << NCore::CPreferences::instance()->getExtensionsToDelete();
             return retVal;
         }
 
-        void CTransformMediaFileNamesPage::setupModel()
+        void CTransformPage::setupModel()
         {
             model()->slotTVOutputFilePatternChanged( NCore::CPreferences::instance()->getTVOutFilePattern() );
             model()->slotTVOutputDirPatternChanged( NCore::CPreferences::instance()->getTVOutDirPattern() );
@@ -325,7 +331,7 @@ namespace NMediaManager
             CBasePage::setupModel();
         }
 
-        void CTransformMediaFileNamesPage::manualSearch( const QModelIndex & idx )
+        void CTransformPage::manualSearch( const QModelIndex & idx )
         {
             auto baseIdx = model()->index( idx.row(), NCore::EColumns::eFSName, idx.parent() );
             auto titleInfo = model()->getTransformResult( idx, true );
@@ -341,22 +347,22 @@ namespace NMediaManager
 
             if ( dlg.exec() == QDialog::Accepted )
             {
-                auto titleInfo = dlg.getSearchResult();
+                auto results = dlg.getSearchResult();
                 bool setChildren = true;
-                if ( titleInfo->isTVShow() && titleInfo->isSeasonOnly() )
+                if ( results->isTVShow() && results->isSeasonOnly() )
                     setChildren = false;
-                model()->setSearchResult( idx, titleInfo, setChildren, true );
+                model()->setSearchResult( idx, results, setChildren, true );
             }
         }
 
-        QMenu * CTransformMediaFileNamesPage::menu()
+        QMenu * CTransformPage::menu()
         {
             if ( !fMenu )
             {
                 fMenu = new QMenu( this );
                 fMenu->setObjectName( "Media Namer Menu " );
                 fMenu->setTitle( tr( "Media Namer" ) );
-                connect( fMenu, &QMenu::aboutToShow, this, &CTransformMediaFileNamesPage::slotMenuAboutToShow );
+                connect( fMenu, &QMenu::aboutToShow, this, &CTransformPage::slotMenuAboutToShow );
 
                 fExactMatchesOnlyAction = new QAction( this );
                 fExactMatchesOnlyAction->setObjectName( QString::fromUtf8( "actionExactMatchesOnly" ) );
@@ -442,122 +448,23 @@ namespace NMediaManager
                 deleteKnownMenu->addAction(fDeleteNFO);
                 deleteKnownMenu->addAction(fDeleteCustom);
 
-                fVerifyMediaTitle = new QAction(this);
-                fVerifyMediaTitle->setObjectName(QString::fromUtf8("actionVerifyMediaTitle"));
-                fVerifyMediaTitle->setCheckable(true);
-                fVerifyMediaTitle->setChecked(NCore::CPreferences::instance()->deleteNFO());
-                fVerifyMediaTitle->setText(QCoreApplication::translate("NMediaManager::NUi::CMainWindow", "Verify Media Title?", nullptr));
-                connect(fVerifyMediaTitle, &QAction::triggered, [this]()
-                    {
-                        model()->clearStatusResults();
-                        NCore::CPreferences::instance()->setVerifyMediaTitle(fVerifyMediaTitle->isChecked());
-                    }
-                );
-
-                fVerifyMediaDate = new QAction(this);
-                fVerifyMediaDate->setObjectName(QString::fromUtf8("actionVerifyMediaDate"));
-                fVerifyMediaDate->setCheckable(true);
-                fVerifyMediaDate->setChecked(NCore::CPreferences::instance()->deleteNFO());
-                fVerifyMediaDate->setText(QCoreApplication::translate("NMediaManager::NUi::CMainWindow", "Verify Media Date?", nullptr));
-                connect(fVerifyMediaDate, &QAction::triggered, [this]()
-                    {
-                        model()->clearStatusResults();
-                        NCore::CPreferences::instance()->setVerifyMediaDate(fVerifyMediaDate->isChecked());
-                    }
-                );
-
-                fVerifyMediaTags = new QAction(this);
-                fVerifyMediaTags->setObjectName(QString::fromUtf8("actionVerifyMediaTags"));
-                fVerifyMediaTags->setCheckable(true);
-                fVerifyMediaTags->setChecked(NCore::CPreferences::instance()->deleteNFO());
-                fVerifyMediaTags->setText(QCoreApplication::translate("NMediaManager::NUi::CMainWindow", "Verify Media Tags?", nullptr));
-                connect(fVerifyMediaTags, &QAction::triggered, [this]()
-                    {
-                        fVerifyMediaDate->setEnabled(fVerifyMediaTags->isChecked());
-                        fVerifyMediaTitle->setEnabled(fVerifyMediaTags->isChecked());
-                        model()->clearStatusResults();
-                        NCore::CPreferences::instance()->setVerifyMediaTags(fVerifyMediaTags->isChecked());
-                    }
-                );
-
-                auto verifyMediaMenu = new QMenu(this);
-                verifyMediaMenu->setObjectName("VerifyMediaMenu");
-                verifyMediaMenu->setTitle("Verify Media Tags");
-
-                verifyMediaMenu->addAction(fVerifyMediaTags);
-                verifyMediaMenu->addAction(fVerifyMediaTitle);
-                verifyMediaMenu->addAction(fVerifyMediaDate);
-
                 fMenu->addAction( fExactMatchesOnlyAction );
                 fMenu->addAction( fTreatAsTVShowByDefaultAction );
                 fMenu->addMenu(deleteKnownMenu);
-                fMenu->addMenu(verifyMediaMenu);
                 setActive( true );
             }
             return fMenu;
         }
 
-        void CTransformMediaFileNamesPage::setActive( bool isActive )
-        {
-            CBasePage::setActive( isActive );
-            if ( isActive )
-            {
-                if (fTreatAsTVShowByDefaultAction)
-                    fTreatAsTVShowByDefaultAction->setChecked(NCore::CPreferences::instance()->getTreatAsTVShowByDefault());
-                if (fExactMatchesOnlyAction)
-                    fExactMatchesOnlyAction->setChecked(NCore::CPreferences::instance()->getExactMatchesOnly());
-                if (fDeleteEXE)
-                    fDeleteEXE->setChecked(NCore::CPreferences::instance()->deleteEXE());
-                if (fDeleteTXT)
-                    fDeleteTXT->setChecked(NCore::CPreferences::instance()->deleteTXT());
-                if (fDeleteBAK)
-                    fDeleteBAK->setChecked(NCore::CPreferences::instance()->deleteBAK());
-                if (fDeleteNFO)
-                    fDeleteNFO->setChecked(NCore::CPreferences::instance()->deleteNFO());
-                if (fDeleteCustom)
-                    fDeleteCustom->setChecked(NCore::CPreferences::instance()->deleteCustom());
-                if (fVerifyMediaDate)
-                    fVerifyMediaDate->setChecked(NCore::CPreferences::instance()->getVerifyMediaDate());
-                if (fVerifyMediaTitle)
-                    fVerifyMediaTitle->setChecked(NCore::CPreferences::instance()->getVerifyMediaTitle());
-                if (fVerifyMediaTags)
-                {
-                    fVerifyMediaTags->setChecked(NCore::CPreferences::instance()->getVerifyMediaTags());
-                    if ( fVerifyMediaTags )
-                        fVerifyMediaDate->setEnabled(fVerifyMediaTags->isChecked());
-                    if (fVerifyMediaTitle )
-                        fVerifyMediaTitle->setEnabled(fVerifyMediaTags->isChecked());
-                }
-            }
-            else
-            {
-                if (fExactMatchesOnlyAction)
-                    NCore::CPreferences::instance()->setExactMatchesOnly(fExactMatchesOnlyAction->isChecked());
-                if (fTreatAsTVShowByDefaultAction)
-                    NCore::CPreferences::instance()->setTreatAsTVShowByDefault(fTreatAsTVShowByDefaultAction->isChecked());
-                if (fDeleteEXE)
-                    NCore::CPreferences::instance()->setDeleteEXE(fDeleteEXE->isChecked());
-                if (fDeleteTXT)
-                    NCore::CPreferences::instance()->setDeleteTXT(fDeleteTXT->isChecked());
-                if (fDeleteBAK)
-                    NCore::CPreferences::instance()->setDeleteBAK(fDeleteBAK->isChecked());
-                if (fDeleteNFO)
-                    NCore::CPreferences::instance()->setDeleteNFO(fDeleteNFO->isChecked());
-                if (fDeleteCustom)
-                    NCore::CPreferences::instance()->setDeleteCustom(fDeleteCustom->isChecked());
-                if (fVerifyMediaDate)
-                    NCore::CPreferences::instance()->setVerifyMediaDate(fVerifyMediaDate->isChecked());
-                if (fVerifyMediaTitle)
-                    NCore::CPreferences::instance()->setVerifyMediaTitle(fVerifyMediaTitle->isChecked());
-                if (fVerifyMediaTags)
-                    NCore::CPreferences::instance()->setVerifyMediaTags(fVerifyMediaTags->isChecked());
-            }
-        }
-
-        void CTransformMediaFileNamesPage::slotMenuAboutToShow()
+        void CTransformPage::slotMenuAboutToShow()
         {
             fTreatAsTVShowByDefaultAction->setChecked( NCore::CPreferences::instance()->getTreatAsTVShowByDefault() );
             fExactMatchesOnlyAction->setChecked( NCore::CPreferences::instance()->getExactMatchesOnly() );
+            fDeleteEXE->setChecked(NCore::CPreferences::instance()->deleteEXE());
+            fDeleteTXT->setChecked(NCore::CPreferences::instance()->deleteTXT());
+            fDeleteBAK->setChecked(NCore::CPreferences::instance()->deleteBAK());
+            fDeleteNFO->setChecked(NCore::CPreferences::instance()->deleteNFO());
+            fDeleteCustom->setChecked(NCore::CPreferences::instance()->deleteCustom());
         }
     }
 }
