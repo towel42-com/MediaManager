@@ -140,15 +140,14 @@ namespace NMediaManager
             loadSettings();
             
             addUIComponents( fImpl->bifViewerTab, fImpl->bifViewerPage );
-            addUIComponents( fImpl->transformMediaFileNamesTab, fImpl->transformMediaFileNamesPage );
+            addUIComponents( fImpl->transformTab, fImpl->transformPage );
+            addUIComponents( fImpl->tagsTab, fImpl->tagsPage);
             addUIComponents( fImpl->makeMKVTab, fImpl->makeMKVPage );
             addUIComponents( fImpl->mergeSRTTab, fImpl->mergeSRTPage );
 
             new NSABUtils::CSelectFileUrl( this );
 
             QTimer::singleShot( 0, this, &CMainWindow::slotDirectoryChangedImmediate );
-            //QTimer::singleShot( 10, this, &CMainWindow::slotDirectoryChanged );
-
             QTimer::singleShot( 0, this, &CMainWindow::slotWindowChanged );
         }
 
@@ -231,7 +230,7 @@ namespace NMediaManager
             fImpl->fileName->addItems( NCore::CPreferences::instance()->getFileNames(), true );
 
             QSettings settings;
-            auto renamerPage = fImpl->tabWidget->indexOf( fImpl->transformMediaFileNamesTab );
+            auto renamerPage = fImpl->tabWidget->indexOf( fImpl->transformTab );
 
             fImpl->tabWidget->setCurrentIndex( settings.value( "LastFunctionalityPage", renamerPage ).toInt() );
         }
@@ -343,26 +342,6 @@ namespace NMediaManager
             if ( dlg.exec() == QDialog::Accepted )
             {
             }
-        }
-
-        bool CMainWindow::isMergeSRTActive() const
-        {
-            return fImpl->tabWidget->currentWidget() == fImpl->mergeSRTTab;
-        }
-
-        bool CMainWindow::isMakeMKVActive() const
-        {
-            return fImpl->tabWidget->currentWidget() == fImpl->makeMKVTab;
-        }
-
-        bool CMainWindow::isTransformActive() const
-        {
-            return fImpl->tabWidget->currentWidget() == fImpl->transformMediaFileNamesTab;
-        }
-
-        bool CMainWindow::isBIFViewerActive() const
-        {
-            return fImpl->tabWidget->currentWidget() == fImpl->bifViewerTab;
         }
 
         bool CMainWindow::canRun() const

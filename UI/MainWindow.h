@@ -84,10 +84,6 @@ namespace NMediaManager
             void validateRunAction();
 
             bool canRun() const;
-            bool isTransformActive() const;
-            bool isMergeSRTActive() const;
-            bool isMakeMKVActive() const;
-            bool isBIFViewerActive() const;
 
             void loadSettings();
             void saveSettings();
