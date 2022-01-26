@@ -404,13 +404,16 @@ namespace NMediaManager
             if ( releaseDate.isEmpty() ) // we are searching for a release date, and none was found
                 return false;
 
+            if ( !fExactMatchOnly )
+                return true;
+
             bool searchAOK;
             auto searchReleaseYear = this->releaseYear( &searchAOK );
             bool foundAOK;
             auto foundReleaseYear = releaseYear( releaseDate, &foundAOK );
             if ( searchAOK != foundAOK )
                 return false;
-            return searchReleaseYear == foundReleaseYear;
+            return (searchReleaseYear == foundReleaseYear);
         }
 
         bool SSearchTMDBInfo::isMatchingName( const QString &name ) const
