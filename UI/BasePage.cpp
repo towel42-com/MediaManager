@@ -316,7 +316,7 @@ namespace NMediaManager
             if ( !extended && separator )
                 delete separator;
 
-            if ( fModel->showMediaItems() )
+            if ( fModel->showMediaItems() && fModel->isMediaFile( idx ) )
             {
                 retVal->addSeparator();
                 retVal->addAction( tr( "Set Tags..." ),
@@ -324,14 +324,11 @@ namespace NMediaManager
                 {
                     editMediaTags( idx );
                 } );
-                if ( fModel->fileInfo( idx ).isFile() )
+                retVal->addAction( tr( "Auto Set Tags from File Name..." ),
+                                    [ idx, this ]()
                 {
-                    retVal->addAction( tr( "Autoset Tags from File Name..." ),
-                                       [ idx, this ]()
-                    {
-                        fModel->autoSetMediaTags( idx );
-                    } );
-                }
+                    fModel->autoSetMediaTags( idx );
+                } );
             }
 
             if ( !retVal->defaultAction() && openLocationAction )
