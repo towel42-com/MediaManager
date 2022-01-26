@@ -95,7 +95,7 @@ namespace NMediaManager
 
         QString CMergeSRTPage::actionErrorName() const
         {
-            return tr( "Error While Merging SRT file into MKV:" );
+            return tr( "Error while Merging SRT file into MKV:" );
         }
     }
 }

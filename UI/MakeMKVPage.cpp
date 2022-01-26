@@ -78,7 +78,7 @@ namespace NMediaManager
 
         QString CMakeMKVPage::actionErrorName() const
         {
-            return tr( "Error While Creating MKV:" );
+            return tr( "Error while Creating MKV:" );
         }
 
         void CMakeMKVPage::postProcessLog( const QString & string )
