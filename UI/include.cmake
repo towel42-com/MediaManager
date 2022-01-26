@@ -29,7 +29,8 @@ set(qtproject_SRCS
     SelectTMDB.cpp
     SetTags.cpp
     ProcessConfirm.cpp
-    TransformMediaFileNamesPage.cpp
+    TagsPage.cpp
+    TransformPage.cpp
 )
 
 set(qtproject_H
@@ -41,7 +42,8 @@ set(qtproject_H
     SelectTMDB.h
     SetTags.h
     ProcessConfirm.h
-    TransformMediaFileNamesPage.h
+    TagsPage.h
+    TransformPage.h
 )
 
 set(project_H
@@ -57,7 +59,7 @@ set(qtproject_UIS
 )
 
 set(qtproject_QRC
-    application.qrc
+    resources/application.qrc
 )
 
 file(GLOB qtproject_QRC_SOURCES "resources/*")
