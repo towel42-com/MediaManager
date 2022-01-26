@@ -26,21 +26,49 @@
 #include <QString>
 #include <unordered_map>
 #include <unordered_set>
+#include <QVariant>
+#include <memory>
 class QFileInfo;
 namespace NMediaManager
 {
     namespace NCore
     {
+        struct SLanguageInfo;
+        struct SMultLangInfo
+        {
+            SMultLangInfo(std::shared_ptr< SLanguageInfo > lang, int index, int size) :
+                fLanguage(lang),
+                fIndex(index),
+                fSize(size)
+            {
+            }
+            std::shared_ptr< SLanguageInfo > fLanguage;
+            int fIndex{ -1 };
+            int fSize{ -1 };
+        };
+
         struct SLanguageInfo
         {
+            SLanguageInfo();
+            SLanguageInfo(const QFileInfo & path);
             SLanguageInfo( const QString & path );
-            SLanguageInfo( const QFileInfo & path );
+            SLanguageInfo(const QString & isoCode, const QString & country);
+
+            static SLanguageInfo fromIDXFile(const QString & path);
+            static SLanguageInfo fromIDXFile(const QFileInfo & path);
+
+            bool isNameBasedLangFile() const; // if the filename wasnt of the form XX_Language.srt, but rather basename-xx_yy.srt or basename.xx.srt
+            QString baseName() const; // when the path sent in is a name based lang file, return basename from above
 
             QString language() const { return fLanguage; }
             QString displayName() const;
             bool isForced() const { return fIsForced; }
             bool isSDH() const { return fIsSDH; }
             QString isoCode() const;
+
+            bool isMultiLanguage() const { return !fMultiLanguageList.empty(); }
+            QString allLanguages() const;
+            std::unordered_map< QString, std::vector< SMultLangInfo > > allLanguageInfos() const { return fMultiLanguageList; }
 
             // when the iso code/language cant be determined use this
             // this happens when the following happens
@@ -53,14 +81,18 @@ namespace NMediaManager
             bool usingDefault() const { return fUsingDefault; }
             bool knownLanguage() const { return !usingDefault(); }
             static QString prettyPrintISOCode( const QString & isoCode );
+            bool operator==(const SLanguageInfo & rhs) const;
+            bool operator!=(const SLanguageInfo & rhs) const { return !operator==(rhs); }
         private:
             bool isKnownLanguage( const QString & lang ) const;
+            void computeLanguages( const QFileInfo & fi );
             void computeLanguage();
             void computeLanguage( const QString & langName );
 
             static void setupMaps();
 
             QString fFileName;
+            QString fBaseName;
             QString fISOCode;
             QString fLanguage;
             QString fCountry;
@@ -69,10 +101,14 @@ namespace NMediaManager
             QString fDefaultISOCode{ "en_US" };
             bool fUsingDefault{ false };
 
+            std::unordered_map< QString, std::vector< SMultLangInfo > > fMultiLanguageList; // langinfo, index, numtimestamps
+
             static std::unordered_map< QString, std::pair< QString, QString > > sLangMap;
             static std::unordered_map< QString, std::pair< QString, std::unordered_set< QString > > > sPrimToSecondaryMap;
             static std::unordered_map< QString, std::pair< QString, QString > > sNameToCodeMap;
         };
+
+        Q_DECLARE_METATYPE(SLanguageInfo);
     }
 }
 QDebug operator<<( QDebug debug, const NMediaManager::NCore::SLanguageInfo & info );
