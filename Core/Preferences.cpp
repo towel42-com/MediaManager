@@ -286,7 +286,18 @@ namespace NMediaManager
         {
             QSettings settings;
             settings.beginGroup( "Transform" );
-            static auto defaultValues = QStringList( { "#recycle", "#recycler", "extras" } );
+            static auto defaultValues = QStringList( 
+                { 
+                    "#recycle", 
+                    "#recycler", 
+                    "extra(s)?",
+                    "trailer(s)?",
+                    "deleted scene(s)?",
+                    "interview(s)?",
+                    "featurette(s)?",
+                    "sample(s)?"
+                } 
+            );
             return settings.value( "SkippedDirs", defaultValues ).toStringList();
         }
 
@@ -565,8 +576,8 @@ namespace NMediaManager
                 << "WEB"
                 << "SDR"
                 << "Atmos"
-                << "-RUMOUR"
-                << "-PECULATE"
+                << "RUMOUR"
+                << "PECULATE"
                 << "2.0.h.264"
                 << "2.0.h.265"
                 << "h.264"
@@ -584,8 +595,37 @@ namespace NMediaManager
                 << "TrollHD"
                 << "Troll"
                 << "nogrp"
-                << "-CM"
+                << "CM"
                 << "NF"
+                << "REMASTERED"
+                << "PROPER"
+                << "DC"
+                << "AAC"
+                << "DSNP"
+                << "10bit"
+                << "HDR"
+                << "DTS-HD"
+                << "MA"
+                << "5.1"
+                << "SWTYBLZ"
+                << "YIFY"
+                << "ATVP"
+                << "NAISU"
+                << "CUPCAKES"
+                << "MoviesFD"
+                << "SPARKS"
+                << "DD5.1"
+                << "REMUX"
+                << "BRRip"
+                << "PLEW"
+                << "Japhson"
+                << "DTS"
+                << "FGT"
+                << "CCBB"
+                << "IAMABLE"
+                << "UHD"
+                << "TrueHD"
+                << "7.1"
                 ;
 
             QSettings settings;
@@ -633,6 +673,7 @@ namespace NMediaManager
                 << "Directors Cut"
                 << "Director's Cut"
                 << "Director"
+                << "Unrated"
                 ;
 
             QSettings settings;
@@ -659,7 +700,12 @@ namespace NMediaManager
 
         QVariantMap CPreferences::getKnownAbbreviations() const
         {
-            QVariantMap knownAbbreviations( { { "Dont", "Don't" } }  );
+            QVariantMap knownAbbreviations( 
+                { 
+                    { "Dont", "Don't" } 
+                    ,{ "NY", "New York" }
+                }
+            );
             QSettings settings;
             settings.beginGroup( "Transform" );
             return settings.value( "KnownAbbreviations", knownAbbreviations ).toMap();
