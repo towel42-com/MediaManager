@@ -138,7 +138,13 @@ namespace NMediaManager
                 retVal = retVal.left( pos + 1 );
             if ( stripInnerSeparators )
             {
-                retVal.replace( QRegularExpression( R"(\.|(\s{2,})|-|\:|_)" ), "" );
+                retVal.replace( QRegularExpression( R"(\:)" ), "" );
+                QString prev;
+                while ( prev != retVal )
+                {
+                    prev = retVal;
+                    retVal.replace( QRegularExpression( R"(\s+|-|_|\.)" ), " " );
+                }
                 retVal = retVal.trimmed();
             }
             return retVal;
