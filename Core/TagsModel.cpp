@@ -34,6 +34,7 @@
 #include <QTreeView>
 #include <QApplication>
 #include <QVariant>
+#include <QLocale>
 
 #include <QDirIterator>
 #include "TransformResult.h"
@@ -92,39 +93,13 @@ namespace NMediaManager
                 QStringList msgs;
                 if (NCore::CPreferences::instance()->getVerifyMediaTags() && canShowMediaInfo() && fileInfo.isFile())
                 {
-                    auto tagName = index(idx.row(), getMediaTitleLoc(), idx.parent()).data().toString();
-                    auto tagYear = index(idx.row(), getMediaDateLoc(), idx.parent()).data().toString();
-                    if (NCore::CPreferences::instance()->getVerifyMediaTitle())
-                    {
-                        if (tagName.isEmpty())
-                        {
-                            retVal.first = EItemStatus::eError;
-                            msgs << tr("File is missing 'Title' Meta Tag");
-                        }
-                        else if ( tagName != STransformResult::cleanFileName(fileInfo) )
-                        {
-                            retVal.first = EItemStatus::eWarning;
-                            msgs << tr("File's basename '%1' does not match 'Title' Meta Tag '%2'").arg(fileInfo.completeBaseName()).arg(tagName);
-                        }
-                    }
-                    if (NCore::CPreferences::instance()->getVerifyMediaDate())
-                    {
-                        if (tagYear.isEmpty())
-                        {
-                            retVal.first = EItemStatus::eError;
-                            msgs << tr("File is missing 'Year' Meta Tag");
-                        }
-                        else
-                        {
-                            auto mediaYear = getMediaYear(fileInfo);
-                            if (tagYear != mediaYear)
-                            {
-                                retVal.first = EItemStatus::eWarning;
-                                msgs << tr("File's 'Date' Media Tag '%1' does not match the expected year of '%2'").arg(tagYear).arg(mediaYear);
-                            }
-                        }
-                    }
+                    auto titleStatus = validateTitle( idx );
+                    msgs << titleStatus.second;
+                    auto dateStatus = validateDate( idx );
+                    msgs << dateStatus.second;
+                    retVal.first = std::max( titleStatus.first, dateStatus.first );
                 }
+                msgs.removeAll( QString() );
                 retVal.second = msgs.join("\n");
             }
             return retVal;
@@ -178,6 +153,46 @@ namespace NMediaManager
 
         void CTagsModel::attachTreeNodes(QStandardItem * /*nextParent*/, QStandardItem *& /*prevParent*/, const STreeNode & /*treeNode*/)
         {
+        }
+
+        TItemStatus CTagsModel::validateTitle( const QModelIndex & idx ) const
+        {
+            auto fileInfo = this->fileInfo( idx );
+            auto tag = index( idx.row(), getMediaTitleLoc(), idx.parent() ).data().toString();
+            if ( NCore::CPreferences::instance()->getVerifyMediaTitle() )
+            {
+                if ( tag.isEmpty() )
+                {
+                    return TItemStatus( EItemStatus::eError, tr( "File is missing 'Title' Meta Tag" ) );
+                }
+
+                auto mediaDate = getMediaDate( fileInfo );
+                auto expr = NCore::CPreferences::instance()->getVerifyMediaTitleExpr( fileInfo, mediaDate );
+                if ( !expr.match( tag ).hasMatch() )
+                {
+                    return TItemStatus( EItemStatus::eWarning, tr( "Filename '%1' does not match 'Title' Meta Tag requirement '%3' - '%4'" ).arg( fileInfo.fileName() ).arg( NCore::CPreferences::instance()->getVerifyMediaTitle() ).arg( tag ) );
+                }
+            }
+            return TItemStatus( EItemStatus::eOK, QString() );
+        }
+
+        TItemStatus CTagsModel::validateDate( const QModelIndex & idx ) const
+        {
+            auto fileInfo = this->fileInfo( idx );
+            auto tag = index( idx.row(), getMediaDateLoc(), idx.parent() ).data().toString();
+
+            if ( NCore::CPreferences::instance()->getVerifyMediaDate() )
+            {
+                auto mediaDate = getMediaDate( fileInfo );
+                auto expr = NCore::CPreferences::instance()->getVerifyMediaDateExpr( fileInfo, mediaDate );
+
+                if ( !expr.match( tag ).hasMatch() )
+                {
+                    QLocale locale;
+                    return TItemStatus( EItemStatus::eWarning, tr( "File's 'Date' Media Tag '%1' does not match the requiment of '%2' - '%3'" ).arg( tag ).arg( locale.toString( mediaDate ) ) );
+                }
+            }
+            return TItemStatus( EItemStatus::eOK, QString() );
         }
 
     }

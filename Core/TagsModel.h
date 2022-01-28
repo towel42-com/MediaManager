@@ -53,6 +53,9 @@ namespace NMediaManager
             virtual void attachTreeNodes(QStandardItem * nextParent, QStandardItem *& prevParent, const STreeNode & treeNode) override;
             virtual std::optional< TItemStatus > computeItemStatus(const QModelIndex & idx ) const override;
 
+            TItemStatus validateTitle( const QModelIndex & idx ) const;
+            TItemStatus validateDate( const QModelIndex & idx ) const;
+
             virtual bool showMediaItems() const override { return false; };
             virtual int getMediaTitleLoc() const override;
             virtual int getMediaLengthLoc() const override;
