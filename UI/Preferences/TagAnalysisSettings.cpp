@@ -20,10 +20,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "TransformationSettings.h"
+#include "TagAnalysisSettings.h"
 #include "Core/Preferences.h"
 
-#include "ui_TransformationSettings.h"
+#include "ui_TagAnalysisSettings.h"
+
+#include "SABUtils/WidgetEnabler.h"
+#include "SABUtils/UtilityModels.h"
+#include "SABUtils/QtUtils.h"
 
 #include <QSettings>
 #include <QStringListModel>
@@ -31,42 +35,40 @@
 #include <QFileDialog>
 #include <QMessageBox>
 
-#include "SABUtils/ButtonEnabler.h"
-#include "SABUtils/UtilityModels.h"
-#include "SABUtils/QtUtils.h"
-
 namespace NMediaManager
 {
     namespace NUi
     {
-        CTransformationSettings::CTransformationSettings( QWidget * parent )
+        CTagAnalysisSettings::CTagAnalysisSettings( QWidget * parent )
             : CBasePrefPage( parent ),
-            fImpl( new Ui::CTransformationSettings )
+            fImpl( new Ui::CTagAnalysisSettings )
         {
             fImpl->setupUi( this );
+            new NSABUtils::CWidgetEnabler( fImpl->verifyMediaTitle, fImpl->verifyMediaTitleExpr );
+            new NSABUtils::CWidgetEnabler( fImpl->verifyMediaDate, fImpl->verifyMediaDateExpr );
         }
 
-        CTransformationSettings::~CTransformationSettings()
+        CTagAnalysisSettings::~CTagAnalysisSettings()
         {
         }
 
 
-        void CTransformationSettings::load()
+        void CTagAnalysisSettings::load()
         {
-            fImpl->treatAsTVShowByDefault->setChecked( NCore::CPreferences::instance()->getTreatAsTVShowByDefault() );
-            fImpl->exactMatchesOnly->setChecked( NCore::CPreferences::instance()->getExactMatchesOnly() );
-            fImpl->verifyMediaTags->setChecked(NCore::CPreferences::instance()->getVerifyMediaTags());
-            fImpl->verifyMediaTitle->setChecked(NCore::CPreferences::instance()->getVerifyMediaTitle());
-            fImpl->verifyMediaDate->setChecked(NCore::CPreferences::instance()->getVerifyMediaDate());
+            fImpl->verifyMediaTags->setChecked( NCore::CPreferences::instance()->getVerifyMediaTags() );
+            fImpl->verifyMediaTitle->setChecked( NCore::CPreferences::instance()->getVerifyMediaTitle() );
+            fImpl->verifyMediaTitleExpr->setText( NCore::CPreferences::instance()->getVerifyMediaTitleExpr() );
+            fImpl->verifyMediaDate->setChecked( NCore::CPreferences::instance()->getVerifyMediaDate() );
+            fImpl->verifyMediaDateExpr->setText( NCore::CPreferences::instance()->getVerifyMediaDateExpr() );
         }
 
-        void CTransformationSettings::save()
+        void CTagAnalysisSettings::save()
         {
-            NCore::CPreferences::instance()->setTreatAsTVShowByDefault( fImpl->treatAsTVShowByDefault->isChecked() );
-            NCore::CPreferences::instance()->setExactMatchesOnly(fImpl->exactMatchesOnly->isChecked());
             NCore::CPreferences::instance()->setVerifyMediaTags(fImpl->verifyMediaTags->isChecked());
             NCore::CPreferences::instance()->setVerifyMediaTitle(fImpl->verifyMediaTitle->isChecked());
+            NCore::CPreferences::instance()->setVerifyMediaTitleExpr( fImpl->verifyMediaTitleExpr->text() );
             NCore::CPreferences::instance()->setVerifyMediaDate(fImpl->verifyMediaDate->isChecked());
+            NCore::CPreferences::instance()->setVerifyMediaDateExpr( fImpl->verifyMediaDateExpr->text() );
         }
     }
 }

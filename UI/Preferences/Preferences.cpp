@@ -35,16 +35,10 @@
 #include "RemoveFromPaths.h"
 #include "SkippedPaths.h"
 #include "TransformationSettings.h"
+#include "TagAnalysisSettings.h"
 #include "TVShowSettings.h"
 
 #include <QSettings>
-//#include <QStringListModel>
-//#include <QInputDialog>
-//#include <QFileDialog>
-//#include <QMessageBox>
-//
-//#include "SABUtils/ButtonEnabler.h"
-//#include "SABUtils/UtilityModels.h"
 #include "SABUtils/QtUtils.h"
 
 namespace NMediaManager
@@ -122,6 +116,7 @@ namespace NMediaManager
             addPage( new CSkippedPaths );
             addPage( new CTransformationSettings );
             addPage( new CTVShowSettings );
+            addPage( new CTagAnalysisSettings );
         }
 
         void CPreferences::addPage( CBasePrefPage * page )

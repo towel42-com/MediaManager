@@ -1,33 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>NMediaManager::NUi::CTransformationSettings</class>
- <widget class="QWidget" name="NMediaManager::NUi::CTransformationSettings">
+ <class>NMediaManager::NUi::CTagAnalysisSettings</class>
+ <widget class="QWidget" name="NMediaManager::NUi::CTagAnalysisSettings">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>563</width>
+    <height>500</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
-   <item>
-    <widget class="QCheckBox" name="treatAsTVShowByDefault">
-     <property name="text">
-      <string>Treat as TV Show by default? (when auto determine fails)</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QCheckBox" name="exactMatchesOnly">
-     <property name="text">
-      <string>Exact Matches Only?</string>
-     </property>
-    </widget>
-   </item>
+  <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
     <widget class="QGroupBox" name="verifyMediaTags">
      <property name="title">
@@ -36,18 +22,31 @@
      <property name="checkable">
       <bool>true</bool>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout_2">
-      <item>
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="verifyMediaTitleExpr"/>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="verifyMediaDateExpr"/>
+      </item>
+      <item row="1" column="0">
+       <widget class="QCheckBox" name="verifyMediaDate">
+        <property name="text">
+         <string>Verify Media Date is not empty or incorrect?</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
        <widget class="QCheckBox" name="verifyMediaTitle">
         <property name="text">
          <string>Verify Media Title is not empty or incorrect?</string>
         </property>
        </widget>
       </item>
-      <item>
-       <widget class="QCheckBox" name="verifyMediaDate">
+      <item row="2" column="0" colspan="2">
+       <widget class="QLabel" name="label">
         <property name="text">
-         <string>Verify Media Date is not empty or incorrect?</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In the verification editors, you can use the following tags:&lt;/p&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&amp;lt;filename&amp;gt;: The full filename, basename and extension &lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&amp;lt;basename&amp;gt;: The complete basename of the file &lt;br/&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Note:&lt;/span&gt; file.xyz.mkv will match file.xyz &lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&amp;lt;extension&amp;gt;: The last extension of the file excluding the period &lt;br/&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Note:&lt;/span&gt; file.xyz.mkv will match mkv &lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&amp;lt;date&amp;gt;: The release date of the media &lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&amp;lt;year&amp;gt;: The release year of media&lt;/li&gt;&lt;/ul&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&amp;lt;month&amp;gt;: The release rmonth of the media&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&amp;lt;day&amp;gt;: The release day of the media&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Note:&lt;/span&gt; The date is is determined by looking at the file name, or the parent directory.&lt;br/&gt;Multiple formats will be attempted, any match will be verified for the &amp;lt;date&amp;gt; field. If the tag only &lt;br/&gt;contains year or month/year a partial year, that will register as verified&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
        </widget>
       </item>
@@ -55,17 +54,16 @@
     </widget>
    </item>
    <item>
-    <spacer name="verticalSpacer_7">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Tags to Show:</string>
      </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>231</height>
-      </size>
-     </property>
-    </spacer>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <widget class="QListView" name="tagsToShow"/>
+      </item>
+     </layout>
+    </widget>
    </item>
   </layout>
  </widget>

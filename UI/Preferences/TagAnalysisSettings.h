@@ -20,8 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef __UI_TRANSFORMATIONSETTINGS_H
-#define __UI_TRANSFORMATIONSETTINGS_H
+#ifndef __UI_TAGANALYSISSETTINGS_H
+#define __UI_TAGANALYSISSETTINGS_H
 
 #include "BasePrefPage.h"
 
@@ -37,23 +37,23 @@ namespace NMediaManager
 {
     namespace NUi
     {
-        namespace Ui { class CTransformationSettings; };
-        class CTransformationSettings : public CBasePrefPage
+        namespace Ui { class CTagAnalysisSettings; };
+        class CTagAnalysisSettings : public CBasePrefPage
         {
             Q_OBJECT
         public:
-            CTransformationSettings( QWidget * parent = 0 );
-            ~CTransformationSettings();
+            CTagAnalysisSettings( QWidget * parent = 0 );
+            ~CTagAnalysisSettings();
 
             void load();
             void save();
             virtual QStringList pageName() const override
             {
-                return QStringList( { "Transformation Settings" } );
+                return QStringList( { "Tag Analysis Settings" } );
             }
         public Q_SLOTS:
         private:
-            std::unique_ptr< Ui::CTransformationSettings > fImpl;
+            std::unique_ptr< Ui::CTagAnalysisSettings > fImpl;
         };
     }
 }

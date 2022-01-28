@@ -32,6 +32,7 @@ set(qtproject_SRCS
     Preferences.cpp
     RemoveFromPaths.cpp
     SkippedPaths.cpp
+    TagAnalysisSettings.cpp
     TransformationSettings.cpp
     TVShowSettings.cpp
 )
@@ -48,6 +49,7 @@ set(qtproject_H
     Preferences.h
     RemoveFromPaths.h
     SkippedPaths.h
+    TagAnalysisSettings.h
     TransformationSettings.h
     TVShowSettings.h
 )
@@ -66,6 +68,7 @@ set(qtproject_UIS
     Preferences.ui
     RemoveFromPaths.ui
     SkippedPaths.ui
+    TagAnalysisSettings.ui
     TransformationSettings.ui
     TVShowSettings.ui   
 )

@@ -55,18 +55,12 @@ namespace NMediaManager
         {
             fImpl->treatAsTVShowByDefault->setChecked( NCore::CPreferences::instance()->getTreatAsTVShowByDefault() );
             fImpl->exactMatchesOnly->setChecked( NCore::CPreferences::instance()->getExactMatchesOnly() );
-            fImpl->verifyMediaTags->setChecked(NCore::CPreferences::instance()->getVerifyMediaTags());
-            fImpl->verifyMediaTitle->setChecked(NCore::CPreferences::instance()->getVerifyMediaTitle());
-            fImpl->verifyMediaDate->setChecked(NCore::CPreferences::instance()->getVerifyMediaDate());
         }
 
         void CTransformationSettings::save()
         {
             NCore::CPreferences::instance()->setTreatAsTVShowByDefault( fImpl->treatAsTVShowByDefault->isChecked() );
             NCore::CPreferences::instance()->setExactMatchesOnly(fImpl->exactMatchesOnly->isChecked());
-            NCore::CPreferences::instance()->setVerifyMediaTags(fImpl->verifyMediaTags->isChecked());
-            NCore::CPreferences::instance()->setVerifyMediaTitle(fImpl->verifyMediaTitle->isChecked());
-            NCore::CPreferences::instance()->setVerifyMediaDate(fImpl->verifyMediaDate->isChecked());
         }
     }
 }

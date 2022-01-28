@@ -29,32 +29,6 @@
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="verifyMediaTags">
-     <property name="title">
-      <string>Verify Media Tags?</string>
-     </property>
-     <property name="checkable">
-      <bool>true</bool>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_2">
-      <item>
-       <widget class="QCheckBox" name="verifyMediaTitle">
-        <property name="text">
-         <string>Verify Media Title is not empty or incorrect?</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="verifyMediaDate">
-        <property name="text">
-         <string>Verify Media Date is not empty or incorrect?</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
     <spacer name="verticalSpacer_7">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
