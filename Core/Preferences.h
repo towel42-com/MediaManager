@@ -28,6 +28,7 @@
 #include <QVariant>
 #include <QMap>
 #include <QHash>
+#include <QRegularExpression>
 class QFileInfo;
 
 namespace NMediaManager
@@ -89,8 +90,16 @@ namespace NMediaManager
             bool getVerifyMediaTitle() const;
             void setVerifyMediaTitle(bool value);
 
+            QString getVerifyMediaTitleExpr() const;
+            QRegularExpression getVerifyMediaTitleExpr( const QFileInfo & fi, const QDate & date ) const; // fills in the fields and returns a regularExpression
+            void setVerifyMediaTitleExpr( const QString & value );
+
             bool getVerifyMediaDate() const;
             void setVerifyMediaDate(bool value);
+
+            QString getVerifyMediaDateExpr() const;
+            QRegularExpression getVerifyMediaDateExpr( const QFileInfo & fi, const QDate & date ) const;
+            void setVerifyMediaDateExpr( const QString & value );
 
             QStringList getCustomPathsToDelete() const;
             void setCustomPathsToDelete( const QStringList & paths );

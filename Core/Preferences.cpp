@@ -121,7 +121,7 @@ namespace NMediaManager
             switch (status)
             {
             case EItemStatus::eOK:
-                defaultColor = background ? Qt::white : Qt::black;
+                defaultColor = QColor();
                 break;
             case EItemStatus::eError:
                 defaultColor = background ? Qt::red : Qt::black;
@@ -349,6 +349,45 @@ namespace NMediaManager
             settings.setValue("VerifyMediaTitle", value);
         }
 
+        QString replaceFileInfo( const QFileInfo & fi, const QDate & date, const QString & expr )
+        {
+            QString retVal = expr;
+            retVal = retVal.replace( "<filename>", fi.fileName() );
+            retVal = retVal.replace( "<basename>", fi.completeBaseName() );
+            retVal = retVal.replace( "<extension>", fi.suffix() );
+
+            if ( date.isValid() )
+            {
+                retVal = retVal.replace( "<year>", date.toString( "(yy|yyyy)" ) );
+                retVal = retVal.replace( "<month>", date.toString( "(M|MM|MMM|MMMM)" ) );
+                retVal = retVal.replace( "<day>", date.toString( "(d|dd|ddd|dddd)" ) );
+                
+                auto dateFormat = "(" + NSABUtils::getDateFormats( { true, false }  ).join( "|" ) + ")";
+                retVal = retVal.replace( "<date>", dateFormat );
+            }
+            return retVal;
+        }
+
+        QRegularExpression CPreferences::getVerifyMediaTitleExpr( const QFileInfo & fi, const QDate & date ) const
+        {
+            auto regExStr = replaceFileInfo( fi, date, getVerifyMediaTitleExpr() );
+            return QRegularExpression( regExStr );
+        }
+
+        QString CPreferences::getVerifyMediaTitleExpr() const
+        {
+            QSettings settings;
+            settings.beginGroup( "Transform" );
+            return settings.value( "VerifyMediaTitleExpr", "<basename>" ).toString();
+        }
+
+        void CPreferences::setVerifyMediaTitleExpr( const QString & value )
+        {
+            QSettings settings;
+            settings.beginGroup( "Transform" );
+            settings.setValue( "VerifyMediaTitleExpr", value );
+        }
+
         bool CPreferences::getVerifyMediaDate() const
         {
             QSettings settings;
@@ -361,6 +400,26 @@ namespace NMediaManager
             QSettings settings;
             settings.beginGroup("Transform");
             settings.setValue("VerifyMediaDate", value);
+        }
+
+        QString CPreferences::getVerifyMediaDateExpr() const
+        {
+            QSettings settings;
+            settings.beginGroup( "Transform" );
+            return settings.value( "VerifyMediaTitleExpr", R"(<year>|<month>[-\/]<year>|<month>[-\/]<day>[-\/]<year>)" ).toString();
+        }
+
+        void CPreferences::setVerifyMediaDateExpr( const QString & value )
+        {
+            QSettings settings;
+            settings.beginGroup( "Transform" );
+            settings.setValue( "VerifyMediaDateExpr", value );
+        }
+
+        QRegularExpression CPreferences::getVerifyMediaDateExpr( const QFileInfo & fi, const QDate & date ) const
+        {
+            auto regExStr = replaceFileInfo( fi, date, getVerifyMediaDateExpr() );
+            return QRegularExpression( regExStr );
         }
 
         void CPreferences::setDeleteCustom(bool value)
@@ -626,6 +685,7 @@ namespace NMediaManager
                 << "UHD"
                 << "TrueHD"
                 << "7.1"
+                << "TERMiNAL"
                 ;
 
             QSettings settings;
