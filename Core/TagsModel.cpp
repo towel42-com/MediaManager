@@ -76,35 +76,6 @@ namespace NMediaManager
             (void)item;
         }
 
-        std::optional< TItemStatus > CTagsModel::computeItemStatus(const QModelIndex & idx) const
-        {
-            if (isRootPath(idx))
-                return {};
-
-            if ( idx.column() < firstMediaItemColumn() || idx.column() > lastMediaItemColumn() )
-                return {};
-
-            TItemStatus retVal = { NCore::EItemStatus::eOK, QString() };
-            auto fileInfo = this->fileInfo(idx);
-
-            if (isMediaFile(fileInfo))
-            {
-                auto path = fileInfo.absoluteFilePath();
-                QStringList msgs;
-                if (NCore::CPreferences::instance()->getVerifyMediaTags() && canShowMediaInfo() && fileInfo.isFile())
-                {
-                    auto titleStatus = validateTitle( idx );
-                    msgs << titleStatus.second;
-                    auto dateStatus = validateDate( idx );
-                    msgs << dateStatus.second;
-                    retVal.first = std::max( titleStatus.first, dateStatus.first );
-                }
-                msgs.removeAll( QString() );
-                retVal.second = msgs.join("\n");
-            }
-            return retVal;
-        }
-
         std::list< NMediaManager::NCore::SDirNodeItem > CTagsModel::addAdditionalItems(const QFileInfo & fileInfo) const
         {
             if (canShowMediaInfo())
@@ -155,45 +126,67 @@ namespace NMediaManager
         {
         }
 
-        TItemStatus CTagsModel::validateTitle( const QModelIndex & idx ) const
+        std::optional< TItemStatus > CTagsModel::computeItemStatus( const QModelIndex & idx ) const
         {
-            auto fileInfo = this->fileInfo( idx );
-            auto tag = index( idx.row(), getMediaTitleLoc(), idx.parent() ).data().toString();
-            if ( NCore::CPreferences::instance()->getVerifyMediaTitle() )
-            {
-                if ( tag.isEmpty() )
-                {
-                    return TItemStatus( EItemStatus::eError, tr( "File is missing 'Title' Meta Tag" ) );
-                }
+            if ( isRootPath( idx ) )
+                return {};
 
-                auto mediaDate = getMediaDate( fileInfo );
-                auto expr = NCore::CPreferences::instance()->getVerifyMediaTitleExpr( fileInfo, mediaDate );
-                if ( !expr.match( tag ).hasMatch() )
+            if ( !NCore::CPreferences::instance()->getVerifyMediaTags() )
+                return {};
+
+            if ( !canShowMediaInfo() )
+                return {};
+
+            auto fileInfo = this->fileInfo( idx );
+            if ( !isMediaFile( fileInfo ) )
+                return {};
+
+            auto mediaDate = getMediaDate( fileInfo );
+
+            QRegularExpression regExp;
+            bool validate = false;
+            QString tagName;
+            QString expr;
+            if ( idx.column() == getMediaTitleLoc() )
+            {
+                validate = NCore::CPreferences::instance()->getVerifyMediaTitle() && !NCore::CPreferences::instance()->getVerifyMediaTitleExpr().isEmpty();
+                expr = NCore::CPreferences::instance()->getVerifyMediaTitleExpr();
+                regExp = NCore::CPreferences::instance()->getVerifyMediaTitleExpr( fileInfo, mediaDate );
+                tagName = tr( "Title" );
+            }
+            else if ( idx.column() == getMediaDateLoc() )
+            {
+                validate = NCore::CPreferences::instance()->getVerifyMediaDate() && !NCore::CPreferences::instance()->getVerifyMediaDateExpr().isEmpty();
+                expr = NCore::CPreferences::instance()->getVerifyMediaDateExpr();
+                regExp = NCore::CPreferences::instance()->getVerifyMediaDateExpr( fileInfo, mediaDate );
+                tagName = tr( "Date" );
+            }
+            else if ( idx.column() == getMediaCommentLoc() )
+            {
+                validate = NCore::CPreferences::instance()->getVerifyMediaComment() && !NCore::CPreferences::instance()->getVerifyMediaCommentExpr().isEmpty();
+                expr = NCore::CPreferences::instance()->getVerifyMediaCommentExpr();
+                regExp = NCore::CPreferences::instance()->getVerifyMediaCommentExpr( fileInfo, mediaDate );
+                tagName = tr( "Comment" );
+            }
+
+            if ( validate )
+            {
+                auto tag = idx.data().toString();
+                if ( !regExp.match( tag ).hasMatch() )
                 {
-                    return TItemStatus( EItemStatus::eWarning, tr( "Filename '%1' does not match 'Title' Meta Tag requirement '%3' - '%4'" ).arg( fileInfo.fileName() ).arg( NCore::CPreferences::instance()->getVerifyMediaTitle() ).arg( tag ) );
+                    if ( tag.isEmpty() )
+                        tag = QString( "<EMPTY>" ).toHtmlEscaped();
+
+                    auto msg = tr( "<p style='white-space:pre'>File <b>'%1'</b> does not meet <b>'%2'</b> Meta Tag requirement '%3' - Currently <b>'%4'</b></p>" )
+                        .arg( fileInfo.fileName() )
+                        .arg( tagName )
+                        .arg( expr.toHtmlEscaped() )
+                        .arg( tag );
+
+                    return TItemStatus( EItemStatus::eWarning, msg );
                 }
             }
-            return TItemStatus( EItemStatus::eOK, QString() );
+            return {};
         }
-
-        TItemStatus CTagsModel::validateDate( const QModelIndex & idx ) const
-        {
-            auto fileInfo = this->fileInfo( idx );
-            auto tag = index( idx.row(), getMediaDateLoc(), idx.parent() ).data().toString();
-
-            if ( NCore::CPreferences::instance()->getVerifyMediaDate() )
-            {
-                auto mediaDate = getMediaDate( fileInfo );
-                auto expr = NCore::CPreferences::instance()->getVerifyMediaDateExpr( fileInfo, mediaDate );
-
-                if ( !expr.match( tag ).hasMatch() )
-                {
-                    QLocale locale;
-                    return TItemStatus( EItemStatus::eWarning, tr( "File's 'Date' Media Tag '%1' does not match the requiment of '%2' - '%3'" ).arg( tag ).arg( locale.toString( mediaDate ) ) );
-                }
-            }
-            return TItemStatus( EItemStatus::eOK, QString() );
-        }
-
     }
 }
