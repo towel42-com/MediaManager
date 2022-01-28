@@ -101,6 +101,13 @@ namespace NMediaManager
             QRegularExpression getVerifyMediaDateExpr( const QFileInfo & fi, const QDate & date ) const;
             void setVerifyMediaDateExpr( const QString & value );
 
+            bool getVerifyMediaComment() const;
+            void setVerifyMediaComment( bool value );
+
+            QString getVerifyMediaCommentExpr() const;
+            QRegularExpression getVerifyMediaCommentExpr( const QFileInfo & fi, const QDate & date ) const;
+            void setVerifyMediaCommentExpr( const QString & value );
+
             QStringList getCustomPathsToDelete() const;
             void setCustomPathsToDelete( const QStringList & paths );
 

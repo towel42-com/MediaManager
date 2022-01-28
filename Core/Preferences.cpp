@@ -335,6 +335,28 @@ namespace NMediaManager
             settings.setValue("VerifyMediaTags", value);
         }
 
+
+        QString replaceFileInfo( const QFileInfo & fi, const QDate & date, const QString & expr )
+        {
+            QString retVal = expr;
+
+            retVal = retVal.replace( "<EMPTY>", R"(^$)" );
+            retVal = retVal.replace( "<filename>", fi.fileName() );
+            retVal = retVal.replace( "<basename>", fi.completeBaseName() );
+            retVal = retVal.replace( "<extension>", fi.suffix() );
+
+            if ( date.isValid() )
+            {
+                retVal = retVal.replace( "<year>", date.toString( "(yy|yyyy)" ) );
+                retVal = retVal.replace( "<month>", date.toString( "(M|MM|MMM|MMMM)" ) );
+                retVal = retVal.replace( "<day>", date.toString( "(d|dd|ddd|dddd)" ) );
+
+                auto dateFormat = "(" + NSABUtils::getDateFormats( { true, false } ).join( "|" ) + ")";
+                retVal = retVal.replace( "<date>", date.toString( dateFormat ) );
+            }
+            return retVal;
+        }
+
         bool CPreferences::getVerifyMediaTitle() const
         {
             QSettings settings;
@@ -347,25 +369,6 @@ namespace NMediaManager
             QSettings settings;
             settings.beginGroup("Transform");
             settings.setValue("VerifyMediaTitle", value);
-        }
-
-        QString replaceFileInfo( const QFileInfo & fi, const QDate & date, const QString & expr )
-        {
-            QString retVal = expr;
-            retVal = retVal.replace( "<filename>", fi.fileName() );
-            retVal = retVal.replace( "<basename>", fi.completeBaseName() );
-            retVal = retVal.replace( "<extension>", fi.suffix() );
-
-            if ( date.isValid() )
-            {
-                retVal = retVal.replace( "<year>", date.toString( "(yy|yyyy)" ) );
-                retVal = retVal.replace( "<month>", date.toString( "(M|MM|MMM|MMMM)" ) );
-                retVal = retVal.replace( "<day>", date.toString( "(d|dd|ddd|dddd)" ) );
-                
-                auto dateFormat = "(" + NSABUtils::getDateFormats( { true, false }  ).join( "|" ) + ")";
-                retVal = retVal.replace( "<date>", date.toString( dateFormat ) );
-            }
-            return retVal;
         }
 
         QRegularExpression CPreferences::getVerifyMediaTitleExpr( const QFileInfo & fi, const QDate & date ) const
@@ -406,7 +409,7 @@ namespace NMediaManager
         {
             QSettings settings;
             settings.beginGroup( "Transform" );
-            return settings.value( "VerifyMediaTitleExpr", R"(<year>|<month>[-\/]<year>|<month>[-\/]<day>[-\/]<year>)" ).toString();
+            return settings.value( "VerifyMediaDateExpr", R"(<year>|<month>[-\/]<year>|<month>[-\/]<day>[-\/]<year>)" ).toString();
         }
 
         void CPreferences::setVerifyMediaDateExpr( const QString & value )
@@ -419,6 +422,40 @@ namespace NMediaManager
         QRegularExpression CPreferences::getVerifyMediaDateExpr( const QFileInfo & fi, const QDate & date ) const
         {
             auto regExStr = replaceFileInfo( fi, date, getVerifyMediaDateExpr() );
+            return QRegularExpression( regExStr );
+        }
+
+        bool CPreferences::getVerifyMediaComment() const
+        {
+            QSettings settings;
+            settings.beginGroup( "Transform" );
+            return settings.value( "VerifyMediaComment", true ).toBool();
+        }
+
+        void CPreferences::setVerifyMediaComment( bool value )
+        {
+            QSettings settings;
+            settings.beginGroup( "Transform" );
+            settings.setValue( "VerifyMediaComment", value );
+        }
+
+        QString CPreferences::getVerifyMediaCommentExpr() const
+        {
+            QSettings settings;
+            settings.beginGroup( "Transform" );
+            return settings.value( "VerifyMediaCommentExpr", R"(<EMPTY>)" ).toString();
+        }
+
+        void CPreferences::setVerifyMediaCommentExpr( const QString & value )
+        {
+            QSettings settings;
+            settings.beginGroup( "Transform" );
+            settings.setValue( "VerifyMediaCommentExpr", value );
+        }
+
+        QRegularExpression CPreferences::getVerifyMediaCommentExpr( const QFileInfo & fi, const QDate & date ) const
+        {
+            auto regExStr = replaceFileInfo( fi, date, getVerifyMediaCommentExpr() );
             return QRegularExpression( regExStr );
         }
 
@@ -977,6 +1014,9 @@ namespace NMediaManager
 
         bool CPreferences::isMediaFile( const QFileInfo &fi ) const
         {
+            if ( !fi.isFile() )
+                return false;
+
             auto suffixes = getMediaExtensions();
             for ( auto && ii : suffixes )
             {
@@ -1022,7 +1062,7 @@ namespace NMediaManager
             case EItemStatus::eWarning: return "Warning";
             case EItemStatus::eError: return "Error";
             }
-            return QString();
+            return {};
         }
    }
 }
