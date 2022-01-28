@@ -25,6 +25,7 @@
 
 #include <QUrl>
 #include <QString>
+#include <QDate>
 #include <optional>
 #include <memory>
 class QFileInfo;
@@ -78,11 +79,11 @@ namespace NMediaManager
             void setSearchByName( bool searchByName ) { fSearchByName = searchByName; }
             bool searchByName() const { return fSearchByName; }
 
-            void setReleaseDate( const QString & releaseDate ) { fReleaseDate = releaseDate; }
-            QString releaseDateString() const { return fReleaseDate; }
+            void setReleaseDate( const QString & releaseDate );
+            std::pair< QDate, QString > releaseDate() const { return fReleaseDate; }
             int releaseYear( bool * aOK = nullptr ) const;
             static int releaseYear( const QString & dateStr, bool * aOK = nullptr );
-            bool releaseDateSet()  const { return !fReleaseDate.isEmpty(); }
+            bool releaseDateSet()  const { return !fReleaseDate.second.isEmpty(); }
 
             void setTMDBID( const QString & tmdbID ) { fTMDBID = tmdbID; }
             QString tmdbIDString() const { return fTMDBID; }
@@ -99,9 +100,8 @@ namespace NMediaManager
 
             bool isMatch( std::shared_ptr< STransformResult > searchResult ) const;
 
-
             template< typename T >
-            bool isMatch( const QString & releaseDate, const T & tmdbid, const QString & name ) const
+            bool isMatch( const std::pair< QDate, QString > & releaseDate, const T & tmdbid, const QString & name ) const
             {
                 auto retVal = ( tmdbIDSet() && isMatchingTMDBID( tmdbid ) )
                     || ( isMatchingDate( releaseDate )
@@ -112,7 +112,13 @@ namespace NMediaManager
             }
 
             template< typename T >
-            bool isMatch( const QString & releaseDate, const T & tmdbid, const QString & name, EMediaType mediaType, const T & season, const T & episode ) const
+            bool isMatch( const QString & releaseDate, const T & tmdbid, const QString & name ) const
+            {
+                return isMatch( { NSABUtils::getDate( releaseDate ), releaseDate }, tmdbid, name );
+            }
+
+            template< typename T >
+            bool isMatch( const std::pair< QDate, QString > & releaseDate, const T & tmdbid, const QString & name, EMediaType mediaType, const T & season, const T & episode ) const
             {
                 bool retVal = isMatch( releaseDate, tmdbid, name ) && (fMediaType.first == mediaType);
 
@@ -121,12 +127,18 @@ namespace NMediaManager
                 return retVal;
             }
 
+            template< typename T >
+            bool isMatch( const QString & releaseDate, const T & tmdbid, const QString & name, EMediaType mediaType, const T & season, const T & episode ) const
+            {
+                return isMatch( { NSABUtils::getDate( releaseDate ), releaseDate }, tmdbid, name, mediaType, season, episode );
+            }
+
             bool isSeasonMatch( int seasonToMatch ) const;
             bool isSeasonMatch( const QString & seasonToMatch ) const;
             bool isEpisodeMatch( int episodeToMatch ) const;
             bool isEpisodeMatch( const QString & episodeToMatch ) const;
         private:
-            bool isMatchingDate( const QString & releaseDate ) const;
+            bool isMatchingDate( const std::pair< QDate, QString > & releaseDate ) const;
             bool isMatchingTMDBID( int tmdbid ) const;
             bool isMatchingTMDBID( const QString & tmdbd ) const;
             bool isMatchingName( const QString & name ) const;
@@ -141,7 +153,7 @@ namespace NMediaManager
             static QStringList stripOutPositions( const QString & inString, const std::list< std::pair< int, int > > & positions );
 
             QString fSearchName;
-            QString fReleaseDate;
+            std::pair< QDate, QString > fReleaseDate;
             int fSeason{ -1 };
             int fEpisode{ -1 };
             int fDiskNum{ -1 };

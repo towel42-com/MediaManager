@@ -95,7 +95,7 @@ namespace NMediaManager
         
         QString SSearchTMDBInfo::stripExistingExtraInfo(const QString & string, QString & extendedData)
         {
-            auto regExStr = R"([\)\]\s*(?<total>( - )(?<extendedData>[^\[\(]+))$)";
+            auto regExStr = R"([\)\]]\s*(?<total>( - )(?<extendedData>[^\[\(]+))$)";
             auto regEx = QRegularExpression(regExStr);
             QString retVal = string;
             auto match = regEx.match(retVal);
@@ -273,26 +273,37 @@ namespace NMediaManager
                 fSearchByName = fTMDBID.isEmpty();
         }
 
+        void SSearchTMDBInfo::setReleaseDate( const QString & releaseDate )
+        {
+            fReleaseDate.second = releaseDate;
+            NSABUtils::SDateSearchOptions options;
+            options.fAllowYearOnly = true;
+            options.fAllowMonthYearOnly = true;
+            fReleaseDate.first = NSABUtils::getDate( releaseDate, options );
+        }
+
         int SSearchTMDBInfo::releaseYear( const QString & dateStr, bool * aOK )
         {
-            bool lclAOK;
-            auto retVal = dateStr.toInt( &lclAOK );
+            NSABUtils::SDateSearchOptions options;
+            options.fAllowYearOnly = true;
+            options.fAllowMonthYearOnly = true;
 
-            if ( !lclAOK )
-            {
-                auto dt = NSABUtils::findDate( dateStr );
-                lclAOK = dt.isValid();
-                if ( lclAOK )
-                    retVal = dt.year();
-            }
+            auto dt = NSABUtils::getDate( dateStr, options );
+            auto lclAOK = dt.isValid();
+            int retVal = 0;
+            if ( lclAOK )
+                retVal = dt.year();
+
             if ( aOK )
-                *aOK = lclAOK;
+                *aOK = aOK;
             return retVal;
         }
 
         int SSearchTMDBInfo::releaseYear( bool * aOK ) const
         {
-            return releaseYear( fReleaseDate, aOK );
+            if ( aOK )
+                *aOK = fReleaseDate.first.isValid();
+            return fReleaseDate.first.year();
         }
 
         int SSearchTMDBInfo::tmdbID( bool *aOK ) const
@@ -312,7 +323,7 @@ namespace NMediaManager
 
             retVal = retVal
                 .arg( searchName() )
-                .arg( forDebug ? releaseDateString() : (releaseDateString().isEmpty() ? "<Not Set>" : releaseDateString()) )
+                .arg( forDebug ? releaseDate().second : (releaseDate().second.isEmpty() ? "<Not Set>" : releaseDate().second) )
                 .arg( forDebug ? QString::number( season() ) : (season() == -1) ? "<Not Set>" : QString::number( season() ) )
                 .arg( forDebug ? QString::number( episode() ) : (episode() == -1) ? "<Not Set>" : QString::number( episode() ) )
                 .arg( forDebug ? tmdbIDString() : tmdbIDString().isEmpty() ? "<Not Set>" : tmdbIDString() )
@@ -402,24 +413,29 @@ namespace NMediaManager
             return tmdbid == myTmdbID;
         }
 
-        bool SSearchTMDBInfo::isMatchingDate( const QString & releaseDate ) const
+        bool SSearchTMDBInfo::isMatchingDate( const std::pair< QDate, QString > & releaseDate ) const
         {
             if ( !releaseDateSet() )
                 return true;
 
-            if ( releaseDate.isEmpty() ) // we are searching for a release date, and none was found
+            if ( fReleaseDate.first.isValid() != releaseDate.first.isValid() )
                 return false;
 
-            if ( !fExactMatchOnly )
+            if ( !fReleaseDate.first.isValid() )
                 return true;
 
-            bool searchAOK;
-            auto searchReleaseYear = this->releaseYear( &searchAOK );
-            bool foundAOK;
-            auto foundReleaseYear = releaseYear( releaseDate, &foundAOK );
-            if ( searchAOK != foundAOK )
-                return false;
-            return (searchReleaseYear == foundReleaseYear);
+            if ( ((fReleaseDate.first.month() == 1) && (fReleaseDate.first.day() == 1)) || ((releaseDate.first.month() == 1) && (releaseDate.first.day() == 1)) )
+            {
+                return fReleaseDate.first.year() == releaseDate.first.year();
+            }
+
+            if ( fExactMatchOnly )
+            {
+                return fReleaseDate.first.year() == releaseDate.first.year()
+                    && fReleaseDate.first.month() == releaseDate.first.month();
+            }
+
+            return true;
         }
 
         bool SSearchTMDBInfo::isMatchingName( const QString &name ) const
@@ -431,30 +447,34 @@ namespace NMediaManager
 
         void SSearchTMDBInfo::extractReleaseDate()
         {
-            //(?<fulltext>[\.\(]  (?<releaseDate>((\\d{2}){1,2}))(?:[\.\)]?|$))
-            //(?<!\d)
-            //(?<fulltext>[[|\(|\W|^](?<releaseDate>((\d{2}){1,2}))((?<suffix>\]|\))|\W|$))
-
-            auto regExpStr = R"((?<fulltext>(([\(\[]|^)|(?<!(\d|t)))(?<releaseDate>\d{2}|\d{4})(\D|\)|\]|$)))";
+            //basically capture anything inside parens that doesnt start with imdb 
+            auto regExpStr1 = R"((([\(\[])\s*(?<!(tv|im|tm)dbid\=))(?<releaseDate1>[^\(\[\)\]]+)\s*(\)|\]))";
+            auto regExpStr2 = R"((([\(\[]|^)|(?<!(\d|t)))(?<releaseDate2>\d{2}|\d{4})(\D|\)|\]|$))";
+            auto regExpStr = QString( "(?<fulltext>(%1|%2))" ).arg( regExpStr1 ).arg( regExpStr2 );
             auto regExp = QRegularExpression( regExpStr );
+            Q_ASSERT( regExp.isValid() );
             auto match = regExp.match( fSearchName );
             if ( match.hasMatch() )
             {
-                auto releaseDate = smartTrim( match.captured( "releaseDate" ) );
+                auto releaseDate = smartTrim( match.captured( "releaseDate1" ) );
+                if ( releaseDate.isEmpty() )
+                    releaseDate = smartTrim( match.captured( "releaseDate2" ) );
+
                 if ( releaseDate != smartTrim( fSearchName ) )
                 {
-                    fReleaseDate = releaseDate;
-                    bool aOK = false;
-                    int tmp = fReleaseDate.toInt( &aOK );
-                    bool tooOld = false;
-                    if ( aOK )
+                    NSABUtils::SDateSearchOptions options;
+                    options.fAllowYearOnly = true;
+                    options.fAllowMonthYearOnly = true;
+                    auto date = NSABUtils::getDate( releaseDate, options );
+                    if ( date.isValid() )
                     {
-                        tooOld = (fReleaseDate.length() == 4) && (tmp < 1900);
+                        if ( date.year() < 1900 )
+                            fReleaseDate = {};
+                        else
+                        {
+                            fReleaseDate = { date, releaseDate };
+                            fSearchName.replace( match.capturedStart( "fulltext" ), match.capturedLength( "fulltext" ), "" );                        }
                     }
-                    if ( !tooOld )
-                        fSearchName.replace( match.capturedStart( "fulltext" ), match.capturedLength( "fulltext" ), "" );
-                    else
-                        fReleaseDate.clear();
                 }
             }
             if ( fSearchResultInfo )
@@ -580,8 +600,8 @@ namespace NMediaManager
                 query.addQueryItem( "api_key", CSearchTMDB::apiKeyV3() );
 
                 query.addQueryItem( "include_adult", "true" );
-                if ( !fReleaseDate.isEmpty() )
-                    query.addQueryItem( "year", fReleaseDate );
+                if ( !fReleaseDate.first.isValid() )
+                    query.addQueryItem( "year", QString::number( fReleaseDate.first.year() ) );
                 auto searchStrings = fSearchName.split( QRegularExpression( "[\\s\\.]" ), TSkipEmptyParts );
 
                 if ( searchStrings.isEmpty() )
