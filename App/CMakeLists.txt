@@ -69,14 +69,13 @@ SET( _SL_FILES
     )
 
 find_package(InstallFile REQUIRED)    
-foreach( curr ${_SL_FILES} )
+InstallFilesPostBuild( TARGET MediaManager INFILES ${_SL_FILES} TARGET_DIR "$<TARGET_FILE_DIR:MediaManager>/imageformats" )
 
-    if ( curr MATCHES ".*\.pdb" )
-        SET( _CONFIGS
-            Debug
-            RelWithDebInfo
-            )
-    endif()
-    InstallFilePostBuild( TARGET MediaManager INFILE ${curr} TARGET_DIR "$<TARGET_FILE_DIR:MediaManager>/imageformats" CONFIGURATIONS ${_CONFIGS} )
-endforeach()
+SET( _SL_FILES
+    "$<TARGET_FILE:mediainfo>"
+    "$<TARGET_FILE_DIR:mediainfo>/$<TARGET_FILE_BASE_NAME:mediainfo>.pdb"
+    )
+
+find_package(InstallFile REQUIRED)    
+InstallFilesPostBuild( TARGET MediaManager INFILES ${_SL_FILES} TARGET_DIR "$<TARGET_FILE_DIR:MediaManager>" )
 
