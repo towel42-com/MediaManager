@@ -591,7 +591,7 @@ namespace NMediaManager
             else if (role == Qt::ToolTipRole)
             {
                 auto text = getToolTip(idx);
-                if (!text.isNull())
+                if (!text.isNull() )
                     return text;
             }
             return QStandardItemModel::data(idx, role);
@@ -839,7 +839,7 @@ namespace NMediaManager
             NSABUtils::CAutoWaitCursor awc;
             auto retVal = NSABUtils::getMediaTags( fi.absoluteFilePath(), ffprobeExe );
 
-            auto numSecs = NSABUtils::getNumberOfSeconds( fi.absoluteFilePath(), ffprobeExe);
+            auto numSecs = NSABUtils::getNumberOfSeconds( fi.absoluteFilePath() );
             NSABUtils::CTimeString ts( numSecs * 1000 );
             retVal["LENGTH"] = ts.toString( "hh:mm:ss" );
             return retVal;
@@ -1278,10 +1278,24 @@ namespace NMediaManager
             while (year.isEmpty() && !isRootPath(searchPath.absoluteFilePath()))
             {
                 SSearchTMDBInfo searchInfo(searchPath.completeBaseName(), {});
-                year = searchInfo.releaseDateString();
+                if ( searchInfo.releaseDateSet() )
+                    year = QString::number( searchInfo.releaseDate().first.year() );
                 searchPath = searchPath.absolutePath();
             }
             return year;
+        }
+
+        QDate CDirModel::getMediaDate( const QFileInfo & fi ) const
+        {
+            auto searchPath = fi;
+            QDate retVal;
+            while ( !retVal.isValid() && !isRootPath( searchPath.absoluteFilePath() ) )
+            {
+                SSearchTMDBInfo searchInfo( searchPath.completeBaseName(), {} );
+                retVal = searchInfo.releaseDate().first;
+                searchPath = searchPath.absolutePath();
+            }
+            return retVal;
         }
 
         bool CDirModel::progressCanceled() const
@@ -1515,15 +1529,23 @@ namespace NMediaManager
         {
             auto itemStatus = getIndexStatus(idx);
             if ( itemStatus.has_value() )
-                return CPreferences::instance()->getColorForStatus(itemStatus.value().first, true);
+            {
+                auto retVal = CPreferences::instance()->getColorForStatus( itemStatus.value().first, true );
+                if ( retVal.isValid() )
+                    return retVal;
+            }
             return QVariant();
         }
 
         QVariant CDirModel::getItemForeground(const QModelIndex & idx) const
         {
             auto itemStatus = getIndexStatus(idx);
-            if (itemStatus.has_value())
-                return CPreferences::instance()->getColorForStatus(itemStatus.value().first, false);
+            if ( itemStatus.has_value() )
+            {
+                auto retVal = CPreferences::instance()->getColorForStatus( itemStatus.value().first, false );
+                if ( retVal.isValid() )
+                    return retVal;
+            }
             return QVariant();
         }
 

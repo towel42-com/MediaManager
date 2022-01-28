@@ -34,6 +34,7 @@
 #include <QDialogButtonBox> // StandardButtons
 #include <QDateTime>
 #include <QDir>
+#include <QDate>
 
 namespace NSABUtils
 {
@@ -247,6 +248,7 @@ namespace NMediaManager
             virtual void clearPathStatusCache( const QString & path ) const;
 
             QString getMediaYear(const QFileInfo & fi) const;
+            QDate getMediaDate( const QFileInfo & fi ) const;
             bool progressCanceled() const;
 
             QPlainTextEdit * log() const;
