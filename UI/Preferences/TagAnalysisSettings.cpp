@@ -46,6 +46,7 @@ namespace NMediaManager
             fImpl->setupUi( this );
             new NSABUtils::CWidgetEnabler( fImpl->verifyMediaTitle, fImpl->verifyMediaTitleExpr );
             new NSABUtils::CWidgetEnabler( fImpl->verifyMediaDate, fImpl->verifyMediaDateExpr );
+            new NSABUtils::CWidgetEnabler( fImpl->verifyMediaComment, fImpl->verifyMediaCommentExpr );
         }
 
         CTagAnalysisSettings::~CTagAnalysisSettings()
@@ -60,6 +61,8 @@ namespace NMediaManager
             fImpl->verifyMediaTitleExpr->setText( NCore::CPreferences::instance()->getVerifyMediaTitleExpr() );
             fImpl->verifyMediaDate->setChecked( NCore::CPreferences::instance()->getVerifyMediaDate() );
             fImpl->verifyMediaDateExpr->setText( NCore::CPreferences::instance()->getVerifyMediaDateExpr() );
+            fImpl->verifyMediaComment->setChecked( NCore::CPreferences::instance()->getVerifyMediaComment() );
+            fImpl->verifyMediaCommentExpr->setText( NCore::CPreferences::instance()->getVerifyMediaCommentExpr() );
         }
 
         void CTagAnalysisSettings::save()
@@ -69,6 +72,8 @@ namespace NMediaManager
             NCore::CPreferences::instance()->setVerifyMediaTitleExpr( fImpl->verifyMediaTitleExpr->text() );
             NCore::CPreferences::instance()->setVerifyMediaDate(fImpl->verifyMediaDate->isChecked());
             NCore::CPreferences::instance()->setVerifyMediaDateExpr( fImpl->verifyMediaDateExpr->text() );
+            NCore::CPreferences::instance()->setVerifyMediaComment( fImpl->verifyMediaComment->isChecked() );
+            NCore::CPreferences::instance()->setVerifyMediaCommentExpr( fImpl->verifyMediaCommentExpr->text() );
         }
     }
 }
