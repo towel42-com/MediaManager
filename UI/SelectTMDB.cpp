@@ -86,7 +86,7 @@ namespace NMediaManager
             fImpl->searchName->setText( fPrevSearchName = searchInfo->searchName() );
             fImpl->searchSeason->setValue( searchInfo->season() );
             fImpl->searchEpisode->setValue( searchInfo->episode() );
-            fImpl->searchReleaseYear->setText( searchInfo->releaseDateString() );
+            fImpl->searchReleaseYear->setText( searchInfo->releaseDate().second );
             fImpl->searchTMDBID->setText( searchInfo->tmdbIDString() );
             fImpl->byName->setChecked( fSearchTMDB->searchByName() );
             fImpl->byTMDBID->setChecked( !fSearchTMDB->searchByName() );
@@ -299,13 +299,13 @@ namespace NMediaManager
             int labelPos = -1;
             if ( fImpl->searchForTVShows->isChecked() )
             {
-                data = QStringList() << info->fTitle << info->getTMDBID() << info->fSeason << info->fEpisode << info->fReleaseDate << info->fSubTitle << QString();
+                data = QStringList() << info->fTitle << info->getTMDBID() << info->fSeason << info->fEpisode << info->fReleaseDate.second << info->fSubTitle << QString();
                 itemType = EItemType::eTVShow;
                 labelPos = 6;
             }
             else
             {
-                data = QStringList() << info->fTitle << info->getTMDBID() << info->fReleaseDate << QString();
+                data = QStringList() << info->fTitle << info->getTMDBID() << info->fReleaseDate.second << QString();
                 itemType = EItemType::eMovie;
                 labelPos = 3;
             }
