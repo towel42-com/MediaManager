@@ -45,7 +45,7 @@ namespace NMediaManager
 
         int64_t CMakeMKVModel::getNumberOfSeconds( const QString & fileName ) const
         {
-            return NSABUtils::getNumberOfSeconds( fileName, NCore::CPreferences::instance()->getFFProbeEXE() );
+            return NSABUtils::getNumberOfSeconds( fileName );
         }
 
         std::pair< bool, QStandardItem * > CMakeMKVModel::processItem( const QStandardItem * item, QStandardItem * parentResultItem, bool displayOnly )
