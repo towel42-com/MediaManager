@@ -81,7 +81,7 @@ namespace NMediaManager
             fTVInfoReplies.clear();
             fSeasonInfoReplies.first.clear();
             fSeasonInfoReplies.second.reset();
-            fResults = {};
+            fResults.push_back( std::make_shared< NCore::STransformResult >( NCore::EMediaType::eNotFoundType ) );
             fQueuedResults.clear();
             fCurrentQueuedSearch = {};
             fSearchQueue.clear();
@@ -553,6 +553,7 @@ namespace NMediaManager
             if ( !fSearchInfo )
             {
                 fCurrentQueuedSearch = fSearchQueue.front();
+                fQueuedResults[fCurrentQueuedSearch.value().first].push_back( std::make_shared< NCore::STransformResult >( NCore::EMediaType::eNotFoundType ) );
                 fSearchQueue.pop_front();
                 fSearchInfo = fCurrentQueuedSearch.value().second;
             }
@@ -698,7 +699,7 @@ namespace NMediaManager
 
             auto searchResult = std::make_shared< STransformResult >( fSearchInfo->isTVMedia() ? EMediaType::eTVShow : EMediaType::eMovie ); // movie or TV show
             searchResult->fDescription = desc;
-            searchResult->fReleaseDate = releaseDate;
+            searchResult->setReleaseDate( releaseDate );
             searchResult->fTitle = title;
             searchResult->fTMDBID = QString::number( tmdbid );
             searchResult->fExtraInfo = fSearchInfo->getExtendedInfo();
@@ -876,7 +877,7 @@ namespace NMediaManager
             episodeInfo->fSeasonTMDBID = seasonInfo->fSeasonTMDBID;
             episodeInfo->fEpisodeTMDBID = episodeObj.contains( "id" ) ? QString::number( episodeObj["id"].toInt() ) : QString();
             episodeInfo->fTitle = seasonInfo->fTitle;
-            episodeInfo->fReleaseDate = episodeObj.contains( "air_date" ) ? episodeObj["air_date"].toString() : QString();;
+            episodeInfo->setReleaseDate( episodeObj.contains( "air_date" ) ? episodeObj["air_date"].toString() : QString() );
 
             seasonInfo->fChildren.push_back( episodeInfo );
             if ( fSearchInfo->episode() != -1 )
@@ -890,6 +891,11 @@ namespace NMediaManager
 
         void CSearchTMDB::addResultToList( std::list< std::shared_ptr< STransformResult > > & list, std::shared_ptr<STransformResult> result, std::shared_ptr< SSearchTMDBInfo > searchInfo ) const
         {
+            if ( (list.size() == 1) && (list.front()->isNotFoundResult() ) )
+            {
+                list.pop_front();
+            }
+
             auto pos = list.begin();
             for ( ; pos != list.end(); ++pos )
             {
