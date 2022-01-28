@@ -25,15 +25,10 @@
 
 #include "ui_KnownAbbreviations.h"
 
-//#include <QSettings>
-//#include <QStringListModel>
 #include <QInputDialog>
-//#include <QFileDialog>
-//#include <QMessageBox>
 
 #include "SABUtils/ButtonEnabler.h"
 #include "SABUtils/UtilityModels.h"
-//#include "SABUtils/QtUtils.h"
 
 namespace NMediaManager
 {
