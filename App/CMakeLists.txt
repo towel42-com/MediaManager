@@ -51,6 +51,7 @@ target_link_libraries( MediaManager
                  UI
                  Preferences
                  Core
+                 mediainfo
           )
 
 DeployQt( MediaManager . )
@@ -76,6 +77,6 @@ foreach( curr ${_SL_FILES} )
             RelWithDebInfo
             )
     endif()
-    InstallFilePostBuild( TARGET MediaManager INFILE ${curr} OUTFILE "$<TARGET_FILE_DIR:MediaManager>/imageformats" CONFIGURATIONS ${_CONFIGS} )
+    InstallFilePostBuild( TARGET MediaManager INFILE ${curr} TARGET_DIR "$<TARGET_FILE_DIR:MediaManager>/imageformats" CONFIGURATIONS ${_CONFIGS} )
 endforeach()
 
