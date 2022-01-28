@@ -1500,16 +1500,16 @@ namespace NMediaManager
         std::optional< TItemStatus > CDirModel::getIndexStatus( const QModelIndex & idx ) const
         {
             auto itemStatus = getItemStatus( idx );
-            if ( !itemStatus.has_value() && idx.column() == NCore::EColumns::eFSName )
-            {
-                // when the filename itself has no result, show the union of all other columns
-                itemStatus = getRowStatus( idx );
-            }
-
             if ( !itemStatus.has_value() )
             {
                 auto fi = fileInfo( idx );
                 itemStatus = getPathStatus( fi );
+            }
+
+            if ( !itemStatus.has_value() && idx.column() == NCore::EColumns::eFSName )
+            {
+                // when the filename itself has no result, show the union of all other columns
+                itemStatus = getRowStatus( idx );
             }
             return itemStatus;
         }
