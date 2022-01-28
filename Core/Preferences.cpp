@@ -363,7 +363,7 @@ namespace NMediaManager
                 retVal = retVal.replace( "<day>", date.toString( "(d|dd|ddd|dddd)" ) );
                 
                 auto dateFormat = "(" + NSABUtils::getDateFormats( { true, false }  ).join( "|" ) + ")";
-                retVal = retVal.replace( "<date>", dateFormat );
+                retVal = retVal.replace( "<date>", date.toString( dateFormat ) );
             }
             return retVal;
         }
