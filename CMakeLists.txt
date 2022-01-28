@@ -54,15 +54,10 @@ option( gtest_force_shared_crt "Use shared ( DLL ) run-time lib even when Google
 set_property( GLOBAL PROPERTY USE_FOLDERS ON )
 
 file( REAL_PATH ~/bin/MediaManager CMAKE_INSTALL_PREFIX EXPAND_TILDE)
-
+SET( SAB_ENABLE_TESTING ON )
 add_subdirectory( SABUtils )
-add_subdirectory( SABUtils/googletest )
 add_subdirectory( SABUtils/bif)
 add_subdirectory( SABUtils/gif)
-set_target_properties( gmock PROPERTIES FOLDER 3rdParty/google  )
-set_target_properties( gmock_main PROPERTIES FOLDER 3rdParty/google )
-set_target_properties( gtest PROPERTIES FOLDER 3rdParty/google )
-set_target_properties( gtest_main PROPERTIES FOLDER 3rdParty/google )
 add_subdirectory( UI )
 add_subdirectory( UI/Preferences )
 add_subdirectory( Core )
