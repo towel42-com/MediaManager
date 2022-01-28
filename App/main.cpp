@@ -60,7 +60,11 @@ void myMessageOutput( QtMsgType type, const QMessageLogContext & context, const 
     realMsg = QString( "%1: %2" ).arg( typeString ).arg( realMsg ).trimmed();
 
 #ifdef Q_OS_WINDOWS
+#ifdef UNICODE
     OutputDebugString( qUtf16Printable( realMsg + "\n" ) );
+#else
+    OutputDebugString( qPrintable( realMsg + "\n" ) );
+#endif
 #else
     fprintf( "%s\n", qPrintable( realMsg ) );
 #endif
