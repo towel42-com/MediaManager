@@ -214,7 +214,9 @@ namespace NMediaManager
         void CTransformPage::slotAutoSearchFinished( const QString &path, NCore::SSearchTMDBInfo * searchInfo, bool searchesRemaining )
         {
             auto results = fSearchTMDB->getResult( path );
-            if ( !progressCanceled() && results.empty() && searchInfo && searchInfo->mediaTypeAutoDetermined() )
+            bool notFound = ( results.size() == 1 ) && results.front()->isNotFoundResult();
+
+            if ( !progressCanceled() && notFound && searchInfo && searchInfo->mediaTypeAutoDetermined() )
             {
                 auto item = model()->getItemFromPath( path );
                 auto index = item ? model()->indexFromItem( item ) : QModelIndex();
@@ -244,7 +246,7 @@ namespace NMediaManager
             }
 
             auto logMsg = QString( "\n\t" );
-            if ( results.empty() )
+            if ( notFound )
                 logMsg += tr( "Found: <No Match>" );
             else
             {
