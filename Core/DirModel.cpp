@@ -96,32 +96,47 @@ namespace NMediaManager
         const QString kNoMatch = "<NO MATCH>";
         const QString kDeleteThis = "<DELETE THIS>";
 
-        CDirModelItem::CDirModelItem(const QString & text, EType type) :
-            QStandardItem(text),
-            fType(type)
+        bool useCache()
         {
-            setEditable(true);
+#ifdef _DEBUG
+//#define DISABLE_CACHE
+#endif
+
+            static bool sUseCache
+#if defined( DISABLE_CACHE ) && defined( _DEBUG )
+            = false;
+#else
+            = true;
+#endif
+            return sUseCache;
         }
 
-        CDirModel::CDirModel(NUi::CBasePage * page, QObject * parent /*= 0*/) :
-            QStandardItemModel(parent),
-            fBasePage(page)
+        CDirModelItem::CDirModelItem( const QString & text, EType type ) :
+            QStandardItem( text ),
+            fType( type )
+        {
+            setEditable( true );
+        }
+
+        CDirModel::CDirModel( NUi::CBasePage * page, QObject * parent /*= 0*/ ) :
+            QStandardItemModel( parent ),
+            fBasePage( page )
         {
             fIconProvider = new QFileIconProvider();
-            fTimer = new QTimer(this);
-            fTimer->setInterval(50);
-            fTimer->setSingleShot(true);
-            connect(fTimer, &QTimer::timeout, this, &CDirModel::slotLoadRootDirectory);
+            fTimer = new QTimer( this );
+            fTimer->setInterval( 50 );
+            fTimer->setSingleShot( true );
+            connect( fTimer, &QTimer::timeout, this, &CDirModel::slotLoadRootDirectory );
 
-            fProcess = new QProcess(this);
-            connect(fProcess, &QProcess::errorOccurred, this, &CDirModel::slotProcessErrorOccured);
-            connect(fProcess, qOverload< int, QProcess::ExitStatus >(&QProcess::finished), this, &CDirModel::slotProcessFinished);
-            connect(fProcess, &QProcess::readyReadStandardError, this, &CDirModel::slotProcessStandardError);
-            connect(fProcess, &QProcess::readyReadStandardOutput, this, &CDirModel::slotProcessStandardOutput);
-            connect(fProcess, &QProcess::started, this, &CDirModel::slotProcessStarted);
-            connect(fProcess, &QProcess::stateChanged, this, &CDirModel::slotProcesssStateChanged);
+            fProcess = new QProcess( this );
+            connect( fProcess, &QProcess::errorOccurred, this, &CDirModel::slotProcessErrorOccured );
+            connect( fProcess, qOverload< int, QProcess::ExitStatus >( &QProcess::finished ), this, &CDirModel::slotProcessFinished );
+            connect( fProcess, &QProcess::readyReadStandardError, this, &CDirModel::slotProcessStandardError );
+            connect( fProcess, &QProcess::readyReadStandardOutput, this, &CDirModel::slotProcessStandardOutput );
+            connect( fProcess, &QProcess::started, this, &CDirModel::slotProcessStarted );
+            connect( fProcess, &QProcess::stateChanged, this, &CDirModel::slotProcesssStateChanged );
 
-            connect(this, &QStandardItemModel::dataChanged, this, &CDirModel::slotDataChanged);
+            connect( this, &QStandardItemModel::dataChanged, this, &CDirModel::slotDataChanged );
         }
 
         CDirModel::~CDirModel()
@@ -129,19 +144,19 @@ namespace NMediaManager
             delete fIconProvider;
         }
 
-        void CDirModel::setRootPath(const QString & rootPath)
+        void CDirModel::setRootPath( const QString & rootPath )
         {
-            fRootPath = QDir(rootPath);
+            fRootPath = QDir( rootPath );
             reloadModel();
         }
 
-        bool CDirModel::isAutoSetText(const QString & text)
+        bool CDirModel::isAutoSetText( const QString & text )
         {
             return (text == kNoItems)
                 || (text == kDeleteThis);
         }
 
-        void CDirModel::setNameFilters(const QStringList & filters)
+        void CDirModel::setNameFilters( const QStringList & filters )
         {
             fNameFilter = filters;
             reloadModel();
@@ -160,161 +175,159 @@ namespace NMediaManager
 
             preLoad();
 
-            QFileInfo rootFI(fRootPath.absolutePath());
+            QFileInfo rootFI( fRootPath.absolutePath() );
 
-            if (progressDlg())
+            if ( progressDlg() )
             {
-                progressDlg()->setLabelText(tr("Computing number of Files under '%1'").arg(fRootPath.absolutePath()));
+                progressDlg()->setLabelText( tr( "Computing number of Files under '%1'" ).arg( fRootPath.absolutePath() ) );
                 qApp->processEvents();
-                auto numFiles = computeNumberOfFiles(rootFI).second;
-                if (!progressCanceled())
-                    progressDlg()->setRange(0, numFiles);
+                auto numFiles = computeNumberOfFiles( rootFI ).second;
+                if ( !progressCanceled() )
+                    progressDlg()->setRange( 0, numFiles );
             }
-            if (progressCanceled())
+            if ( progressCanceled() )
             {
-                postLoad(false);
+                postLoad( false );
                 return;
             }
 
-            loadFileInfo(rootFI);
+            loadFileInfo( rootFI );
 
-            postLoad(true);
+            postLoad( true );
         }
 
         void CDirModel::preLoad()
         {
             fLoading = true;
             clear();
-            setHorizontalHeaderLabels(headers());
+            setHorizontalHeaderLabels( headers() );
         }
 
-        void CDirModel::postLoad(bool /*aOK*/)
+        void CDirModel::postLoad( bool /*aOK*/ )
         {
             fLoading = false;
 
-            if (!filesView())
+            if ( !filesView() )
                 return;
 
-            emit sigDirLoadFinished(progressCanceled());
-            postLoad(filesView());
+            emit sigDirLoadFinished( progressCanceled() );
+            postLoad( filesView() );
         }
 
-        void CDirModel::postLoad(QTreeView * treeView)
+        void CDirModel::postLoad( QTreeView * treeView )
         {
             resizeColumns();
             treeView->expandAll();
         }
 
-        void CDirModel::preLoad(QTreeView * /*treeView*/)
-        {
-        }
+        void CDirModel::preLoad( QTreeView * /*treeView*/ )
+        {}
 
         void CDirModel::postReloadModelRequest()
-        {
-        }
+        {}
 
         int CDirModel::computeNumberOfItems() const
         {
-            return NSABUtils::itemCount(fProcessResults.second.get(), true);
+            return NSABUtils::itemCount( fProcessResults.second.get(), true );
         }
 
-        bool CDirModel::setData(const QModelIndex & idx, const QVariant & value, int role)
+        bool CDirModel::setData( const QModelIndex & idx, const QVariant & value, int role )
         {
-            if (role == Qt::EditRole)
+            if ( role == Qt::EditRole )
             {
-                auto item = itemFromIndex(idx);
-                if (!item)
+                auto item = itemFromIndex( idx );
+                if ( !item )
                     return false;
 
-                switch (static_cast<EType>(item->type()))
+                switch ( static_cast<EType>(item->type()) )
                 {
-                case EType::ePath:
-                {
-                    auto fi = fileInfo(idx);
-                    if (value.toString().isEmpty())
+                    case EType::ePath:
+                    {
+                        auto fi = fileInfo( idx );
+                        if ( value.toString().isEmpty() )
+                        {
+                            return false;
+                        }
+                        auto currName = fi.absoluteFilePath();
+                        auto newName = fi.absoluteDir().absoluteFilePath( value.toString().trimmed() );
+                        if ( currName.compare( newName, Qt::CaseInsensitive ) == 0 )
+                            return false;
+
+                        auto file = QFile( currName );
+                        if ( !file.rename( newName ) )
+                        {
+                            QMessageBox::critical( nullptr, tr( "Could not rename file" ), tr( "Error renaming '%1' to '%2' please verify permissions. %3" ).arg( currName ).arg( newName ).arg( file.errorString() ) );
+                            return false;
+                        }
+
+                        updatePath( idx, currName, newName );
+                    }
+                    break;
+                    case EType::eLength:
                     {
                         return false;
                     }
-                    auto currName = fi.absoluteFilePath();
-                    auto newName = fi.absoluteDir().absoluteFilePath(value.toString().trimmed());
-                    if (currName.compare(newName, Qt::CaseInsensitive) == 0)
-                        return false;
-
-                    auto file = QFile(currName);
-                    if (!file.rename(newName))
+                    break;
+                    case EType::eTitle:
                     {
-                        QMessageBox::critical(nullptr, tr("Could not rename file"), tr("Error renaming '%1' to '%2' please verify permissions. %3").arg(currName).arg(newName).arg(file.errorString()));
-                        return false;
+                        if ( !setMediaTag( fileInfo( idx ).absoluteFilePath(), { "TITLE", value.toString() } ) )
+                            return false;
                     }
-
-                    updatePath(idx, currName, newName);
-                }
-                break;
-                case EType::eLength:
-                {
-                    return false;
-                }
-                break;
-                case EType::eTitle:
-                {
-                    if (!setMediaTag(fileInfo(idx).absoluteFilePath(), { "TITLE", value.toString() }))
-                        return false;
-                }
-                break;
-                case EType::eDate:
-                {
-                    if (!setMediaTag(fileInfo(idx).absoluteFilePath(), { "DATE_RECORDED", value.toString() }))
-                        return false;
-                }
-                break;
-                case EType::eComment:
-                {
-                    if (!setMediaTag(fileInfo(idx).absoluteFilePath(), { "COMMENT", value.toString() }))
-                        return false;
-                }
-                break;
+                    break;
+                    case EType::eDate:
+                    {
+                        if ( !setMediaTag( fileInfo( idx ).absoluteFilePath(), { "DATE_RECORDED", value.toString() } ) )
+                            return false;
+                    }
+                    break;
+                    case EType::eComment:
+                    {
+                        if ( !setMediaTag( fileInfo( idx ).absoluteFilePath(), { "COMMENT", value.toString() } ) )
+                            return false;
+                    }
+                    break;
                 }
             }
 
-            return QStandardItemModel::setData(idx, value, role);
+            return QStandardItemModel::setData( idx, value, role );
         }
 
-        std::unique_ptr< QDirIterator > CDirModel::getDirIteratorForPath(const QFileInfo & fileInfo) const
+        std::unique_ptr< QDirIterator > CDirModel::getDirIteratorForPath( const QFileInfo & fileInfo ) const
         {
-            auto retVal = std::make_unique< QDirIterator >(fileInfo.absoluteFilePath(), fNameFilter, QDir::AllDirs | QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Readable);
-            return std::move(retVal);
+            auto retVal = std::make_unique< QDirIterator >( fileInfo.absoluteFilePath(), fNameFilter, QDir::AllDirs | QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Readable );
+            return std::move( retVal );
         }
 
-        void CDirModel::iterateEveryFile(const QFileInfo & fileInfo, const SIterateInfo & iterInfo, std::optional< QDateTime > & lastUpdateUI) const
+        void CDirModel::iterateEveryFile( const QFileInfo & fileInfo, const SIterateInfo & iterInfo, std::optional< QDateTime > & lastUpdateUI ) const
         {
-            if (!fileInfo.exists())
+            if ( !fileInfo.exists() )
                 return;
 
-            if (progressCanceled())
+            if ( progressCanceled() )
                 return;
 
-            if (fileInfo.isDir())
+            if ( fileInfo.isDir() )
             {
                 bool iteraterDir = true;
-                if (iterInfo.fPreDirFunction)
-                    iteraterDir = iterInfo.fPreDirFunction(fileInfo);
+                if ( iterInfo.fPreDirFunction )
+                    iteraterDir = iterInfo.fPreDirFunction( fileInfo );
 
-                if (iteraterDir)
+                if ( iteraterDir )
                 {
-                    auto ii = getDirIteratorForPath(fileInfo);
-                    if (!ii)
+                    auto ii = getDirIteratorForPath( fileInfo );
+                    if ( !ii )
                     {
-                        if (iterInfo.fPostDirFunction)
-                            iterInfo.fPostDirFunction(fileInfo, false);
+                        if ( iterInfo.fPostDirFunction )
+                            iterInfo.fPostDirFunction( fileInfo, false );
                         return;
                     }
 
-                    while (ii->hasNext())
+                    while ( ii->hasNext() )
                     {
                         ii->next();
                         auto fi = ii->fileInfo();
-                        iterateEveryFile(fi, iterInfo, lastUpdateUI);
-                        if (progressDlg() && (!lastUpdateUI.has_value() || (lastUpdateUI.value().msecsTo(QDateTime::currentDateTime()) > 250)))
+                        iterateEveryFile( fi, iterInfo, lastUpdateUI );
+                        if ( progressDlg() && (!lastUpdateUI.has_value() || (lastUpdateUI.value().msecsTo( QDateTime::currentDateTime() ) > 250)) )
                         {
                             qApp->processEvents();
                             lastUpdateUI = QDateTime::currentDateTime();
@@ -322,64 +335,64 @@ namespace NMediaManager
                     }
                 }
 
-                if (iterInfo.fPostDirFunction)
-                    iterInfo.fPostDirFunction(fileInfo, true);
+                if ( iterInfo.fPostDirFunction )
+                    iterInfo.fPostDirFunction( fileInfo, true );
             }
             else
             {
                 bool aOK = true;
-                if (iterInfo.fPreFileFunction)
-                    aOK = iterInfo.fPreFileFunction(fileInfo);
-                if (iterInfo.fPostFileFunction)
-                    iterInfo.fPostFileFunction(fileInfo, aOK);
+                if ( iterInfo.fPreFileFunction )
+                    aOK = iterInfo.fPreFileFunction( fileInfo );
+                if ( iterInfo.fPostFileFunction )
+                    iterInfo.fPostFileFunction( fileInfo, aOK );
             }
         }
 
-        std::pair< uint64_t, uint64_t > CDirModel::computeNumberOfFiles(const QFileInfo & fileInfo) const
+        std::pair< uint64_t, uint64_t > CDirModel::computeNumberOfFiles( const QFileInfo & fileInfo ) const
         {
-            if (progressDlg())
-                progressDlg()->setRange(0, 0);
+            if ( progressDlg() )
+                progressDlg()->setRange( 0, 0 );
 
             uint64_t numDirs = 0;
             uint64_t numFiles = 0;
             SIterateInfo info;
-            info.fPreDirFunction = [this, &numDirs](const QFileInfo & dirInfo)
+            info.fPreDirFunction = [ this, &numDirs ]( const QFileInfo & dirInfo )
             {
-                if (isSkippedDirName(dirInfo))
+                if ( isSkippedDirName( dirInfo ) )
                     return false;
                 numDirs++;
                 return true;
             };
-            info.fPreFileFunction = [&numFiles](const QFileInfo & /*file*/)
+            info.fPreFileFunction = [ &numFiles ]( const QFileInfo & /*file*/ )
             {
                 numFiles++;
                 return false;
             };
             std::optional< QDateTime > lastUpdate;
-            iterateEveryFile(fileInfo, info, lastUpdate);
+            iterateEveryFile( fileInfo, info, lastUpdate );
 
-            return std::make_pair(numDirs, numFiles);
+            return std::make_pair( numDirs, numFiles );
         }
 
-        void CDirModel::loadFileInfo(const QFileInfo & fileInfo)
+        void CDirModel::loadFileInfo( const QFileInfo & fileInfo )
         {
-            if (!fileInfo.exists())
+            if ( !fileInfo.exists() )
                 return;
 
             TParentTree tree;
 
             SIterateInfo info;
-            info.fPreDirFunction = [this, &tree](const QFileInfo & dirInfo)
+            info.fPreDirFunction = [ this, &tree ]( const QFileInfo & dirInfo )
             {
                 //qDebug().noquote().nospace() << "Pre Directory A: " << dirInfo.absoluteFilePath() << tree;
 
-                auto row = getItemRow(dirInfo);
-                tree.push_back(std::move(row));
+                auto row = getItemRow( dirInfo );
+                tree.push_back( std::move( row ) );
 
-                if (progressDlg())
-                    progressDlg()->setLabelText(tr("Searching Directory '%1'").arg(QDir(fRootPath).relativeFilePath(dirInfo.absoluteFilePath())));
+                if ( progressDlg() )
+                    progressDlg()->setLabelText( tr( "Searching Directory '%1'" ).arg( QDir( fRootPath ).relativeFilePath( dirInfo.absoluteFilePath() ) ) );
 
-                if (isSkippedDirName(dirInfo))
+                if ( isSkippedDirName( dirInfo ) )
                 {
                     //qDebug().noquote().nospace() << "Pre Directory B: returning false" << dirInfo.absoluteFilePath() << tree;
                     return false;
@@ -390,127 +403,127 @@ namespace NMediaManager
             };
 
             std::unordered_set< QString > alreadyAdded;
-            info.fPreFileFunction = [this, &tree, &alreadyAdded](const QFileInfo & fileInfo)
+            info.fPreFileFunction = [ this, &tree, &alreadyAdded ]( const QFileInfo & fileInfo )
             {
-                tree.push_back(std::move(getItemRow(fileInfo))); // mkv file
+                tree.push_back( std::move( getItemRow( fileInfo ) ) ); // mkv file
 
                 // need to be children of file
-                auto attachFile = preFileFunction(fileInfo, alreadyAdded, tree);
+                auto attachFile = preFileFunction( fileInfo, alreadyAdded, tree );
 
                 //qDebug().noquote().nospace() << "Pre File A: " << fileInfo.absoluteFilePath() << tree;
 
-                if (attachFile)
+                if ( attachFile )
                 {
-                    attachTreeNodes(tree);
+                    attachTreeNodes( tree );
                 }
 
                 //qDebug().noquote().nospace() << "Pre File B: " << fileInfo.absoluteFilePath() << tree;
 
-                if (progressDlg())
-                    progressDlg()->setValue(progressDlg()->value() + 1);
+                if ( progressDlg() )
+                    progressDlg()->setValue( progressDlg()->value() + 1 );
                 return true;
             };
 
-            info.fPostDirFunction = [this, &tree](const QFileInfo & dirInfo, bool aOK)
+            info.fPostDirFunction = [ this, &tree ]( const QFileInfo & dirInfo, bool aOK )
             {
                 (void)dirInfo;
                 (void)aOK;
                 //qDebug().noquote().nospace() << "Post Dir A: " << dirInfo.absoluteFilePath() << tree << "AOK? " << aOK;  
                 tree.pop_back();
                 //qDebug().noquote().nospace() << "Post Dir B: " << dirInfo.absoluteFilePath() << tree;
-                if (filesView())
+                if ( filesView() )
                     resizeColumns();
             };
 
-            info.fPostFileFunction = [this, &tree](const QFileInfo & fileInfo, bool aOK)
+            info.fPostFileFunction = [ this, &tree ]( const QFileInfo & fileInfo, bool aOK )
             {
                 //qDebug() << fileInfo.absoluteFilePath();
-                postFileFunction(aOK, fileInfo);
+                postFileFunction( aOK, fileInfo );
 
                 //qDebug().noquote().nospace() << "Post File A: " << dirInfo.absoluteFilePath() << tree << "AOK? " << aOK;
-                while (tree.back().fIsFile)
+                while ( tree.back().fIsFile )
                     tree.pop_back();
                 //qDebug().noquote().nospace() << "Post File B: " << dirInfo.absoluteFilePath() << tree;
             };
 
             std::optional< QDateTime > lastUpdate;
-            iterateEveryFile(fileInfo, info, lastUpdate);
+            iterateEveryFile( fileInfo, info, lastUpdate );
         }
 
-        void CDirModel::appendRow(QStandardItem * parent, QList< QStandardItem * > & items)
+        void CDirModel::appendRow( QStandardItem * parent, QList< QStandardItem * > & items )
         {
-            if (parent)
-                parent->appendRow(items);
+            if ( parent )
+                parent->appendRow( items );
             else
-                QStandardItemModel::appendRow(items);
+                QStandardItemModel::appendRow( items );
         }
 
-        QStandardItem * CDirModel::attachTreeNodes(TParentTree & parentTree)
+        QStandardItem * CDirModel::attachTreeNodes( TParentTree & parentTree )
         {
             QStandardItem * prevParent = nullptr;
-            for (auto && ii : parentTree)
+            for ( auto && ii : parentTree )
             {
                 auto nextParent = ii.rootItem();
-                if (!ii.fLoaded) // already been loaded
+                if ( !ii.fLoaded ) // already been loaded
                 {
-                    if (prevParent)
+                    if ( prevParent )
                     {
-                        attachTreeNodes(nextParent, prevParent, ii);
-                        appendRow(prevParent, ii.items());
+                        attachTreeNodes( nextParent, prevParent, ii );
+                        appendRow( prevParent, ii.items() );
                     }
                     else
                     {
-                        appendRow(nullptr, ii.items());
-                        nextParent->setData(true, ECustomRoles::eIsRoot);
+                        appendRow( nullptr, ii.items() );
+                        nextParent->setData( true, ECustomRoles::eIsRoot );
                     }
                     ii.fLoaded = true;
                 }
                 prevParent = nextParent;
-                fPathMapping[nextParent->data(ECustomRoles::eFullPathRole).toString()] = nextParent;
+                fPathMapping[nextParent->data( ECustomRoles::eFullPathRole ).toString()] = nextParent;
 
-                if (filesView() && prevParent)
-                    filesView()->setExpanded(prevParent->index(), true);
+                if ( filesView() && prevParent )
+                    filesView()->setExpanded( prevParent->index(), true );
             }
             return prevParent;
         }
 
-        bool CDirModel::isSkippedDirName(const QFileInfo & ii) const
+        bool CDirModel::isSkippedDirName( const QFileInfo & ii ) const
         {
-            return NCore::CPreferences::instance()->isSkippedPath(ii);
+            return NCore::CPreferences::instance()->isSkippedPath( ii );
         }
 
-        bool CDirModel::isIgnoredPathName(const QFileInfo & fileInfo) const
+        bool CDirModel::isIgnoredPathName( const QFileInfo & fileInfo ) const
         {
-            return NCore::CPreferences::instance()->isIgnoredPath(fileInfo);
+            return NCore::CPreferences::instance()->isIgnoredPath( fileInfo );
         }
 
-        STreeNode CDirModel::getItemRow(const QFileInfo & fileInfo) const
+        STreeNode CDirModel::getItemRow( const QFileInfo & fileInfo ) const
         {
-            return STreeNode(fileInfo, this, isRootPath(fileInfo));
+            return STreeNode( fileInfo, this, isRootPath( fileInfo ) );
         }
 
-        STreeNode::STreeNode(const QFileInfo & fileInfo, const CDirModel * model, bool isRoot) :
-            fModel(model)
+        STreeNode::STreeNode( const QFileInfo & fileInfo, const CDirModel * model, bool isRoot ) :
+            fModel( model )
         {
             fIsFile = fileInfo.isFile();
             //qDebug() << fileInfo.absoluteFilePath() << isRoot;
-            auto nameItem = SDirNodeItem(isRoot ? QDir::toNativeSeparators(fileInfo.canonicalFilePath()) : fileInfo.fileName(), EColumns::eFSName);
-            nameItem.fIcon = model->iconProvider()->icon(fileInfo);
-            nameItem.setData(fileInfo.absoluteFilePath(), ECustomRoles::eFullPathRole);
-            nameItem.setData(fileInfo.isDir(), ECustomRoles::eIsDir);
+            auto nameItem = SDirNodeItem( isRoot ? QDir::toNativeSeparators( fileInfo.canonicalFilePath() ) : fileInfo.fileName(), EColumns::eFSName );
+            nameItem.fIcon = model->iconProvider()->icon( fileInfo );
+            nameItem.setData( fileInfo.absoluteFilePath(), ECustomRoles::eFullPathRole );
+            nameItem.setData( fileInfo.isDir(), ECustomRoles::eIsDir );
             nameItem.fEditType = EType::ePath;
-            fItems.push_back(nameItem);
-            fItems.emplace_back(fileInfo.isFile() ? NSABUtils::NFileUtils::fileSizeString(fileInfo) : QString(), EColumns::eFSSize);
-            if (fileInfo.isFile())
+            fItems.push_back( nameItem );
+            fItems.emplace_back( fileInfo.isFile() ? NSABUtils::NFileUtils::fileSizeString( fileInfo ) : QString(), EColumns::eFSSize );
+            if ( fileInfo.isFile() )
             {
                 fItems.back().fAlignment = Qt::AlignRight | Qt::AlignVCenter;
             }
-            fItems.emplace_back(model->iconProvider()->type(fileInfo), EColumns::eFSType);
-            fItems.emplace_back(fileInfo.lastModified().toString("MM/dd/yyyy hh:mm:ss.zzz"), EColumns::eFSModDate);
+            fItems.emplace_back( model->iconProvider()->type( fileInfo ), EColumns::eFSType );
+            fItems.emplace_back( fileInfo.lastModified().toString( "MM/dd/yyyy hh:mm:ss.zzz" ), EColumns::eFSModDate );
 
-            auto modelItems = model->addAdditionalItems(fileInfo);
-            fItems.insert(fItems.end(), modelItems.begin(), modelItems.end());
-            model->postAddItems(fileInfo, fItems);
+            auto modelItems = model->addAdditionalItems( fileInfo );
+            fItems.insert( fItems.end(), modelItems.begin(), modelItems.end() );
+            model->postAddItems( fileInfo, fItems );
         }
 
         QString STreeNode::name() const
@@ -518,28 +531,28 @@ namespace NMediaManager
             return rootItem() ? rootItem()->text() : kNoItems;
         }
 
-        QStandardItem * STreeNode::item(EColumns column, bool createIfNecessary /*= true */) const
+        QStandardItem * STreeNode::item( EColumns column, bool createIfNecessary /*= true */ ) const
         {
-            items(createIfNecessary);
-            return (column >= fRealItems.count()) ? nullptr : fRealItems[int(column)];
+            items( createIfNecessary );
+            return (column >= fRealItems.count()) ? nullptr : fRealItems[int( column )];
         }
 
-        QStandardItem * STreeNode::rootItem(bool createIfNecessary /*= true */) const
+        QStandardItem * STreeNode::rootItem( bool createIfNecessary /*= true */ ) const
         {
-            return item(static_cast<EColumns>(0), createIfNecessary);
+            return item( static_cast<EColumns>(0), createIfNecessary );
         }
 
-        QList< QStandardItem * > STreeNode::items(bool createIfNecessary) const
+        QList< QStandardItem * > STreeNode::items( bool createIfNecessary ) const
         {
-            if (createIfNecessary && fRealItems.isEmpty())
+            if ( createIfNecessary && fRealItems.isEmpty() )
             {
-                for (auto && ii : fItems)
+                for ( auto && ii : fItems )
                 {
                     auto currItem = ii.createStandardItem();
 
                     auto nameItem = fRealItems.isEmpty() ? nullptr : fRealItems.front();
 
-                    fModel->setupNewItem(ii, nameItem, currItem);
+                    fModel->setupNewItem( ii, nameItem, currItem );
 
                     fRealItems << currItem;
                 }
@@ -547,126 +560,126 @@ namespace NMediaManager
             return fRealItems;
         }
 
-        void CDirModel::setChecked(QStandardItem * item, bool isChecked) const
+        void CDirModel::setChecked( QStandardItem * item, bool isChecked ) const
         {
-            item->setText(isChecked ? "Yes" : "No");
-            item->setCheckState(isChecked ? Qt::Checked : Qt::Unchecked);
+            item->setText( isChecked ? "Yes" : "No" );
+            item->setCheckState( isChecked ? Qt::Checked : Qt::Unchecked );
         }
 
-        void CDirModel::setChecked(QStandardItem * item, ECustomRoles role, bool isChecked) const
+        void CDirModel::setChecked( QStandardItem * item, ECustomRoles role, bool isChecked ) const
         {
-            setChecked(item, isChecked);
-            item->setData(isChecked, role);
+            setChecked( item, isChecked );
+            item->setData( isChecked, role );
         }
 
-        QStandardItem * CDirModel::getItemFromPath(const QFileInfo & fi) const
+        QStandardItem * CDirModel::getItemFromPath( const QFileInfo & fi ) const
         {
             auto path = fi.absoluteFilePath();
-            auto pos = fPathMapping.find(path);
-            if (pos != fPathMapping.end())
+            auto pos = fPathMapping.find( path );
+            if ( pos != fPathMapping.end() )
                 return (*pos).second;
             return nullptr;
         }
 
-        QVariant CDirModel::data(const QModelIndex & idx, int role) const
+        QVariant CDirModel::data( const QModelIndex & idx, int role ) const
         {
-            if (role == Qt::DecorationRole)
+            if ( role == Qt::DecorationRole )
             {
-                auto basePixmap = QStandardItemModel::data(idx, role);
-                auto pixmap = getPathDecoration(idx, basePixmap);
+                auto basePixmap = QStandardItemModel::data( idx, role );
+                auto pixmap = getPathDecoration( idx, basePixmap );
                 return pixmap;
             }
-            else if (role == Qt::BackgroundRole)
+            else if ( role == Qt::BackgroundRole )
             {
-                auto clr = getItemBackground(idx);
-                if (!clr.isNull())
+                auto clr = getItemBackground( idx );
+                if ( !clr.isNull() )
                     return clr;
             }
-            else if (role == Qt::ForegroundRole)
+            else if ( role == Qt::ForegroundRole )
             {
-                auto clr = getItemForeground(idx);
-                if (!clr.isNull())
+                auto clr = getItemForeground( idx );
+                if ( !clr.isNull() )
                     return clr;
             }
-            else if (role == Qt::ToolTipRole)
+            else if ( role == Qt::ToolTipRole )
             {
-                auto text = getToolTip(idx);
-                if (!text.isNull() )
+                auto text = getToolTip( idx );
+                if ( !text.isNull() )
                     return text;
             }
-            return QStandardItemModel::data(idx, role);
+            return QStandardItemModel::data( idx, role );
         }
 
-        QFileInfo CDirModel::fileInfo(const QStandardItem * item) const
+        QFileInfo CDirModel::fileInfo( const QStandardItem * item ) const
         {
-            if (!item)
-                return QFileInfo();
-            auto baseItem = getItem(item, NCore::EColumns::eFSName);
-            auto path = baseItem->data(ECustomRoles::eFullPathRole).toString();
-            return QFileInfo(path);
+            if ( !item )
+                return {};
+            auto baseItem = getItem( item, NCore::EColumns::eFSName );
+            auto path = baseItem->data( ECustomRoles::eFullPathRole ).toString();
+            return QFileInfo( path );
         }
 
-        QStandardItem * CDirModel::getPathItemFromIndex(const QModelIndex & idx) const
+        QStandardItem * CDirModel::getPathItemFromIndex( const QModelIndex & idx ) const
         {
-            return itemFromIndex(idx);
+            return itemFromIndex( idx );
         }
 
-        bool CDirModel::isDir(const QStandardItem * item) const
+        bool CDirModel::isDir( const QStandardItem * item ) const
         {
-            return fileInfo(item).isDir();
+            return fileInfo( item ).isDir();
         }
 
-        QString CDirModel::filePath(const QStandardItem * item) const
+        QString CDirModel::filePath( const QStandardItem * item ) const
         {
-            return fileInfo(item).absoluteFilePath();
+            return fileInfo( item ).absoluteFilePath();
         }
 
-        QString CDirModel::filePath(const QModelIndex & idx) const
+        QString CDirModel::filePath( const QModelIndex & idx ) const
         {
-            auto item = getPathItemFromIndex(idx);
-            return filePath(item);
+            auto item = getPathItemFromIndex( idx );
+            return filePath( item );
         }
 
-        QFileInfo CDirModel::fileInfo(const QModelIndex & idx) const
+        QFileInfo CDirModel::fileInfo( const QModelIndex & idx ) const
         {
-            auto item = getPathItemFromIndex(idx);
-            return fileInfo(item);
+            auto item = getPathItemFromIndex( idx );
+            return fileInfo( item );
         }
 
-        bool CDirModel::isDir(const QModelIndex & idx) const
+        bool CDirModel::isDir( const QModelIndex & idx ) const
         {
-            auto item = getPathItemFromIndex(idx);
-            return isDir(item);
+            auto item = getPathItemFromIndex( idx );
+            return isDir( item );
         }
 
-        bool CDirModel::isMediaFile(const QStandardItem * item) const
+        bool CDirModel::isMediaFile( const QStandardItem * item ) const
         {
-            return isMediaFile(fileInfo(item));
+            return isMediaFile( fileInfo( item ) );
         }
 
-        bool CDirModel::isMediaFile(const QModelIndex & idx) const
+        bool CDirModel::isMediaFile( const QModelIndex & idx ) const
         {
-            return isMediaFile(fileInfo(idx));
+            return isMediaFile( fileInfo( idx ) );
         }
 
         bool CDirModel::isMediaFile( const QFileInfo & fileInfo ) const
         {
-            return CPreferences::instance()->isMediaFile( fileInfo );
+            return fileInfo.isFile() && CPreferences::instance()->isMediaFile( fileInfo );
         }
 
-        bool CDirModel::isSubtitleFile(const QFileInfo & fileInfo, bool * isLangFileFormat) const
+        bool CDirModel::isSubtitleFile( const QFileInfo & fileInfo, bool * isLangFileFormat ) const
         {
-            return CPreferences::instance()->isSubtitleFile(fileInfo, isLangFileFormat);
+            return CPreferences::instance()->isSubtitleFile( fileInfo, isLangFileFormat );
         }
 
         bool CDirModel::isSubtitleFile( const QModelIndex & idx, bool * isLangFileFormat ) const
         {
-            return isSubtitleFile(fileInfo(idx), isLangFileFormat);
+            return isSubtitleFile( fileInfo( idx ), isLangFileFormat );
         }
 
         bool CDirModel::isSubtitleFile( const QStandardItem * item, bool * isLangFileFormat /*= nullptr */ ) const
         {
-            return isSubtitleFile(fileInfo(item), isLangFileFormat);
+            return isSubtitleFile( fileInfo( item ), isLangFileFormat );
         }
 
         QString CDirModel::getMyTransformedName( const QStandardItem * item, bool /*transformParentsOnly*/ ) const
@@ -677,7 +690,7 @@ namespace NMediaManager
         QString CDirModel::computeTransformPath( const QStandardItem * item, bool transformParentsOnly ) const
         {
             if ( !item || (item == invisibleRootItem()) )
-                return QString();
+                return {};
             if ( item->data( ECustomRoles::eIsRoot ).toBool() )
                 return item->data( ECustomRoles::eFullPathRole ).toString();
 
@@ -688,7 +701,7 @@ namespace NMediaManager
             auto myName = getMyTransformedName( item, transformParentsOnly );
 
             if ( myName.isEmpty() || parentDir.isEmpty() )
-                return QString();
+                return {};
 
             if ( myName == kDeleteThis )
                 return myName;
@@ -700,7 +713,7 @@ namespace NMediaManager
         QString CDirModel::getDispName( const QString & absPath ) const
         {
             if ( fRootPath.isEmpty() )
-                return QString();
+                return {};
             auto rootDir = QDir( fRootPath );
             return rootDir.relativeFilePath( absPath );
         }
@@ -828,7 +841,7 @@ namespace NMediaManager
 
         std::unordered_map< QString, QString > CDirModel::getMediaTags( const QFileInfo & fi ) const
         {
-            if (!canShowMediaInfo())
+            if ( !canShowMediaInfo() )
                 return {};
 
             if ( !CPreferences::instance()->isMediaFile( fi ) )
@@ -848,17 +861,17 @@ namespace NMediaManager
         bool CDirModel::canShowMediaInfo() const
         {
             auto ffprobeExe = NCore::CPreferences::instance()->getFFProbeEXE();
-            return !ffprobeExe.isEmpty() && QFileInfo(ffprobeExe).isExecutable();
+            return !ffprobeExe.isEmpty() && QFileInfo( ffprobeExe ).isExecutable();
         }
 
-        void CDirModel::reloadMediaTags(const QModelIndex & idx)
+        void CDirModel::reloadMediaTags( const QModelIndex & idx )
         {
-            reloadMediaTags(idx, false);
+            reloadMediaTags( idx, false );
         }
 
-        void CDirModel::reloadMediaTags(const QModelIndex & idx, bool force)
+        void CDirModel::reloadMediaTags( const QModelIndex & idx, bool force )
         {
-            if ( !force && ( !showMediaItems() || !canShowMediaInfo() ) )
+            if ( !force && (!showMediaItems() || !canShowMediaInfo()) )
                 return;
 
             auto fi = fileInfo( idx );
@@ -883,24 +896,24 @@ namespace NMediaManager
             clearPathStatusCache( fi );
         }
 
-        std::list<NMediaManager::NCore::SDirNodeItem> CDirModel::getMediaInfoItems(const QFileInfo & fileInfo, int offset) const
+        std::list<NMediaManager::NCore::SDirNodeItem> CDirModel::getMediaInfoItems( const QFileInfo & fileInfo, int offset ) const
         {
-            if (!canShowMediaInfo())
+            if ( !canShowMediaInfo() )
                 return {};
 
             std::list<NMediaManager::NCore::SDirNodeItem> retVal;
-            auto mediaInfo = getMediaTags(fileInfo);
+            auto mediaInfo = getMediaTags( fileInfo );
 
-            retVal.emplace_back(mediaInfo["TITLE"], offset++);
+            retVal.emplace_back( mediaInfo["TITLE"], offset++ );
             retVal.back().fEditType = EType::eTitle;
 
-            retVal.emplace_back(mediaInfo["LENGTH"], offset++);
+            retVal.emplace_back( mediaInfo["LENGTH"], offset++ );
             retVal.back().fEditType = EType::eLength;
 
-            retVal.emplace_back(mediaInfo["DATE_RECORDED"], offset++);
+            retVal.emplace_back( mediaInfo["DATE_RECORDED"], offset++ );
             retVal.back().fEditType = EType::eDate;
 
-            retVal.emplace_back(mediaInfo["COMMENT"], offset++);
+            retVal.emplace_back( mediaInfo["COMMENT"], offset++ );
             retVal.back().fEditType = EType::eComment;
             return retVal;
         }
@@ -966,7 +979,7 @@ namespace NMediaManager
 
             auto baseName = fi.completeBaseName();
 
-            auto year = getMediaYear(fi);
+            auto year = getMediaYear( fi );
 
             if ( setMediaTags( fi.absoluteFilePath(), baseName, year, msg ) )
             {
@@ -983,7 +996,7 @@ namespace NMediaManager
 
             std::unordered_map< QString, QString > tags =
             {
-                { "TITLE", ( title.isEmpty() ? QFileInfo( fileName ).completeBaseName() : title ) }
+                { "TITLE", (title.isEmpty() ? QFileInfo( fileName ).completeBaseName() : title) }
                 ,{ "DATE_RECORDED", year }
             };
 
@@ -1073,7 +1086,7 @@ namespace NMediaManager
 
         QString CDirModel::getProgressLabel( const SProcessInfo & /*processInfo*/ ) const
         {
-            return QString();
+            return {};
         }
 
         QString errorString( QProcess::ProcessError error )
@@ -1097,7 +1110,7 @@ namespace NMediaManager
                 case QProcess::NormalExit: return QObject::tr( "Normal Exit: The process exited normally." );
                 case QProcess::CrashExit: return QObject::tr( "Crashed: The process crashed." );
                 default:
-                    return QString();
+                    return {};
             }
         }
 
@@ -1108,9 +1121,9 @@ namespace NMediaManager
 
         QStringList CDirModel::getMediaHeaders() const
         {
-            if (!canShowMediaInfo())
+            if ( !canShowMediaInfo() )
                 return {};
-            return QStringList() << tr("Title") << tr("Length") << tr("Media Date") << tr("Comment");
+            return QStringList() << tr( "Title" ) << tr( "Length" ) << tr( "Media Date" ) << tr( "Comment" );
         }
 
         std::list< NMediaManager::NCore::SDirNodeItem > CDirModel::addAdditionalItems( const QFileInfo & fileInfo ) const
@@ -1271,13 +1284,13 @@ namespace NMediaManager
             }
         }
 
-        QString CDirModel::getMediaYear(const QFileInfo & fi) const
+        QString CDirModel::getMediaYear( const QFileInfo & fi ) const
         {
             auto searchPath = fi;
             QString year;
-            while (year.isEmpty() && !isRootPath(searchPath.absoluteFilePath()))
+            while ( year.isEmpty() && !isRootPath( searchPath.absoluteFilePath() ) )
             {
-                SSearchTMDBInfo searchInfo(searchPath.completeBaseName(), {});
+                SSearchTMDBInfo searchInfo( searchPath.completeBaseName(), {} );
                 if ( searchInfo.releaseDateSet() )
                     year = QString::number( searchInfo.releaseDate().first.year() );
                 searchPath = searchPath.absolutePath();
@@ -1326,28 +1339,28 @@ namespace NMediaManager
 
         int CDirModel::getMediaTitleLoc() const
         {
-            if (!canShowMediaInfo())
+            if ( !canShowMediaInfo() )
                 return -1;
             return firstMediaItemColumn();
         }
 
         int CDirModel::getMediaLengthLoc() const
         {
-            if (!canShowMediaInfo())
+            if ( !canShowMediaInfo() )
                 return -1;
             return getMediaTitleLoc() + 1;
         }
 
         int CDirModel::getMediaDateLoc() const
         {
-            if (!canShowMediaInfo())
+            if ( !canShowMediaInfo() )
                 return -1;
             return getMediaLengthLoc() + 1;
         }
 
         int CDirModel::getMediaCommentLoc() const
         {
-            if (!canShowMediaInfo())
+            if ( !canShowMediaInfo() )
                 return -1;
             return getMediaDateLoc() + 1;
         }
@@ -1381,9 +1394,9 @@ namespace NMediaManager
             return isRootPath( QFileInfo( path ) );
         }
 
-        bool CDirModel::isRootPath(const QModelIndex & idx) const
+        bool CDirModel::isRootPath( const QModelIndex & idx ) const
         {
-            auto fi = fileInfo(idx);
+            auto fi = fileInfo( idx );
             return isRootPath( fi );
         }
 
@@ -1399,23 +1412,23 @@ namespace NMediaManager
             return retVal;
         }
 
-        void CDirModel::updatePath(const QModelIndex & idx, const QString & oldPath, const QString & newPath)
+        void CDirModel::updatePath( const QModelIndex & idx, const QString & oldPath, const QString & newPath )
         {
-            if (QFileInfo(newPath).isDir())
-                updateDir(idx, oldPath, newPath);
+            if ( QFileInfo( newPath ).isDir() )
+                updateDir( idx, oldPath, newPath );
             else
-                updateFile(idx, oldPath, newPath);
+                updateFile( idx, oldPath, newPath );
         }
 
-        void CDirModel::updateFile(const QModelIndex &idx, const QString & /*oldPath*/, const QString & newPath)
+        void CDirModel::updateFile( const QModelIndex & idx, const QString & /*oldPath*/, const QString & newPath )
         {
-            auto nameIndex = index(idx.row(), EColumns::eFSName, idx.parent());
-            setData(nameIndex, newPath, ECustomRoles::eFullPathRole);
-            auto item = itemFromIndex(nameIndex);
+            auto nameIndex = index( idx.row(), EColumns::eFSName, idx.parent() );
+            setData( nameIndex, newPath, ECustomRoles::eFullPathRole );
+            auto item = itemFromIndex( nameIndex );
             fPathMapping[newPath] = item;
         }
 
-        void CDirModel::updateDir(const QModelIndex & idx, const QDir & oldDir, const QDir & newDir)
+        void CDirModel::updateDir( const QModelIndex & idx, const QDir & oldDir, const QDir & newDir )
         {
             auto nameIndex = index( idx.row(), EColumns::eFSName, idx.parent() );
             setData( nameIndex, newDir.absolutePath(), ECustomRoles::eFullPathRole );
@@ -1434,20 +1447,21 @@ namespace NMediaManager
             }
         }
 
-        void CDirModel::slotDataChanged(const QModelIndex & start, const QModelIndex & end, const QVector<int> &/*roles*/)
+        void CDirModel::slotDataChanged( const QModelIndex & start, const QModelIndex & end, const QVector<int> &/*roles*/ )
         {
-            std::unordered_set< QString > handled;
-            for (int ii = start.row(); ii <= end.row(); ++ii)
+            auto parent = start.parent();
+            if ( end.parent() != start.parent() )
+                return;
+
+            for ( int ii = start.row(); ii <= end.row(); ++ii )
             {
-                for (int jj = start.column(); jj <= end.column(); ++jj)
+                for ( int jj = start.column(); jj <= end.column(); ++jj )
                 {
-                    auto fi = fileInfo(index(ii, jj, start.parent()));
-                    if (handled.find(fi.absoluteFilePath()) != handled.end())
-                        continue;
+                    auto index = this->index( ii, jj, parent );
+                    auto fi = fileInfo( index );
 
-                    clearPathStatusCache(fi);
-
-                    handled.insert(fi.absoluteFilePath());
+                    clearPathStatusCache( fi );
+                    clearItemStatusCache( index );
                 }
             }
         }
@@ -1457,34 +1471,64 @@ namespace NMediaManager
             return !fLoading;
         }
 
-        std::optional< TItemStatus > CDirModel::getIndexStatus(const QModelIndex & idx) const
+        std::optional<NMediaManager::NCore::TItemStatus> CDirModel::getRowStatus( const QModelIndex & idx ) const
         {
-            auto itemStatus = getItemStatus(idx);
-            if (!itemStatus.has_value())
+            auto parent = idx.parent();
+            int numCols = columnCount( parent );
+            std::optional< TItemStatus > rowStatus;
+            for ( int ii = 0; ii < numCols; ++ii )
             {
-                auto fi = fileInfo(idx);
-                itemStatus = getPathStatus(fi);
+                if ( ii == idx.column() )
+                    continue;
+
+                auto peerIndex = this->index( idx.row(), ii, parent );
+                auto status = getItemStatus( peerIndex );
+                if ( status.has_value() )
+                {
+                    if ( rowStatus.has_value() )
+                    {
+                        rowStatus.value().first = std::max( rowStatus.value().first, status.value().first );
+                        rowStatus.value().second += "\n" + status.value().second;
+                    }
+                    else
+                        rowStatus = status;
+                }
+            }
+            return rowStatus;
+        }
+
+        std::optional< TItemStatus > CDirModel::getIndexStatus( const QModelIndex & idx ) const
+        {
+            auto itemStatus = getItemStatus( idx );
+            if ( !itemStatus.has_value() && idx.column() == NCore::EColumns::eFSName )
+            {
+                // when the filename itself has no result, show the union of all other columns
+                itemStatus = getRowStatus( idx );
+            }
+
+            if ( !itemStatus.has_value() )
+            {
+                auto fi = fileInfo( idx );
+                itemStatus = getPathStatus( fi );
             }
             return itemStatus;
         }
 
-        std::optional< TItemStatus > CDirModel::computeItemStatus(const QModelIndex & idx) const
+        std::optional< TItemStatus > CDirModel::computeItemStatus( const QModelIndex & idx ) const
         {
             (void)idx;
             return {};
         }
 
-        std::optional< TItemStatus > CDirModel::getItemStatus(const QModelIndex & idx) const
+        std::optional< TItemStatus > CDirModel::getItemStatus( const QModelIndex & idx ) const
         {
-            auto fi = fileInfo(idx);
+            auto fi = fileInfo( idx );
 
-            static bool sUseCache = true;
-
-            auto pos = fItemStatusCache.find(fi.absoluteFilePath());
-            if ( sUseCache && ( pos != fItemStatusCache.end() ) )
+            auto pos = fItemStatusCache.find( fi.absoluteFilePath() );
+            if ( useCache() && (pos != fItemStatusCache.end()) )
             {
-                auto pos2 = (*pos).second.find(idx.column());
-                if (pos2 != (*pos).second.end())
+                auto pos2 = (*pos).second.find( idx.column() );
+                if ( pos2 != (*pos).second.end() )
                     return (*pos2).second;
             }
 
@@ -1492,26 +1536,24 @@ namespace NMediaManager
                 return {};
 
 
-            auto retVal = computeItemStatus(idx);
-            if (retVal.has_value())
+            auto retVal = computeItemStatus( idx );
+            if ( retVal.has_value() )
             {
-                fItemStatusCache[ fi.absoluteFilePath() ][ idx.column() ] = retVal.value();
+                fItemStatusCache[fi.absoluteFilePath()][idx.column()] = retVal.value();
             }
             return retVal;
         }
 
-        std::optional< TItemStatus > CDirModel::computePathStatus(const QFileInfo & fi) const
+        std::optional< TItemStatus > CDirModel::computePathStatus( const QFileInfo & fi ) const
         {
             (void)fi;
             return {};
         }
 
-        std::optional< TItemStatus > CDirModel::getPathStatus(const QFileInfo & fi) const
+        std::optional< TItemStatus > CDirModel::getPathStatus( const QFileInfo & fi ) const
         {
-            static bool sUseCache = true;
-
             auto pos = fPathStatusCache.find( fi.absoluteFilePath() );
-            if (sUseCache && ( pos != fPathStatusCache.end() ) )
+            if ( useCache() && (pos != fPathStatusCache.end()) )
                 return (*pos).second;
 
             if ( !canComputeStatus() )
@@ -1520,50 +1562,50 @@ namespace NMediaManager
             auto retVal = computePathStatus( fi );
             if ( retVal.has_value() )
             {
-                fPathStatusCache[ fi.absoluteFilePath() ] = retVal.value();
+                fPathStatusCache[fi.absoluteFilePath()] = retVal.value();
             }
             return retVal;
         }
-            
-        QVariant CDirModel::getItemBackground(const QModelIndex & idx) const
+
+        QVariant CDirModel::getItemBackground( const QModelIndex & idx ) const
         {
-            auto itemStatus = getIndexStatus(idx);
+            auto itemStatus = getIndexStatus( idx );
             if ( itemStatus.has_value() )
             {
                 auto retVal = CPreferences::instance()->getColorForStatus( itemStatus.value().first, true );
                 if ( retVal.isValid() )
                     return retVal;
             }
-            return QVariant();
+            return {};
         }
 
-        QVariant CDirModel::getItemForeground(const QModelIndex & idx) const
+        QVariant CDirModel::getItemForeground( const QModelIndex & idx ) const
         {
-            auto itemStatus = getIndexStatus(idx);
+            auto itemStatus = getIndexStatus( idx );
             if ( itemStatus.has_value() )
             {
                 auto retVal = CPreferences::instance()->getColorForStatus( itemStatus.value().first, false );
                 if ( retVal.isValid() )
                     return retVal;
             }
-            return QVariant();
+            return {};
         }
 
-        QVariant CDirModel::getToolTip(const QModelIndex & idx) const
+        QVariant CDirModel::getToolTip( const QModelIndex & idx ) const
         {
-            auto itemStatus = getIndexStatus(idx);
-            if (itemStatus.has_value())
+            auto itemStatus = getIndexStatus( idx );
+            if ( itemStatus.has_value() )
                 return itemStatus.value().second;
-            return QVariant();
+            return {};
         }
 
-        QVariant CDirModel::getPathDecoration(const QModelIndex & idx, const QVariant & baseDecoration) const
+        QVariant CDirModel::getPathDecoration( const QModelIndex & idx, const QVariant & baseDecoration ) const
         {
             (void)idx;
             return baseDecoration;
         }
 
-        void CDirModel::clearItemStatusCache(const QModelIndex & idx) const
+        void CDirModel::clearItemStatusCache( const QModelIndex & idx ) const
         {
             auto fi = fileInfo( idx );
             auto pos = fItemStatusCache.find( fi.absoluteFilePath() );
@@ -1577,16 +1619,16 @@ namespace NMediaManager
             (*pos).second.erase( pos2 );
         }
 
-        void CDirModel::clearPathStatusCache(const QFileInfo & fi) const
+        void CDirModel::clearPathStatusCache( const QFileInfo & fi ) const
         {
-            auto pos = fPathStatusCache.find(fi.absoluteFilePath());
+            auto pos = fPathStatusCache.find( fi.absoluteFilePath() );
             if ( pos != fPathStatusCache.end() )
-                fPathStatusCache.erase(pos);
+                fPathStatusCache.erase( pos );
         }
 
-        void CDirModel::clearPathStatusCache(const QString & path) const
+        void CDirModel::clearPathStatusCache( const QString & path ) const
         {
-            return clearPathStatusCache( QFileInfo(path) );
+            return clearPathStatusCache( QFileInfo( path ) );
         }
 
         void CDirModel::resetStatusCaches()

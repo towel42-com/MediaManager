@@ -237,6 +237,7 @@ namespace NMediaManager
             virtual bool canComputeStatus() const;
             virtual std::optional< TItemStatus > getIndexStatus(const QModelIndex & idx) const final; // checks the item then the path status
 
+            virtual std::optional<TItemStatus> getRowStatus( const QModelIndex & idx ) const;
             virtual std::optional< TItemStatus > getItemStatus(const QModelIndex & idx) const final;
             virtual std::optional< TItemStatus > computeItemStatus(const QModelIndex & idx) const;
             virtual std::optional< TItemStatus > getPathStatus(const QFileInfo & fi) const final;
