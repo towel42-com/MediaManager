@@ -147,6 +147,11 @@ namespace NMediaManager
                         retVal.second = QString();
                     }
                 }
+                else if ( transformInfo->isNotFoundResult() )
+                {
+                    retVal.first = false;
+                    retVal.second = transformInfo->getTitle();
+                }
                 else
                 {
                     if ( transformInfo->isDeleteResult() )
@@ -705,14 +710,15 @@ namespace NMediaManager
             return !fInAutoSearch && CDirModel::canComputeStatus();
         }
 
-        std::optional< TItemStatus > CTransformModel::computePathStatus(const QFileInfo & fileInfo) const
+        std::optional< TItemStatus > CTransformModel::computeItemStatus( const QModelIndex & idx) const
         {
-            if ( fInAutoSearch || fLoading )
+            if (isRootPath(idx))
                 return {};
 
-            if (isRootPath(fileInfo))
+            if ( idx.column() != EColumns::eTransformName )
                 return {};
 
+            auto fileInfo = this->fileInfo( idx );
             TItemStatus retVal = { NCore::EItemStatus::eOK, QString() };
             auto path = fileInfo.absoluteFilePath();
         
@@ -725,14 +731,23 @@ namespace NMediaManager
                 if (canAutoSearch(fileInfo, false))
                 {
                     auto transformInfo = transformItem(fileInfo);
-                    if (transformInfo.second == kDeleteThis)
+                    if ( transformInfo.second == kDeleteThis )
+                    {
                         retVal.first = NCore::EItemStatus::eOK;
+                        msgs << tr( "File Scheduled for deletion." );
+                    }
+                    else if ( transformInfo.second == kNoMatch )
+                    {
+                        retVal.first = NCore::EItemStatus::eError;
+                        msgs << tr( "No Match found" );
+                    }
                     else if (!transformInfo.first)
                     {
                         retVal.first = NCore::EItemStatus::eError;
                         msgs << tr("Could not properly transform item");
                     }
                 }
+                msgs.removeAll( QString() );
                 retVal.second = msgs.join("\n");
             }
 
@@ -930,7 +945,7 @@ namespace NMediaManager
 
         void CTransformModel::updateFile(const QModelIndex &idx, const QString & oldFile, const QString & newFile)
         {
-            CDirModel::updatePath(idx, oldFile, newFile);
+            CDirModel::updateFile(idx, oldFile, newFile);
             auto pos = fFileMapping.find(oldFile);
             if (pos != fFileMapping.end())
             {

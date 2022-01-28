@@ -45,12 +45,14 @@ namespace NMediaManager
         {
             if ( isDeleteResult() )
                 return kDeleteThis;
+            if ( isNotFoundResult() )
+                return kNoMatch;
             return NSABUtils::NStringUtils::transformTitle( fTitle );
         }
 
-        QString STransformResult::getReleaseDate() const
+        std::pair< QDate, QString > STransformResult::getReleaseDate() const
         {
-            if ( fReleaseDate.isEmpty() )
+            if ( fReleaseDate.second.isEmpty() || !fReleaseDate.first.isValid() )
             {
                 auto parent = fParent.lock();
                 if ( parent )
@@ -88,12 +90,17 @@ namespace NMediaManager
         }
 
 
+        void STransformResult::setReleaseDate( const QString & releaseDate )
+        {
+            fReleaseDate.second = releaseDate;
+            fReleaseDate.first = NSABUtils::getDate( releaseDate );
+        }
+
         QString STransformResult::getYear() const
         {
-            auto date = getReleaseDate();
-            auto dt = NSABUtils::findDate( date );
+            auto dt = getReleaseDate().first;
             if ( !dt.isValid() )
-                return QString();
+                return {};
             return QString::number( dt.year() );
         }
 
@@ -116,9 +123,9 @@ namespace NMediaManager
         QString STransformResult::getSeason() const
         {
             if ( !isTVShow() )
-                return QString();
+                return {};
             if ( ( fMediaType != EMediaType::eTVSeason ) && ( fMediaType != EMediaType::eTVEpisode ) )
-                return QString();
+                return {};
             return fSeason;
         }
 
@@ -126,9 +133,9 @@ namespace NMediaManager
         QString STransformResult::getEpisode() const
         {
             if ( !isTVShow() )
-                return QString();
+                return {};
             if ( fMediaType != EMediaType::eTVEpisode )
-                return QString();
+                return {};
             return fSeason;
         }
 
@@ -250,7 +257,7 @@ namespace NMediaManager
                 QStringList tmp;
                 tmp << "InfoType: '" + NMediaManager::NCore::toEnumString( fMediaType ) + "'"
                     << "Title: '" + fTitle + "'"
-                    << "ReleaseDate: '" + fReleaseDate + "'"
+                    << "ReleaseDate: '" + fReleaseDate.second + "'"
                     << "TMDBID: '" + fTMDBID + "'"
                     << "Season TMBDID: '" + fSeasonTMDBID + "'"
                     << "Episode TMDBID: '" + fEpisodeTMDBID + "'"
@@ -273,7 +280,7 @@ namespace NMediaManager
             {
                 tmp << NMediaManager::NCore::toEnumString( fMediaType ) + " -"
                     << "Title: '" + fTitle + "'"
-                    << "ReleaseDate: '" + fReleaseDate + "'"
+                    << "ReleaseDate: '" + fReleaseDate.second + "'"
                     << "TMDBID: '" + fTMDBID + "'"
                     ;
 
@@ -404,7 +411,7 @@ namespace NMediaManager
                 case ETitleInfo::eExtraInfo: return fExtraInfo;
                 case ETitleInfo::eDescription: return fDescription;
             }
-            return QString();
+            return {};
         }
 
         QString toEnumString( EMediaType infoType )
@@ -417,8 +424,9 @@ namespace NMediaManager
                 case EMediaType::eTVSeason: return "TV Season";
                 case EMediaType::eTVEpisode: return "TV Episode";
                 case EMediaType::eDeleteFileType: return "Delete File";
+                case EMediaType::eNotFoundType: return "Not Found";
             }
-            return QString();
+            return {};
         }
 
         bool isTVType( EMediaType infoType )

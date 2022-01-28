@@ -27,6 +27,7 @@
 #include <QPixmap>
 #include <memory>
 #include <list>
+#include <QDate>
 
 class QFileInfo;
 
@@ -52,6 +53,7 @@ namespace NMediaManager
         {
             eUnknownType,
             eDeleteFileType,
+            eNotFoundType,
             eMovie,
             eTVShow,
             eTVSeason,
@@ -67,10 +69,11 @@ namespace NMediaManager
             EMediaType mediaType() const { return fMediaType; }
             bool isTVShow() const { return fMediaType != EMediaType::eMovie; } // tvshow, season or episode are all not movie
             bool isDeleteResult() const { return fMediaType == EMediaType::eDeleteFileType; } // tvshow, season or episode are all not movie
+            bool isNotFoundResult() const { return fMediaType == EMediaType::eNotFoundType; } // search not found
             QString getTitle() const;
             QString getYear() const;
             QString getInitialYear() const; // if its a TV episode, get the show description year
-            QString getReleaseDate() const;
+            std::pair< QDate, QString > getReleaseDate() const;
             QString getSubTitle() const;
             QString getTMDBID() const;
             bool isSeasonOnly() const { return fSeasonOnly; }
@@ -89,11 +92,12 @@ namespace NMediaManager
 
             const STransformResult * getTVShowInfo() const; // not to be saved, only used and ignored
 
+            void setReleaseDate( const QString & releaseDate );
             [[nodiscard]] static QString cleanFileName(const QString & inFile, bool isDir);
             [[nodiscard]] static QString cleanFileName(const QFileInfo & fi);
 
             QString fTitle;
-            QString fReleaseDate;
+            std::pair< QDate, QString > fReleaseDate;
             QString fTMDBID;
             QString fSeasonTMDBID;
             QString fEpisodeTMDBID;

@@ -48,7 +48,7 @@ namespace NMediaManager
 
             virtual bool setData(const QModelIndex & idx, const QVariant & value, int role) override;
 
-            virtual std::optional< TItemStatus > computePathStatus(const QFileInfo & fi) const override;
+            virtual std::optional< TItemStatus > computeItemStatus(const QModelIndex & idx ) const override;
             virtual bool canComputeStatus() const override;
 
             void setSearchResult( const QModelIndex & idx, std::shared_ptr< STransformResult > info, bool applyToChilren, bool forceSet );
