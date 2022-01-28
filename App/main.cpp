@@ -19,7 +19,6 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-
 #include "UI/MainWindow.h"
 #include "SABUtils/ValidateOpenSSL.h"
 #include "Version.h"
@@ -61,7 +60,7 @@ void myMessageOutput( QtMsgType type, const QMessageLogContext & context, const 
     realMsg = QString( "%1: %2" ).arg( typeString ).arg( realMsg ).trimmed();
 
 #ifdef Q_OS_WINDOWS
-    OutputDebugString( qPrintable( realMsg + "\n" ) );
+    OutputDebugString( qUtf16Printable( realMsg + "\n" ) );
 #else
     fprintf( "%s\n", qPrintable( realMsg ) );
 #endif
