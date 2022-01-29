@@ -66,7 +66,7 @@ namespace NMediaManager
         class CCompleterFileSystemModel : public QFileSystemModel
         {
         public:
-            CCompleterFileSystemModel( QObject * parent = 0 ) :
+            CCompleterFileSystemModel( QObject * parent = nullptr ) :
                 QFileSystemModel( parent )
             {}
 
