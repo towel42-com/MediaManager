@@ -50,7 +50,7 @@ namespace NMediaManager
         void CSetTags::slotLoadTags()
         {
             NSABUtils::CAutoWaitCursor awc;
-            auto tags = NSABUtils::getMediaTags( fImpl->fileName->text(), NCore::CPreferences::instance()->getFFProbeEXE() );
+            auto tags = NSABUtils::getMediaTags( fImpl->fileName->text() );
             fImpl->title->setText( tags["TITLE"] );
             fImpl->releaseDate->setText( tags["DATE_RECORDED"] );
             fImpl->comments->setText( tags["COMMENT"] );
