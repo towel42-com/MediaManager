@@ -339,10 +339,11 @@ namespace NMediaManager
 
                     // exception for "SRT" files that are of the form X_XXXX.ext dont transform
                     //auto txt = childIdx.data( ECustomRoles::eFullPathRole ).toString();
-                    if ( forceSet || !isSubtitleFile( childIdx ) )
+                    if ( !isSubtitleFile( childIdx ) )
                     {
                         auto childInfo = getTransformResult( childIdx, false );
-                        if ( forceSet || !childInfo )
+                        bool isDelete = childInfo && childInfo->isDeleteResult();
+                        if ( ( forceSet && !isDelete ) || !childInfo )
                         {
                             setSearchResult( childIdx, searchResult, applyToChildren, forceSet );
                         }
