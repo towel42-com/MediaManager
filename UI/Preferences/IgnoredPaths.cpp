@@ -41,8 +41,8 @@ namespace NMediaManager
             connect( fImpl->btnAddIgnorePathName, &QToolButton::clicked, this, &CIgnoredPaths::slotAddIgnorePathName );
             connect( fImpl->btnDelIgnorePathName, &QToolButton::clicked, this, &CIgnoredPaths::slotDelIgnorePathName );
 
-            fIgnorePathNamesModel = new QStringListModel( this );
-            fImpl->pathNamesToIgnore->setModel( fIgnorePathNamesModel );
+            fModel = new QStringListModel( this );
+            fImpl->pathNamesToIgnore->setModel( fModel );
 
             new NSABUtils::CButtonEnabler( fImpl->pathNamesToIgnore, fImpl->btnDelIgnorePathName );
         }
@@ -52,22 +52,22 @@ namespace NMediaManager
 
         void CIgnoredPaths::slotAddIgnorePathName()
         {
-            addString( tr( "Add Path Name to Ignore" ), tr( "Path Name:" ), fIgnorePathNamesModel, fImpl->pathNamesToIgnore, false );
+            addString( tr( "Add Path Name to Ignore" ), tr( "Path Name:" ), fModel, fImpl->pathNamesToIgnore, false );
         }
 
         void CIgnoredPaths::slotDelIgnorePathName()
         {
-            delString( fIgnorePathNamesModel, fImpl->pathNamesToIgnore );
+            delString( fModel, fImpl->pathNamesToIgnore );
         }
 
         void CIgnoredPaths::load()
         {
-            fIgnorePathNamesModel->setStringList( NCore::CPreferences::instance()->getIgnoredPaths() );
+            fModel->setStringList( NCore::CPreferences::instance()->getIgnoredPaths() );
         }
 
         void CIgnoredPaths::save()
         {
-            NCore::CPreferences::instance()->setIgnoredPaths( fIgnorePathNamesModel->stringList() );
+            NCore::CPreferences::instance()->setIgnoredPaths( fModel->stringList() );
         }
     }
 }
