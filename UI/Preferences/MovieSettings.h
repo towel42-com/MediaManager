@@ -42,11 +42,11 @@ namespace NMediaManager
         {
             Q_OBJECT
         public:
-            CMovieSettings( QWidget * parent = 0 );
-            ~CMovieSettings();
+            CMovieSettings( QWidget * parent = nullptr );
+            ~CMovieSettings() override;
 
-            void load();
-            void save();
+            virtual void load() override;
+            virtual void save() override;
             virtual QStringList pageName() const override
             {
                 return QStringList( { "Transformation Settings", "Movies" } );

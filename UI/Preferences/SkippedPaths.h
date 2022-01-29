@@ -42,11 +42,11 @@ namespace NMediaManager
         {
             Q_OBJECT
         public:
-            CSkippedPaths( QWidget * parent = 0 );
-            ~CSkippedPaths();
+            CSkippedPaths( QWidget * parent = nullptr );
+            virtual ~CSkippedPaths() override;
 
-            void load();
-            void save();
+            virtual void load() override;
+            virtual void save() override;
             virtual QStringList pageName() const override
             {
                 return QStringList( { "Paths", "Skipped Paths" } );

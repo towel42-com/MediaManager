@@ -42,11 +42,11 @@ namespace NMediaManager
         {
             Q_OBJECT
         public:
-            CTransformationSettings( QWidget * parent = 0 );
-            ~CTransformationSettings();
+            CTransformationSettings( QWidget * parent = nullptr );
+            virtual ~CTransformationSettings() override;
 
-            void load();
-            void save();
+            virtual void load() override;
+            virtual void save() override;
             virtual QStringList pageName() const override
             {
                 return QStringList( { "Transformation Settings" } );

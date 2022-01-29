@@ -42,11 +42,11 @@ namespace NMediaManager
         {
             Q_OBJECT
         public:
-            CRemoveFromPaths( QWidget * parent = 0 );
-            ~CRemoveFromPaths();
+            CRemoveFromPaths( QWidget * parent = nullptr );
+            virtual ~CRemoveFromPaths() override;
 
-            void load();
-            void save();
+            virtual void load() override;
+            virtual void save() override;
             virtual QStringList pageName() const override
             {
                 return QStringList( { "Known Strings", "Remove from Paths" } );

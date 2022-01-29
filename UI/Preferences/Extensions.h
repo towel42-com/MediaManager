@@ -33,11 +33,11 @@ namespace NMediaManager
         {
             Q_OBJECT
         public:
-            CExtensions( QWidget * parent = 0 );
-            ~CExtensions();
+            CExtensions( QWidget * parent = nullptr );
+            virtual ~CExtensions() override;
 
-            void load();
-            void save();
+            virtual void load() override;
+            virtual void save() override;
             virtual QStringList pageName() const override
             {
                 return QStringList( { "Extensions" } );

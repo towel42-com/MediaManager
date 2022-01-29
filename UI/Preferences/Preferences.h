@@ -36,8 +36,8 @@ namespace NMediaManager
         {
             Q_OBJECT
         public:
-            CPreferences( QWidget * parent = 0 );
-            ~CPreferences();
+            CPreferences( QWidget * parent = nullptr );
+            virtual ~CPreferences() override;
         public Q_SLOTS:
             void slotPageSelectorCurrChanged( QTreeWidgetItem * current, QTreeWidgetItem * previous );
             void slotPageSelectorItemActived( QTreeWidgetItem * item );

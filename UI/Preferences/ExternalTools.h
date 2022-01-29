@@ -42,11 +42,11 @@ namespace NMediaManager
         {
             Q_OBJECT
         public:
-            CExternalTools( QWidget * parent = 0 );
-            ~CExternalTools();
+            CExternalTools( QWidget * parent = nullptr );
+            virtual ~CExternalTools() override;
 
-            void load();
-            void save();
+            virtual void load() override;
+            virtual void save() override;
             virtual QStringList pageName() const override
             {
                 return QStringList( { "External Tools" } );

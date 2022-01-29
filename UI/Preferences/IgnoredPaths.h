@@ -42,11 +42,11 @@ namespace NMediaManager
         {
             Q_OBJECT
         public:
-            CIgnoredPaths( QWidget * parent = 0 );
-            ~CIgnoredPaths();
+            CIgnoredPaths( QWidget * parent = nullptr );
+            virtual ~CIgnoredPaths() override;
 
-            void load();
-            void save();
+            virtual void load() override;
+            virtual void save() override;
             virtual QStringList pageName() const override
             {
                 return QStringList( { "Paths", "Ignored Paths" } );
@@ -55,7 +55,7 @@ namespace NMediaManager
             void slotAddIgnorePathName();
             void slotDelIgnorePathName();
         private:
-            QStringListModel * fIgnorePathNamesModel{ nullptr };
+            QStringListModel * fModel{ nullptr };
             std::unique_ptr< Ui::CIgnoredPaths > fImpl;
         };
     }

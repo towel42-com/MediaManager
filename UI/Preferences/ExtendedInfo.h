@@ -35,8 +35,8 @@ namespace NMediaManager
         {
             Q_OBJECT
         public:
-            CExtendedInfo( QWidget * parent = 0 );
-            ~CExtendedInfo();
+            CExtendedInfo( QWidget * parent = nullptr );
+            virtual ~CExtendedInfo() override;
 
             virtual void load() override;
             virtual void save() override;

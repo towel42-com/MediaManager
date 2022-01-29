@@ -42,11 +42,11 @@ namespace NMediaManager
         {
             Q_OBJECT
         public:
-            CPathsToDelete( QWidget * parent = 0 );
-            ~CPathsToDelete();
+            CPathsToDelete( QWidget * parent = nullptr );
+            virtual ~CPathsToDelete() override;
 
-            void load();
-            void save();
+            virtual void load() override;
+            virtual void save() override;
             virtual QStringList pageName() const override
             {
                 return QStringList( { "Paths", "Paths to Delete" } );

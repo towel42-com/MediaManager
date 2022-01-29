@@ -36,8 +36,8 @@ namespace NMediaManager
         {
             Q_OBJECT
         public:
-            CBasePrefPage( QWidget * parent = 0 );
-            ~CBasePrefPage();
+            CBasePrefPage( QWidget * parent = nullptr );
+            virtual ~CBasePrefPage() override;
 
             virtual void load() = 0;
             virtual void save() = 0;

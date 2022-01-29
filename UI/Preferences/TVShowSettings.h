@@ -42,11 +42,11 @@ namespace NMediaManager
         {
             Q_OBJECT
         public:
-            CTVShowSettings( QWidget * parent = 0 );
-            ~CTVShowSettings();
+            CTVShowSettings( QWidget * parent = nullptr );
+            virtual ~CTVShowSettings() override;
 
-            void load();
-            void save();
+            virtual void load() override;
+            virtual void save() override;
             virtual QStringList pageName() const override
             {
                 return QStringList( { "Transformation Settings", "TV Shows" } );

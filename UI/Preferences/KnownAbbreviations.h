@@ -37,11 +37,11 @@ namespace NMediaManager
         {
             Q_OBJECT
         public:
-            CKnownAbbreviations( QWidget * parent = 0 );
-            ~CKnownAbbreviations();
+            CKnownAbbreviations( QWidget * parent = nullptr );
+            virtual ~CKnownAbbreviations() override;
 
-            void load();
-            void save();
+            virtual void load() override;
+            virtual void save() override;
             virtual QStringList pageName() const override
             {
                 return QStringList( { "Known Strings", "Known Abbreviations" } );

@@ -28,6 +28,7 @@
 namespace NSABUtils
 {
     class CKeyValuePairModel;
+    class CCheckableStringListModel;
 }
 class QStringListModel;
 class QLineEdit;
@@ -42,11 +43,11 @@ namespace NMediaManager
         {
             Q_OBJECT
         public:
-            CTagAnalysisSettings( QWidget * parent = 0 );
-            ~CTagAnalysisSettings();
+            CTagAnalysisSettings( QWidget * parent = nullptr );
+            virtual ~CTagAnalysisSettings() override;
 
-            void load();
-            void save();
+            void load() override;
+            void save() override;
             virtual QStringList pageName() const override
             {
                 return QStringList( { "Tag Analysis Settings" } );
@@ -54,6 +55,7 @@ namespace NMediaManager
         public Q_SLOTS:
         private:
             std::unique_ptr< Ui::CTagAnalysisSettings > fImpl;
+            NSABUtils::CCheckableStringListModel * fModel{ nullptr };
         };
     }
 }
