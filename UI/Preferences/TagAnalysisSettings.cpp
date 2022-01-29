@@ -44,6 +44,8 @@ namespace NMediaManager
             fImpl( new Ui::CTagAnalysisSettings )
         {
             fImpl->setupUi( this );
+            fModel = new NSABUtils::CCheckableStringListModel( this );
+            fImpl->tagsToShow->setModel( fModel );
             new NSABUtils::CWidgetEnabler( fImpl->verifyMediaTitle, fImpl->verifyMediaTitleExpr );
             new NSABUtils::CWidgetEnabler( fImpl->verifyMediaDate, fImpl->verifyMediaDateExpr );
             new NSABUtils::CWidgetEnabler( fImpl->verifyMediaComment, fImpl->verifyMediaCommentExpr );
@@ -63,6 +65,8 @@ namespace NMediaManager
             fImpl->verifyMediaDateExpr->setText( NCore::CPreferences::instance()->getVerifyMediaDateExpr() );
             fImpl->verifyMediaComment->setChecked( NCore::CPreferences::instance()->getVerifyMediaComment() );
             fImpl->verifyMediaCommentExpr->setText( NCore::CPreferences::instance()->getVerifyMediaCommentExpr() );
+
+            fModel->setStringList( NCore::CPreferences::instance()->getTagsToShow() );
         }
 
         void CTagAnalysisSettings::save()
@@ -74,6 +78,8 @@ namespace NMediaManager
             NCore::CPreferences::instance()->setVerifyMediaDateExpr( fImpl->verifyMediaDateExpr->text() );
             NCore::CPreferences::instance()->setVerifyMediaComment( fImpl->verifyMediaComment->isChecked() );
             NCore::CPreferences::instance()->setVerifyMediaCommentExpr( fImpl->verifyMediaCommentExpr->text() );
+
+            NCore::CPreferences::instance()->setEnabledTags( fModel->getCheckedStrings() );
         }
     }
 }
