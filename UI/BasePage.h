@@ -51,7 +51,7 @@ namespace NMediaManager
             Q_OBJECT
         public:
             CBasePage( const QString & pageName, QWidget *parent = nullptr );
-            ~CBasePage();
+            virtual ~CBasePage() override;
 
             virtual void load( const QString & dirName );
             virtual void load();
