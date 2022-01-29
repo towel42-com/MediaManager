@@ -124,10 +124,6 @@ namespace NMediaManager
                 ;
         }
 
-        void CMakeMKVModel::setupNewItem( const SDirNodeItem & /*nodeItem*/, const QStandardItem * /*nameItem*/, QStandardItem * /*item*/ ) const
-        {
-        }
-
         void CMakeMKVModel::postLoad( QTreeView * treeView)
         {
             CDirModel::postLoad(treeView);

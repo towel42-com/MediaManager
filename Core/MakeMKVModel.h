@@ -46,7 +46,6 @@ namespace NMediaManager
             virtual bool showMediaItems() const override { return true; };
             virtual int firstMediaItemColumn() const override { return EColumns::eMediaColumnLoc; }
             virtual QStringList headers() const override;
-            virtual void setupNewItem( const SDirNodeItem & /*nodeItem*/, const QStandardItem * /*nameItem*/, QStandardItem * /*item*/ )  const override;
             virtual QString getProgressLabel( const SProcessInfo & processInfo ) const override;
             virtual void postLoad( QTreeView * /*treeView*/ ) override;
             virtual void preLoad(QTreeView * /*treeView*/) override;
