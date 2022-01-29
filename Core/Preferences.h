@@ -79,10 +79,14 @@ namespace NMediaManager
             bool isIgnoredPath( const QFileInfo & fileInfo ) const;
 
             QStringList getSkippedPaths() const;
-            void setSkippedPaths( const QStringList & paths );
+            void setSkippedPaths( const QStringList & value );
 
             QStringList getIgnoredPaths() const;
-            void setIgnoredPaths( const QStringList & paths );
+            void setIgnoredPaths( const QStringList & value );
+
+            std::list< std::pair< QString, bool > > getTagsToShow() const;
+            QStringList getEnabledTags() const;
+            void setEnabledTags( const QStringList & value );
 
             bool getVerifyMediaTags() const;
             void setVerifyMediaTags(bool value);

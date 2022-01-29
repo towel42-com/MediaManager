@@ -324,17 +324,74 @@ namespace NMediaManager
         bool CPreferences::getVerifyMediaTags() const
         {
             QSettings settings;
-            settings.beginGroup("Transform");
+            settings.beginGroup("Tag");
             return settings.value("VerifyMediaTags", true).toBool();
         }
 
         void CPreferences::setVerifyMediaTags(bool value)
         {
             QSettings settings;
-            settings.beginGroup("Transform");
+            settings.beginGroup("Tag");
             settings.setValue("VerifyMediaTags", value);
         }
 
+        std::list< std::pair< QString, bool > > CPreferences::getTagsToShow() const
+        {
+            QSettings settings;
+            settings.beginGroup( "Tag" );
+
+            std::list< std::pair< QString, bool > > retVal =
+            {
+                 { "Title", true }
+                ,{ "Length", true }
+                ,{ "Media Date", true }
+                ,{ "Comment", true }
+                ,{ "BPM", true }
+                ,{ "Artist", true }
+                ,{ "Composer", true }
+                ,{ "Genre", true }
+                ,{ "Track", true }
+                ,{ "Album", true }
+                ,{ "Album Artist", true }
+                ,{ "Discnumber", true }
+            };
+
+            if ( !settings.contains( "EnabledTags" ) )
+                return retVal;
+
+            auto enabledTags = settings.value( "EnabledTags" ).toStringList();
+            for ( auto && jj : retVal )
+                jj.second = false;
+
+            for ( auto && ii : enabledTags )
+            {
+                for ( auto && jj : retVal )
+                {
+                    if ( jj.first == ii )
+                        jj.second = true;
+                }
+            }
+            return retVal;
+        }
+
+        QStringList CPreferences::getEnabledTags() const
+        {
+            auto allTags = getTagsToShow();
+            QStringList retVal;
+            for ( auto && ii : allTags )
+            {
+                if ( ii.second )
+                    retVal << ii.first;
+            }
+            return retVal;
+        }
+
+        void CPreferences::setEnabledTags( const QStringList & values )
+        {
+            QSettings settings;
+            settings.beginGroup( "Tag" );
+            settings.setValue( "EnabledTags", values );
+        }
 
         QString replaceFileInfo( const QFileInfo & fi, const QDate & date, const QString & expr )
         {
@@ -360,14 +417,14 @@ namespace NMediaManager
         bool CPreferences::getVerifyMediaTitle() const
         {
             QSettings settings;
-            settings.beginGroup("Transform");
+            settings.beginGroup("Tag");
             return settings.value("VerifyMediaTitle", true).toBool();
         }
         
         void CPreferences::setVerifyMediaTitle(bool value)
         {
             QSettings settings;
-            settings.beginGroup("Transform");
+            settings.beginGroup("Tag");
             settings.setValue("VerifyMediaTitle", value);
         }
 
@@ -380,42 +437,42 @@ namespace NMediaManager
         QString CPreferences::getVerifyMediaTitleExpr() const
         {
             QSettings settings;
-            settings.beginGroup( "Transform" );
+            settings.beginGroup( "Tag" );
             return settings.value( "VerifyMediaTitleExpr", "<basename>" ).toString();
         }
 
         void CPreferences::setVerifyMediaTitleExpr( const QString & value )
         {
             QSettings settings;
-            settings.beginGroup( "Transform" );
+            settings.beginGroup( "Tag" );
             settings.setValue( "VerifyMediaTitleExpr", value );
         }
 
         bool CPreferences::getVerifyMediaDate() const
         {
             QSettings settings;
-            settings.beginGroup("Transform");
+            settings.beginGroup("Tag");
             return settings.value("VerifyMediaDate", true).toBool();
         }
         
         void CPreferences::setVerifyMediaDate(bool value)
         {
             QSettings settings;
-            settings.beginGroup("Transform");
+            settings.beginGroup("Tag");
             settings.setValue("VerifyMediaDate", value);
         }
 
         QString CPreferences::getVerifyMediaDateExpr() const
         {
             QSettings settings;
-            settings.beginGroup( "Transform" );
+            settings.beginGroup( "Tag" );
             return settings.value( "VerifyMediaDateExpr", R"(<year>|<month>[-\/]<year>|<month>[-\/]<day>[-\/]<year>)" ).toString();
         }
 
         void CPreferences::setVerifyMediaDateExpr( const QString & value )
         {
             QSettings settings;
-            settings.beginGroup( "Transform" );
+            settings.beginGroup( "Tag" );
             settings.setValue( "VerifyMediaDateExpr", value );
         }
 
@@ -428,28 +485,28 @@ namespace NMediaManager
         bool CPreferences::getVerifyMediaComment() const
         {
             QSettings settings;
-            settings.beginGroup( "Transform" );
+            settings.beginGroup( "Tag" );
             return settings.value( "VerifyMediaComment", true ).toBool();
         }
 
         void CPreferences::setVerifyMediaComment( bool value )
         {
             QSettings settings;
-            settings.beginGroup( "Transform" );
+            settings.beginGroup( "Tag" );
             settings.setValue( "VerifyMediaComment", value );
         }
 
         QString CPreferences::getVerifyMediaCommentExpr() const
         {
             QSettings settings;
-            settings.beginGroup( "Transform" );
+            settings.beginGroup( "Tag" );
             return settings.value( "VerifyMediaCommentExpr", R"(<EMPTY>)" ).toString();
         }
 
         void CPreferences::setVerifyMediaCommentExpr( const QString & value )
         {
             QSettings settings;
-            settings.beginGroup( "Transform" );
+            settings.beginGroup( "Tag" );
             settings.setValue( "VerifyMediaCommentExpr", value );
         }
 
