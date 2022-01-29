@@ -40,27 +40,36 @@ namespace NMediaManager
             };
 
             CTagsModel( NUi::CBasePage * page, QObject * parent = nullptr );
-            ~CTagsModel();
+            virtual ~CTagsModel() override;
+
         public Q_SLOTS:
         private:
-            virtual int firstMediaItemColumn() const override { return EColumns::eMediaColumnLoc; }
+            virtual void preLoad( QTreeView * treeView ) override;
+            virtual int firstMediaItemColumn() const override { return fFirstColumn; }
+            virtual int lastMediaItemColumn() const override { return fLastColumn; }
             virtual QStringList headers() const override;
             virtual std::pair< bool, QStandardItem * > processItem(const QStandardItem * item, QStandardItem * parentResultItem, bool displayOnly) override;
-            virtual void setupNewItem(const SDirNodeItem & nodeItem, const QStandardItem * nameItem, QStandardItem * item)  const override;
+            virtual void attachTreeNodes( QStandardItem * nextParent, QStandardItem *& prevParent, const STreeNode & treeNode ) override;;
             virtual bool usesQueuedProcessing() const override { return false; }
             virtual void postFileFunction(bool /*aOK*/, const QFileInfo & /*fileInfo*/) override;
             virtual bool preFileFunction(const QFileInfo & /*fileInfo*/, std::unordered_set<QString> & /*alreadyAdded*/, TParentTree & /*tree*/) override;
-            virtual void attachTreeNodes(QStandardItem * nextParent, QStandardItem *& prevParent, const STreeNode & treeNode) override;
             virtual std::optional< TItemStatus > computeItemStatus(const QModelIndex & idx ) const override;
 
             virtual bool showMediaItems() const override { return false; };
-            virtual int getMediaTitleLoc() const override;
-            virtual int getMediaLengthLoc() const override;
-            virtual int getMediaDateLoc() const override;
-            virtual int getMediaCommentLoc() const override;
-            virtual void reloadMediaTags(const QModelIndex & idx);
+            virtual int getMediaTitleLoc() const override { return fTitleColumn; }
+            virtual int getMediaLengthLoc() const override { return fLengthColumn; }
+            virtual int getMediaDateLoc() const override { return fDateColumn; }
+            virtual int getMediaCommentLoc() const override { return fCommentColumn; }
+            virtual void reloadMediaTags(const QModelIndex & idx) override;
             virtual std::list< NMediaManager::NCore::SDirNodeItem > addAdditionalItems(const QFileInfo & fileInfo) const override;
 
+            QStringList fTagsBeingShown;
+            int fFirstColumn{ -1 };
+            int fTitleColumn{ -1 };
+            int fLengthColumn{ -1 };
+            int fDateColumn{ -1 };
+            int fCommentColumn{ -1 };
+            int fLastColumn{ -1 };
         };
     }
 }

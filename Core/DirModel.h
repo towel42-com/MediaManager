@@ -88,7 +88,6 @@ namespace NMediaManager
         {
             ePath = QStandardItem::UserType + 1,
             eTitle,
-            eLength,
             eDate,
             eComment
         };
@@ -267,7 +266,7 @@ namespace NMediaManager
             virtual std::list< NMediaManager::NCore::SDirNodeItem > addAdditionalItems( const QFileInfo & fileInfo ) const;
             virtual std::list<NMediaManager::NCore::SDirNodeItem> getMediaInfoItems(  const QFileInfo & fileInfo, int firstColumn ) const;
 
-            virtual void setupNewItem( const SDirNodeItem & nodeItem, const QStandardItem * nameItem, QStandardItem * item ) const = 0;
+            virtual void setupNewItem( const SDirNodeItem & nodeItem, const QStandardItem * nameItem, QStandardItem * item ) const;;
             virtual QStringList headers() const;
             virtual void preLoad() final;
             virtual void postLoad( bool aOK ) final;

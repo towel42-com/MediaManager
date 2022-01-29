@@ -52,11 +52,6 @@ namespace NMediaManager
         {
         }
 
-        QStringList CTagsModel::headers() const
-        {
-            return CDirModel::headers() << getMediaHeaders();
-        }
-
         std::pair< bool, QStandardItem * > CTagsModel::processItem(const QStandardItem * item, QStandardItem * parentResultItem, bool displayOnly)
         {
             QStandardItem * myItem = nullptr;
@@ -69,20 +64,84 @@ namespace NMediaManager
             return std::make_pair(aOK, nullptr);
         }
 
-        void CTagsModel::setupNewItem(const SDirNodeItem & nodeItem, const QStandardItem * nameItem, QStandardItem * item)  const
+        void CTagsModel::attachTreeNodes( QStandardItem * /*nextParent*/, QStandardItem *& /*prevParent*/, const STreeNode & /*treeNode*/ )
         {
-            (void)nodeItem;
-            (void)nameItem;
-            (void)item;
+
+        }
+
+        void CTagsModel::preLoad( QTreeView * /*treeView*/ )
+        {
+            fTagsBeingShown = NCore::CPreferences::instance()->getEnabledTags();
+            fFirstColumn = -1;
+            int colNum = EColumns::eMediaColumnLoc;
+            for ( auto && ii : fTagsBeingShown )
+            {
+                if ( ii == "Title" )
+                    fTitleColumn = colNum;
+                else if ( ii == "Length" )
+                    fLengthColumn = colNum;
+                else if ( ii == "Media Date" )
+                    fDateColumn = colNum;
+                else if ( ii == "Comment" )
+                    fCommentColumn = colNum;
+
+                if ( fFirstColumn == -1 )
+                    fFirstColumn = colNum;
+                fLastColumn = colNum;
+                colNum++;
+            }
+        }
+
+        QStringList CTagsModel::headers() const
+        {
+            return CDirModel::headers() << NCore::CPreferences::instance()->getEnabledTags();
         }
 
         std::list< NMediaManager::NCore::SDirNodeItem > CTagsModel::addAdditionalItems(const QFileInfo & fileInfo) const
         {
-            if (canShowMediaInfo())
+            if ( showMediaItems() && canShowMediaInfo() )
+                return {};
+
+
+            bool isMediaFile = this->isMediaFile( fileInfo );
+
+            auto tagsToShow = NCore::CPreferences::instance()->getEnabledTags();
+            auto mediaInfo = getMediaTags( fileInfo );
+            int colNum = EColumns::eMediaColumnLoc;
+
+            std::list<NMediaManager::NCore::SDirNodeItem> retVal;
+            for ( auto && ii : tagsToShow )
             {
-                return getMediaInfoItems(fileInfo, firstMediaItemColumn());
+                auto key = ii.toUpper();
+                if ( key == "MEDIA DATE" )
+                    key = "DATE_RECORDED";
+                else if ( key == "TRACK" )
+                    key = "TRACK/POSITION";
+
+                auto pos = mediaInfo.find( key );
+                QString value;
+                if ( pos != mediaInfo.end() )
+                {
+                    value = (*pos).second;
+                    //if ( isMediaFile )
+                    //{
+                    //    //Q_ASSERT( pos != mediaInfo.end() );
+                    //    continue;
+                    //}
+                }
+
+                retVal.emplace_back( value, colNum++ );
+                if ( isMediaFile )
+                {
+                    if ( key == "TITLE" )
+                        retVal.back().fEditType = EType::eTitle;
+                    else if ( key == "DATE_RECORDED" )
+                        retVal.back().fEditType = EType::eDate;
+                    else if ( key == "COMMENT" )
+                        retVal.back().fEditType = EType::eComment;
+                }
             }
-            return {};
+            return retVal;
         }
 
         void CTagsModel::reloadMediaTags(const QModelIndex & idx)
@@ -93,26 +152,6 @@ namespace NMediaManager
             CDirModel::reloadMediaTags(idx, true);
         }
 
-        int CTagsModel::getMediaTitleLoc() const
-        {
-            return CDirModel::getMediaTitleLoc();
-        }
-
-        int CTagsModel::getMediaLengthLoc() const
-        {
-            return CDirModel::getMediaLengthLoc();
-        }
-
-        int CTagsModel::getMediaDateLoc() const
-        {
-            return CDirModel::getMediaDateLoc();
-        }
-
-        int CTagsModel::getMediaCommentLoc() const
-        {
-            return CDirModel::getMediaCommentLoc();
-        }
-
         void CTagsModel::postFileFunction(bool /*aOK*/, const QFileInfo & /*fileInfo*/)
         {
         }
@@ -120,10 +159,6 @@ namespace NMediaManager
         bool CTagsModel::preFileFunction(const QFileInfo & /*fileInfo*/, std::unordered_set<QString> & /*alreadyAdded*/, TParentTree & /*tree*/)
         {
             return true;
-        }
-
-        void CTagsModel::attachTreeNodes(QStandardItem * /*nextParent*/, QStandardItem *& /*prevParent*/, const STreeNode & /*treeNode*/)
-        {
         }
 
         std::optional< TItemStatus > CTagsModel::computeItemStatus( const QModelIndex & idx ) const

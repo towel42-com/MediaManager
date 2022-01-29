@@ -201,6 +201,7 @@ namespace NMediaManager
             fLoading = true;
             clear();
             setHorizontalHeaderLabels( headers() );
+            preLoad( filesView() );
         }
 
         void CDirModel::postLoad( bool /*aOK*/ )
@@ -261,11 +262,6 @@ namespace NMediaManager
                         }
 
                         updatePath( idx, currName, newName );
-                    }
-                    break;
-                    case EType::eLength:
-                    {
-                        return false;
                     }
                     break;
                     case EType::eTitle:
@@ -850,11 +846,8 @@ namespace NMediaManager
             auto ffprobeExe = NCore::CPreferences::instance()->getFFProbeEXE();
 
             NSABUtils::CAutoWaitCursor awc;
-            auto retVal = NSABUtils::getMediaTags( fi.absoluteFilePath(), ffprobeExe );
+            auto retVal = NSABUtils::getMediaTags( fi.absoluteFilePath() );
 
-            auto numSecs = NSABUtils::getNumberOfSeconds( fi.absoluteFilePath() );
-            NSABUtils::CTimeString ts( numSecs * 1000 );
-            retVal["LENGTH"] = ts.toString( "hh:mm:ss" );
             return retVal;
         }
 
@@ -908,7 +901,6 @@ namespace NMediaManager
             retVal.back().fEditType = EType::eTitle;
 
             retVal.emplace_back( mediaInfo["LENGTH"], offset++ );
-            retVal.back().fEditType = EType::eLength;
 
             retVal.emplace_back( mediaInfo["DATE_RECORDED"], offset++ );
             retVal.back().fEditType = EType::eDate;
@@ -916,6 +908,11 @@ namespace NMediaManager
             retVal.emplace_back( mediaInfo["COMMENT"], offset++ );
             retVal.back().fEditType = EType::eComment;
             return retVal;
+        }
+
+        void CDirModel::setupNewItem( const SDirNodeItem & /*nodeItem*/, const QStandardItem * /*nameItem*/, QStandardItem * /*item*/ ) const
+        {
+
         }
 
         bool CDirModel::process( const QModelIndex & idx, const std::function< void( int count, int eventsPerPath ) > & startProgress, const std::function< void( bool finalStep, bool canceled ) > & endProgress, QWidget * parent )
