@@ -28,6 +28,7 @@
 #include "SABUtils/WidgetEnabler.h"
 #include "SABUtils/UtilityModels.h"
 #include "SABUtils/QtUtils.h"
+#include "SABUtils/MKVUtils.h"
 
 #include <QSettings>
 #include <QStringListModel>
@@ -66,7 +67,14 @@ namespace NMediaManager
             fImpl->verifyMediaComment->setChecked( NCore::CPreferences::instance()->getVerifyMediaComment() );
             fImpl->verifyMediaCommentExpr->setText( NCore::CPreferences::instance()->getVerifyMediaCommentExpr() );
 
-            fModel->setStringList( NCore::CPreferences::instance()->getTagsToShow() );
+            auto allTags = NCore::CPreferences::instance()->getAllMediaTags();
+            std::list < std::pair< QString, bool > > tmp;
+            for ( auto && ii : allTags )
+            {
+                tmp.emplace_back( std::make_pair( NSABUtils::displayName( ii.first ), ii.second ) );
+            }
+
+            fModel->setStringList( tmp );
         }
 
         void CTagAnalysisSettings::save()
@@ -79,7 +87,15 @@ namespace NMediaManager
             NCore::CPreferences::instance()->setVerifyMediaComment( fImpl->verifyMediaComment->isChecked() );
             NCore::CPreferences::instance()->setVerifyMediaCommentExpr( fImpl->verifyMediaCommentExpr->text() );
 
-            NCore::CPreferences::instance()->setEnabledTags( fModel->getCheckedStrings() );
+            std::list< NSABUtils::EMediaTags > enabled;
+
+            auto checked = fModel->getCheckedStrings();
+            for ( auto && ii : checked )
+            {
+                enabled.emplace_back( NSABUtils::fromDisplayName( ii ) );
+            }
+
+            NCore::CPreferences::instance()->setEnabledTags( enabled );
         }
     }
 }
