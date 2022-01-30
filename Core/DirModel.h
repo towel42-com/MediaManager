@@ -39,6 +39,7 @@
 namespace NSABUtils
 {
     class CDoubleProgressDlg;
+    enum class EMediaTags;
 }
 
 class QTreeView;
@@ -194,13 +195,13 @@ namespace NMediaManager
             virtual bool showMediaItems() const { return false; };
 
             bool canShowMediaInfo() const;
-            virtual std::unordered_map< QString, QString > getMediaTags( const QFileInfo & fi ) const;
+            virtual std::unordered_map< NSABUtils::EMediaTags, QString > getMediaTags( const QFileInfo & fi, const std::list< NSABUtils::EMediaTags > & tags = {} ) const;
             virtual void reloadMediaTags(const QModelIndex & idx);
             virtual void reloadMediaTags(const QModelIndex & idx, bool force);
             virtual bool autoSetMediaTags( const QModelIndex & idx, QString * msg = nullptr );
 
             bool setMediaTags( const QString & fileName, const QString & title, const QString & year, QString * msg = nullptr ) const;
-            bool setMediaTag( const QString & filename, const std::pair< QString, QString > & tagData, QString * msg = nullptr ) const; //pair => tag, value
+            bool setMediaTag( const QString & filename, const std::pair< NSABUtils::EMediaTags, QString > & tagData, QString * msg = nullptr ) const; //pair => tag, value
 
             virtual void updatePath( const QModelIndex & idx, const QString & oldPath, const QString & newPath) final;
             virtual void updateFile(const QModelIndex &idx, const QString & oldFile, const QString & newFile);

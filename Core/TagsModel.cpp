@@ -23,10 +23,12 @@
 #include "TagsModel.h"
 #include "SearchTMDBInfo.h"
 #include "Preferences.h"
+#include "TransformResult.h"
+
+#include "SABUtils/MKVUtils.h"
 #include "SABUtils/QtUtils.h"
 #include "SABUtils/FileUtils.h"
 #include "SABUtils/FileCompare.h"
-
 #include "SABUtils/DoubleProgressDlg.h"
 
 #include <QDir>
@@ -37,7 +39,6 @@
 #include <QLocale>
 
 #include <QDirIterator>
-#include "TransformResult.h"
 
 namespace NMediaManager
 {
@@ -76,13 +77,13 @@ namespace NMediaManager
             int colNum = EColumns::eMediaColumnLoc;
             for ( auto && ii : fTagsBeingShown )
             {
-                if ( ii == "Title" )
+                if ( ii == NSABUtils::EMediaTags::eTitle )
                     fTitleColumn = colNum;
-                else if ( ii == "Length" )
+                else if ( ii == NSABUtils::EMediaTags::eLength )
                     fLengthColumn = colNum;
-                else if ( ii == "Media Date" )
+                else if ( ii == NSABUtils::EMediaTags::eDate )
                     fDateColumn = colNum;
-                else if ( ii == "Comment" )
+                else if ( ii == NSABUtils::EMediaTags::eComment )
                     fCommentColumn = colNum;
 
                 if ( fFirstColumn == -1 )
@@ -94,7 +95,7 @@ namespace NMediaManager
 
         QStringList CTagsModel::headers() const
         {
-            return CDirModel::headers() << NCore::CPreferences::instance()->getEnabledTags();
+            return CDirModel::headers() << NCore::CPreferences::instance()->getEnabledTagsForDisplay();
         }
 
         std::list< NMediaManager::NCore::SDirNodeItem > CTagsModel::addAdditionalItems(const QFileInfo & fileInfo) const
@@ -106,20 +107,14 @@ namespace NMediaManager
             bool isMediaFile = this->isMediaFile( fileInfo );
 
             auto tagsToShow = NCore::CPreferences::instance()->getEnabledTags();
-            auto mediaInfo = getMediaTags( fileInfo );
+            auto mediaInfo = getMediaTags( fileInfo, tagsToShow );
             int colNum = EColumns::eMediaColumnLoc;
 
             std::list<NMediaManager::NCore::SDirNodeItem> retVal;
             for ( auto && ii : tagsToShow )
             {
-                auto key = ii.toUpper();
-                if ( key == "MEDIA DATE" )
-                    key = "DATE_RECORDED";
-                else if ( key == "TRACK" )
-                    key = "TRACK/POSITION";
-
-                auto pos = mediaInfo.find( key );
                 QString value;
+                auto pos = mediaInfo.find( ii );
                 if ( pos != mediaInfo.end() )
                 {
                     value = (*pos).second;
@@ -133,11 +128,11 @@ namespace NMediaManager
                 retVal.emplace_back( value, colNum++ );
                 if ( isMediaFile )
                 {
-                    if ( key == "TITLE" )
+                    if ( ii == NSABUtils::EMediaTags::eTitle )
                         retVal.back().fEditType = EType::eTitle;
-                    else if ( key == "DATE_RECORDED" )
+                    else if ( ii == NSABUtils::EMediaTags::eDate )
                         retVal.back().fEditType = EType::eDate;
-                    else if ( key == "COMMENT" )
+                    else if ( ii == NSABUtils::EMediaTags::eComment )
                         retVal.back().fEditType = EType::eComment;
                 }
             }

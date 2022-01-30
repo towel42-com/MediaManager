@@ -23,6 +23,7 @@
 #include "Preferences.h"
 #include "LanguageInfo.h"
 #include "SABUtils/QtUtils.h"
+#include "SABUtils/MKVUtils.h"
 
 #include <QSettings>
 #include <QStringListModel>
@@ -335,31 +336,31 @@ namespace NMediaManager
             settings.setValue("VerifyMediaTags", value);
         }
 
-        std::list< std::pair< QString, bool > > CPreferences::getTagsToShow() const
+        std::list< std::pair< NSABUtils::EMediaTags, bool > > CPreferences::getAllMediaTags() const
         {
             QSettings settings;
             settings.beginGroup( "Tag" );
 
-            std::list< std::pair< QString, bool > > retVal =
+            std::list< std::pair< NSABUtils::EMediaTags, bool > > retVal =
             {
-                 { "Title", true }
-                ,{ "Length", true }
-                ,{ "Media Date", true }
-                ,{ "Comment", true }
-                ,{ "BPM", true }
-                ,{ "Artist", true }
-                ,{ "Composer", true }
-                ,{ "Genre", true }
-                ,{ "Track", true }
-                ,{ "Album", true }
-                ,{ "Album Artist", true }
-                ,{ "Discnumber", true }
+                 { NSABUtils::EMediaTags::eTitle, true }
+                ,{ NSABUtils::EMediaTags::eLength, true }
+                ,{ NSABUtils::EMediaTags::eDate, true }
+                ,{ NSABUtils::EMediaTags::eComment, true }
+                ,{ NSABUtils::EMediaTags::eBPM, true }
+                ,{ NSABUtils::EMediaTags::eArtist, true }
+                ,{ NSABUtils::EMediaTags::eComposer, true }
+                ,{ NSABUtils::EMediaTags::eGenre, true }
+                ,{ NSABUtils::EMediaTags::eTrack, true }
+                ,{ NSABUtils::EMediaTags::eAlbum, false }
+                ,{ NSABUtils::EMediaTags::eAlbumArtist, false }
+                ,{ NSABUtils::EMediaTags::eDiscnumber, false }
             };
 
             if ( !settings.contains( "EnabledTags" ) )
                 return retVal;
 
-            auto enabledTags = settings.value( "EnabledTags" ).toStringList();
+            auto enabledTags = settings.value( "EnabledTags" ).toList();
             for ( auto && jj : retVal )
                 jj.second = false;
 
@@ -367,30 +368,42 @@ namespace NMediaManager
             {
                 for ( auto && jj : retVal )
                 {
-                    if ( jj.first == ii )
+                    if ( jj.first == static_cast< NSABUtils::EMediaTags >( ii.toInt() ) )
                         jj.second = true;
                 }
             }
             return retVal;
         }
 
-        QStringList CPreferences::getEnabledTags() const
+        std::list< NSABUtils::EMediaTags > CPreferences::getEnabledTags() const
         {
-            auto allTags = getTagsToShow();
-            QStringList retVal;
+            auto allTags = getAllMediaTags();
+            std::list< NSABUtils::EMediaTags > retVal;
             for ( auto && ii : allTags )
             {
                 if ( ii.second )
-                    retVal << ii.first;
+                    retVal.emplace_back( ii.first );
             }
             return retVal;
         }
 
-        void CPreferences::setEnabledTags( const QStringList & values )
+        QStringList CPreferences::getEnabledTagsForDisplay() const
+        {
+            auto tags = getEnabledTags();
+            QStringList retVal;
+            for ( auto && ii : tags )
+                retVal << NSABUtils::displayName( ii );
+            return retVal;
+        }
+
+        void CPreferences::setEnabledTags( const std::list< NSABUtils::EMediaTags > & values )
         {
             QSettings settings;
             settings.beginGroup( "Tag" );
-            settings.setValue( "EnabledTags", values );
+            QVariantList tmp;
+            for ( auto && ii : values )
+                tmp << static_cast<int>(ii);
+            settings.setValue( "EnabledTags", tmp );
         }
 
         QString replaceFileInfo( const QFileInfo & fi, const QDate & date, const QString & expr )

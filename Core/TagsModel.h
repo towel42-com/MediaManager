@@ -26,6 +26,11 @@
 #include "DirModel.h"
 #include "PatternInfo.h"
 
+namespace NSABUtils
+{
+    enum class EMediaTags;
+}
+
 namespace NMediaManager
 {
     namespace NCore
@@ -63,7 +68,7 @@ namespace NMediaManager
             virtual void reloadMediaTags(const QModelIndex & idx) override;
             virtual std::list< NMediaManager::NCore::SDirNodeItem > addAdditionalItems(const QFileInfo & fileInfo) const override;
 
-            QStringList fTagsBeingShown;
+            std::list< NSABUtils::EMediaTags > fTagsBeingShown;
             int fFirstColumn{ -1 };
             int fTitleColumn{ -1 };
             int fLengthColumn{ -1 };

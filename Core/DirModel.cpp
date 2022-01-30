@@ -266,19 +266,19 @@ namespace NMediaManager
                     break;
                     case EType::eTitle:
                     {
-                        if ( !setMediaTag( fileInfo( idx ).absoluteFilePath(), { "TITLE", value.toString() } ) )
+                        if ( !setMediaTag( fileInfo( idx ).absoluteFilePath(), { NSABUtils::EMediaTags::eTitle, value.toString() } ) )
                             return false;
                     }
                     break;
                     case EType::eDate:
                     {
-                        if ( !setMediaTag( fileInfo( idx ).absoluteFilePath(), { "DATE_RECORDED", value.toString() } ) )
+                        if ( !setMediaTag( fileInfo( idx ).absoluteFilePath(), { NSABUtils::EMediaTags::eDate, value.toString() } ) )
                             return false;
                     }
                     break;
                     case EType::eComment:
                     {
-                        if ( !setMediaTag( fileInfo( idx ).absoluteFilePath(), { "COMMENT", value.toString() } ) )
+                        if ( !setMediaTag( fileInfo( idx ).absoluteFilePath(), { NSABUtils::EMediaTags::eComment, value.toString() } ) )
                             return false;
                     }
                     break;
@@ -835,7 +835,7 @@ namespace NMediaManager
             QStandardItemModel::clear();
         }
 
-        std::unordered_map< QString, QString > CDirModel::getMediaTags( const QFileInfo & fi ) const
+        std::unordered_map< NSABUtils::EMediaTags, QString > CDirModel::getMediaTags( const QFileInfo & fi, const std::list< NSABUtils::EMediaTags > & tags ) const
         {
             if ( !canShowMediaInfo() )
                 return {};
@@ -843,10 +843,8 @@ namespace NMediaManager
             if ( !CPreferences::instance()->isMediaFile( fi ) )
                 return {};
 
-            auto ffprobeExe = NCore::CPreferences::instance()->getFFProbeEXE();
-
             NSABUtils::CAutoWaitCursor awc;
-            auto retVal = NSABUtils::getMediaTags( fi.absoluteFilePath() );
+            auto retVal = NSABUtils::getMediaTags( fi.absoluteFilePath(), tags );
 
             return retVal;
         }
@@ -874,16 +872,16 @@ namespace NMediaManager
             auto mediaInfo = getMediaTags( fi );
 
             QStandardItem * item = itemFromIndex( index( idx.row(), getMediaTitleLoc(), idx.parent() ) );
-            item->setText( mediaInfo["TITLE"] );
+            item->setText( mediaInfo[ NSABUtils::EMediaTags::eTitle ] );
 
             item = itemFromIndex( index( idx.row(), getMediaLengthLoc(), idx.parent() ) );
-            item->setText( mediaInfo["LENGTH"] );
+            item->setText( mediaInfo[ NSABUtils::EMediaTags::eLength ] );
 
             item = itemFromIndex( index( idx.row(), getMediaDateLoc(), idx.parent() ) );
-            item->setText( mediaInfo["DATE_RECORDED"] );
+            item->setText( mediaInfo[ NSABUtils::EMediaTags::eDate ] );
 
             item = itemFromIndex( index( idx.row(), getMediaCommentLoc(), idx.parent() ) );
-            item->setText( mediaInfo["COMMENT"] );
+            item->setText( mediaInfo[ NSABUtils::EMediaTags::eComment ] );
 
             clearItemStatusCache( idx );
             clearPathStatusCache( fi );
@@ -897,15 +895,15 @@ namespace NMediaManager
             std::list<NMediaManager::NCore::SDirNodeItem> retVal;
             auto mediaInfo = getMediaTags( fileInfo );
 
-            retVal.emplace_back( mediaInfo["TITLE"], offset++ );
+            retVal.emplace_back( mediaInfo[NSABUtils::EMediaTags::eTitle], offset++ );
             retVal.back().fEditType = EType::eTitle;
 
-            retVal.emplace_back( mediaInfo["LENGTH"], offset++ );
+            retVal.emplace_back( mediaInfo[NSABUtils::EMediaTags::eLength], offset++ );
 
-            retVal.emplace_back( mediaInfo["DATE_RECORDED"], offset++ );
+            retVal.emplace_back( mediaInfo[NSABUtils::EMediaTags::eDate], offset++ );
             retVal.back().fEditType = EType::eDate;
 
-            retVal.emplace_back( mediaInfo["COMMENT"], offset++ );
+            retVal.emplace_back( mediaInfo[NSABUtils::EMediaTags::eComment], offset++ );
             retVal.back().fEditType = EType::eComment;
             return retVal;
         }
@@ -991,10 +989,10 @@ namespace NMediaManager
         {
             NSABUtils::CAutoWaitCursor awc;
 
-            std::unordered_map< QString, QString > tags =
+            std::unordered_map< NSABUtils::EMediaTags, QString > tags =
             {
-                { "TITLE", (title.isEmpty() ? QFileInfo( fileName ).completeBaseName() : title) }
-                ,{ "DATE_RECORDED", year }
+                { NSABUtils::EMediaTags::eTitle, (title.isEmpty() ? QFileInfo( fileName ).completeBaseName() : title) }
+                ,{ NSABUtils::EMediaTags::eDate, year }
             };
 
             QString localMsg;
@@ -1011,10 +1009,10 @@ namespace NMediaManager
             return aOK;
         }
 
-        bool CDirModel::setMediaTag( const QString & fileName, const std::pair< QString, QString > & data, QString * msg ) const
+        bool CDirModel::setMediaTag( const QString & fileName, const std::pair< NSABUtils::EMediaTags, QString > & data, QString * msg ) const
         {
             NSABUtils::CAutoWaitCursor awc;
-            std::unordered_map< QString, QString > tags = { data };
+            std::unordered_map< NSABUtils::EMediaTags, QString > tags = { data };
             QString localMsg;
             auto aOK = NSABUtils::setMediaTags( fileName, tags, CPreferences::instance()->getMKVPropEditEXE(), &localMsg );
             if ( !aOK )
@@ -1023,7 +1021,7 @@ namespace NMediaManager
                     *msg = localMsg;
                 else
                 {
-                    QMessageBox::critical( nullptr, tr( "Could not set tag" ), tr( "Could not set media tag '%1' to '%2' on file '%3'. %4" ).arg( data.first ).arg( data.second ).arg( fileName ).arg( localMsg ) );
+                    QMessageBox::critical( nullptr, tr( "Could not set tag" ), tr( "Could not set media tag '%1' to '%2' on file '%3'. %4" ).arg( NSABUtils::displayName( data.first ) ).arg( data.second ).arg( fileName ).arg( localMsg ) );
                 }
             }
             return aOK;

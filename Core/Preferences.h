@@ -31,6 +31,11 @@
 #include <QRegularExpression>
 class QFileInfo;
 
+namespace NSABUtils
+{
+    enum class EMediaTags;
+}
+
 namespace NMediaManager
 {
     namespace NCore
@@ -84,9 +89,10 @@ namespace NMediaManager
             QStringList getIgnoredPaths() const;
             void setIgnoredPaths( const QStringList & value );
 
-            std::list< std::pair< QString, bool > > getTagsToShow() const;
-            QStringList getEnabledTags() const;
-            void setEnabledTags( const QStringList & value );
+            std::list< std::pair< NSABUtils::EMediaTags, bool > > getAllMediaTags() const;
+            std::list< NSABUtils::EMediaTags > getEnabledTags() const;
+            QStringList getEnabledTagsForDisplay() const;
+            void setEnabledTags( const std::list< NSABUtils::EMediaTags > & value );
 
             bool getVerifyMediaTags() const;
             void setVerifyMediaTags(bool value);
