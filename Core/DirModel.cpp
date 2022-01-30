@@ -851,8 +851,7 @@ namespace NMediaManager
 
         bool CDirModel::canShowMediaInfo() const
         {
-            auto ffprobeExe = NCore::CPreferences::instance()->getFFProbeEXE();
-            return !ffprobeExe.isEmpty() && QFileInfo( ffprobeExe ).isExecutable();
+            return true;
         }
 
         void CDirModel::reloadMediaTags( const QModelIndex & idx )
@@ -869,7 +868,7 @@ namespace NMediaManager
             if ( !CPreferences::instance()->isMediaFile( fi ) )
                 return;
 
-            auto mediaInfo = getMediaTags( fi );
+            auto mediaInfo = getMediaTags( fi, { NSABUtils::EMediaTags::eTitle, NSABUtils::EMediaTags::eLength, NSABUtils::EMediaTags::eDate, NSABUtils::EMediaTags::eComment } );
 
             QStandardItem * item = itemFromIndex( index( idx.row(), getMediaTitleLoc(), idx.parent() ) );
             item->setText( mediaInfo[ NSABUtils::EMediaTags::eTitle ] );
@@ -893,7 +892,7 @@ namespace NMediaManager
                 return {};
 
             std::list<NMediaManager::NCore::SDirNodeItem> retVal;
-            auto mediaInfo = getMediaTags( fileInfo );
+            auto mediaInfo = getMediaTags( fileInfo, { NSABUtils::EMediaTags::eTitle, NSABUtils::EMediaTags::eLength, NSABUtils::EMediaTags::eDate, NSABUtils::EMediaTags::eComment } );
 
             retVal.emplace_back( mediaInfo[NSABUtils::EMediaTags::eTitle], offset++ );
             retVal.back().fEditType = EType::eTitle;

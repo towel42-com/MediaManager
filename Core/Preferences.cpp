@@ -936,23 +936,6 @@ namespace NMediaManager
             return aOK ? retVal : QString();
         }
 
-        void CPreferences::setFFProbeEXE( const QString & value )
-        {
-            QSettings settings;
-            settings.beginGroup( "ExternalTools" );
-            settings.setValue( "FFProbeEXE", value );
-        }
-
-        QString CPreferences::getFFProbeEXE() const
-        {
-            QSettings settings;
-            settings.beginGroup( "ExternalTools" );
-            auto retVal = settings.value( "FFProbeEXE", QString() ).toString();
-
-            auto fi = QFileInfo( retVal );
-            bool aOK = !retVal.isEmpty() && fi.isExecutable();
-            return aOK ? retVal : QString();
-        }
         void CPreferences::setBIFPlayerSpeedMultiplier( int interval )
         {
             QSettings settings;

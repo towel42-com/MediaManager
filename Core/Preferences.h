@@ -170,9 +170,6 @@ namespace NMediaManager
             void setFFMpegEXE( const QString & value );
             QString getFFMpegEXE() const;
 
-            void setFFProbeEXE( const QString & value );
-            QString getFFProbeEXE() const;
-
             bool isMediaFile( const QFileInfo & fi ) const;
             bool isSubtitleFile( const QFileInfo & info, bool * isLangFileFormat = nullptr ) const;
 

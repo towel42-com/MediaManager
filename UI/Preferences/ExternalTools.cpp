@@ -53,18 +53,11 @@ namespace NMediaManager
             fImpl->ffmpegExe->setCheckIsFile( true );
             fImpl->ffmpegExe->setCheckIsExecutable( true );
 
-            connect( fImpl->btnSelectFFProbeExe, &QToolButton::clicked, this, &CExternalTools::slotSelectFFProbeExe );
-            fImpl->ffprobeExe->setCheckExists( true );
-            fImpl->ffprobeExe->setCheckIsFile( true );
-            fImpl->ffprobeExe->setCheckIsExecutable( true );
-
             connect( fImpl->ffmpegExe, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CExternalTools::slotFFToolChanged );
-            connect( fImpl->ffprobeExe, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CExternalTools::slotFFToolChanged );
             connect( fImpl->mkvMergeExe, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CExternalTools::slotMKVNixToolChanged );
             connect( fImpl->mkvPropEditExe, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CExternalTools::slotMKVNixToolChanged );
 
             fftoolToolChanged( fImpl->ffmpegExe );
-            fftoolToolChanged( fImpl->ffprobeExe );
             mkvnixToolChanged( fImpl->mkvMergeExe );
             mkvnixToolChanged( fImpl->mkvPropEditExe );
         }
@@ -110,19 +103,6 @@ namespace NMediaManager
 
             if ( !exe.isEmpty() )
                 fImpl->ffmpegExe->setText( exe );
-        }
-
-        void CExternalTools::slotSelectFFProbeExe()
-        {
-            auto exe = QFileDialog::getOpenFileName( this, tr( "Select ffprobe Executable:" ), fImpl->ffprobeExe->text(), "ffprobe Executable (ffprobe.exe);;All Executables (*.exe);;All Files (*.*)" );
-            if ( !exe.isEmpty() && !QFileInfo( exe ).isExecutable() )
-            {
-                QMessageBox::critical( this, "Not an Executable", tr( "The file '%1' is not an executable" ).arg( exe ) );
-                return;
-            }
-
-            if ( !exe.isEmpty() )
-                fImpl->ffprobeExe->setText( exe );
         }
 
         void CExternalTools::updateOtherTool( QObject * sender, const std::pair< QLineEdit *, QString > & lhs, const std::pair< QLineEdit *, QString > & rhs )
@@ -176,9 +156,9 @@ namespace NMediaManager
             fftoolToolChanged( dynamic_cast<QLineEdit *>(sender()) );
         }
 
-        void CExternalTools::fftoolToolChanged( QLineEdit * le )
+        void CExternalTools::fftoolToolChanged( QLineEdit * /*le*/ )
         {
-            updateOtherTool( le, { fImpl->ffprobeExe, "ffprobe" }, { fImpl->ffmpegExe, "ffmpeg" } );
+            //updateOtherTool( le, { fImpl->ffprobeExe, "ffprobe" }, { fImpl->ffmpegExe, "ffmpeg" } );
         }
 
         void CExternalTools::load()
@@ -186,14 +166,12 @@ namespace NMediaManager
             fImpl->mkvMergeExe->setText( NCore::CPreferences::instance()->getMKVMergeEXE() );
             fImpl->mkvPropEditExe->setText( NCore::CPreferences::instance()->getMKVPropEditEXE() );
             fImpl->ffmpegExe->setText( NCore::CPreferences::instance()->getFFMpegEXE() );
-            fImpl->ffprobeExe->setText( NCore::CPreferences::instance()->getFFProbeEXE() );
         }
 
         void CExternalTools::save()
         {
             NCore::CPreferences::instance()->setMKVMergeEXE( fImpl->mkvMergeExe->text() );
             NCore::CPreferences::instance()->setMKVPropEditEXE( fImpl->mkvPropEditExe->text() );
-            NCore::CPreferences::instance()->setFFProbeEXE( fImpl->ffprobeExe->text() );
             NCore::CPreferences::instance()->setFFMpegEXE( fImpl->ffmpegExe->text() );
         }
     }
