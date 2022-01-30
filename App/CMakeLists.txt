@@ -46,12 +46,10 @@ set_target_properties( MediaManager PROPERTIES FOLDER Apps )
 target_link_libraries( MediaManager 
                  Qt5::Widgets
                  Qt5::Core
-                 Qt5::Multimedia
                  SABUtils
                  UI
                  Preferences
                  Core
-                 mediainfo
           )
 
 DeployQt( MediaManager . )
@@ -74,6 +72,8 @@ InstallFilesPostBuild( TARGET MediaManager INFILES ${_SL_FILES} TARGET_DIR "$<TA
 SET( _SL_FILES
     "$<TARGET_FILE:mediainfo>"
     "$<TARGET_FILE_DIR:mediainfo>/$<TARGET_FILE_BASE_NAME:mediainfo>.pdb"
+    "$<TARGET_FILE:SABUtils>"
+    "$<TARGET_FILE_DIR:SABUtils>/$<TARGET_FILE_BASE_NAME:SABUtils>.pdb"
     )
 
 find_package(InstallFile REQUIRED)    

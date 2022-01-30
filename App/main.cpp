@@ -60,11 +60,7 @@ void myMessageOutput( QtMsgType type, const QMessageLogContext & context, const 
     realMsg = QString( "%1: %2" ).arg( typeString ).arg( realMsg ).trimmed();
 
 #ifdef Q_OS_WINDOWS
-#ifdef UNICODE
-    OutputDebugString( qUtf16Printable( realMsg + "\n" ) );
-#else
-    OutputDebugString( qPrintable( realMsg + "\n" ) );
-#endif
+    OutputDebugString( qUtf16Printable( msg + "\n"  ) );
 #else
     fprintf( "%s\n", qPrintable( realMsg ) );
 #endif
@@ -85,7 +81,6 @@ void myMessageOutput( QtMsgType type, const QMessageLogContext & context, const 
 int main( int argc, char ** argv )
 {
     Q_INIT_RESOURCE( application );
-    Q_INIT_RESOURCE( SABUtils );
 
     QApplication appl( argc, argv );
     appl.setApplicationName( QString::fromStdString( NVersion::APP_NAME ) );
