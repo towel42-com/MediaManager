@@ -308,6 +308,7 @@ namespace NMediaManager
                             lastUpdateUI = QDateTime::currentDateTime();
                         }
                     }
+                    qApp->processEvents();
                 }
 
                 if ( iterInfo.fPostDirFunction )
