@@ -30,18 +30,19 @@
 
 namespace NMediaManager
 {
+    namespace NModels
+    {
+        class CTransformModel;
+    }
+
     namespace NCore
     {
         struct SSearchTMDBInfo;
         struct STransformResult;
-        class CTransformModel;
         class CSearchTMDB;
         enum class EMediaType;
     }
-}
 
-namespace NMediaManager
-{
     namespace NUi
     {
         class CTransformPage : public CBasePage
@@ -61,7 +62,7 @@ namespace NMediaManager
             virtual QString actionCancelName() const override;
             virtual QString actionErrorName() const override;
 
-            virtual NCore::CDirModel * createDirModel() override;
+            virtual NModels::CDirModel * createDirModel() override;
             virtual void setupModel() override;
 
             virtual void postLoadFinished( bool canceled ) override;
@@ -82,7 +83,7 @@ namespace NMediaManager
             virtual void loadSettings() override;
             bool autoSearchForNewNames( const QModelIndex & rootIdx, bool searchChildren, std::optional< NCore::EMediaType > mediaType );
             
-            NCore::CTransformModel * model();
+            NModels::CTransformModel * model();
 
             NCore::CSearchTMDB * fSearchTMDB{ nullptr };
             uint64_t fSearchesCompleted{ 0 };

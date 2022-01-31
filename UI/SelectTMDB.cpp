@@ -22,7 +22,7 @@
 
 #include "SelectTMDB.h"
 #include "ui_SelectTMDB.h"
-#include "Core/DirModel.h"
+#include "Models/DirModel.h"
 #include "Core/TransformResult.h"
 #include "Core/SearchTMDB.h"
 #include "Core/SearchTMDBInfo.h"

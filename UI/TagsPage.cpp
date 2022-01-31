@@ -23,7 +23,7 @@
 #include "TagsPage.h"
 #include "SelectTMDB.h"
 #include "Core/Preferences.h"
-#include "Core/TagsModel.h"
+#include "Models/TagsModel.h"
 
 #include "SABUtils/QtUtils.h"
 #include "SABUtils/DoubleProgressDlg.h"
@@ -54,12 +54,12 @@ namespace NMediaManager
             CBasePage::loadSettings();
         }
 
-        NMediaManager::NCore::CTagsModel * CTagsPage::model()
+        NModels::CTagsModel * CTagsPage::model()
         {
             if ( !fModel )
                 return nullptr;
 
-            return dynamic_cast<NCore::CTagsModel *>(fModel.get());
+            return dynamic_cast<NModels::CTagsModel *>(fModel.get());
         }
 
         void CTagsPage::postNonQueuedRun( bool finalStep, bool canceled )
@@ -95,9 +95,9 @@ namespace NMediaManager
         {
         }
 
-        NCore::CDirModel * CTagsPage::createDirModel()
+        NModels::CDirModel * CTagsPage::createDirModel()
         {
-            return new NCore::CTagsModel( this );
+            return new NModels::CTagsModel( this );
         }
 
         QString CTagsPage::loadTitleName() const

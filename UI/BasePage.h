@@ -35,7 +35,7 @@ class QToolBar;
 
 namespace NMediaManager
 {
-    namespace NCore
+    namespace NModels
     {
         class CDirModel;
     }
@@ -103,7 +103,7 @@ namespace NMediaManager
             virtual void openLocation( const QModelIndex & idx ) final;
             
             virtual QString getPageName() const final { return fPageName; }
-            virtual NCore::CDirModel * createDirModel() = 0;
+            virtual NModels::CDirModel * createDirModel() = 0;
             virtual bool useSecondaryProgressBar() const { return false; }
             virtual QString secondaryProgressLabel() const;
 
@@ -131,7 +131,7 @@ namespace NMediaManager
             bool fIsActive{ false };
             
             NSABUtils::CDoubleProgressDlg * fProgressDlg{ nullptr };
-            std::unique_ptr< NCore::CDirModel > fModel;
+            std::unique_ptr< NModels::CDirModel > fModel;
             std::unique_ptr< Ui::CBasePage > fImpl;
         };
     }

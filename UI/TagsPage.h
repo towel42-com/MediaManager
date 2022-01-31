@@ -30,7 +30,7 @@
 
 namespace NMediaManager
 {
-    namespace NCore
+    namespace NModels
     {
         class CTagsModel;
     }
@@ -57,7 +57,7 @@ namespace NMediaManager
             virtual QString actionCancelName() const override;
             virtual QString actionErrorName() const override;
 
-            virtual NCore::CDirModel * createDirModel() override;
+            virtual NModels::CDirModel * createDirModel() override;
             virtual void setupModel() override;
 
             virtual void postLoadFinished( bool canceled ) override;
@@ -72,7 +72,7 @@ namespace NMediaManager
             void slotMenuAboutToShow();
         protected:
             virtual void loadSettings() override;
-            NCore::CTagsModel * model();
+            NModels::CTagsModel * model();
 
             QMenu * fMenu{ nullptr };
             QAction * fVerifyMediaTitle{ nullptr };

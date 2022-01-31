@@ -23,7 +23,7 @@
 #include "MakeMKVPage.h"
 
 #include "Core/Preferences.h"
-#include "Core/MakeMKVModel.h"
+#include "Models/MakeMKVModel.h"
 #include "SABUtils/DoubleProgressDlg.h"
 
 #include <QRegularExpression>
@@ -41,9 +41,9 @@ namespace NMediaManager
         {
         }
 
-        NCore::CDirModel * CMakeMKVPage::createDirModel()
+        NModels::CDirModel * CMakeMKVPage::createDirModel()
         {
-            return new NCore::CMakeMKVModel( this );
+            return new NModels::CMakeMKVModel( this );
         }
 
         QStringList CMakeMKVPage::dirModelFilter() const

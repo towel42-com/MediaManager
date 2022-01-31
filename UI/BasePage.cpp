@@ -25,7 +25,7 @@
 #include "SetTags.h"
 
 #include "Core/Preferences.h"
-#include "Core/DirModel.h"
+#include "Models/DirModel.h"
 #include "SABUtils/DoubleProgressDlg.h"
 #include "SABUtils/QtUtils.h"
 
@@ -189,9 +189,9 @@ namespace NMediaManager
             if ( !fModel )
             {
                 fModel.reset( createDirModel() );
-                connect( fModel.get(), &NCore::CDirModel::sigDirLoadFinished, this, &CBasePage::slotLoadFinished );
-                connect( fModel.get(), &NCore::CDirModel::sigProcessingStarted, this, &CBasePage::slotProcessingStarted );
-                connect( fModel.get(), &NCore::CDirModel::sigProcessesFinished, this, &CBasePage::slotProcessesFinished );
+                connect( fModel.get(), &NModels::CDirModel::sigDirLoadFinished, this, &CBasePage::slotLoadFinished );
+                connect( fModel.get(), &NModels::CDirModel::sigProcessingStarted, this, &CBasePage::slotProcessingStarted );
+                connect( fModel.get(), &NModels::CDirModel::sigProcessesFinished, this, &CBasePage::slotProcessesFinished );
             }
             appendSeparatorToLog();
             appendToLog( tr( "Loading Directory: '%1'" ).arg( fDirName ), true );

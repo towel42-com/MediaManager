@@ -50,6 +50,7 @@ target_link_libraries( MediaManager
                  UI
                  Preferences
                  Core
+                 Models
           )
 
 DeployQt( MediaManager . )

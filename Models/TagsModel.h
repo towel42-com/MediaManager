@@ -24,7 +24,7 @@
 #define _TAGSMODEL_H
 
 #include "DirModel.h"
-#include "PatternInfo.h"
+#include "Core/PatternInfo.h"
 
 namespace NSABUtils
 {
@@ -33,7 +33,7 @@ namespace NSABUtils
 
 namespace NMediaManager
 {
-    namespace NCore
+    namespace NModels
     {
         class CTagsModel : public CDirModel
         {
@@ -41,7 +41,7 @@ namespace NMediaManager
         public:
             enum EColumns
             {
-                eMediaColumnLoc = NCore::EColumns::eFirstCustomColumn
+                eMediaColumnLoc = NModels::EColumns::eFirstCustomColumn
             };
 
             CTagsModel( NUi::CBasePage * page, QObject * parent = nullptr );
@@ -66,7 +66,7 @@ namespace NMediaManager
             virtual int getMediaDateLoc() const override { return fDateColumn; }
             virtual int getMediaCommentLoc() const override { return fCommentColumn; }
             virtual void reloadMediaTags(const QModelIndex & idx) override;
-            virtual std::list< NMediaManager::NCore::SDirNodeItem > addAdditionalItems(const QFileInfo & fileInfo) const override;
+            virtual std::list< SDirNodeItem > addAdditionalItems(const QFileInfo & fileInfo) const override;
 
             std::list< NSABUtils::EMediaTags > fTagsBeingShown;
             int fFirstColumn{ -1 };

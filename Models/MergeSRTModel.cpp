@@ -21,8 +21,8 @@
 // SOFTWARE.
 
 #include "MergeSRTModel.h"
-#include "LanguageInfo.h"
-#include "Preferences.h"
+#include "Core/LanguageInfo.h"
+#include "Core/Preferences.h"
 #include "SABUtils/FileUtils.h"
 
 #include "SABUtils/DoubleProgressDlg.h"
@@ -35,7 +35,7 @@
 
 namespace NMediaManager
 {
-    namespace NCore
+    namespace NModels
     {
         CMergeSRTModel::CMergeSRTModel( NUi::CBasePage * page, QObject * parent /*= 0*/ ) :
             CDirModel( page, parent )
@@ -65,7 +65,7 @@ namespace NMediaManager
                     continue;
                 }
 
-                if ( CPreferences::instance()->isMediaFile( child->data( ECustomRoles::eFullPathRole ).toString() ) )
+                if ( NCore::CPreferences::instance()->isMediaFile( child->data( ECustomRoles::eFullPathRole ).toString() ) )
                     retVal << child;
             }
             return retVal;
@@ -298,7 +298,7 @@ namespace NMediaManager
             std::map< QString, QFileInfo > nameBasedMap;
             for (auto && ii : srtFiles)
             {
-                auto langInfo = SLanguageInfo(ii);
+                auto langInfo = NCore::SLanguageInfo(ii);
                 if ( langInfo.knownLanguage() && ( langInfo.baseName() != ii.completeBaseName() ) )
                     nameBasedMap[langInfo.baseName()] = ii;
             }
@@ -313,7 +313,7 @@ namespace NMediaManager
                 {
                     //qDebug().noquote().nospace() << "Checking '" << getDispName( ii ) << "'";
                     //qDebug().noquote().nospace() << "Checking '" << fi.completeBaseName() << "' against '" << ii.completeBaseName() << "'";
-                    auto langInfo = SLanguageInfo(ii);
+                    auto langInfo = NCore::SLanguageInfo(ii);
                     if (langInfo.isNameBasedLangFile())
                         continue;
                     if (langInfo.knownLanguage())
@@ -345,14 +345,14 @@ namespace NMediaManager
             else
                 fProcessResults.second->appendRow(processInfo.fItem);
 
-            std::list< std::pair< std::pair< QStandardItem *, QStandardItem * >, SLanguageInfo > > allLangInfos;
+            std::list< std::pair< std::pair< QStandardItem *, QStandardItem * >, NCore::SLanguageInfo > > allLangInfos;
             std::unordered_map<  QStandardItem *, std::unordered_map< int, std::pair< bool, bool > > > langMap;
             for (auto && ii : subidxFiles)
             {
                 auto idxItem = new QStandardItem(tr("IDX File: %1").arg(ii.first->text()));
                 processInfo.fItem->appendRow(idxItem);
                 auto path = ii.first->data(ECustomRoles::eFullPathRole).toString();
-                auto langInfo = SLanguageInfo(QFileInfo(path));
+                auto langInfo = NCore::SLanguageInfo(QFileInfo(path));
                 allLangInfos.emplace_back( std::make_pair(ii, langInfo ));
                 auto langs = langInfo.allLanguageInfos();
 
@@ -414,7 +414,7 @@ namespace NMediaManager
 
             if (!displayOnly)
             {
-                processInfo.fCmd = CPreferences::instance()->getMKVMergeEXE();
+                processInfo.fCmd = NCore::CPreferences::instance()->getMKVMergeEXE();
                 bool aOK = true;
                 if (processInfo.fCmd.isEmpty() || !QFileInfo(processInfo.fCmd).isExecutable())
                 {
@@ -461,7 +461,7 @@ namespace NMediaManager
                 for (auto && langInfo : allLangInfos)
                 {
                     int nextTrack = 1;
-                    std::list< SMultLangInfo > orderByIdx;
+                    std::list< NCore::SMultLangInfo > orderByIdx;
                     auto currIDX = langInfo.first.first->data(ECustomRoles::eFullPathRole).toString();
                     auto currSUB = langInfo.first.second->data(ECustomRoles::eFullPathRole).toString();
                     auto langs = langInfo.second.allLanguageInfos();
@@ -472,7 +472,7 @@ namespace NMediaManager
                     }
 
                     orderByIdx.sort(
-                        [](const SMultLangInfo & lhs, const SMultLangInfo & rhs)
+                        [](const NCore::SMultLangInfo & lhs, const NCore::SMultLangInfo & rhs)
                         {
                             return lhs.fIndex < rhs.fIndex;
                         });
@@ -556,7 +556,7 @@ namespace NMediaManager
 
             if (!displayOnly)
             {
-                processInfo.fCmd = CPreferences::instance()->getMKVMergeEXE();
+                processInfo.fCmd = NCore::CPreferences::instance()->getMKVMergeEXE();
                 bool aOK = true;
                 if (processInfo.fCmd.isEmpty() || !QFileInfo(processInfo.fCmd).isExecutable())
                 {
@@ -685,12 +685,12 @@ namespace NMediaManager
             return fileInfo.suffix() != "sub";
         }
 
-        std::list< NMediaManager::NCore::SDirNodeItem > CMergeSRTModel::addAdditionalItems( const QFileInfo & fileInfo )const
+        std::list< SDirNodeItem > CMergeSRTModel::addAdditionalItems( const QFileInfo & fileInfo )const
         {
-            std::list< NMediaManager::NCore::SDirNodeItem > retVal;
+            std::list< SDirNodeItem > retVal;
             if ( fileInfo.isFile() )
             {
-                auto language = SLanguageInfo( fileInfo );
+                auto language = NCore::SLanguageInfo( fileInfo );
                 auto langName = language.displayName();
                 if (!isSubtitleFile(fileInfo))
                     langName.clear();
@@ -755,7 +755,7 @@ namespace NMediaManager
         {
             if ( treeNode.fIsFile )
             {
-                auto isSubFile = CPreferences::instance()->isSubtitleFile( treeNode.name() );
+                auto isSubFile = NCore::CPreferences::instance()->isSubtitleFile( treeNode.name() );
                 auto useAsParent =
                     [isSubFile, this ]( QStandardItem * item )
                 {
@@ -768,7 +768,7 @@ namespace NMediaManager
                     auto path = item->data( ECustomRoles::eFullPathRole ).toString();
                     if (isSubFile)
                     {
-                        return CPreferences::instance()->isMediaFile( path );
+                        return NCore::CPreferences::instance()->isMediaFile( path );
                     }
 
                     return false;
@@ -814,7 +814,7 @@ namespace NMediaManager
 
         void CMergeSRTModel::postFileFunction( bool aOK, const QFileInfo & fileInfo )
         {
-            if ( aOK && CPreferences::instance()->isMediaFile( fileInfo ) )
+            if ( aOK && NCore::CPreferences::instance()->isMediaFile( fileInfo ) )
             {
                 auto pos = fPathMapping.find( fileInfo.absoluteFilePath() );
                 if ( pos != fPathMapping.end() )

@@ -23,7 +23,7 @@
 #include "TransformPage.h"
 #include "SelectTMDB.h"
 #include "Core/Preferences.h"
-#include "Core/TransformModel.h"
+#include "Models/TransformModel.h"
 #include "Core/TransformResult.h"
 #include "Core/SearchTMDBInfo.h"
 #include "Core/SearchTMDB.h"
@@ -60,12 +60,12 @@ namespace NMediaManager
             CBasePage::loadSettings();
         }
 
-        NMediaManager::NCore::CTransformModel * CTransformPage::model()
+        NMediaManager::NModels::CTransformModel * CTransformPage::model()
         {
             if ( !fModel )
                 return nullptr;
 
-            return dynamic_cast<NCore::CTransformModel *>(fModel.get());
+            return dynamic_cast<NModels::CTransformModel *>(fModel.get());
         }
 
         void CTransformPage::postNonQueuedRun( bool finalStep, bool canceled )
@@ -80,7 +80,7 @@ namespace NMediaManager
             if ( !idx.isValid() )
                 return false;
 
-            auto nameIdx = model()->index( idx.row(), NCore::EColumns::eFSName, idx.parent() );
+            auto nameIdx = model()->index( idx.row(), NModels::EColumns::eFSName, idx.parent() );
 
             auto nm = nameIdx.data().toString();
             auto action = menu->addAction( tr( "Search for '%1'..." ).arg( nm ),
@@ -171,9 +171,9 @@ namespace NMediaManager
             auto parentName = model()->getSearchName( index );
 
             auto name = model()->getSearchName( index );
-            if ( NCore::CPreferences::instance()->isPathToDelete( index.data( NCore::ECustomRoles::eFullPathRole ).toString() ) )
+            if ( NCore::CPreferences::instance()->isPathToDelete( index.data( NModels::ECustomRoles::eFullPathRole ).toString() ) )
             {
-                appendToLog( QString( "Deleting file '%1'" ).arg( index.data( NCore::ECustomRoles::eFullPathRole ).toString() ), true );
+                appendToLog( QString( "Deleting file '%1'" ).arg( index.data( NModels::ECustomRoles::eFullPathRole ).toString() ), true );
                 model()->setDeleteItem( index );
             }
             else
@@ -285,9 +285,9 @@ namespace NMediaManager
                 QTimer::singleShot( 0, this, &CTransformPage::slotAutoSearchForNewNames );
         }
 
-        NCore::CDirModel * CTransformPage::createDirModel()
+        NModels::CDirModel * CTransformPage::createDirModel()
         {
-            return new NCore::CTransformModel( this );
+            return new NModels::CTransformModel( this );
         }
 
         QString CTransformPage::loadTitleName() const
@@ -335,12 +335,12 @@ namespace NMediaManager
 
         void CTransformPage::manualSearch( const QModelIndex & idx )
         {
-            auto baseIdx = model()->index( idx.row(), NCore::EColumns::eFSName, idx.parent() );
+            auto baseIdx = model()->index( idx.row(), NModels::EColumns::eFSName, idx.parent() );
             auto titleInfo = model()->getTransformResult( idx, true );
 
-            auto isDir = baseIdx.data( NCore::ECustomRoles::eIsDir ).toBool();
-            auto fullPath = baseIdx.data( NCore::ECustomRoles::eFullPathRole ).toString();
-            bool isTVShow = baseIdx.data( NCore::ECustomRoles::eIsTVShowRole ).toBool();
+            auto isDir = baseIdx.data( NModels::ECustomRoles::eIsDir ).toBool();
+            auto fullPath = baseIdx.data( NModels::ECustomRoles::eFullPathRole ).toString();
+            bool isTVShow = baseIdx.data( NModels::ECustomRoles::eIsTVShowRole ).toBool();
             auto nm = model()->getSearchName( idx );
 
             CSelectTMDB dlg( nm, titleInfo, this );

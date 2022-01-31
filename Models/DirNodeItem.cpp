@@ -22,17 +22,17 @@
 
 #include "DirNodeItem.h"
 #include "DirModel.h"
-#include "TransformResult.h"
+#include "Core/TransformResult.h"
 
 #include <QVariant>
 #include <QStandardItem>
 
 namespace NMediaManager
 {
-    namespace NCore
+    namespace NModels
     {
         SDirNodeItem::SDirNodeItem() :
-            fMediaType( EMediaType::eUnknownType )
+            fMediaType( NCore::EMediaType::eUnknownType )
         {
 
         }
@@ -40,7 +40,7 @@ namespace NMediaManager
         SDirNodeItem::SDirNodeItem( const QString & text, int nodeType ) :
             fText( text ),
             fType( static_cast<EColumns>(nodeType) ),
-            fMediaType( EMediaType::eUnknownType )
+            fMediaType( NCore::EMediaType::eUnknownType )
         {
 
         }
@@ -62,7 +62,7 @@ namespace NMediaManager
             {
                 retVal = new CDirModelItem( fText, fEditable.value().first );
                 if ( fEditable.value().first == EType::eMediaTag )
-                    retVal->setData( static_cast<int>(fEditable.value().second), NCore::ECustomRoles::eMediaTagTypeRole );
+                    retVal->setData( static_cast<int>(fEditable.value().second), NModels::ECustomRoles::eMediaTagTypeRole );
                 retVal->setEditable( true );
             }
 

@@ -23,7 +23,6 @@
 #include "TransformResult.h"
 #include "SearchTMDBInfo.h"
 #include "PatternInfo.h"
-#include "DirModel.h"
 
 #include "SABUtils/StringUtils.h"
 #include "SABUtils/QtUtils.h"
@@ -44,9 +43,9 @@ namespace NMediaManager
         QString STransformResult::getTitle() const
         {
             if ( isDeleteResult() )
-                return kDeleteThis;
+                return getDeleteThis();
             if ( isNotFoundResult() )
-                return kNoMatch;
+                return getNoMatch();
             return NSABUtils::NStringUtils::transformTitle( fTitle );
         }
 
@@ -412,6 +411,45 @@ namespace NMediaManager
                 case ETitleInfo::eDescription: return fDescription;
             }
             return {};
+        }
+
+        const QString kNoItems = "<NO ITEMS>";
+        const QString kNoMatch = "<NO MATCH>";
+        const QString kDeleteThis = "<DELETE THIS>";
+
+        bool STransformResult::isNoItems( const QString & text )
+        {
+            return text == kNoItems;
+        }
+
+        QString STransformResult::getNoItems()
+        {
+            return kNoItems;
+        }
+
+        bool STransformResult::isNoMatch( const QString & text )
+        {
+            return text == kNoMatch;
+        }
+
+        QString STransformResult::getNoMatch()
+        {
+            return kNoMatch;
+        }
+
+        bool STransformResult::isDeleteThis( const QString & text )
+        {
+            return text == kDeleteThis;
+        }
+
+        QString STransformResult::getDeleteThis()
+        {
+            return kDeleteThis;
+        }
+
+        bool STransformResult::isAutoSetText( const QString & text )
+        {
+            return isNoItems( text ) || isDeleteThis( text );
         }
 
         QString toEnumString( EMediaType infoType )

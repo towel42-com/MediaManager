@@ -21,26 +21,24 @@
 # SOFTWARE.
 
 set(qtproject_SRCS
-    LanguageInfo.cpp
-    NetworkReply.cpp
-    PatternInfo.cpp
-    Preferences.cpp
-    TransformResult.cpp
-    SearchTMDB.cpp
-    SearchTMDBInfo.cpp
+    DirModel.cpp
+    DirNodeItem.cpp
+    MergeSRTModel.cpp
+    MakeMKVModel.cpp
+    TagsModel.cpp
+    TransformModel.cpp
 )
 
 set(qtproject_H
-    SearchTMDB.h
+    DirModel.h
+    MergeSRTModel.h
+    MakeMKVModel.h
+    TagsModel.h
+    TransformModel.h
 )
 
 set(project_H
-    LanguageInfo.h
-    NetworkReply.h
-    Preferences.h
-    PatternInfo.h
-    TransformResult.h
-    SearchTMDBInfo.h
+    DirNodeItem.h
 )
 
 set(qtproject_UIS
@@ -48,7 +46,6 @@ set(qtproject_UIS
 
 
 set(qtproject_QRC
-    core.qrc
 )
 
 file(GLOB qtproject_QRC_SOURCES "resources/*")

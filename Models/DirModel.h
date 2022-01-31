@@ -60,14 +60,13 @@ namespace NMediaManager
 
     namespace NCore
     {
-        struct STransformResult;
-        class CDirModel;
-        enum class EMediaType;
         enum class EItemStatus;
+        enum class EMediaType;
+    }
 
-        extern const QString kNoItems;
-        extern const QString kNoMatch;
-        extern const QString kDeleteThis;
+    namespace NModels
+    {
+        class CDirModel;
 
         enum ECustomRoles
         {
@@ -139,7 +138,7 @@ namespace NMediaManager
             std::unordered_map< QFileDevice::FileTime, QDateTime > fTimeStamps;
         };
 
-        using TItemStatus = std::pair< EItemStatus, QString >;
+        using TItemStatus = std::pair< NCore::EItemStatus, QString >;
         class CDirModel : public QStandardItemModel
         {
             friend struct SDirNodeItem;
@@ -180,8 +179,6 @@ namespace NMediaManager
             bool isSubtitleFile(const QFileInfo & fileInfo, bool * isLangFileFormat) const;
 
             virtual int eventsPerPath() const { return 1; }
-
-            static bool isAutoSetText( const QString & text );
 
             const QFileIconProvider * iconProvider() const { return fIconProvider; }
             bool showProcessResults( const QString & title, const QString & label, const QMessageBox::Icon & icon, const QDialogButtonBox::StandardButtons & buttons, QWidget * parent ) const;
@@ -256,15 +253,15 @@ namespace NMediaManager
             NSABUtils::CDoubleProgressDlg * progressDlg() const;
 
             virtual std::pair< bool, QStandardItem * > processItem( const QStandardItem * item, QStandardItem * parentResultItem, bool displayOnly ) = 0;
-            virtual void postAddItems( const QFileInfo & fileInfo, std::list< NMediaManager::NCore::SDirNodeItem > & currItems ) const;
+            virtual void postAddItems( const QFileInfo & fileInfo, std::list< SDirNodeItem > & currItems ) const;
             virtual int firstMediaItemColumn() const { return -1; }
             virtual int lastMediaItemColumn() const;
             virtual int getMediaTitleLoc() const;
             virtual int getMediaLengthLoc() const;
             virtual int getMediaDateLoc() const;
             virtual int getMediaCommentLoc() const;
-            virtual std::list< NMediaManager::NCore::SDirNodeItem > addAdditionalItems( const QFileInfo & fileInfo ) const;
-            virtual std::list<NMediaManager::NCore::SDirNodeItem> getMediaInfoItems(  const QFileInfo & fileInfo, int firstColumn ) const;
+            virtual std::list<SDirNodeItem > addAdditionalItems( const QFileInfo & fileInfo ) const;
+            virtual std::list<SDirNodeItem> getMediaInfoItems(  const QFileInfo & fileInfo, int firstColumn ) const;
 
             virtual void setupNewItem( const SDirNodeItem & nodeItem, const QStandardItem * nameItem, QStandardItem * item ) const;;
             virtual QStringList headers() const;
@@ -365,7 +362,7 @@ namespace NMediaManager
     }
 }
 
-QDebug operator<<( QDebug dbg, const NMediaManager::NCore::STreeNode & node );
-QDebug operator<<( QDebug dbg, const NMediaManager::NCore::TParentTree & parentTree );
+QDebug operator<<( QDebug dbg, const NMediaManager::NModels::STreeNode & node );
+QDebug operator<<( QDebug dbg, const NMediaManager::NModels::TParentTree & parentTree );
 #endif
 

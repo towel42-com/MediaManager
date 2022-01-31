@@ -21,9 +21,9 @@
 // SOFTWARE.
 
 #include "DirModel.h"
-#include "TransformResult.h"
-#include "SearchTMDBInfo.h"
-#include "Preferences.h"
+#include "Core/TransformResult.h"
+#include "Core/SearchTMDBInfo.h"
+#include "Core/Preferences.h"
 
 #include "UI/ProcessConfirm.h"
 #include "UI/BasePage.h"
@@ -60,7 +60,7 @@
 #include <set>
 #include <list>
 
-QDebug operator<<( QDebug dbg, const NMediaManager::NCore::STreeNode & node )
+QDebug operator<<( QDebug dbg, const NMediaManager::NModels::STreeNode & node )
 {
     dbg << "STreeNode(";
     auto name = node.name();
@@ -73,7 +73,7 @@ QDebug operator<<( QDebug dbg, const NMediaManager::NCore::STreeNode & node )
     return dbg;
 }
 
-QDebug operator<<( QDebug dbg, const NMediaManager::NCore::TParentTree & parentTree )
+QDebug operator<<( QDebug dbg, const NMediaManager::NModels::TParentTree & parentTree )
 {
     dbg << " TParentTree( ";
     bool first = true;
@@ -90,12 +90,8 @@ QDebug operator<<( QDebug dbg, const NMediaManager::NCore::TParentTree & parentT
 
 namespace NMediaManager
 {
-    namespace NCore
+    namespace NModels
     {
-        const QString kNoItems = "<NO ITEMS>";
-        const QString kNoMatch = "<NO MATCH>";
-        const QString kDeleteThis = "<DELETE THIS>";
-
         bool useCache()
         {
 #ifdef _DEBUG
@@ -148,12 +144,6 @@ namespace NMediaManager
         {
             fRootPath = QDir( rootPath );
             reloadModel();
-        }
-
-        bool CDirModel::isAutoSetText( const QString & text )
-        {
-            return (text == kNoItems)
-                || (text == kDeleteThis);
         }
 
         void CDirModel::setNameFilters( const QStringList & filters )
@@ -266,7 +256,7 @@ namespace NMediaManager
                     break;
                     case EType::eMediaTag:
                     {
-                        auto mediaTagType = static_cast<NSABUtils::EMediaTags>(item->data( NCore::ECustomRoles::eMediaTagTypeRole ).toInt());
+                        auto mediaTagType = static_cast<NSABUtils::EMediaTags>(item->data( NModels::ECustomRoles::eMediaTagTypeRole ).toInt());
                         if ( !setMediaTag( fileInfo( idx ).absoluteFilePath(), { mediaTagType, value.toString() } ) )
                             return false;
                     }
@@ -513,7 +503,7 @@ namespace NMediaManager
 
         QString STreeNode::name() const
         {
-            return rootItem() ? rootItem()->text() : kNoItems;
+            return rootItem() ? rootItem()->text() : NCore::STransformResult::getNoItems();
         }
 
         QStandardItem * STreeNode::item( EColumns column, bool createIfNecessary /*= true */ ) const
@@ -599,7 +589,7 @@ namespace NMediaManager
         {
             if ( !item )
                 return {};
-            auto baseItem = getItem( item, NCore::EColumns::eFSName );
+            auto baseItem = getItem( item, NModels::EColumns::eFSName );
             auto path = baseItem->data( ECustomRoles::eFullPathRole ).toString();
             return QFileInfo( path );
         }
@@ -649,12 +639,12 @@ namespace NMediaManager
 
         bool CDirModel::isMediaFile( const QFileInfo & fileInfo ) const
         {
-            return fileInfo.isFile() && CPreferences::instance()->isMediaFile( fileInfo );
+            return fileInfo.isFile() && NCore::CPreferences::instance()->isMediaFile( fileInfo );
         }
 
         bool CDirModel::isSubtitleFile( const QFileInfo & fileInfo, bool * isLangFileFormat ) const
         {
-            return CPreferences::instance()->isSubtitleFile( fileInfo, isLangFileFormat );
+            return NCore::CPreferences::instance()->isSubtitleFile( fileInfo, isLangFileFormat );
         }
 
         bool CDirModel::isSubtitleFile( const QModelIndex & idx, bool * isLangFileFormat ) const
@@ -680,7 +670,7 @@ namespace NMediaManager
                 return item->data( ECustomRoles::eFullPathRole ).toString();
 
             auto parentDir = computeTransformPath( item->parent(), false );
-            if ( parentDir == kDeleteThis )
+            if ( NCore::STransformResult::isDeleteThis( parentDir ) )
                 return parentDir;
 
             auto myName = getMyTransformedName( item, transformParentsOnly );
@@ -688,7 +678,7 @@ namespace NMediaManager
             if ( myName.isEmpty() || parentDir.isEmpty() )
                 return {};
 
-            if ( myName == kDeleteThis )
+            if ( NCore::STransformResult::isDeleteThis( myName ) )
                 return myName;
 
             auto retVal = QDir( parentDir ).absoluteFilePath( myName );
@@ -829,7 +819,7 @@ namespace NMediaManager
             if ( !canShowMediaInfo() )
                 return {};
 
-            if ( !CPreferences::instance()->isMediaFile( fi ) )
+            if ( !NCore::CPreferences::instance()->isMediaFile( fi ) )
                 return {};
 
             NSABUtils::CAutoWaitCursor awc;
@@ -854,7 +844,7 @@ namespace NMediaManager
                 return;
 
             auto fi = fileInfo( idx );
-            if ( !CPreferences::instance()->isMediaFile( fi ) )
+            if ( !NCore::CPreferences::instance()->isMediaFile( fi ) )
                 return;
 
             auto mediaInfo = getMediaTags( fi, { NSABUtils::EMediaTags::eTitle, NSABUtils::EMediaTags::eLength, NSABUtils::EMediaTags::eDate, NSABUtils::EMediaTags::eComment } );
@@ -875,12 +865,12 @@ namespace NMediaManager
             clearPathStatusCache( fi );
         }
 
-        std::list<NMediaManager::NCore::SDirNodeItem> CDirModel::getMediaInfoItems( const QFileInfo & fileInfo, int offset ) const
+        std::list<SDirNodeItem> CDirModel::getMediaInfoItems( const QFileInfo & fileInfo, int offset ) const
         {
             if ( !canShowMediaInfo() )
                 return {};
 
-            std::list<NMediaManager::NCore::SDirNodeItem> retVal;
+            std::list<SDirNodeItem> retVal;
             auto mediaInfo = getMediaTags( fileInfo, { NSABUtils::EMediaTags::eTitle, NSABUtils::EMediaTags::eLength, NSABUtils::EMediaTags::eDate, NSABUtils::EMediaTags::eComment } );
 
             retVal.emplace_back( mediaInfo[NSABUtils::EMediaTags::eTitle], offset++ );
@@ -957,7 +947,7 @@ namespace NMediaManager
         bool CDirModel::autoSetMediaTags( const QModelIndex & idx, QString * msg )
         {
             auto fi = fileInfo( idx );
-            if ( !CPreferences::instance()->isMediaFile( fi ) )
+            if ( !NCore::CPreferences::instance()->isMediaFile( fi ) )
                 return false;
 
             auto baseName = fi.completeBaseName();
@@ -984,7 +974,7 @@ namespace NMediaManager
             };
 
             QString localMsg;
-            auto aOK = NSABUtils::setMediaTags( fileName, tags, CPreferences::instance()->getMKVPropEditEXE(), &localMsg );
+            auto aOK = NSABUtils::setMediaTags( fileName, tags, NCore::CPreferences::instance()->getMKVPropEditEXE(), &localMsg );
             if ( !aOK )
             {
                 if ( msg )
@@ -1002,7 +992,7 @@ namespace NMediaManager
             NSABUtils::CAutoWaitCursor awc;
             std::unordered_map< NSABUtils::EMediaTags, QString > tags = { data };
             QString localMsg;
-            auto aOK = NSABUtils::setMediaTags( fileName, tags, CPreferences::instance()->getMKVPropEditEXE(), &localMsg );
+            auto aOK = NSABUtils::setMediaTags( fileName, tags, NCore::CPreferences::instance()->getMKVPropEditEXE(), &localMsg );
             if ( !aOK )
             {
                 if ( msg )
@@ -1109,7 +1099,7 @@ namespace NMediaManager
             return QStringList() << tr( "Title" ) << tr( "Length" ) << tr( "Media Date" ) << tr( "Comment" );
         }
 
-        std::list< NMediaManager::NCore::SDirNodeItem > CDirModel::addAdditionalItems( const QFileInfo & fileInfo ) const
+        std::list< SDirNodeItem > CDirModel::addAdditionalItems( const QFileInfo & fileInfo ) const
         {
             if ( showMediaItems() && canShowMediaInfo() )
             {
@@ -1273,7 +1263,7 @@ namespace NMediaManager
             QString year;
             while ( year.isEmpty() && !isRootPath( searchPath.absoluteFilePath() ) )
             {
-                SSearchTMDBInfo searchInfo( searchPath.completeBaseName(), {} );
+                NCore::SSearchTMDBInfo searchInfo( searchPath.completeBaseName(), {} );
                 if ( searchInfo.releaseDateSet() )
                     year = QString::number( searchInfo.releaseDate().first.year() );
                 searchPath = searchPath.absolutePath();
@@ -1287,7 +1277,7 @@ namespace NMediaManager
             QDate retVal;
             while ( !retVal.isValid() && !isRootPath( searchPath.absoluteFilePath() ) )
             {
-                SSearchTMDBInfo searchInfo( searchPath.completeBaseName(), {} );
+                NCore::SSearchTMDBInfo searchInfo( searchPath.completeBaseName(), {} );
                 retVal = searchInfo.releaseDate().first;
                 searchPath = searchPath.absolutePath();
             }
@@ -1309,7 +1299,7 @@ namespace NMediaManager
             return fBasePage->progressDlg();
         }
 
-        void CDirModel::postAddItems( const QFileInfo & fileInfo, std::list< NMediaManager::NCore::SDirNodeItem > & currItems ) const
+        void CDirModel::postAddItems( const QFileInfo & fileInfo, std::list< SDirNodeItem > & currItems ) const
         {
             (void)fileInfo;
             (void)currItems;
@@ -1454,7 +1444,7 @@ namespace NMediaManager
             return !fLoading;
         }
 
-        std::optional<NMediaManager::NCore::TItemStatus> CDirModel::getRowStatus( const QModelIndex & idx ) const
+        std::optional<TItemStatus> CDirModel::getRowStatus( const QModelIndex & idx ) const
         {
             auto parent = idx.parent();
             int numCols = columnCount( parent );
@@ -1489,7 +1479,7 @@ namespace NMediaManager
                 itemStatus = getPathStatus( fi );
             }
 
-            if ( !itemStatus.has_value() && idx.column() == NCore::EColumns::eFSName )
+            if ( !itemStatus.has_value() && idx.column() == NModels::EColumns::eFSName )
             {
                 // when the filename itself has no result, show the union of all other columns
                 itemStatus = getRowStatus( idx );
@@ -1555,7 +1545,7 @@ namespace NMediaManager
             auto itemStatus = getIndexStatus( idx );
             if ( itemStatus.has_value() )
             {
-                auto retVal = CPreferences::instance()->getColorForStatus( itemStatus.value().first, true );
+                auto retVal = NCore::CPreferences::instance()->getColorForStatus( itemStatus.value().first, true );
                 if ( retVal.isValid() )
                     return retVal;
             }
@@ -1567,7 +1557,7 @@ namespace NMediaManager
             auto itemStatus = getIndexStatus( idx );
             if ( itemStatus.has_value() )
             {
-                auto retVal = CPreferences::instance()->getColorForStatus( itemStatus.value().first, false );
+                auto retVal = NCore::CPreferences::instance()->getColorForStatus( itemStatus.value().first, false );
                 if ( retVal.isValid() )
                     return retVal;
             }

@@ -46,6 +46,10 @@ namespace NMediaManager
     namespace NCore
     {
         enum class EMediaType;
+    }
+
+    namespace NModels
+    {
         enum class EType;
         enum EColumns
         {
@@ -70,7 +74,7 @@ namespace NMediaManager
             QIcon fIcon;
             std::optional< Qt::Alignment > fAlignment;
             std::list< std::pair< QVariant, int > > fRoles;
-            EMediaType fMediaType;
+            NCore::EMediaType fMediaType;
             std::optional< bool > fCheckable;
             std::optional< std::pair< EType, NSABUtils::EMediaTags > > fEditable;
         };

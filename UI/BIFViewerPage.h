@@ -97,7 +97,7 @@ namespace NMediaManager
             virtual void slotPostInit() override;
         private:
             void connectToCB( NSABUtils::CDelayComboBox * comboBox, bool connect );
-            virtual NCore::CDirModel * createDirModel() override { return nullptr; }
+            virtual NModels::CDirModel * createDirModel() override { return nullptr; }
             virtual QStringList dirModelFilter() const override { return {}; }
             virtual QString loadTitleName() const override { return {}; }
             virtual QString loadCancelName() const override { return {}; }

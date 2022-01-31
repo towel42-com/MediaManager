@@ -52,7 +52,7 @@ namespace NMediaManager
             virtual QString actionCancelName() const override;
             virtual QString actionErrorName() const override;
 
-            virtual NCore::CDirModel * createDirModel() override;
+            virtual NModels::CDirModel * createDirModel() override;
             virtual void postProcessLog( const QString & /*string*/ ) override;
         Q_SIGNALS:
         public Q_SLOTS:

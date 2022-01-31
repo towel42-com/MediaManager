@@ -21,9 +21,9 @@
 // SOFTWARE.
 
 #include "TagsModel.h"
-#include "SearchTMDBInfo.h"
-#include "Preferences.h"
-#include "TransformResult.h"
+#include "Core/SearchTMDBInfo.h"
+#include "Core/Preferences.h"
+#include "Core/TransformResult.h"
 
 #include "SABUtils/MKVUtils.h"
 #include "SABUtils/QtUtils.h"
@@ -42,7 +42,7 @@
 
 namespace NMediaManager
 {
-    namespace NCore
+    namespace NModels
     {
         CTagsModel::CTagsModel( NUi::CBasePage * page, QObject * parent /*= 0*/ ) :
             CDirModel( page, parent )
@@ -98,7 +98,7 @@ namespace NMediaManager
             return CDirModel::headers() << NCore::CPreferences::instance()->getEnabledTagsForDisplay();
         }
 
-        std::list< NMediaManager::NCore::SDirNodeItem > CTagsModel::addAdditionalItems(const QFileInfo & fileInfo) const
+        std::list< SDirNodeItem > CTagsModel::addAdditionalItems(const QFileInfo & fileInfo) const
         {
             if ( showMediaItems() && canShowMediaInfo() )
                 return {};
@@ -110,7 +110,7 @@ namespace NMediaManager
             auto mediaInfo = getMediaTags( fileInfo, tagsToShow );
             int colNum = EColumns::eMediaColumnLoc;
 
-            std::list<NMediaManager::NCore::SDirNodeItem> retVal;
+            std::list<SDirNodeItem> retVal;
             for ( auto && ii : tagsToShow )
             {
                 QString value;
@@ -204,7 +204,7 @@ namespace NMediaManager
                         .arg( expr.toHtmlEscaped() )
                         .arg( tag );
 
-                    return TItemStatus( EItemStatus::eWarning, msg );
+                    return TItemStatus( NCore::EItemStatus::eWarning, msg );
                 }
             }
             return {};

@@ -24,11 +24,15 @@
 #define _TRANSFORMMODEL_H
 
 #include "DirModel.h"
-#include "PatternInfo.h"
+#include "Core/PatternInfo.h"
 
 namespace NMediaManager
 {
     namespace NCore
+    {
+        struct STransformResult;
+    }
+    namespace NModels
     {
         using TTitleMap = std::unordered_map< QString, std::map< int, std::map< int, QString > > >;
 
@@ -38,21 +42,21 @@ namespace NMediaManager
         public:
             enum EColumns
             {
-                eIsTVShow = NCore::EColumns::eFirstCustomColumn,
+                eIsTVShow = NModels::EColumns::eFirstCustomColumn,
                 eTransformName,
                 eMediaColumnLoc
             };
 
             CTransformModel( NUi::CBasePage * page, QObject * parent = nullptr );
-            ~CTransformModel();
+            virtual ~CTransformModel() override;
 
             virtual bool setData(const QModelIndex & idx, const QVariant & value, int role) override;
 
             virtual std::optional< TItemStatus > computeItemStatus(const QModelIndex & idx ) const override;
             virtual bool canComputeStatus() const override;
 
-            void setSearchResult( const QModelIndex & idx, std::shared_ptr< STransformResult > info, bool applyToChilren, bool forceSet );
-            void setSearchResult( QStandardItem * item, std::shared_ptr< STransformResult > info, bool applyToChilren, bool forceSet);
+            void setSearchResult( const QModelIndex & idx, std::shared_ptr< NCore::STransformResult > info, bool applyToChilren, bool forceSet );
+            void setSearchResult( QStandardItem * item, std::shared_ptr< NCore::STransformResult > info, bool applyToChilren, bool forceSet);
             void clearSearchResult( const QModelIndex & idx, bool recursive );
 
             bool treatAsTVShow( const QFileInfo & fileInfo, bool defaultValue ) const;
@@ -71,9 +75,9 @@ namespace NMediaManager
             bool canAutoSearch( const QModelIndex & index, bool recursive ) const;
             bool canAutoSearch( const QFileInfo & info, bool recursive) const;
 
-            std::shared_ptr< STransformResult > getTransformResult( const QModelIndex & idx, bool checkParents ) const;
-            std::shared_ptr< STransformResult > getTransformResult( const QString & path, bool checkParents ) const;
-            std::shared_ptr< STransformResult > getTransformResult( const QFileInfo & path, bool checkParents ) const;
+            std::shared_ptr< NCore::STransformResult > getTransformResult( const QModelIndex & idx, bool checkParents ) const;
+            std::shared_ptr< NCore::STransformResult > getTransformResult( const QString & path, bool checkParents ) const;
+            std::shared_ptr< NCore::STransformResult > getTransformResult( const QFileInfo & path, bool checkParents ) const;
         public Q_SLOTS:
             void slotPatternChanged();
 
@@ -84,8 +88,8 @@ namespace NMediaManager
         private:
             virtual void updateFile(const QModelIndex &idx, const QString & oldFile, const QString & newFile) override;
             virtual void updateDir(const QModelIndex & idx, const QDir & oldDir, const QDir & newDir) override;
-            virtual void postAddItems( const QFileInfo & fileInfo, std::list< NMediaManager::NCore::SDirNodeItem > & currItems ) const override;
-            virtual std::list< NMediaManager::NCore::SDirNodeItem > addAdditionalItems( const QFileInfo & fileInfo ) const override;
+            virtual void postAddItems( const QFileInfo & fileInfo, std::list< SDirNodeItem > & currItems ) const override;
+            virtual std::list< SDirNodeItem > addAdditionalItems( const QFileInfo & fileInfo ) const override;
             virtual bool showMediaItems() const override { return true; };
             virtual int firstMediaItemColumn() const override { return EColumns::eMediaColumnLoc; }
 
@@ -111,7 +115,7 @@ namespace NMediaManager
 
             QStandardItem * getTransformItem( const QStandardItem * parent ) const;
 
-            bool setMediaTags( const QString & fileName, std::shared_ptr< STransformResult > & searchResults, QString & msg ) const;
+            bool setMediaTags( const QString & fileName, std::shared_ptr< NCore::STransformResult > & searchResults, QString & msg ) const;
 
             bool isValidName(const QFileInfo & fi, std::optional< bool > isTVShow = {} ) const;
             bool isValidName( const QString & absPath, bool isDir, std::optional< bool > isTVShow ) const;
@@ -122,18 +126,18 @@ namespace NMediaManager
             void updateTransformPattern( const QStandardItem * item ) const;
             void updateTransformPattern( const QStandardItem * transformedItem, QStandardItem * item ) const;
             [[nodiscard]] std::pair< bool, QString > transformItem( const QFileInfo & path ) const;
-            [[nodiscard]] std::pair< bool, QString > transformItem( const QFileInfo & fileInfo, const SPatternInfo & patternInfo ) const;
+            [[nodiscard]] std::pair< bool, QString > transformItem( const QFileInfo & fileInfo, const NCore::SPatternInfo & patternInfo ) const;
 
             // title_season -> disk number -> titleNumber -> fullPath
             void findTitlesPerDiskNumbers( const QModelIndex & parentIdx, TTitleMap & retVal );
             std::map< int, QString > getDiskTitles( const QModelIndex & parentIdx );
 
-            SPatternInfo fTVPatterns;
-            SPatternInfo fMoviePatterns;
+            NCore::SPatternInfo fTVPatterns;
+            NCore::SPatternInfo fMoviePatterns;
 
             mutable std::map< QString, std::pair< bool, QString > > fFileMapping;
             mutable std::map< QString, std::pair< bool, QString > > fDirMapping;
-            std::unordered_map< QString, std::shared_ptr< STransformResult > > fTransformResultMap;
+            std::unordered_map< QString, std::shared_ptr< NCore::STransformResult > > fTransformResultMap;
             std::unordered_map< QString, QString > fDiskRipSearchMap;
 
             //bool fTreatAsTVShowByDefault{ false };

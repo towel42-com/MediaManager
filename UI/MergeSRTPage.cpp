@@ -21,7 +21,7 @@
 // SOFTWARE.
 
 #include "MergeSRTPage.h"
-#include "Core/MergeSRTModel.h"
+#include "Models/MergeSRTModel.h"
 #include "SABUtils/DoubleProgressDlg.h"
 
 #include <QRegularExpression>
@@ -39,9 +39,9 @@ namespace NMediaManager
         {
         }
 
-        NCore::CDirModel * CMergeSRTPage::createDirModel()
+        NModels::CDirModel * CMergeSRTPage::createDirModel()
         {
-            return new NCore::CMergeSRTModel( this );
+            return new NModels::CMergeSRTModel( this );
         }
 
         void CMergeSRTPage::postProcessLog( const QString & string )

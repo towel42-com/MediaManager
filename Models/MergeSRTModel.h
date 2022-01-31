@@ -27,7 +27,7 @@
 
 namespace NMediaManager
 {
-    namespace NCore
+    namespace NModels
     {
         class CMergeSRTModel : public CDirModel
         {
@@ -35,14 +35,14 @@ namespace NMediaManager
         public:
             enum EColumns
             {
-                eLanguage = NCore::EColumns::eFirstCustomColumn,
+                eLanguage = NModels::EColumns::eFirstCustomColumn,
                 eForced,
                 eSDH,
                 eOnByDefault
             };
 
             CMergeSRTModel( NUi::CBasePage * page, QObject * parent = nullptr );
-            ~CMergeSRTModel();
+            virtual ~CMergeSRTModel() override;
 
         private:
             virtual std::pair< bool, QStandardItem * > processItem( const QStandardItem * item, QStandardItem * parentResultItem, bool displayOnly ) override;
@@ -50,7 +50,7 @@ namespace NMediaManager
             QStandardItem * processSUBIDXSubTitle(QStandardItem * mkvFile, const std::list< std::pair< QStandardItem *, QStandardItem * > > & subidxFiles, QStandardItem * parentItem, bool displayOnly) const;
             std::list< std::pair< QStandardItem *, QStandardItem * > > pairSubIDX(const std::list< QStandardItem * > & idxFiles, const std::list< QStandardItem * > & subFiles) const;
 
-            virtual std::list< NMediaManager::NCore::SDirNodeItem > addAdditionalItems( const QFileInfo & fileInfo ) const override;
+            virtual std::list< SDirNodeItem > addAdditionalItems( const QFileInfo & fileInfo ) const override;
             virtual void setupNewItem( const SDirNodeItem & nodeItem, const QStandardItem * nameItem, QStandardItem * item ) const override;
             virtual QStringList headers() const override;
             virtual void postLoad( QTreeView * treeView ) override;

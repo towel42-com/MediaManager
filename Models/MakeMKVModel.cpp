@@ -21,7 +21,7 @@
 // SOFTWARE.
 
 #include "MakeMKVModel.h"
-#include "Preferences.h"
+#include "Core/Preferences.h"
 #include "SABUtils/DoubleProgressDlg.h"
 #include "SABUtils/FileUtils.h"
 #include "SABUtils/QtUtils.h"
@@ -32,7 +32,7 @@
 
 namespace NMediaManager
 {
-    namespace NCore
+    namespace NModels
     {
         CMakeMKVModel::CMakeMKVModel( NUi::CBasePage * page, QObject * parent /*= 0*/ ) :
             CDirModel( page, parent )
@@ -41,11 +41,6 @@ namespace NMediaManager
 
         CMakeMKVModel::~CMakeMKVModel()
         {
-        }
-
-        int64_t CMakeMKVModel::getNumberOfSeconds( const QString & fileName ) const
-        {
-            return NSABUtils::getNumberOfSeconds( fileName );
         }
 
         std::pair< bool, QStandardItem * > CMakeMKVModel::processItem( const QStandardItem * item, QStandardItem * parentResultItem, bool displayOnly )
@@ -71,10 +66,10 @@ namespace NMediaManager
             fFirstProcess = true;
             if ( !displayOnly )
             {
-                int numSeconds = getNumberOfSeconds( processInfo.fOldName );
+                int numSeconds = NSABUtils::getNumberOfSeconds( processInfo.fOldName );
                 progressDlg()->setSecondaryMaximum( numSeconds );
 
-                processInfo.fCmd = CPreferences::instance()->getFFMpegEXE();
+                processInfo.fCmd = NCore::CPreferences::instance()->getFFMpegEXE();
                 if ( processInfo.fCmd.isEmpty() || !QFileInfo( processInfo.fCmd ).isExecutable() )
                 {
                     QStandardItem * errorItem = nullptr;

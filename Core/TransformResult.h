@@ -81,6 +81,19 @@ namespace NMediaManager
             QString getSeason() const;
             QString getEpisode() const;
 
+            static bool isNoItems( const QString & text );
+            static QString getNoItems();
+
+            static bool isNoMatch( const QString & text );
+            static QString getNoMatch();
+
+            static bool isDeleteThis( const QString & text );
+            static QString getDeleteThis();
+
+            static bool isAutoSetText( const QString & text );
+
+
+
             QString transformedName( const QFileInfo & fileInfo, const SPatternInfo & info, bool titleOnly ) const;
             void removeChild( std::shared_ptr< STransformResult > info );
 

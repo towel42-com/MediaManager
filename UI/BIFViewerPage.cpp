@@ -26,9 +26,7 @@
 #include "ui_BasePage.h"
 
 #include "Core/Preferences.h"
-#include "Core/DirModel.h"
-#include "Core/SearchTMDBInfo.h"
-#include "Core/SearchTMDB.h"
+#include "Models/DirModel.h"
 
 #include "SABUtils/QtUtils.h"
 #include "SABUtils/utils.h"

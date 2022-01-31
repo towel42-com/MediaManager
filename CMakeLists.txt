@@ -61,6 +61,7 @@ add_subdirectory( SABUtils/gif)
 add_subdirectory( UI )
 add_subdirectory( UI/Preferences )
 add_subdirectory( Core )
+add_subdirectory( Models )
 add_subdirectory( App )
 
 SET( CPACK_PACKAGE_VERSION_MAJOR ${MAJOR_VERSION} )

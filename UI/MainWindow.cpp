@@ -26,7 +26,7 @@
 #include "ui_MainWindow.h"
 
 #include "Core/Preferences.h"
-#include "Core/DirModel.h"
+#include "Models/DirModel.h"
 #include "Core/SearchTMDBInfo.h"
 #include "Core/SearchTMDB.h"
 #include "SABUtils/FileUtils.h"

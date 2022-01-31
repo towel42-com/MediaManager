@@ -27,7 +27,7 @@
 
 namespace NMediaManager
 {
-    namespace NCore
+    namespace NModels
     {
         class CMakeMKVModel : public CDirModel
         {
@@ -35,7 +35,7 @@ namespace NMediaManager
         public:
             enum EColumns
             {
-                eMediaColumnLoc = NCore::EColumns::eFirstCustomColumn,
+                eMediaColumnLoc = NModels::EColumns::eFirstCustomColumn,
             };
             
             CMakeMKVModel( NUi::CBasePage * page, QObject * parent = nullptr );
@@ -57,8 +57,6 @@ namespace NMediaManager
             virtual void attachTreeNodes( QStandardItem * /*nextParent*/, QStandardItem *& /*prevParent*/, const STreeNode & /*treeNode*/ ) override;
 
             virtual bool usesQueuedProcessing() const override { return true; }
-
-            int64_t getNumberOfSeconds( const QString & fileName ) const;
         };
     }
 }
