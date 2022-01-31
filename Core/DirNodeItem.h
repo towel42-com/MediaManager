@@ -31,6 +31,11 @@ class QStandardItem;
 #include <list>
 #include <optional>
 
+namespace NSABUtils
+{
+    enum class EMediaTags;
+}
+
 namespace NMediaManager
 {
     namespace NUi
@@ -67,7 +72,7 @@ namespace NMediaManager
             std::list< std::pair< QVariant, int > > fRoles;
             EMediaType fMediaType;
             std::optional< bool > fCheckable;
-            std::optional< EType > fEditType;
+            std::optional< std::pair< EType, NSABUtils::EMediaTags > > fEditable;
         };
     }
 }

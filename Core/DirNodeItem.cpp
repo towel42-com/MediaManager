@@ -52,7 +52,20 @@ namespace NMediaManager
 
         QStandardItem * SDirNodeItem::createStandardItem() const
         {
-            auto retVal = (fEditType.has_value()) ? new CDirModelItem( fText, fEditType.value() ) : new QStandardItem( fText );
+            QStandardItem * retVal = nullptr;
+            if ( !fEditable.has_value() )
+            {
+                retVal = new QStandardItem( fText );
+                retVal->setEditable( false );
+            }
+            else
+            {
+                retVal = new CDirModelItem( fText, fEditable.value().first );
+                if ( fEditable.value().first == EType::eMediaTag )
+                    retVal->setData( static_cast<int>(fEditable.value().second), NCore::ECustomRoles::eMediaTagTypeRole );
+                retVal->setEditable( true );
+            }
+
             retVal->setIcon( fIcon );
             if ( fAlignment.has_value() )
                 retVal->setTextAlignment( fAlignment.value() );
@@ -62,8 +75,6 @@ namespace NMediaManager
             }
             if ( fCheckable.has_value() )
                 retVal->setCheckable( fCheckable.value() );
-            if ( !fEditType.has_value() )
-                retVal->setEditable( false );
             return retVal;
         }
     }

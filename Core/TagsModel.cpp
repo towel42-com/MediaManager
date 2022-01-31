@@ -118,22 +118,13 @@ namespace NMediaManager
                 if ( pos != mediaInfo.end() )
                 {
                     value = (*pos).second;
-                    //if ( isMediaFile )
-                    //{
-                    //    //Q_ASSERT( pos != mediaInfo.end() );
-                    //    continue;
-                    //}
                 }
 
                 retVal.emplace_back( value, colNum++ );
                 if ( isMediaFile )
                 {
-                    if ( ii == NSABUtils::EMediaTags::eTitle )
-                        retVal.back().fEditType = EType::eTitle;
-                    else if ( ii == NSABUtils::EMediaTags::eDate )
-                        retVal.back().fEditType = EType::eDate;
-                    else if ( ii == NSABUtils::EMediaTags::eComment )
-                        retVal.back().fEditType = EType::eComment;
+                    if ( NSABUtils::isSettableTag( ii ) )
+                        retVal.back().fEditable = std::make_pair( EType::eMediaTag, ii );
                 }
             }
             return retVal;

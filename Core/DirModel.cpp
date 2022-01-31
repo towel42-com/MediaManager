@@ -264,21 +264,10 @@ namespace NMediaManager
                         updatePath( idx, currName, newName );
                     }
                     break;
-                    case EType::eTitle:
+                    case EType::eMediaTag:
                     {
-                        if ( !setMediaTag( fileInfo( idx ).absoluteFilePath(), { NSABUtils::EMediaTags::eTitle, value.toString() } ) )
-                            return false;
-                    }
-                    break;
-                    case EType::eDate:
-                    {
-                        if ( !setMediaTag( fileInfo( idx ).absoluteFilePath(), { NSABUtils::EMediaTags::eDate, value.toString() } ) )
-                            return false;
-                    }
-                    break;
-                    case EType::eComment:
-                    {
-                        if ( !setMediaTag( fileInfo( idx ).absoluteFilePath(), { NSABUtils::EMediaTags::eComment, value.toString() } ) )
+                        auto mediaTagType = static_cast<NSABUtils::EMediaTags>(item->data( NCore::ECustomRoles::eMediaTagTypeRole ).toInt());
+                        if ( !setMediaTag( fileInfo( idx ).absoluteFilePath(), { mediaTagType, value.toString() } ) )
                             return false;
                     }
                     break;
@@ -507,7 +496,7 @@ namespace NMediaManager
             nameItem.fIcon = model->iconProvider()->icon( fileInfo );
             nameItem.setData( fileInfo.absoluteFilePath(), ECustomRoles::eFullPathRole );
             nameItem.setData( fileInfo.isDir(), ECustomRoles::eIsDir );
-            nameItem.fEditType = EType::ePath;
+            nameItem.fEditable = std::make_pair( EType::ePath, static_cast< NSABUtils::EMediaTags >( -1 ) );
             fItems.push_back( nameItem );
             fItems.emplace_back( fileInfo.isFile() ? NSABUtils::NFileUtils::fileSizeString( fileInfo ) : QString(), EColumns::eFSSize );
             if ( fileInfo.isFile() )
@@ -895,15 +884,15 @@ namespace NMediaManager
             auto mediaInfo = getMediaTags( fileInfo, { NSABUtils::EMediaTags::eTitle, NSABUtils::EMediaTags::eLength, NSABUtils::EMediaTags::eDate, NSABUtils::EMediaTags::eComment } );
 
             retVal.emplace_back( mediaInfo[NSABUtils::EMediaTags::eTitle], offset++ );
-            retVal.back().fEditType = EType::eTitle;
+            retVal.back().fEditable = std::make_pair( EType::eMediaTag, NSABUtils::EMediaTags::eTitle );
 
             retVal.emplace_back( mediaInfo[NSABUtils::EMediaTags::eLength], offset++ );
 
             retVal.emplace_back( mediaInfo[NSABUtils::EMediaTags::eDate], offset++ );
-            retVal.back().fEditType = EType::eDate;
+            retVal.back().fEditable = std::make_pair( EType::eMediaTag, NSABUtils::EMediaTags::eDate );
 
             retVal.emplace_back( mediaInfo[NSABUtils::EMediaTags::eComment], offset++ );
-            retVal.back().fEditType = EType::eComment;
+            retVal.back().fEditable = std::make_pair( EType::eMediaTag, NSABUtils::EMediaTags::eComment );
             return retVal;
         }
 

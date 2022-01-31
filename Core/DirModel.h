@@ -82,15 +82,14 @@ namespace NMediaManager
             eMD5,
             eOldName,
             eNewName,
-            eIsErrorNode
+            eIsErrorNode,
+            eMediaTagTypeRole
         };
 
         enum class EType
         {
             ePath = QStandardItem::UserType + 1,
-            eTitle,
-            eDate,
-            eComment
+            eMediaTag
         };
 
         class CDirModelItem : public QStandardItem
