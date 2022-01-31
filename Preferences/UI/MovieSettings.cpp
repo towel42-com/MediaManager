@@ -21,35 +21,38 @@
 // SOFTWARE.
 
 #include "MovieSettings.h"
-#include "Core/Preferences.h"
+#include "Preferences/Core/Preferences.h"
 
 #include "ui_MovieSettings.h"
 
 namespace NMediaManager
 {
-    namespace NUi
+    namespace NPreferences
     {
-        CMovieSettings::CMovieSettings( QWidget * parent )
-            : CBasePrefPage( parent ),
-            fImpl( new Ui::CMovieSettings )
+        namespace NUi
         {
-            fImpl->setupUi( this );
-        }
+            CMovieSettings::CMovieSettings( QWidget * parent )
+                : CBasePrefPage( parent ),
+                fImpl( new Ui::CMovieSettings )
+            {
+                fImpl->setupUi( this );
+            }
 
-        CMovieSettings::~CMovieSettings()
-        {
-        }
+            CMovieSettings::~CMovieSettings()
+            {
+            }
 
-        void CMovieSettings::load()
-        {
-            fImpl->movieOutFilePattern->setText( NCore::CPreferences::instance()->getMovieOutFilePattern() );
-            fImpl->movieOutDirPattern->setText( NCore::CPreferences::instance()->getMovieOutDirPattern() );
-        }
+            void CMovieSettings::load()
+            {
+                fImpl->movieOutFilePattern->setText( NPreferences::NCore::CPreferences::instance()->getMovieOutFilePattern() );
+                fImpl->movieOutDirPattern->setText( NPreferences::NCore::CPreferences::instance()->getMovieOutDirPattern() );
+            }
 
-        void CMovieSettings::save()
-        {
-            NCore::CPreferences::instance()->setMovieOutFilePattern( fImpl->movieOutFilePattern->text() );
-            NCore::CPreferences::instance()->setMovieOutDirPattern( fImpl->movieOutDirPattern->text() );
+            void CMovieSettings::save()
+            {
+                NPreferences::NCore::CPreferences::instance()->setMovieOutFilePattern( fImpl->movieOutFilePattern->text() );
+                NPreferences::NCore::CPreferences::instance()->setMovieOutDirPattern( fImpl->movieOutDirPattern->text() );
+            }
         }
     }
 }

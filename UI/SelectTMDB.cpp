@@ -26,7 +26,7 @@
 #include "Core/TransformResult.h"
 #include "Core/SearchTMDB.h"
 #include "Core/SearchTMDBInfo.h"
-#include "Core/Preferences.h"
+#include "Preferences/Core/Preferences.h"
 
 #include "SABUtils/ButtonEnabler.h"
 #include "SABUtils/QtUtils.h"
@@ -488,7 +488,7 @@ namespace NMediaManager
                     auto msg = tr("Words you removed: <ul>%1</ul>").arg(tmp.join(""));
                     if (QMessageBox::question(this, tr("Would you like to add these words to the known words list?"), msg, QMessageBox::StandardButton::Yes, QMessageBox::StandardButton::No) == QMessageBox::StandardButton::Yes)
                     {
-                        NCore::CPreferences::instance()->addKnownStrings(origWords);
+                        NPreferences::NCore::CPreferences::instance()->addKnownStrings(origWords);
                     }
                 }
             }

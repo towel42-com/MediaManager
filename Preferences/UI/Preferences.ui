@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>NMediaManager::NUi::CPreferences</class>
- <widget class="QDialog" name="NMediaManager::NUi::CPreferences">
+ <class>NMediaManager::NPreferences::NUi::CPreferences</class>
+ <widget class="QDialog" name="NMediaManager::NPreferences::NUi::CPreferences">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -70,14 +70,13 @@
   <tabstop>stackedWidget</tabstop>
  </tabstops>
  <resources>
-  <include location="../application.qrc"/>
   <include location="../../SABUtils/resources/SABUtils.qrc"/>
  </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>NMediaManager::NUi::CPreferences</receiver>
+   <receiver>NMediaManager::NPreferences::NUi::CPreferences</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -93,7 +92,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>NMediaManager::NUi::CPreferences</receiver>
+   <receiver>NMediaManager::NPreferences::NUi::CPreferences</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

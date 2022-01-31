@@ -35,29 +35,32 @@ class QListView;
 class QTreeWidgetItem;
 namespace NMediaManager
 {
-    namespace NUi
+    namespace NPreferences
     {
-        namespace Ui { class CRemoveFromPaths; };
-        class CRemoveFromPaths : public CBasePrefPage
+        namespace NUi
         {
-            Q_OBJECT
-        public:
-            CRemoveFromPaths( QWidget * parent = nullptr );
-            virtual ~CRemoveFromPaths() override;
-
-            virtual void load() override;
-            virtual void save() override;
-            virtual QStringList pageName() const override
+            namespace Ui { class CRemoveFromPaths; };
+            class CRemoveFromPaths : public CBasePrefPage
             {
-                return QStringList( { "Known Strings", "Remove from Paths" } );
-            }
-        public Q_SLOTS:
-            void slotAddKnownString();
-            void slotDelKnownString();
-        private:
-            QStringListModel * fKnownStringModel{ nullptr };
-            std::unique_ptr< Ui::CRemoveFromPaths > fImpl;
-        };
+                Q_OBJECT
+            public:
+                CRemoveFromPaths( QWidget * parent = nullptr );
+                virtual ~CRemoveFromPaths() override;
+
+                virtual void load() override;
+                virtual void save() override;
+                virtual QStringList pageName() const override
+                {
+                    return QStringList( { "Known Strings", "Remove from Paths" } );
+                }
+            public Q_SLOTS:
+                void slotAddKnownString();
+                void slotDelKnownString();
+            private:
+                QStringListModel * fKnownStringModel{ nullptr };
+                std::unique_ptr< Ui::CRemoveFromPaths > fImpl;
+            };
+        }
     }
 }
 #endif 

@@ -25,7 +25,7 @@
 #include "ui_BIFViewerPage.h"
 #include "ui_BasePage.h"
 
-#include "Core/Preferences.h"
+#include "Preferences/Core/Preferences.h"
 #include "Models/DirModel.h"
 
 #include "SABUtils/QtUtils.h"
@@ -112,15 +112,15 @@ namespace NMediaManager
                 setButtonsLayout( static_cast<NSABUtils::NBIF::EButtonsLayout>( settings.value( "bifPlayerButtonLayout", static_cast<int>(NSABUtils::NBIF::EButtonsLayout::eTogglePlayPause ) ).toInt() ) );
             }
 
-            fImpl->bifWidget->setSpeedMultiplier( NCore::CPreferences::instance()->bifPlayerSpeedMultiplier() );
-            fImpl->bifWidget->setNumFramesToSkip( NCore::CPreferences::instance()->bifNumFramesToSkip() );
-            fImpl->bifWidget->setPlayCount(NCore::CPreferences::instance()->bifLoopCount());
-            fImpl->bifWidget->setGIFFlipImage( NCore::CPreferences::instance()->gifFlipImage() );
-            fImpl->bifWidget->setGIFDitherImage( NCore::CPreferences::instance()->gifDitherImage() );
-            fImpl->bifWidget->setGIFLoopCount( NCore::CPreferences::instance()->gifLoopCount() );
-            fImpl->bifWidget->setGIFStartFrame( NCore::CPreferences::instance()->gifStartFrame() );
-            fImpl->bifWidget->setGIFEndFrame( NCore::CPreferences::instance()->gifEndFrame() );
-            fImpl->bifWidget->setGIFDelay( NCore::CPreferences::instance()->gifDelay() );
+            fImpl->bifWidget->setSpeedMultiplier( NPreferences::NCore::CPreferences::instance()->bifPlayerSpeedMultiplier() );
+            fImpl->bifWidget->setNumFramesToSkip( NPreferences::NCore::CPreferences::instance()->bifNumFramesToSkip() );
+            fImpl->bifWidget->setPlayCount(NPreferences::NCore::CPreferences::instance()->bifLoopCount());
+            fImpl->bifWidget->setGIFFlipImage( NPreferences::NCore::CPreferences::instance()->gifFlipImage() );
+            fImpl->bifWidget->setGIFDitherImage( NPreferences::NCore::CPreferences::instance()->gifDitherImage() );
+            fImpl->bifWidget->setGIFLoopCount( NPreferences::NCore::CPreferences::instance()->gifLoopCount() );
+            fImpl->bifWidget->setGIFStartFrame( NPreferences::NCore::CPreferences::instance()->gifStartFrame() );
+            fImpl->bifWidget->setGIFEndFrame( NPreferences::NCore::CPreferences::instance()->gifEndFrame() );
+            fImpl->bifWidget->setGIFDelay( NPreferences::NCore::CPreferences::instance()->gifDelay() );
         }
 
         void CBIFViewerPage::saveSettings()
@@ -129,15 +129,15 @@ namespace NMediaManager
             settings.setValue( "bifViewerVSplitter", fImpl->bifViewerVSplitter->saveState() );
             settings.setValue( "bifPlayerButtonLayout", static_cast<int>( fImpl->bifWidget->buttonsLayout() ) );
 
-            NCore::CPreferences::instance()->setBIFPlayerSpeedMultiplier( fImpl->bifWidget->playerSpeedMultiplier() );
-            NCore::CPreferences::instance()->setBIFNumFramesToSkip( fImpl->bifWidget->numFramesToSkip() );
-            NCore::CPreferences::instance()->setBIFLoopCount(fImpl->bifWidget->playCount());
-            NCore::CPreferences::instance()->setGIFFlipImage( fImpl->bifWidget->gifFlipImage() );
-            NCore::CPreferences::instance()->setGIFDitherImage( fImpl->bifWidget->gifDitherImage() );
-            NCore::CPreferences::instance()->setGIFLoopCount( fImpl->bifWidget->gifLoopCount() );
-            NCore::CPreferences::instance()->setGIFStartFrame( fImpl->bifWidget->gifStartFrame() );
-            NCore::CPreferences::instance()->setGIFEndFrame( fImpl->bifWidget->gifEndFrame() );
-            NCore::CPreferences::instance()->setGIFDelay( fImpl->bifWidget->gifDelay() );
+            NPreferences::NCore::CPreferences::instance()->setBIFPlayerSpeedMultiplier( fImpl->bifWidget->playerSpeedMultiplier() );
+            NPreferences::NCore::CPreferences::instance()->setBIFNumFramesToSkip( fImpl->bifWidget->numFramesToSkip() );
+            NPreferences::NCore::CPreferences::instance()->setBIFLoopCount(fImpl->bifWidget->playCount());
+            NPreferences::NCore::CPreferences::instance()->setGIFFlipImage( fImpl->bifWidget->gifFlipImage() );
+            NPreferences::NCore::CPreferences::instance()->setGIFDitherImage( fImpl->bifWidget->gifDitherImage() );
+            NPreferences::NCore::CPreferences::instance()->setGIFLoopCount( fImpl->bifWidget->gifLoopCount() );
+            NPreferences::NCore::CPreferences::instance()->setGIFStartFrame( fImpl->bifWidget->gifStartFrame() );
+            NPreferences::NCore::CPreferences::instance()->setGIFEndFrame( fImpl->bifWidget->gifEndFrame() );
+            NPreferences::NCore::CPreferences::instance()->setGIFDelay( fImpl->bifWidget->gifDelay() );
         }
 
         bool CBIFViewerPage::eventFilter( QObject * obj, QEvent * event )

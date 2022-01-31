@@ -30,23 +30,26 @@ class QListView;
 
 namespace NMediaManager
 {
-    namespace NUi
+    namespace NPreferences
     {
-        class CBasePrefPage : public QWidget
+        namespace NUi
         {
-            Q_OBJECT
-        public:
-            CBasePrefPage( QWidget * parent = nullptr );
-            virtual ~CBasePrefPage() override;
+            class CBasePrefPage : public QWidget
+            {
+                Q_OBJECT
+            public:
+                CBasePrefPage( QWidget * parent = nullptr );
+                virtual ~CBasePrefPage() override;
 
-            virtual void load() = 0;
-            virtual void save() = 0;
-            virtual QStringList pageName() const = 0;
-        public Q_SLOTS:
-        protected:
-            void addString( const QString & title, const QString & label, QStringListModel * model, QListView * listView, bool splitWords );
-            void delString( QStringListModel * listModel, QListView * listView );
-        };
+                virtual void load() = 0;
+                virtual void save() = 0;
+                virtual QStringList pageName() const = 0;
+            public Q_SLOTS:
+            protected:
+                void addString( const QString & title, const QString & label, QStringListModel * model, QListView * listView, bool splitWords );
+                void delString( QStringListModel * listModel, QListView * listView );
+            };
+        }
     }
 }
 #endif 

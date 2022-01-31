@@ -21,7 +21,7 @@
 // SOFTWARE.
 
 #include "IgnoredPaths.h"
-#include "Core/Preferences.h"
+#include "Preferences/Core/Preferences.h"
 
 #include "ui_IgnoredPaths.h"
 
@@ -30,44 +30,48 @@
 
 namespace NMediaManager
 {
-    namespace NUi
+    namespace NPreferences
     {
-        CIgnoredPaths::CIgnoredPaths( QWidget * parent )
-            : CBasePrefPage( parent ),
-            fImpl( new Ui::CIgnoredPaths )
+        namespace NUi
         {
-            fImpl->setupUi( this );
+            CIgnoredPaths::CIgnoredPaths( QWidget * parent )
+                : CBasePrefPage( parent ),
+                fImpl( new Ui::CIgnoredPaths )
+            {
+                fImpl->setupUi( this );
 
-            connect( fImpl->btnAddIgnorePathName, &QToolButton::clicked, this, &CIgnoredPaths::slotAddIgnorePathName );
-            connect( fImpl->btnDelIgnorePathName, &QToolButton::clicked, this, &CIgnoredPaths::slotDelIgnorePathName );
+                connect( fImpl->btnAddIgnorePathName, &QToolButton::clicked, this, &CIgnoredPaths::slotAddIgnorePathName );
+                connect( fImpl->btnDelIgnorePathName, &QToolButton::clicked, this, &CIgnoredPaths::slotDelIgnorePathName );
 
-            fModel = new QStringListModel( this );
-            fImpl->pathNamesToIgnore->setModel( fModel );
+                fModel = new QStringListModel( this );
+                fImpl->pathNamesToIgnore->setModel( fModel );
 
-            new NSABUtils::CButtonEnabler( fImpl->pathNamesToIgnore, fImpl->btnDelIgnorePathName );
-        }
+                new NSABUtils::CButtonEnabler( fImpl->pathNamesToIgnore, fImpl->btnDelIgnorePathName );
+            }
 
-        CIgnoredPaths::~CIgnoredPaths()
-        {}
+            CIgnoredPaths::~CIgnoredPaths()
+            {
+            }
 
-        void CIgnoredPaths::slotAddIgnorePathName()
-        {
-            addString( tr( "Add Path Name to Ignore" ), tr( "Path Name:" ), fModel, fImpl->pathNamesToIgnore, false );
-        }
+            void CIgnoredPaths::slotAddIgnorePathName()
+            {
+                addString( tr( "Add Path Name to Ignore" ), tr( "Path Name:" ), fModel, fImpl->pathNamesToIgnore, false );
+            }
 
-        void CIgnoredPaths::slotDelIgnorePathName()
-        {
-            delString( fModel, fImpl->pathNamesToIgnore );
-        }
+            void CIgnoredPaths::slotDelIgnorePathName()
+            {
+                delString( fModel, fImpl->pathNamesToIgnore );
+            }
 
-        void CIgnoredPaths::load()
-        {
-            fModel->setStringList( NCore::CPreferences::instance()->getIgnoredPaths() );
-        }
+            void CIgnoredPaths::load()
+            {
+                fModel->setStringList( NPreferences::NCore::CPreferences::instance()->getIgnoredPaths() );
+            }
 
-        void CIgnoredPaths::save()
-        {
-            NCore::CPreferences::instance()->setIgnoredPaths( fModel->stringList() );
+            void CIgnoredPaths::save()
+            {
+                NPreferences::NCore::CPreferences::instance()->setIgnoredPaths( fModel->stringList() );
+            }
         }
     }
 }

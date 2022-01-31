@@ -21,7 +21,7 @@
 // SOFTWARE.
 
 #include "Preferences.h"
-#include "Core/Preferences.h"
+#include "Preferences/Core/Preferences.h"
 
 #include "ui_Preferences.h"
 
@@ -43,152 +43,155 @@
 
 namespace NMediaManager
 {
-    namespace NUi
+    namespace NPreferences
     {
-        CPreferences::CPreferences( QWidget * parent )
-            : QDialog( parent ),
-            fImpl( new Ui::CPreferences )
+        namespace NUi
         {
-            fImpl->setupUi( this );
-
-            connect( fImpl->pageSelector, &QTreeWidget::currentItemChanged, this, &CPreferences::slotPageSelectorCurrChanged );
-            connect( fImpl->pageSelector, &QTreeWidget::itemActivated, this, &CPreferences::slotPageSelectorItemActived );
-            connect( fImpl->pageSelector, &QTreeWidget::itemSelectionChanged, this, &CPreferences::slotPageSelectorSelectionChanged );
-
-            loadPages();
-            loadSettings();
-            fImpl->pageSelector->expandAll();
-
-            QSettings settings;
-            if ( settings.contains( "LastPrefPage" ) )
+            CPreferences::CPreferences( QWidget * parent )
+                : QDialog( parent ),
+                fImpl( new Ui::CPreferences )
             {
-                auto lastPrefPageKey = settings.value( "LastPrefPage", "" ).toString();
-                auto pos = fItemMap.find( lastPrefPageKey );
-                if ( pos != fItemMap.end() )
-                    fImpl->pageSelector->setCurrentItem( (*pos).second );
-            }
-            fImpl->pageSelector->header()->setSectionResizeMode( QHeaderView::ResizeToContents );
-            fImpl->pageSelector->header()->setStretchLastSection( false );
-            fImpl->pageSelector->header()->setSectionResizeMode( QHeaderView::Stretch );
-            fImpl->pageSelector->setMinimumWidth( NSABUtils::autoSize( fImpl->pageSelector ) + 4 );
-            fImpl->splitter->setChildrenCollapsible( false );
-        }
+                fImpl->setupUi( this );
 
-        CPreferences::~CPreferences()
-        {
-            QSettings settings;
-            auto currItem = keyForItem( fImpl->pageSelector->currentItem() );
-            settings.setValue( "LastPrefPage", currItem );
-        }
+                connect( fImpl->pageSelector, &QTreeWidget::currentItemChanged, this, &CPreferences::slotPageSelectorCurrChanged );
+                connect( fImpl->pageSelector, &QTreeWidget::itemActivated, this, &CPreferences::slotPageSelectorItemActived );
+                connect( fImpl->pageSelector, &QTreeWidget::itemSelectionChanged, this, &CPreferences::slotPageSelectorSelectionChanged );
 
-        void CPreferences::accept()
-        {
-            saveSettings();
-            QDialog::accept();
-        }
+                loadPages();
+                loadSettings();
+                fImpl->pageSelector->expandAll();
 
-        void CPreferences::loadSettings()
-        {
-            for ( auto && ii : fPageMap )
-            {
-                ii.second->load();
-            }
-        }
-
-        void CPreferences::saveSettings()
-        {
-            for ( auto && ii : fPageMap )
-            {
-                ii.second->save();
-            }
-        }
-
-        void CPreferences::loadPages()
-        {
-            addPage( new CExtendedInfo );
-            addPage( new CExtensions );
-            addPage( new CExternalTools );
-            addPage( new CIgnoredPaths );
-            addPage( new CKnownAbbreviations );
-            addPage( new CMovieSettings );
-            addPage( new CPathsToDelete );
-            addPage( new CRemoveFromPaths );
-            addPage( new CSkippedPaths );
-            addPage( new CTransformationSettings );
-            addPage( new CTVShowSettings );
-            addPage( new CTagAnalysisSettings );
-        }
-
-        void CPreferences::addPage( CBasePrefPage * page )
-        {
-            fImpl->stackedWidget->addWidget( page );
-            auto name = page->pageName();
-            Q_ASSERT( !name.isEmpty() );
-            if ( name.isEmpty() )
-                return;
-            QString key;
-            QTreeWidgetItem * parentItem = nullptr;
-            for ( int ii = 0; ii < name.count(); ++ii )
-            {
-                key += "__" + name[ii];
-
-                QTreeWidgetItem * item = nullptr;
-
-                auto pos = fItemMap.find( key );
-                if ( pos == fItemMap.end() )
+                QSettings settings;
+                if ( settings.contains( "LastPrefPage" ) )
                 {
-                    if ( parentItem )
-                        item = new QTreeWidgetItem( parentItem );
+                    auto lastPrefPageKey = settings.value( "LastPrefPage", "" ).toString();
+                    auto pos = fItemMap.find( lastPrefPageKey );
+                    if ( pos != fItemMap.end() )
+                        fImpl->pageSelector->setCurrentItem( ( *pos ).second );
+                }
+                fImpl->pageSelector->header()->setSectionResizeMode( QHeaderView::ResizeToContents );
+                fImpl->pageSelector->header()->setStretchLastSection( false );
+                fImpl->pageSelector->header()->setSectionResizeMode( QHeaderView::Stretch );
+                fImpl->pageSelector->setMinimumWidth( NSABUtils::autoSize( fImpl->pageSelector ) + 4 );
+                fImpl->splitter->setChildrenCollapsible( false );
+            }
+
+            CPreferences::~CPreferences()
+            {
+                QSettings settings;
+                auto currItem = keyForItem( fImpl->pageSelector->currentItem() );
+                settings.setValue( "LastPrefPage", currItem );
+            }
+
+            void CPreferences::accept()
+            {
+                saveSettings();
+                QDialog::accept();
+            }
+
+            void CPreferences::loadSettings()
+            {
+                for ( auto && ii : fPageMap )
+                {
+                    ii.second->load();
+                }
+            }
+
+            void CPreferences::saveSettings()
+            {
+                for ( auto && ii : fPageMap )
+                {
+                    ii.second->save();
+                }
+            }
+
+            void CPreferences::loadPages()
+            {
+                addPage( new CExtendedInfo );
+                addPage( new CExtensions );
+                addPage( new CExternalTools );
+                addPage( new CIgnoredPaths );
+                addPage( new CKnownAbbreviations );
+                addPage( new CMovieSettings );
+                addPage( new CPathsToDelete );
+                addPage( new CRemoveFromPaths );
+                addPage( new CSkippedPaths );
+                addPage( new CTransformationSettings );
+                addPage( new CTVShowSettings );
+                addPage( new CTagAnalysisSettings );
+            }
+
+            void CPreferences::addPage( CBasePrefPage * page )
+            {
+                fImpl->stackedWidget->addWidget( page );
+                auto name = page->pageName();
+                Q_ASSERT( !name.isEmpty() );
+                if ( name.isEmpty() )
+                    return;
+                QString key;
+                QTreeWidgetItem * parentItem = nullptr;
+                for ( int ii = 0; ii < name.count(); ++ii )
+                {
+                    key += "__" + name[ ii ];
+
+                    QTreeWidgetItem * item = nullptr;
+
+                    auto pos = fItemMap.find( key );
+                    if ( pos == fItemMap.end() )
+                    {
+                        if ( parentItem )
+                            item = new QTreeWidgetItem( parentItem );
+                        else
+                            item = new QTreeWidgetItem( fImpl->pageSelector );
+                        item->setText( 0, name[ ii ] );
+
+                        fPageMap[ item ] = page;
+                        fItemMap[ key ] = item;
+                        parentItem = item;
+                    }
                     else
-                        item = new QTreeWidgetItem( fImpl->pageSelector );
-                    item->setText( 0, name[ii] );
-
-                    fPageMap[item] = page;
-                    fItemMap[key] = item;
-                    parentItem = item;
-                }
-                else
-                {
-                    item = parentItem = (*pos).second;
-                    if ( ( ii + 1 ) == name.count() )
-                        fPageMap[item] = page;
+                    {
+                        item = parentItem = ( *pos ).second;
+                        if ( ( ii + 1 ) == name.count() )
+                            fPageMap[ item ] = page;
+                    }
                 }
             }
+
+            void CPreferences::slotPageSelectorCurrChanged( QTreeWidgetItem * /*current*/, QTreeWidgetItem * /*previous*/ )
+            {
+                slotPageSelectorSelectionChanged();
+            }
+
+            void CPreferences::slotPageSelectorItemActived( QTreeWidgetItem * /*item*/ )
+            {
+                slotPageSelectorSelectionChanged();
+            }
+
+            void CPreferences::slotPageSelectorSelectionChanged()
+            {
+                auto curr = fImpl->pageSelector->currentItem();
+                if ( !curr )
+                    return;
+                auto ii = fPageMap.find( curr );
+                if ( ii == fPageMap.end() )
+                    return;
+                fImpl->stackedWidget->setCurrentWidget( ( *ii ).second );
+            }
+
+
+            QString CPreferences::keyForItem( QTreeWidgetItem * item )
+            {
+                if ( !item )
+                    return QString();
+
+                QString retVal;
+                if ( item->parent() )
+                    retVal = keyForItem( item->parent() );
+                retVal += "__" + item->text( 0 );
+                return retVal;
+            }
+
         }
-
-        void CPreferences::slotPageSelectorCurrChanged( QTreeWidgetItem * /*current*/, QTreeWidgetItem * /*previous*/ )
-        {
-            slotPageSelectorSelectionChanged();
-        }
-
-        void CPreferences::slotPageSelectorItemActived( QTreeWidgetItem * /*item*/ )
-        {
-            slotPageSelectorSelectionChanged();
-        }
-
-        void CPreferences::slotPageSelectorSelectionChanged()
-        {
-            auto curr = fImpl->pageSelector->currentItem();
-            if ( !curr )
-                return;
-            auto ii = fPageMap.find( curr );
-            if ( ii == fPageMap.end() )
-                return;
-            fImpl->stackedWidget->setCurrentWidget( (*ii).second );
-        }
-
-
-        QString CPreferences::keyForItem( QTreeWidgetItem * item )
-        {
-            if ( !item )
-                return QString();
-
-            QString retVal;
-            if ( item->parent() )
-                retVal = keyForItem( item->parent() );
-            retVal += "__" + item->text( 0 );
-            return retVal;
-        }
-
     }
 }

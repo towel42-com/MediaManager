@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>NMediaManager::NUi::CExternalTools</class>
- <widget class="QWidget" name="NMediaManager::NUi::CExternalTools">
+ <class>NMediaManager::NPreferences::NUi::CExternalTools</class>
+ <widget class="QWidget" name="NMediaManager::NPreferences::NUi::CExternalTools">
   <property name="geometry">
    <rect>
     <x>0</x>

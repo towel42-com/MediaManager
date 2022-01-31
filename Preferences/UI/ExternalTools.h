@@ -35,37 +35,40 @@ class QListView;
 class QTreeWidgetItem;
 namespace NMediaManager
 {
-    namespace NUi
+    namespace NPreferences
     {
-        namespace Ui { class CExternalTools; };
-        class CExternalTools : public CBasePrefPage
+        namespace NUi
         {
-            Q_OBJECT
-        public:
-            CExternalTools( QWidget * parent = nullptr );
-            virtual ~CExternalTools() override;
-
-            virtual void load() override;
-            virtual void save() override;
-            virtual QStringList pageName() const override
+            namespace Ui { class CExternalTools; };
+            class CExternalTools : public CBasePrefPage
             {
-                return QStringList( { "External Tools" } );
-            }
-        public Q_SLOTS:
-            void slotSelectMKVMergeExe();
-            void slotSelectMKVPropEditExe();
-            void slotSelectFFMpegExe();
+                Q_OBJECT
+            public:
+                CExternalTools( QWidget * parent = nullptr );
+                virtual ~CExternalTools() override;
 
-            void slotFFToolChanged();
-            void slotMKVNixToolChanged();
-        private:
-            void mkvnixToolChanged( QLineEdit * le );
-            void fftoolToolChanged( QLineEdit * le );
+                virtual void load() override;
+                virtual void save() override;
+                virtual QStringList pageName() const override
+                {
+                    return QStringList( { "External Tools" } );
+                }
+            public Q_SLOTS:
+                void slotSelectMKVMergeExe();
+                void slotSelectMKVPropEditExe();
+                void slotSelectFFMpegExe();
+
+                void slotFFToolChanged();
+                void slotMKVNixToolChanged();
+            private:
+                void mkvnixToolChanged( QLineEdit * le );
+                void fftoolToolChanged( QLineEdit * le );
 
 
-            void updateOtherTool( QObject * sender, const std::pair< QLineEdit *, QString > & lhs, const std::pair< QLineEdit *, QString > & rhs );
-            std::unique_ptr< Ui::CExternalTools > fImpl;
-        };
+                void updateOtherTool( QObject * sender, const std::pair< QLineEdit *, QString > & lhs, const std::pair< QLineEdit *, QString > & rhs );
+                std::unique_ptr< Ui::CExternalTools > fImpl;
+            };
+        }
     }
 }
 #endif 

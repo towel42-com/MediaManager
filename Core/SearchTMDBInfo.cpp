@@ -22,7 +22,7 @@
 
 #include "SearchTMDBInfo.h"
 #include "TransformResult.h"
-#include "Preferences.h"
+#include "Preferences/Core/Preferences.h"
 #include "SearchTMDB.h"
 
 #include "SABUtils/QtUtils.h"
@@ -54,7 +54,7 @@ namespace NMediaManager
         QString SSearchTMDBInfo::replaceKnownAbbreviations( const QString & string )
         {
             QString retVal = string;
-            auto knownAbbreviations = CPreferences::instance()->getKnownAbbreviations();
+            auto knownAbbreviations = NPreferences::NCore::CPreferences::instance()->getKnownAbbreviations();
             for ( auto &&ii = knownAbbreviations.begin(); ii != knownAbbreviations.end(); ++ii )
             {
                 auto regExpStr = "(\\W|^)(?<word>" + QRegularExpression::escape( ii.key() ) + ")(\\W|$)";
@@ -71,7 +71,7 @@ namespace NMediaManager
         QString SSearchTMDBInfo::stripKnownData( const QString &string )
         {
             QString retVal = string;
-            auto regExs = CPreferences::instance()->getKnownStringRegExs();
+            auto regExs = NPreferences::NCore::CPreferences::instance()->getKnownStringRegExs();
             for ( auto &&ii : regExs )
             {
                 auto regEx = QRegularExpression( ii, QRegularExpression::CaseInsensitiveOption);
@@ -110,7 +110,7 @@ namespace NMediaManager
         QString SSearchTMDBInfo::stripKnownExtendedData(const QString & string, QString & extendedData)
         {
             QString retVal = string;
-            auto knownStrings = CPreferences::instance()->getKnownExtendedStrings();
+            auto knownStrings = NPreferences::NCore::CPreferences::instance()->getKnownExtendedStrings();
             for (auto && knownString : knownStrings)
             {
                 auto regExpStr = "\\W(?<word>" + QRegularExpression::escape(knownString) + ")(\\W|$)";

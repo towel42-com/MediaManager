@@ -38,177 +38,180 @@ namespace NSABUtils
 
 namespace NMediaManager
 {
-    namespace NCore
+    namespace NPreferences
     {
-        enum class EItemStatus
+        namespace NCore
         {
-            eOK,
-            eWarning,
-            eError
-        };
+            enum class EItemStatus
+            {
+                eOK,
+                eWarning,
+                eError
+            };
 
-        QString toString(EItemStatus status);
+            QString toString( EItemStatus status );
 
-        class CPreferences
-        {
-            CPreferences();
-        public:
-            static CPreferences * instance();
-            ~CPreferences();
+            class CPreferences
+            {
+                CPreferences();
+            public:
+                static CPreferences * instance();
+                ~CPreferences();
 
-            void setDirectories( const QStringList & dirs );
-            QStringList getDirectories() const;
+                void setDirectories( const QStringList & dirs );
+                QStringList getDirectories() const;
 
-            void setFileNames( const QStringList & fileNames );
-            QStringList getFileNames() const;
+                void setFileNames( const QStringList & fileNames );
+                QStringList getFileNames() const;
 
-            void setTreatAsTVShowByDefault( bool value );
-            bool getTreatAsTVShowByDefault() const;
+                void setTreatAsTVShowByDefault( bool value );
+                bool getTreatAsTVShowByDefault() const;
 
-            void setExactMatchesOnly( bool value );
-            bool getExactMatchesOnly() const;
+                void setExactMatchesOnly( bool value );
+                bool getExactMatchesOnly() const;
 
-            void setTVOutFilePattern( const QString & value );
-            QString getTVOutFilePattern() const;
+                void setTVOutFilePattern( const QString & value );
+                QString getTVOutFilePattern() const;
 
-            void setTVOutDirPattern( const QString & value );
-            QString getTVOutDirPattern() const;
+                void setTVOutDirPattern( const QString & value );
+                QString getTVOutDirPattern() const;
 
-            void setMovieOutFilePattern( const QString & value );
-            QString getMovieOutFilePattern() const;
+                void setMovieOutFilePattern( const QString & value );
+                QString getMovieOutFilePattern() const;
 
-            void setMovieOutDirPattern( const QString & value );
-            QString getMovieOutDirPattern() const;
+                void setMovieOutDirPattern( const QString & value );
+                QString getMovieOutDirPattern() const;
 
-            bool isSkippedPath( const QFileInfo & fileInfo ) const;
-            bool isIgnoredPath( const QFileInfo & fileInfo ) const;
+                bool isSkippedPath( const QFileInfo & fileInfo ) const;
+                bool isIgnoredPath( const QFileInfo & fileInfo ) const;
 
-            QStringList getSkippedPaths() const;
-            void setSkippedPaths( const QStringList & value );
+                QStringList getSkippedPaths() const;
+                void setSkippedPaths( const QStringList & value );
 
-            QStringList getIgnoredPaths() const;
-            void setIgnoredPaths( const QStringList & value );
+                QStringList getIgnoredPaths() const;
+                void setIgnoredPaths( const QStringList & value );
 
-            std::list< std::pair< NSABUtils::EMediaTags, bool > > getAllMediaTags() const;
-            std::list< NSABUtils::EMediaTags > getEnabledTags() const;
-            QStringList getEnabledTagsForDisplay() const;
-            void setEnabledTags( const std::list< NSABUtils::EMediaTags > & value );
+                std::list< std::pair< NSABUtils::EMediaTags, bool > > getAllMediaTags() const;
+                std::list< NSABUtils::EMediaTags > getEnabledTags() const;
+                QStringList getEnabledTagsForDisplay() const;
+                void setEnabledTags( const std::list< NSABUtils::EMediaTags > & value );
 
-            bool getVerifyMediaTags() const;
-            void setVerifyMediaTags(bool value);
+                bool getVerifyMediaTags() const;
+                void setVerifyMediaTags( bool value );
 
-            bool getVerifyMediaTitle() const;
-            void setVerifyMediaTitle(bool value);
+                bool getVerifyMediaTitle() const;
+                void setVerifyMediaTitle( bool value );
 
-            QString getVerifyMediaTitleExpr() const;
-            QRegularExpression getVerifyMediaTitleExpr( const QFileInfo & fi, const QDate & date ) const; // fills in the fields and returns a regularExpression
-            void setVerifyMediaTitleExpr( const QString & value );
+                QString getVerifyMediaTitleExpr() const;
+                QRegularExpression getVerifyMediaTitleExpr( const QFileInfo & fi, const QDate & date ) const; // fills in the fields and returns a regularExpression
+                void setVerifyMediaTitleExpr( const QString & value );
 
-            bool getVerifyMediaDate() const;
-            void setVerifyMediaDate(bool value);
+                bool getVerifyMediaDate() const;
+                void setVerifyMediaDate( bool value );
 
-            QString getVerifyMediaDateExpr() const;
-            QRegularExpression getVerifyMediaDateExpr( const QFileInfo & fi, const QDate & date ) const;
-            void setVerifyMediaDateExpr( const QString & value );
+                QString getVerifyMediaDateExpr() const;
+                QRegularExpression getVerifyMediaDateExpr( const QFileInfo & fi, const QDate & date ) const;
+                void setVerifyMediaDateExpr( const QString & value );
 
-            bool getVerifyMediaComment() const;
-            void setVerifyMediaComment( bool value );
+                bool getVerifyMediaComment() const;
+                void setVerifyMediaComment( bool value );
 
-            QString getVerifyMediaCommentExpr() const;
-            QRegularExpression getVerifyMediaCommentExpr( const QFileInfo & fi, const QDate & date ) const;
-            void setVerifyMediaCommentExpr( const QString & value );
+                QString getVerifyMediaCommentExpr() const;
+                QRegularExpression getVerifyMediaCommentExpr( const QFileInfo & fi, const QDate & date ) const;
+                void setVerifyMediaCommentExpr( const QString & value );
 
-            QStringList getCustomPathsToDelete() const;
-            void setCustomPathsToDelete( const QStringList & paths );
+                QStringList getCustomPathsToDelete() const;
+                void setCustomPathsToDelete( const QStringList & paths );
 
-            bool deleteCustom() const;
-            void setDeleteCustom(bool deleteCustom);
+                bool deleteCustom() const;
+                void setDeleteCustom( bool deleteCustom );
 
-            bool deleteEXE() const;
-            void setDeleteEXE( bool deleteEXEs );
+                bool deleteEXE() const;
+                void setDeleteEXE( bool deleteEXEs );
 
-            bool deleteNFO() const;
-            void setDeleteNFO(bool deleteNFO);
+                bool deleteNFO() const;
+                void setDeleteNFO( bool deleteNFO );
 
-            bool deleteBAK() const;
-            void setDeleteBAK(bool deleteBAK);
+                bool deleteBAK() const;
+                void setDeleteBAK( bool deleteBAK );
 
-            bool deleteTXT() const;
-            void setDeleteTXT(bool deleteTXT);
+                bool deleteTXT() const;
+                void setDeleteTXT( bool deleteTXT );
 
-            QStringList getExtensionsToDelete() const;
-            bool isPathToDelete( const QString & path ) const;
+                QStringList getExtensionsToDelete() const;
+                bool isPathToDelete( const QString & path ) const;
 
-            void setMediaExtensions( const QString & value );
-            void setMediaExtensions( const QStringList & value );
-            QStringList getMediaExtensions() const;
+                void setMediaExtensions( const QString & value );
+                void setMediaExtensions( const QStringList & value );
+                QStringList getMediaExtensions() const;
 
-            void setSubtitleExtensions( const QString & value );
-            void setSubtitleExtensions( const QStringList & value );
-            QStringList getSubtitleExtensions() const;
+                void setSubtitleExtensions( const QString & value );
+                void setSubtitleExtensions( const QStringList & value );
+                QStringList getSubtitleExtensions() const;
 
-            QStringList getNonMKVMediaExtensions() const;
+                QStringList getNonMKVMediaExtensions() const;
 
-            void addKnownStrings( const QStringList & value );
-            void setKnownStrings( const QStringList & value );
-            QStringList getKnownStrings() const;
-            QStringList getKnownStringRegExs() const;
+                void addKnownStrings( const QStringList & value );
+                void setKnownStrings( const QStringList & value );
+                QStringList getKnownStrings() const;
+                QStringList getKnownStringRegExs() const;
 
-            void setKnownExtendedStrings( const QStringList & value );
-            QStringList getKnownExtendedStrings() const;
+                void setKnownExtendedStrings( const QStringList & value );
+                QStringList getKnownExtendedStrings() const;
 
-            void setKnownAbbreviations( const QVariantMap & value );  // needs to be QString to QString
-            void setKnownAbbreviations( const QList<QPair<QString, QString >> & value );
-            QVariantMap getKnownAbbreviations() const;
-            
-            void setMKVMergeEXE( const QString & value );
-            QString getMKVMergeEXE() const;
+                void setKnownAbbreviations( const QVariantMap & value );  // needs to be QString to QString
+                void setKnownAbbreviations( const QList<QPair<QString, QString >> & value );
+                QVariantMap getKnownAbbreviations() const;
 
-            void setMKVPropEditEXE( const QString & value );
-            QString getMKVPropEditEXE() const;
+                void setMKVMergeEXE( const QString & value );
+                QString getMKVMergeEXE() const;
 
-            void setFFMpegEXE( const QString & value );
-            QString getFFMpegEXE() const;
+                void setMKVPropEditEXE( const QString & value );
+                QString getMKVPropEditEXE() const;
 
-            bool isMediaFile( const QFileInfo & fi ) const;
-            bool isSubtitleFile( const QFileInfo & info, bool * isLangFileFormat = nullptr ) const;
+                void setFFMpegEXE( const QString & value );
+                QString getFFMpegEXE() const;
 
-            void setBIFPlayerSpeedMultiplier( int speed ); // 100 = "full speed" ie 1x default is 200x
-            int bifPlayerSpeedMultiplier() const;
+                bool isMediaFile( const QFileInfo & fi ) const;
+                bool isSubtitleFile( const QFileInfo & info, bool * isLangFileFormat = nullptr ) const;
 
-            void setBIFNumFramesToSkip( int numFrames );
-            int bifNumFramesToSkip() const;
+                void setBIFPlayerSpeedMultiplier( int speed ); // 100 = "full speed" ie 1x default is 200x
+                int bifPlayerSpeedMultiplier() const;
 
-            void setBIFLoopCount( int loopCount );
-            int bifLoopCount() const;
+                void setBIFNumFramesToSkip( int numFrames );
+                int bifNumFramesToSkip() const;
 
-            void setGIFFlipImage( bool flipImage );
-            bool gifFlipImage() const;
+                void setBIFLoopCount( int loopCount );
+                int bifLoopCount() const;
 
-            void setGIFDitherImage( bool ditherImage );
-            bool gifDitherImage() const;
+                void setGIFFlipImage( bool flipImage );
+                bool gifFlipImage() const;
 
-            void setGIFLoopCount( int loopCount );
-            int gifLoopCount() const;
+                void setGIFDitherImage( bool ditherImage );
+                bool gifDitherImage() const;
 
-            void setGIFStartFrame( int startFrame );
-            int gifStartFrame() const;
+                void setGIFLoopCount( int loopCount );
+                int gifLoopCount() const;
 
-            void setGIFEndFrame( int endFrame );
-            int gifEndFrame() const;
+                void setGIFStartFrame( int startFrame );
+                int gifStartFrame() const;
 
-            int gifDelay() const;
-            void setGIFDelay( int delay );
+                void setGIFEndFrame( int endFrame );
+                int gifEndFrame() const;
 
-            QColor getColorForStatus( EItemStatus status, bool background ) const;
-            void setColorForStatus( EItemStatus, bool background, const QColor & value );
-        private:
-            bool pathMatches( const QFileInfo & fileInfo, const QStringList & values ) const;
-            bool containsValue( const QString & value, const QStringList & values ) const;
-            //QString getDefaultInPattern( bool forTV ) const;
-            QString getDefaultOutDirPattern( bool forTV ) const;
-            QString getDefaultOutFilePattern( bool forTV ) const;
-        };
+                int gifDelay() const;
+                void setGIFDelay( int delay );
+
+                QColor getColorForStatus( EItemStatus status, bool background ) const;
+                void setColorForStatus( EItemStatus, bool background, const QColor & value );
+            private:
+                bool pathMatches( const QFileInfo & fileInfo, const QStringList & values ) const;
+                bool containsValue( const QString & value, const QStringList & values ) const;
+                //QString getDefaultInPattern( bool forTV ) const;
+                QString getDefaultOutDirPattern( bool forTV ) const;
+                QString getDefaultOutFilePattern( bool forTV ) const;
+            };
+        }
     }
 }
 #endif 

@@ -22,7 +22,7 @@
 
 #include "MakeMKVPage.h"
 
-#include "Core/Preferences.h"
+#include "Preferences/Core/Preferences.h"
 #include "Models/MakeMKVModel.h"
 #include "SABUtils/DoubleProgressDlg.h"
 
@@ -48,7 +48,7 @@ namespace NMediaManager
 
         QStringList CMakeMKVPage::dirModelFilter() const
         {
-            return NCore::CPreferences::instance()->getNonMKVMediaExtensions();
+            return NPreferences::NCore::CPreferences::instance()->getNonMKVMediaExtensions();
         }
 
         QString CMakeMKVPage::secondaryProgressLabel() const

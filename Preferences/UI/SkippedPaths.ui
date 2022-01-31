@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>NMediaManager::NUi::CSkippedPaths</class>
- <widget class="QWidget" name="NMediaManager::NUi::CSkippedPaths">
+ <class>NMediaManager::NPreferences::NUi::CSkippedPaths</class>
+ <widget class="QWidget" name="NMediaManager::NPreferences::NUi::CSkippedPaths">
   <property name="geometry">
    <rect>
     <x>0</x>

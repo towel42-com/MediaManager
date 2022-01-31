@@ -28,34 +28,37 @@
 class QTreeWidgetItem;
 namespace NMediaManager
 {
-    namespace NUi
+    namespace NPreferences
     {
-        class CBasePrefPage;
-        namespace Ui { class CPreferences; };
-        class CPreferences : public QDialog
+        namespace NUi
         {
-            Q_OBJECT
-        public:
-            CPreferences( QWidget * parent = nullptr );
-            virtual ~CPreferences() override;
-        public Q_SLOTS:
-            void slotPageSelectorCurrChanged( QTreeWidgetItem * current, QTreeWidgetItem * previous );
-            void slotPageSelectorItemActived( QTreeWidgetItem * item );
-            void slotPageSelectorSelectionChanged();
-            void accept() override;
-        private:
-            static QString keyForItem( QTreeWidgetItem * item );
+            class CBasePrefPage;
+            namespace Ui { class CPreferences; };
+            class CPreferences : public QDialog
+            {
+                Q_OBJECT
+            public:
+                CPreferences( QWidget * parent = nullptr );
+                virtual ~CPreferences() override;
+            public Q_SLOTS:
+                void slotPageSelectorCurrChanged( QTreeWidgetItem * current, QTreeWidgetItem * previous );
+                void slotPageSelectorItemActived( QTreeWidgetItem * item );
+                void slotPageSelectorSelectionChanged();
+                void accept() override;
+            private:
+                static QString keyForItem( QTreeWidgetItem * item );
 
-            void loadSettings();
-            void saveSettings();
+                void loadSettings();
+                void saveSettings();
 
-            void addPage( CBasePrefPage * page );
-            void loadPages();
+                void addPage( CBasePrefPage * page );
+                void loadPages();
 
-            std::unordered_map< QString, QTreeWidgetItem* > fItemMap;
-            std::unordered_map< QTreeWidgetItem *, CBasePrefPage * > fPageMap;
-            std::unique_ptr< Ui::CPreferences > fImpl;
-        };
+                std::unordered_map< QString, QTreeWidgetItem * > fItemMap;
+                std::unordered_map< QTreeWidgetItem *, CBasePrefPage * > fPageMap;
+                std::unique_ptr< Ui::CPreferences > fImpl;
+            };
+        }
     }
 }
 #endif 

@@ -21,35 +21,38 @@
 // SOFTWARE.
 
 #include "Extensions.h"
-#include "Core/Preferences.h"
+#include "Preferences/Core/Preferences.h"
 
 #include "ui_Extensions.h"
 
 namespace NMediaManager
 {
-    namespace NUi
+    namespace NPreferences
     {
-        CExtensions::CExtensions( QWidget * parent )
-            : CBasePrefPage( parent ),
-            fImpl( new Ui::CExtensions )
+        namespace NUi
         {
-            fImpl->setupUi( this );
-        }
+            CExtensions::CExtensions( QWidget * parent )
+                : CBasePrefPage( parent ),
+                fImpl( new Ui::CExtensions )
+            {
+                fImpl->setupUi( this );
+            }
 
-        CExtensions::~CExtensions()
-        {
-        }
+            CExtensions::~CExtensions()
+            {
+            }
 
-        void CExtensions::load()
-        {
-            fImpl->mediaExtensions->setText( NCore::CPreferences::instance()->getMediaExtensions().join( ";" ) );
-            fImpl->subtitleExtensions->setText( NCore::CPreferences::instance()->getSubtitleExtensions().join( ";" ) );
-        }
+            void CExtensions::load()
+            {
+                fImpl->mediaExtensions->setText( NPreferences::NCore::CPreferences::instance()->getMediaExtensions().join( ";" ) );
+                fImpl->subtitleExtensions->setText( NPreferences::NCore::CPreferences::instance()->getSubtitleExtensions().join( ";" ) );
+            }
 
-        void CExtensions::save()
-        {
-            NCore::CPreferences::instance()->setMediaExtensions( fImpl->mediaExtensions->text() );
-            NCore::CPreferences::instance()->setSubtitleExtensions( fImpl->subtitleExtensions->text() );
+            void CExtensions::save()
+            {
+                NPreferences::NCore::CPreferences::instance()->setMediaExtensions( fImpl->mediaExtensions->text() );
+                NPreferences::NCore::CPreferences::instance()->setSubtitleExtensions( fImpl->subtitleExtensions->text() );
+            }
         }
     }
 }

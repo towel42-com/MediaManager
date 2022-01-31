@@ -21,7 +21,7 @@
 // SOFTWARE.
 
 #include "TagAnalysisSettings.h"
-#include "Core/Preferences.h"
+#include "Preferences/Core/Preferences.h"
 
 #include "ui_TagAnalysisSettings.h"
 
@@ -38,64 +38,67 @@
 
 namespace NMediaManager
 {
-    namespace NUi
+    namespace NPreferences
     {
-        CTagAnalysisSettings::CTagAnalysisSettings( QWidget * parent )
-            : CBasePrefPage( parent ),
-            fImpl( new Ui::CTagAnalysisSettings )
+        namespace NUi
         {
-            fImpl->setupUi( this );
-            fModel = new NSABUtils::CCheckableStringListModel( this );
-            fImpl->tagsToShow->setModel( fModel );
-            new NSABUtils::CWidgetEnabler( fImpl->verifyMediaTitle, fImpl->verifyMediaTitleExpr );
-            new NSABUtils::CWidgetEnabler( fImpl->verifyMediaDate, fImpl->verifyMediaDateExpr );
-            new NSABUtils::CWidgetEnabler( fImpl->verifyMediaComment, fImpl->verifyMediaCommentExpr );
-        }
-
-        CTagAnalysisSettings::~CTagAnalysisSettings()
-        {
-        }
-
-
-        void CTagAnalysisSettings::load()
-        {
-            fImpl->verifyMediaTags->setChecked( NCore::CPreferences::instance()->getVerifyMediaTags() );
-            fImpl->verifyMediaTitle->setChecked( NCore::CPreferences::instance()->getVerifyMediaTitle() );
-            fImpl->verifyMediaTitleExpr->setText( NCore::CPreferences::instance()->getVerifyMediaTitleExpr() );
-            fImpl->verifyMediaDate->setChecked( NCore::CPreferences::instance()->getVerifyMediaDate() );
-            fImpl->verifyMediaDateExpr->setText( NCore::CPreferences::instance()->getVerifyMediaDateExpr() );
-            fImpl->verifyMediaComment->setChecked( NCore::CPreferences::instance()->getVerifyMediaComment() );
-            fImpl->verifyMediaCommentExpr->setText( NCore::CPreferences::instance()->getVerifyMediaCommentExpr() );
-
-            auto allTags = NCore::CPreferences::instance()->getAllMediaTags();
-            std::list < std::pair< QString, bool > > tmp;
-            for ( auto && ii : allTags )
+            CTagAnalysisSettings::CTagAnalysisSettings( QWidget * parent )
+                : CBasePrefPage( parent ),
+                fImpl( new Ui::CTagAnalysisSettings )
             {
-                tmp.emplace_back( std::make_pair( NSABUtils::displayName( ii.first ), ii.second ) );
+                fImpl->setupUi( this );
+                fModel = new NSABUtils::CCheckableStringListModel( this );
+                fImpl->tagsToShow->setModel( fModel );
+                new NSABUtils::CWidgetEnabler( fImpl->verifyMediaTitle, fImpl->verifyMediaTitleExpr );
+                new NSABUtils::CWidgetEnabler( fImpl->verifyMediaDate, fImpl->verifyMediaDateExpr );
+                new NSABUtils::CWidgetEnabler( fImpl->verifyMediaComment, fImpl->verifyMediaCommentExpr );
             }
 
-            fModel->setStringList( tmp );
-        }
-
-        void CTagAnalysisSettings::save()
-        {
-            NCore::CPreferences::instance()->setVerifyMediaTags(fImpl->verifyMediaTags->isChecked());
-            NCore::CPreferences::instance()->setVerifyMediaTitle(fImpl->verifyMediaTitle->isChecked());
-            NCore::CPreferences::instance()->setVerifyMediaTitleExpr( fImpl->verifyMediaTitleExpr->text() );
-            NCore::CPreferences::instance()->setVerifyMediaDate(fImpl->verifyMediaDate->isChecked());
-            NCore::CPreferences::instance()->setVerifyMediaDateExpr( fImpl->verifyMediaDateExpr->text() );
-            NCore::CPreferences::instance()->setVerifyMediaComment( fImpl->verifyMediaComment->isChecked() );
-            NCore::CPreferences::instance()->setVerifyMediaCommentExpr( fImpl->verifyMediaCommentExpr->text() );
-
-            std::list< NSABUtils::EMediaTags > enabled;
-
-            auto checked = fModel->getCheckedStrings();
-            for ( auto && ii : checked )
+            CTagAnalysisSettings::~CTagAnalysisSettings()
             {
-                enabled.emplace_back( NSABUtils::fromDisplayName( ii ) );
             }
 
-            NCore::CPreferences::instance()->setEnabledTags( enabled );
+
+            void CTagAnalysisSettings::load()
+            {
+                fImpl->verifyMediaTags->setChecked( NPreferences::NCore::CPreferences::instance()->getVerifyMediaTags() );
+                fImpl->verifyMediaTitle->setChecked( NPreferences::NCore::CPreferences::instance()->getVerifyMediaTitle() );
+                fImpl->verifyMediaTitleExpr->setText( NPreferences::NCore::CPreferences::instance()->getVerifyMediaTitleExpr() );
+                fImpl->verifyMediaDate->setChecked( NPreferences::NCore::CPreferences::instance()->getVerifyMediaDate() );
+                fImpl->verifyMediaDateExpr->setText( NPreferences::NCore::CPreferences::instance()->getVerifyMediaDateExpr() );
+                fImpl->verifyMediaComment->setChecked( NPreferences::NCore::CPreferences::instance()->getVerifyMediaComment() );
+                fImpl->verifyMediaCommentExpr->setText( NPreferences::NCore::CPreferences::instance()->getVerifyMediaCommentExpr() );
+
+                auto allTags = NPreferences::NCore::CPreferences::instance()->getAllMediaTags();
+                std::list < std::pair< QString, bool > > tmp;
+                for ( auto && ii : allTags )
+                {
+                    tmp.emplace_back( std::make_pair( NSABUtils::displayName( ii.first ), ii.second ) );
+                }
+
+                fModel->setStringList( tmp );
+            }
+
+            void CTagAnalysisSettings::save()
+            {
+                NPreferences::NCore::CPreferences::instance()->setVerifyMediaTags( fImpl->verifyMediaTags->isChecked() );
+                NPreferences::NCore::CPreferences::instance()->setVerifyMediaTitle( fImpl->verifyMediaTitle->isChecked() );
+                NPreferences::NCore::CPreferences::instance()->setVerifyMediaTitleExpr( fImpl->verifyMediaTitleExpr->text() );
+                NPreferences::NCore::CPreferences::instance()->setVerifyMediaDate( fImpl->verifyMediaDate->isChecked() );
+                NPreferences::NCore::CPreferences::instance()->setVerifyMediaDateExpr( fImpl->verifyMediaDateExpr->text() );
+                NPreferences::NCore::CPreferences::instance()->setVerifyMediaComment( fImpl->verifyMediaComment->isChecked() );
+                NPreferences::NCore::CPreferences::instance()->setVerifyMediaCommentExpr( fImpl->verifyMediaCommentExpr->text() );
+
+                std::list< NSABUtils::EMediaTags > enabled;
+
+                auto checked = fModel->getCheckedStrings();
+                for ( auto && ii : checked )
+                {
+                    enabled.emplace_back( NSABUtils::fromDisplayName( ii ) );
+                }
+
+                NPreferences::NCore::CPreferences::instance()->setEnabledTags( enabled );
+            }
         }
     }
 }

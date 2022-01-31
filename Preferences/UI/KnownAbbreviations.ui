@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>NMediaManager::NUi::CKnownAbbreviations</class>
- <widget class="QWidget" name="NMediaManager::NUi::CKnownAbbreviations">
+ <class>NMediaManager::NPreferences::NUi::CKnownAbbreviations</class>
+ <widget class="QWidget" name="NMediaManager::NPreferences::NUi::CKnownAbbreviations">
   <property name="geometry">
    <rect>
     <x>0</x>

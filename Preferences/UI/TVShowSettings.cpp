@@ -21,7 +21,7 @@
 // SOFTWARE.
 
 #include "TVShowSettings.h"
-#include "Core/Preferences.h"
+#include "Preferences/Core/Preferences.h"
 
 #include "ui_TVShowSettings.h"
 
@@ -37,29 +37,32 @@
 
 namespace NMediaManager
 {
-    namespace NUi
+    namespace NPreferences
     {
-        CTVShowSettings::CTVShowSettings( QWidget * parent )
-            : CBasePrefPage( parent ),
-            fImpl( new Ui::CTVShowSettings )
+        namespace NUi
         {
-            fImpl->setupUi( this );
-        }
+            CTVShowSettings::CTVShowSettings( QWidget * parent )
+                : CBasePrefPage( parent ),
+                fImpl( new Ui::CTVShowSettings )
+            {
+                fImpl->setupUi( this );
+            }
 
-        CTVShowSettings::~CTVShowSettings()
-        {
-        }
+            CTVShowSettings::~CTVShowSettings()
+            {
+            }
 
-        void CTVShowSettings::load()
-        {
-            fImpl->tvOutFilePattern->setText( NCore::CPreferences::instance()->getTVOutFilePattern() );
-            fImpl->tvOutDirPattern->setText( NCore::CPreferences::instance()->getTVOutDirPattern() );
-        }
+            void CTVShowSettings::load()
+            {
+                fImpl->tvOutFilePattern->setText( NPreferences::NCore::CPreferences::instance()->getTVOutFilePattern() );
+                fImpl->tvOutDirPattern->setText( NPreferences::NCore::CPreferences::instance()->getTVOutDirPattern() );
+            }
 
-        void CTVShowSettings::save()
-        {
-            NCore::CPreferences::instance()->setTVOutFilePattern( fImpl->tvOutFilePattern->text() );
-            NCore::CPreferences::instance()->setTVOutDirPattern( fImpl->tvOutDirPattern->text() );
+            void CTVShowSettings::save()
+            {
+                NPreferences::NCore::CPreferences::instance()->setTVOutFilePattern( fImpl->tvOutFilePattern->text() );
+                NPreferences::NCore::CPreferences::instance()->setTVOutDirPattern( fImpl->tvOutDirPattern->text() );
+            }
         }
     }
 }

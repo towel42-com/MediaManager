@@ -48,7 +48,9 @@ target_link_libraries( MediaManager
                  Qt5::Core
                  SABUtils
                  UI
-                 Preferences
+                 PreferencesUI
+                 PreferencesCore
+                 Core
                  Core
                  Models
           )
@@ -77,6 +79,4 @@ SET( _SL_FILES
     "$<TARGET_FILE_DIR:SABUtils>/$<TARGET_FILE_BASE_NAME:SABUtils>.pdb"
     )
 
-find_package(InstallFile REQUIRED)    
 InstallFilesPostBuild( TARGET MediaManager INFILES ${_SL_FILES} TARGET_DIR "$<TARGET_FILE_DIR:MediaManager>" )
-

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>NMediaManager::NUi::CTransformationSettings</class>
- <widget class="QWidget" name="NMediaManager::NUi::CTransformationSettings">
+ <class>NMediaManager::NPreferences::NUi::CTransformationSettings</class>
+ <widget class="QWidget" name="NMediaManager::NPreferences::NUi::CTransformationSettings">
   <property name="geometry">
    <rect>
     <x>0</x>

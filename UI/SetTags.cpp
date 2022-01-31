@@ -22,7 +22,7 @@
 
 #include "SetTags.h"
 #include "ui_SetTags.h"
-#include "Core/Preferences.h"
+#include "Preferences/Core/Preferences.h"
 #include "SABUtils/MKVUtils.h"
 #include "SABUtils/AutoWaitCursor.h"
 
@@ -67,7 +67,7 @@ namespace NMediaManager
 
             QString msg;
             NSABUtils::CAutoWaitCursor awc;
-            if ( !NSABUtils::setMediaTags( fImpl->fileName->text(), tags, NCore::CPreferences::instance()->getMKVPropEditEXE(), &msg ) )
+            if ( !NSABUtils::setMediaTags( fImpl->fileName->text(), tags, NPreferences::NCore::CPreferences::instance()->getMKVPropEditEXE(), &msg ) )
             {
                 QMessageBox::critical( this, tr( "Problem setting tags" ), msg, QMessageBox::Ok );
                 return;

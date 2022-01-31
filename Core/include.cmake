@@ -24,7 +24,6 @@ set(qtproject_SRCS
     LanguageInfo.cpp
     NetworkReply.cpp
     PatternInfo.cpp
-    Preferences.cpp
     TransformResult.cpp
     SearchTMDB.cpp
     SearchTMDBInfo.cpp
@@ -37,7 +36,6 @@ set(qtproject_H
 set(project_H
     LanguageInfo.h
     NetworkReply.h
-    Preferences.h
     PatternInfo.h
     TransformResult.h
     SearchTMDBInfo.h

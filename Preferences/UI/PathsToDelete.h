@@ -35,29 +35,32 @@ class QListView;
 class QTreeWidgetItem;
 namespace NMediaManager
 {
-    namespace NUi
+    namespace NPreferences
     {
-        namespace Ui { class CPathsToDelete; };
-        class CPathsToDelete : public CBasePrefPage
+        namespace NUi
         {
-            Q_OBJECT
-        public:
-            CPathsToDelete( QWidget * parent = nullptr );
-            virtual ~CPathsToDelete() override;
-
-            virtual void load() override;
-            virtual void save() override;
-            virtual QStringList pageName() const override
+            namespace Ui { class CPathsToDelete; };
+            class CPathsToDelete : public CBasePrefPage
             {
-                return QStringList( { "Paths", "Paths to Delete" } );
-            }
-        public Q_SLOTS:
-            void slotAddPathToDelete();
-            void slotDelPathToDelete();
-        private:
-            QStringListModel * fPathsToDeleteModel{ nullptr };
-            std::unique_ptr< Ui::CPathsToDelete > fImpl;
-        };
+                Q_OBJECT
+            public:
+                CPathsToDelete( QWidget * parent = nullptr );
+                virtual ~CPathsToDelete() override;
+
+                virtual void load() override;
+                virtual void save() override;
+                virtual QStringList pageName() const override
+                {
+                    return QStringList( { "Paths", "Paths to Delete" } );
+                }
+            public Q_SLOTS:
+                void slotAddPathToDelete();
+                void slotDelPathToDelete();
+            private:
+                QStringListModel * fPathsToDeleteModel{ nullptr };
+                std::unique_ptr< Ui::CPathsToDelete > fImpl;
+            };
+        }
     }
 }
 #endif 

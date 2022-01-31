@@ -21,7 +21,7 @@
 // SOFTWARE.
 
 #include "ExternalTools.h"
-#include "Core/Preferences.h"
+#include "Preferences/Core/Preferences.h"
 
 #include "ui_ExternalTools.h"
 
@@ -30,149 +30,152 @@
 
 namespace NMediaManager
 {
-    namespace NUi
+    namespace NPreferences
     {
-        CExternalTools::CExternalTools( QWidget * parent )
-            : CBasePrefPage( parent ),
-            fImpl( new Ui::CExternalTools )
+        namespace NUi
         {
-            fImpl->setupUi( this );
-
-            connect( fImpl->btnSelectMKVMergeExe, &QToolButton::clicked, this, &CExternalTools::slotSelectMKVMergeExe );
-            fImpl->mkvMergeExe->setCheckExists( true );
-            fImpl->mkvMergeExe->setCheckIsFile( true );
-            fImpl->mkvMergeExe->setCheckIsExecutable( true );
-
-            connect( fImpl->btnSelectMKVPropEditExe, &QToolButton::clicked, this, &CExternalTools::slotSelectMKVPropEditExe );
-            fImpl->mkvPropEditExe->setCheckExists( true );
-            fImpl->mkvPropEditExe->setCheckIsFile( true );
-            fImpl->mkvPropEditExe->setCheckIsExecutable( true );
-
-            connect( fImpl->btnSelectFFMpegExe, &QToolButton::clicked, this, &CExternalTools::slotSelectFFMpegExe );
-            fImpl->ffmpegExe->setCheckExists( true );
-            fImpl->ffmpegExe->setCheckIsFile( true );
-            fImpl->ffmpegExe->setCheckIsExecutable( true );
-
-            connect( fImpl->ffmpegExe, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CExternalTools::slotFFToolChanged );
-            connect( fImpl->mkvMergeExe, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CExternalTools::slotMKVNixToolChanged );
-            connect( fImpl->mkvPropEditExe, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CExternalTools::slotMKVNixToolChanged );
-
-            fftoolToolChanged( fImpl->ffmpegExe );
-            mkvnixToolChanged( fImpl->mkvMergeExe );
-            mkvnixToolChanged( fImpl->mkvPropEditExe );
-        }
-
-        CExternalTools::~CExternalTools()
-        {
-        }
-
-        void CExternalTools::slotSelectMKVMergeExe()
-        {
-            auto exe = QFileDialog::getOpenFileName( this, tr( "Select MKVMerge Executable:" ), fImpl->mkvMergeExe->text(), "mkvmerge Executable (mkvmerge.exe);;All Executables (*.exe);;All Files (*.*)" );
-            if ( !exe.isEmpty() && !QFileInfo( exe ).isExecutable() )
+            CExternalTools::CExternalTools( QWidget * parent )
+                : CBasePrefPage( parent ),
+                fImpl( new Ui::CExternalTools )
             {
-                QMessageBox::critical( this, "Not an Executable", tr( "The file '%1' is not an executable" ).arg( exe ) );
-                return;
+                fImpl->setupUi( this );
+
+                connect( fImpl->btnSelectMKVMergeExe, &QToolButton::clicked, this, &CExternalTools::slotSelectMKVMergeExe );
+                fImpl->mkvMergeExe->setCheckExists( true );
+                fImpl->mkvMergeExe->setCheckIsFile( true );
+                fImpl->mkvMergeExe->setCheckIsExecutable( true );
+
+                connect( fImpl->btnSelectMKVPropEditExe, &QToolButton::clicked, this, &CExternalTools::slotSelectMKVPropEditExe );
+                fImpl->mkvPropEditExe->setCheckExists( true );
+                fImpl->mkvPropEditExe->setCheckIsFile( true );
+                fImpl->mkvPropEditExe->setCheckIsExecutable( true );
+
+                connect( fImpl->btnSelectFFMpegExe, &QToolButton::clicked, this, &CExternalTools::slotSelectFFMpegExe );
+                fImpl->ffmpegExe->setCheckExists( true );
+                fImpl->ffmpegExe->setCheckIsFile( true );
+                fImpl->ffmpegExe->setCheckIsExecutable( true );
+
+                connect( fImpl->ffmpegExe, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CExternalTools::slotFFToolChanged );
+                connect( fImpl->mkvMergeExe, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CExternalTools::slotMKVNixToolChanged );
+                connect( fImpl->mkvPropEditExe, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CExternalTools::slotMKVNixToolChanged );
+
+                fftoolToolChanged( fImpl->ffmpegExe );
+                mkvnixToolChanged( fImpl->mkvMergeExe );
+                mkvnixToolChanged( fImpl->mkvPropEditExe );
             }
 
-            if ( !exe.isEmpty() )
-                fImpl->mkvMergeExe->setText( exe );
-        }
-
-        void CExternalTools::slotSelectMKVPropEditExe()
-        {
-            auto exe = QFileDialog::getOpenFileName( this, tr( "Select MKVPropEdit Executable:" ), fImpl->mkvPropEditExe->text(), "mkvpropedit Executable (mkvpropedit.exe);;All Executables (*.exe);;All Files (*.*)" );
-            if ( !exe.isEmpty() && !QFileInfo( exe ).isExecutable() )
+            CExternalTools::~CExternalTools()
             {
-                QMessageBox::critical( this, "Not an Executable", tr( "The file '%1' is not an executable" ).arg( exe ) );
-                return;
             }
 
-            if ( !exe.isEmpty() )
-                fImpl->mkvPropEditExe->setText( exe );
-        }
-
-        void CExternalTools::slotSelectFFMpegExe()
-        {
-            auto exe = QFileDialog::getOpenFileName( this, tr( "Select ffmpeg Executable:" ), fImpl->ffmpegExe->text(), "ffmpeg Executable (ffmpeg.exe);;All Executables (*.exe);;All Files (*.*)" );
-            if ( !exe.isEmpty() && !QFileInfo( exe ).isExecutable() )
+            void CExternalTools::slotSelectMKVMergeExe()
             {
-                QMessageBox::critical( this, "Not an Executable", tr( "The file '%1' is not an executable" ).arg( exe ) );
-                return;
+                auto exe = QFileDialog::getOpenFileName( this, tr( "Select MKVMerge Executable:" ), fImpl->mkvMergeExe->text(), "mkvmerge Executable (mkvmerge.exe);;All Executables (*.exe);;All Files (*.*)" );
+                if ( !exe.isEmpty() && !QFileInfo( exe ).isExecutable() )
+                {
+                    QMessageBox::critical( this, "Not an Executable", tr( "The file '%1' is not an executable" ).arg( exe ) );
+                    return;
+                }
+
+                if ( !exe.isEmpty() )
+                    fImpl->mkvMergeExe->setText( exe );
             }
 
-            if ( !exe.isEmpty() )
-                fImpl->ffmpegExe->setText( exe );
-        }
-
-        void CExternalTools::updateOtherTool( QObject * sender, const std::pair< QLineEdit *, QString > & lhs, const std::pair< QLineEdit *, QString > & rhs )
-        {
-            auto le = dynamic_cast<QLineEdit *>(sender);
-            if ( !le )
-                return;
-
-            if ( le->text().isEmpty() || !QFileInfo::exists( le->text() ) )
-                return;
-
-            QString otherExe;
-            QLineEdit * otherLE = nullptr;
-            if ( le == lhs.first )
+            void CExternalTools::slotSelectMKVPropEditExe()
             {
-                otherLE = rhs.first;
-                otherExe = rhs.second;
+                auto exe = QFileDialog::getOpenFileName( this, tr( "Select MKVPropEdit Executable:" ), fImpl->mkvPropEditExe->text(), "mkvpropedit Executable (mkvpropedit.exe);;All Executables (*.exe);;All Files (*.*)" );
+                if ( !exe.isEmpty() && !QFileInfo( exe ).isExecutable() )
+                {
+                    QMessageBox::critical( this, "Not an Executable", tr( "The file '%1' is not an executable" ).arg( exe ) );
+                    return;
+                }
+
+                if ( !exe.isEmpty() )
+                    fImpl->mkvPropEditExe->setText( exe );
             }
-            else if ( le == rhs.first )
+
+            void CExternalTools::slotSelectFFMpegExe()
             {
-                otherLE = lhs.first;
-                otherExe = lhs.second;
+                auto exe = QFileDialog::getOpenFileName( this, tr( "Select ffmpeg Executable:" ), fImpl->ffmpegExe->text(), "ffmpeg Executable (ffmpeg.exe);;All Executables (*.exe);;All Files (*.*)" );
+                if ( !exe.isEmpty() && !QFileInfo( exe ).isExecutable() )
+                {
+                    QMessageBox::critical( this, "Not an Executable", tr( "The file '%1' is not an executable" ).arg( exe ) );
+                    return;
+                }
+
+                if ( !exe.isEmpty() )
+                    fImpl->ffmpegExe->setText( exe );
             }
-            else
-                return;
 
-            if ( !otherLE->text().isEmpty() && QFileInfo( otherLE->text() ).exists() && QFileInfo( otherLE->text() ).isExecutable() )
-                return;
+            void CExternalTools::updateOtherTool( QObject * sender, const std::pair< QLineEdit *, QString > & lhs, const std::pair< QLineEdit *, QString > & rhs )
+            {
+                auto le = dynamic_cast<QLineEdit *>( sender );
+                if ( !le )
+                    return;
 
-            auto dir = QFileInfo( le->text() ).absoluteDir();
-            auto otherEXE = dir.absoluteFilePath( otherExe );
-            if ( QFileInfo::exists( otherEXE ) && QFileInfo( otherEXE ).isExecutable() )
-                otherLE->setText( otherEXE );
-            otherEXE += ".exe";
-            if ( QFileInfo::exists( otherEXE ) && QFileInfo( otherEXE ).isExecutable() )
-                otherLE->setText( otherEXE );
-        }
+                if ( le->text().isEmpty() || !QFileInfo::exists( le->text() ) )
+                    return;
 
-        void CExternalTools::slotMKVNixToolChanged()
-        {
-            mkvnixToolChanged( dynamic_cast< QLineEdit * >( sender() ) );
-        }
+                QString otherExe;
+                QLineEdit * otherLE = nullptr;
+                if ( le == lhs.first )
+                {
+                    otherLE = rhs.first;
+                    otherExe = rhs.second;
+                }
+                else if ( le == rhs.first )
+                {
+                    otherLE = lhs.first;
+                    otherExe = lhs.second;
+                }
+                else
+                    return;
 
-        void CExternalTools::mkvnixToolChanged( QLineEdit * le )
-        {
-            updateOtherTool( le, { fImpl->mkvPropEditExe, "mkvpropedit" }, { fImpl->mkvMergeExe, "mkvmerge" } );
-        }
+                if ( !otherLE->text().isEmpty() && QFileInfo( otherLE->text() ).exists() && QFileInfo( otherLE->text() ).isExecutable() )
+                    return;
 
-        void CExternalTools::slotFFToolChanged()
-        {
-            fftoolToolChanged( dynamic_cast<QLineEdit *>(sender()) );
-        }
+                auto dir = QFileInfo( le->text() ).absoluteDir();
+                auto otherEXE = dir.absoluteFilePath( otherExe );
+                if ( QFileInfo::exists( otherEXE ) && QFileInfo( otherEXE ).isExecutable() )
+                    otherLE->setText( otherEXE );
+                otherEXE += ".exe";
+                if ( QFileInfo::exists( otherEXE ) && QFileInfo( otherEXE ).isExecutable() )
+                    otherLE->setText( otherEXE );
+            }
 
-        void CExternalTools::fftoolToolChanged( QLineEdit * /*le*/ )
-        {
-            //updateOtherTool( le, { fImpl->ffprobeExe, "ffprobe" }, { fImpl->ffmpegExe, "ffmpeg" } );
-        }
+            void CExternalTools::slotMKVNixToolChanged()
+            {
+                mkvnixToolChanged( dynamic_cast<QLineEdit *>( sender() ) );
+            }
 
-        void CExternalTools::load()
-        {
-            fImpl->mkvMergeExe->setText( NCore::CPreferences::instance()->getMKVMergeEXE() );
-            fImpl->mkvPropEditExe->setText( NCore::CPreferences::instance()->getMKVPropEditEXE() );
-            fImpl->ffmpegExe->setText( NCore::CPreferences::instance()->getFFMpegEXE() );
-        }
+            void CExternalTools::mkvnixToolChanged( QLineEdit * le )
+            {
+                updateOtherTool( le, { fImpl->mkvPropEditExe, "mkvpropedit" }, { fImpl->mkvMergeExe, "mkvmerge" } );
+            }
 
-        void CExternalTools::save()
-        {
-            NCore::CPreferences::instance()->setMKVMergeEXE( fImpl->mkvMergeExe->text() );
-            NCore::CPreferences::instance()->setMKVPropEditEXE( fImpl->mkvPropEditExe->text() );
-            NCore::CPreferences::instance()->setFFMpegEXE( fImpl->ffmpegExe->text() );
+            void CExternalTools::slotFFToolChanged()
+            {
+                fftoolToolChanged( dynamic_cast<QLineEdit *>( sender() ) );
+            }
+
+            void CExternalTools::fftoolToolChanged( QLineEdit * /*le*/ )
+            {
+                //updateOtherTool( le, { fImpl->ffprobeExe, "ffprobe" }, { fImpl->ffmpegExe, "ffmpeg" } );
+            }
+
+            void CExternalTools::load()
+            {
+                fImpl->mkvMergeExe->setText( NPreferences::NCore::CPreferences::instance()->getMKVMergeEXE() );
+                fImpl->mkvPropEditExe->setText( NPreferences::NCore::CPreferences::instance()->getMKVPropEditEXE() );
+                fImpl->ffmpegExe->setText( NPreferences::NCore::CPreferences::instance()->getFFMpegEXE() );
+            }
+
+            void CExternalTools::save()
+            {
+                NPreferences::NCore::CPreferences::instance()->setMKVMergeEXE( fImpl->mkvMergeExe->text() );
+                NPreferences::NCore::CPreferences::instance()->setMKVPropEditEXE( fImpl->mkvPropEditExe->text() );
+                NPreferences::NCore::CPreferences::instance()->setFFMpegEXE( fImpl->ffmpegExe->text() );
+            }
         }
     }
 }

@@ -23,7 +23,7 @@
 #include "TransformModel.h"
 #include "Core/TransformResult.h"
 #include "Core/SearchTMDBInfo.h"
-#include "Core/Preferences.h"
+#include "Preferences/Core/Preferences.h"
 #include "SABUtils/QtUtils.h"
 #include "SABUtils/FileUtils.h"
 #include "SABUtils/FileCompare.h"
@@ -720,11 +720,11 @@ namespace NMediaManager
                 return {};
 
             auto fileInfo = this->fileInfo( idx );
-            TItemStatus retVal = { NCore::EItemStatus::eOK, QString() };
+            TItemStatus retVal = { NPreferences::NCore::EItemStatus::eOK, QString() };
             auto path = fileInfo.absoluteFilePath();
         
-            if (isIgnoredPathName(fileInfo) && !NCore::CPreferences::instance()->isSubtitleFile(fileInfo))
-                retVal.first = NCore::EItemStatus::eOK;
+            if (isIgnoredPathName(fileInfo) && !NPreferences::NCore::CPreferences::instance()->isSubtitleFile(fileInfo))
+                retVal.first = NPreferences::NCore::EItemStatus::eOK;
             else if ( fileInfo.isDir() || isMediaFile(fileInfo))
             {
                 QStringList msgs;
@@ -734,17 +734,17 @@ namespace NMediaManager
                     auto transformInfo = transformItem(fileInfo);
                     if ( NCore::STransformResult::isDeleteThis( transformInfo.second ) )
                     {
-                        retVal.first = NCore::EItemStatus::eOK;
+                        retVal.first = NPreferences::NCore::EItemStatus::eOK;
                         msgs << tr( "File Scheduled for deletion." );
                     }
                     else if ( NCore::STransformResult::isNoMatch( transformInfo.second ) )
                     {
-                        retVal.first = NCore::EItemStatus::eError;
+                        retVal.first = NPreferences::NCore::EItemStatus::eError;
                         msgs << tr( "No Match found" );
                     }
                     else if (!transformInfo.first)
                     {
-                        retVal.first = NCore::EItemStatus::eError;
+                        retVal.first = NPreferences::NCore::EItemStatus::eError;
                         msgs << tr("Could not properly transform item");
                     }
                 }
@@ -875,11 +875,11 @@ namespace NMediaManager
 
         bool CTransformModel::canAutoSearch( const QFileInfo & fileInfo, bool recursive) const
         {
-            if ( NCore::CPreferences::instance()->isIgnoredPath( fileInfo ) || NCore::CPreferences::instance()->isSkippedPath( fileInfo ) )
+            if ( NPreferences::NCore::CPreferences::instance()->isIgnoredPath( fileInfo ) || NPreferences::NCore::CPreferences::instance()->isSkippedPath( fileInfo ) )
                 return false;
 
             bool isLangFormat;
-            if ( NCore::CPreferences::instance()->isSubtitleFile( fileInfo, &isLangFormat ) && !isLangFormat )
+            if ( NPreferences::NCore::CPreferences::instance()->isSubtitleFile( fileInfo, &isLangFormat ) && !isLangFormat )
                 return false;
 
             if (fileInfo.isFile() && !isMediaFile(fileInfo))

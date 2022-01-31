@@ -35,26 +35,29 @@ class QListView;
 class QTreeWidgetItem;
 namespace NMediaManager
 {
-    namespace NUi
+    namespace NPreferences
     {
-        namespace Ui { class CTransformationSettings; };
-        class CTransformationSettings : public CBasePrefPage
+        namespace NUi
         {
-            Q_OBJECT
-        public:
-            CTransformationSettings( QWidget * parent = nullptr );
-            virtual ~CTransformationSettings() override;
-
-            virtual void load() override;
-            virtual void save() override;
-            virtual QStringList pageName() const override
+            namespace Ui { class CTransformationSettings; };
+            class CTransformationSettings : public CBasePrefPage
             {
-                return QStringList( { "Transformation Settings" } );
-            }
-        public Q_SLOTS:
-        private:
-            std::unique_ptr< Ui::CTransformationSettings > fImpl;
-        };
+                Q_OBJECT
+            public:
+                CTransformationSettings( QWidget * parent = nullptr );
+                virtual ~CTransformationSettings() override;
+
+                virtual void load() override;
+                virtual void save() override;
+                virtual QStringList pageName() const override
+                {
+                    return QStringList( { "Transformation Settings" } );
+                }
+            public Q_SLOTS:
+            private:
+                std::unique_ptr< Ui::CTransformationSettings > fImpl;
+            };
+        }
     }
 }
 #endif 

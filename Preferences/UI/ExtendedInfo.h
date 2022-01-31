@@ -28,29 +28,32 @@
 class QStringListModel;
 namespace NMediaManager
 {
-    namespace NUi
+    namespace NPreferences
     {
-        namespace Ui { class CExtendedInfo; };
-        class CExtendedInfo : public CBasePrefPage
+        namespace NUi
         {
-            Q_OBJECT
-        public:
-            CExtendedInfo( QWidget * parent = nullptr );
-            virtual ~CExtendedInfo() override;
-
-            virtual void load() override;
-            virtual void save() override;
-            virtual QStringList pageName() const override
+            namespace Ui { class CExtendedInfo; };
+            class CExtendedInfo : public CBasePrefPage
             {
-                return QStringList( { "Known Strings", "Extended/Extra Information" } );
-            }
-        public Q_SLOTS:
-            void slotAddExtraString();
-            void slotDelExtraString();
-        private:
-            QStringListModel * fExtraStringModel{ nullptr };
-            std::unique_ptr< Ui::CExtendedInfo > fImpl;
-        };
+                Q_OBJECT
+            public:
+                CExtendedInfo( QWidget * parent = nullptr );
+                virtual ~CExtendedInfo() override;
+
+                virtual void load() override;
+                virtual void save() override;
+                virtual QStringList pageName() const override
+                {
+                    return QStringList( { "Known Strings", "Extended/Extra Information" } );
+                }
+            public Q_SLOTS:
+                void slotAddExtraString();
+                void slotDelExtraString();
+            private:
+                QStringListModel * fExtraStringModel{ nullptr };
+                std::unique_ptr< Ui::CExtendedInfo > fImpl;
+            };
+        }
     }
 }
 #endif 

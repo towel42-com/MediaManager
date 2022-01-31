@@ -30,29 +30,32 @@ namespace NSABUtils
 }
 namespace NMediaManager
 {
-    namespace NUi
+    namespace NPreferences
     {
-        namespace Ui { class CKnownAbbreviations; };
-        class CKnownAbbreviations : public CBasePrefPage
+        namespace NUi
         {
-            Q_OBJECT
-        public:
-            CKnownAbbreviations( QWidget * parent = nullptr );
-            virtual ~CKnownAbbreviations() override;
-
-            virtual void load() override;
-            virtual void save() override;
-            virtual QStringList pageName() const override
+            namespace Ui { class CKnownAbbreviations; };
+            class CKnownAbbreviations : public CBasePrefPage
             {
-                return QStringList( { "Known Strings", "Known Abbreviations" } );
-            }
-        public Q_SLOTS:
-            void slotAddAbbreviation();
-            void slotDelAbbreviation();
-        private:
-            NSABUtils::CKeyValuePairModel * fAbbreviationsModel{ nullptr };
-            std::unique_ptr< Ui::CKnownAbbreviations > fImpl;
-        };
+                Q_OBJECT
+            public:
+                CKnownAbbreviations( QWidget * parent = nullptr );
+                virtual ~CKnownAbbreviations() override;
+
+                virtual void load() override;
+                virtual void save() override;
+                virtual QStringList pageName() const override
+                {
+                    return QStringList( { "Known Strings", "Known Abbreviations" } );
+                }
+            public Q_SLOTS:
+                void slotAddAbbreviation();
+                void slotDelAbbreviation();
+            private:
+                NSABUtils::CKeyValuePairModel * fAbbreviationsModel{ nullptr };
+                std::unique_ptr< Ui::CKnownAbbreviations > fImpl;
+            };
+        }
     }
 }
 #endif 

@@ -21,11 +21,11 @@
 // SOFTWARE.
 
 #include "MainWindow.h"
-#include "Preferences/Preferences.h"
+#include "Preferences/UI/Preferences.h"
 
 #include "ui_MainWindow.h"
 
-#include "Core/Preferences.h"
+#include "Preferences/Core/Preferences.h"
 #include "Models/DirModel.h"
 #include "Core/SearchTMDBInfo.h"
 #include "Core/SearchTMDB.h"
@@ -226,8 +226,8 @@ namespace NMediaManager
 
         void CMainWindow::loadSettings()
         {
-            fImpl->directory->addItems( NCore::CPreferences::instance()->getDirectories(), true );
-            fImpl->fileName->addItems( NCore::CPreferences::instance()->getFileNames(), true );
+            fImpl->directory->addItems( NPreferences::NCore::CPreferences::instance()->getDirectories(), true );
+            fImpl->fileName->addItems( NPreferences::NCore::CPreferences::instance()->getFileNames(), true );
 
             QSettings settings;
             auto renamerPage = fImpl->tabWidget->indexOf( fImpl->transformTab );
@@ -237,8 +237,8 @@ namespace NMediaManager
 
         void CMainWindow::saveSettings()
         {
-            NCore::CPreferences::instance()->setDirectories( fImpl->directory->getAllText() );
-            NCore::CPreferences::instance()->setFileNames( fImpl->fileName->getAllText() );
+            NPreferences::NCore::CPreferences::instance()->setDirectories( fImpl->directory->getAllText() );
+            NPreferences::NCore::CPreferences::instance()->setFileNames( fImpl->fileName->getAllText() );
             QSettings settings;
             settings.setValue( "LastFunctionalityPage", fImpl->tabWidget->currentIndex() );
         }
@@ -338,7 +338,7 @@ namespace NMediaManager
 
         void CMainWindow::slotPreferences()
         {
-            CPreferences dlg;
+            NPreferences::NUi::CPreferences dlg;
             if ( dlg.exec() == QDialog::Accepted )
             {
             }

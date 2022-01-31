@@ -22,7 +22,7 @@
 
 #include "TagsPage.h"
 #include "SelectTMDB.h"
-#include "Core/Preferences.h"
+#include "Preferences/Core/Preferences.h"
 #include "Models/TagsModel.h"
 
 #include "SABUtils/QtUtils.h"
@@ -128,7 +128,7 @@ namespace NMediaManager
 
         QStringList CTagsPage::dirModelFilter() const
         {
-            auto retVal = NCore::CPreferences::instance()->getMediaExtensions();
+            auto retVal = NPreferences::NCore::CPreferences::instance()->getMediaExtensions();
             return retVal;
         }
 
@@ -149,38 +149,38 @@ namespace NMediaManager
                 fVerifyMediaTitle = new QAction(this);
                 fVerifyMediaTitle->setObjectName(QString::fromUtf8("actionVerifyMediaTitle"));
                 fVerifyMediaTitle->setCheckable(true);
-                fVerifyMediaTitle->setChecked(NCore::CPreferences::instance()->deleteNFO());
+                fVerifyMediaTitle->setChecked(NPreferences::NCore::CPreferences::instance()->deleteNFO());
                 fVerifyMediaTitle->setText(QCoreApplication::translate("NMediaManager::NUi::CMainWindow", "Verify Media Title?", nullptr));
                 connect(fVerifyMediaTitle, &QAction::triggered, [this]()
                     {
                         //model()->clearStatusResults();
-                        NCore::CPreferences::instance()->setVerifyMediaTitle(fVerifyMediaTitle->isChecked());
+                        NPreferences::NCore::CPreferences::instance()->setVerifyMediaTitle(fVerifyMediaTitle->isChecked());
                     }
                 );
 
                 fVerifyMediaDate = new QAction(this);
                 fVerifyMediaDate->setObjectName(QString::fromUtf8("actionVerifyMediaDate"));
                 fVerifyMediaDate->setCheckable(true);
-                fVerifyMediaDate->setChecked(NCore::CPreferences::instance()->deleteNFO());
+                fVerifyMediaDate->setChecked(NPreferences::NCore::CPreferences::instance()->deleteNFO());
                 fVerifyMediaDate->setText(QCoreApplication::translate("NMediaManager::NUi::CMainWindow", "Verify Media Date?", nullptr));
                 connect(fVerifyMediaDate, &QAction::triggered, [this]()
                     {
                         //model()->clearStatusResults();
-                        NCore::CPreferences::instance()->setVerifyMediaDate(fVerifyMediaDate->isChecked());
+                        NPreferences::NCore::CPreferences::instance()->setVerifyMediaDate(fVerifyMediaDate->isChecked());
                     }
                 );
 
                 fVerifyMediaTags = new QAction(this);
                 fVerifyMediaTags->setObjectName(QString::fromUtf8("actionVerifyMediaTags"));
                 fVerifyMediaTags->setCheckable(true);
-                fVerifyMediaTags->setChecked(NCore::CPreferences::instance()->deleteNFO());
+                fVerifyMediaTags->setChecked(NPreferences::NCore::CPreferences::instance()->deleteNFO());
                 fVerifyMediaTags->setText(QCoreApplication::translate("NMediaManager::NUi::CMainWindow", "Verify Media Tags?", nullptr));
                 connect(fVerifyMediaTags, &QAction::triggered, [this]()
                     {
                         fVerifyMediaDate->setEnabled(fVerifyMediaTags->isChecked());
                         fVerifyMediaTitle->setEnabled(fVerifyMediaTags->isChecked());
                         //model()->clearStatusResults();
-                        NCore::CPreferences::instance()->setVerifyMediaTags(fVerifyMediaTags->isChecked());
+                        NPreferences::NCore::CPreferences::instance()->setVerifyMediaTags(fVerifyMediaTags->isChecked());
                     }
                 );
 
@@ -200,9 +200,9 @@ namespace NMediaManager
 
         void CTagsPage::slotMenuAboutToShow()
         {
-            fVerifyMediaDate->setChecked(NCore::CPreferences::instance()->getVerifyMediaDate());
-            fVerifyMediaTitle->setChecked(NCore::CPreferences::instance()->getVerifyMediaTitle());
-            fVerifyMediaTags->setChecked(NCore::CPreferences::instance()->getVerifyMediaTags());
+            fVerifyMediaDate->setChecked(NPreferences::NCore::CPreferences::instance()->getVerifyMediaDate());
+            fVerifyMediaTitle->setChecked(NPreferences::NCore::CPreferences::instance()->getVerifyMediaTitle());
+            fVerifyMediaTags->setChecked(NPreferences::NCore::CPreferences::instance()->getVerifyMediaTags());
             fVerifyMediaDate->setEnabled(fVerifyMediaTags->isChecked());
             fVerifyMediaTitle->setEnabled(fVerifyMediaTags->isChecked());
         }

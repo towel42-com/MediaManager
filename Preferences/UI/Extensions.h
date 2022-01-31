@@ -26,26 +26,29 @@
 #include "BasePrefPage.h"
 namespace NMediaManager
 {
-    namespace NUi
+    namespace NPreferences
     {
-        namespace Ui { class CExtensions; };
-        class CExtensions : public CBasePrefPage
+        namespace NUi
         {
-            Q_OBJECT
-        public:
-            CExtensions( QWidget * parent = nullptr );
-            virtual ~CExtensions() override;
-
-            virtual void load() override;
-            virtual void save() override;
-            virtual QStringList pageName() const override
+            namespace Ui { class CExtensions; };
+            class CExtensions : public CBasePrefPage
             {
-                return QStringList( { "Extensions" } );
-            }
-        public Q_SLOTS:
-        private:
-            std::unique_ptr< Ui::CExtensions > fImpl;
-        };
+                Q_OBJECT
+            public:
+                CExtensions( QWidget * parent = nullptr );
+                virtual ~CExtensions() override;
+
+                virtual void load() override;
+                virtual void save() override;
+                virtual QStringList pageName() const override
+                {
+                    return QStringList( { "Extensions" } );
+                }
+            public Q_SLOTS:
+            private:
+                std::unique_ptr< Ui::CExtensions > fImpl;
+            };
+        }
     }
 }
 #endif 

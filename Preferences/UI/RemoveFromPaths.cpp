@@ -21,7 +21,7 @@
 // SOFTWARE.
 
 #include "RemoveFromPaths.h"
-#include "Core/Preferences.h"
+#include "Preferences/Core/Preferences.h"
 
 #include "ui_RemoveFromPaths.h"
 
@@ -31,45 +31,48 @@
 
 namespace NMediaManager
 {
-    namespace NUi
+    namespace NPreferences
     {
-        CRemoveFromPaths::CRemoveFromPaths( QWidget * parent )
-            : CBasePrefPage( parent ),
-            fImpl( new Ui::CRemoveFromPaths )
+        namespace NUi
         {
-            fImpl->setupUi( this );
+            CRemoveFromPaths::CRemoveFromPaths( QWidget * parent )
+                : CBasePrefPage( parent ),
+                fImpl( new Ui::CRemoveFromPaths )
+            {
+                fImpl->setupUi( this );
 
-            connect( fImpl->btnAddKnownString, &QToolButton::clicked, this, &CRemoveFromPaths::slotAddKnownString );
-            connect( fImpl->btnDelKnownString, &QToolButton::clicked, this, &CRemoveFromPaths::slotDelKnownString );
+                connect( fImpl->btnAddKnownString, &QToolButton::clicked, this, &CRemoveFromPaths::slotAddKnownString );
+                connect( fImpl->btnDelKnownString, &QToolButton::clicked, this, &CRemoveFromPaths::slotDelKnownString );
 
-            fKnownStringModel = new QStringListModel( this );
-            fImpl->knownStrings->setModel( fKnownStringModel );
+                fKnownStringModel = new QStringListModel( this );
+                fImpl->knownStrings->setModel( fKnownStringModel );
 
-            new NSABUtils::CButtonEnabler( fImpl->knownStrings, fImpl->btnDelKnownString );
-        }
+                new NSABUtils::CButtonEnabler( fImpl->knownStrings, fImpl->btnDelKnownString );
+            }
 
-        CRemoveFromPaths::~CRemoveFromPaths()
-        {
-        }
+            CRemoveFromPaths::~CRemoveFromPaths()
+            {
+            }
 
-        void CRemoveFromPaths::slotAddKnownString()
-        {
-            addString( tr( "Add Known String" ), tr( "String:" ), fKnownStringModel, fImpl->knownStrings, true );
-        }
+            void CRemoveFromPaths::slotAddKnownString()
+            {
+                addString( tr( "Add Known String" ), tr( "String:" ), fKnownStringModel, fImpl->knownStrings, true );
+            }
 
-        void CRemoveFromPaths::slotDelKnownString()
-        {
-            delString( fKnownStringModel, fImpl->knownStrings );
-        }
+            void CRemoveFromPaths::slotDelKnownString()
+            {
+                delString( fKnownStringModel, fImpl->knownStrings );
+            }
 
-        void CRemoveFromPaths::load()
-        {
-            fKnownStringModel->setStringList( NCore::CPreferences::instance()->getKnownStrings() );
-        }
+            void CRemoveFromPaths::load()
+            {
+                fKnownStringModel->setStringList( NPreferences::NCore::CPreferences::instance()->getKnownStrings() );
+            }
 
-        void CRemoveFromPaths::save()
-        {
-            NCore::CPreferences::instance()->setKnownStrings( fKnownStringModel->stringList() );
+            void CRemoveFromPaths::save()
+            {
+                NPreferences::NCore::CPreferences::instance()->setKnownStrings( fKnownStringModel->stringList() );
+            }
         }
     }
 }

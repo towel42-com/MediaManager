@@ -35,29 +35,32 @@ class QListView;
 class QTreeWidgetItem;
 namespace NMediaManager
 {
-    namespace NUi
+    namespace NPreferences
     {
-        namespace Ui { class CIgnoredPaths; };
-        class CIgnoredPaths : public CBasePrefPage
+        namespace NUi
         {
-            Q_OBJECT
-        public:
-            CIgnoredPaths( QWidget * parent = nullptr );
-            virtual ~CIgnoredPaths() override;
-
-            virtual void load() override;
-            virtual void save() override;
-            virtual QStringList pageName() const override
+            namespace Ui { class CIgnoredPaths; };
+            class CIgnoredPaths : public CBasePrefPage
             {
-                return QStringList( { "Paths", "Ignored Paths" } );
-            }
-        public Q_SLOTS:
-            void slotAddIgnorePathName();
-            void slotDelIgnorePathName();
-        private:
-            QStringListModel * fModel{ nullptr };
-            std::unique_ptr< Ui::CIgnoredPaths > fImpl;
-        };
+                Q_OBJECT
+            public:
+                CIgnoredPaths( QWidget * parent = nullptr );
+                virtual ~CIgnoredPaths() override;
+
+                virtual void load() override;
+                virtual void save() override;
+                virtual QStringList pageName() const override
+                {
+                    return QStringList( { "Paths", "Ignored Paths" } );
+                }
+            public Q_SLOTS:
+                void slotAddIgnorePathName();
+                void slotDelIgnorePathName();
+            private:
+                QStringListModel * fModel{ nullptr };
+                std::unique_ptr< Ui::CIgnoredPaths > fImpl;
+            };
+        }
     }
 }
 #endif 

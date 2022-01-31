@@ -58,9 +58,16 @@ namespace NMediaManager
         class CBasePage;
     }
 
+    namespace NPreferences
+    {
+        namespace NCore
+        {
+            enum class EItemStatus;
+        }
+    }
+
     namespace NCore
     {
-        enum class EItemStatus;
         enum class EMediaType;
     }
 
@@ -138,7 +145,7 @@ namespace NMediaManager
             std::unordered_map< QFileDevice::FileTime, QDateTime > fTimeStamps;
         };
 
-        using TItemStatus = std::pair< NCore::EItemStatus, QString >;
+        using TItemStatus = std::pair< NPreferences::NCore::EItemStatus, QString >;
         class CDirModel : public QStandardItemModel
         {
             friend struct SDirNodeItem;

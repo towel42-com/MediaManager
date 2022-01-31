@@ -23,7 +23,7 @@
 #include "DirModel.h"
 #include "Core/TransformResult.h"
 #include "Core/SearchTMDBInfo.h"
-#include "Core/Preferences.h"
+#include "Preferences/Core/Preferences.h"
 
 #include "UI/ProcessConfirm.h"
 #include "UI/BasePage.h"
@@ -464,12 +464,12 @@ namespace NMediaManager
 
         bool CDirModel::isSkippedDirName( const QFileInfo & ii ) const
         {
-            return NCore::CPreferences::instance()->isSkippedPath( ii );
+            return NPreferences::NCore::CPreferences::instance()->isSkippedPath( ii );
         }
 
         bool CDirModel::isIgnoredPathName( const QFileInfo & fileInfo ) const
         {
-            return NCore::CPreferences::instance()->isIgnoredPath( fileInfo );
+            return NPreferences::NCore::CPreferences::instance()->isIgnoredPath( fileInfo );
         }
 
         STreeNode CDirModel::getItemRow( const QFileInfo & fileInfo ) const
@@ -639,12 +639,12 @@ namespace NMediaManager
 
         bool CDirModel::isMediaFile( const QFileInfo & fileInfo ) const
         {
-            return fileInfo.isFile() && NCore::CPreferences::instance()->isMediaFile( fileInfo );
+            return fileInfo.isFile() && NPreferences::NCore::CPreferences::instance()->isMediaFile( fileInfo );
         }
 
         bool CDirModel::isSubtitleFile( const QFileInfo & fileInfo, bool * isLangFileFormat ) const
         {
-            return NCore::CPreferences::instance()->isSubtitleFile( fileInfo, isLangFileFormat );
+            return NPreferences::NCore::CPreferences::instance()->isSubtitleFile( fileInfo, isLangFileFormat );
         }
 
         bool CDirModel::isSubtitleFile( const QModelIndex & idx, bool * isLangFileFormat ) const
@@ -819,7 +819,7 @@ namespace NMediaManager
             if ( !canShowMediaInfo() )
                 return {};
 
-            if ( !NCore::CPreferences::instance()->isMediaFile( fi ) )
+            if ( !NPreferences::NCore::CPreferences::instance()->isMediaFile( fi ) )
                 return {};
 
             NSABUtils::CAutoWaitCursor awc;
@@ -844,7 +844,7 @@ namespace NMediaManager
                 return;
 
             auto fi = fileInfo( idx );
-            if ( !NCore::CPreferences::instance()->isMediaFile( fi ) )
+            if ( !NPreferences::NCore::CPreferences::instance()->isMediaFile( fi ) )
                 return;
 
             auto mediaInfo = getMediaTags( fi, { NSABUtils::EMediaTags::eTitle, NSABUtils::EMediaTags::eLength, NSABUtils::EMediaTags::eDate, NSABUtils::EMediaTags::eComment } );
@@ -947,7 +947,7 @@ namespace NMediaManager
         bool CDirModel::autoSetMediaTags( const QModelIndex & idx, QString * msg )
         {
             auto fi = fileInfo( idx );
-            if ( !NCore::CPreferences::instance()->isMediaFile( fi ) )
+            if ( !NPreferences::NCore::CPreferences::instance()->isMediaFile( fi ) )
                 return false;
 
             auto baseName = fi.completeBaseName();
@@ -974,7 +974,7 @@ namespace NMediaManager
             };
 
             QString localMsg;
-            auto aOK = NSABUtils::setMediaTags( fileName, tags, NCore::CPreferences::instance()->getMKVPropEditEXE(), &localMsg );
+            auto aOK = NSABUtils::setMediaTags( fileName, tags, NPreferences::NCore::CPreferences::instance()->getMKVPropEditEXE(), &localMsg );
             if ( !aOK )
             {
                 if ( msg )
@@ -992,7 +992,7 @@ namespace NMediaManager
             NSABUtils::CAutoWaitCursor awc;
             std::unordered_map< NSABUtils::EMediaTags, QString > tags = { data };
             QString localMsg;
-            auto aOK = NSABUtils::setMediaTags( fileName, tags, NCore::CPreferences::instance()->getMKVPropEditEXE(), &localMsg );
+            auto aOK = NSABUtils::setMediaTags( fileName, tags, NPreferences::NCore::CPreferences::instance()->getMKVPropEditEXE(), &localMsg );
             if ( !aOK )
             {
                 if ( msg )
@@ -1545,7 +1545,7 @@ namespace NMediaManager
             auto itemStatus = getIndexStatus( idx );
             if ( itemStatus.has_value() )
             {
-                auto retVal = NCore::CPreferences::instance()->getColorForStatus( itemStatus.value().first, true );
+                auto retVal = NPreferences::NCore::CPreferences::instance()->getColorForStatus( itemStatus.value().first, true );
                 if ( retVal.isValid() )
                     return retVal;
             }
@@ -1557,7 +1557,7 @@ namespace NMediaManager
             auto itemStatus = getIndexStatus( idx );
             if ( itemStatus.has_value() )
             {
-                auto retVal = NCore::CPreferences::instance()->getColorForStatus( itemStatus.value().first, false );
+                auto retVal = NPreferences::NCore::CPreferences::instance()->getColorForStatus( itemStatus.value().first, false );
                 if ( retVal.isValid() )
                     return retVal;
             }

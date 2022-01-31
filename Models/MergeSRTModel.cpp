@@ -22,7 +22,7 @@
 
 #include "MergeSRTModel.h"
 #include "Core/LanguageInfo.h"
-#include "Core/Preferences.h"
+#include "Preferences/Core/Preferences.h"
 #include "SABUtils/FileUtils.h"
 
 #include "SABUtils/DoubleProgressDlg.h"
@@ -65,7 +65,7 @@ namespace NMediaManager
                     continue;
                 }
 
-                if ( NCore::CPreferences::instance()->isMediaFile( child->data( ECustomRoles::eFullPathRole ).toString() ) )
+                if ( NPreferences::NCore::CPreferences::instance()->isMediaFile( child->data( ECustomRoles::eFullPathRole ).toString() ) )
                     retVal << child;
             }
             return retVal;
@@ -414,7 +414,7 @@ namespace NMediaManager
 
             if (!displayOnly)
             {
-                processInfo.fCmd = NCore::CPreferences::instance()->getMKVMergeEXE();
+                processInfo.fCmd = NPreferences::NCore::CPreferences::instance()->getMKVMergeEXE();
                 bool aOK = true;
                 if (processInfo.fCmd.isEmpty() || !QFileInfo(processInfo.fCmd).isExecutable())
                 {
@@ -556,7 +556,7 @@ namespace NMediaManager
 
             if (!displayOnly)
             {
-                processInfo.fCmd = NCore::CPreferences::instance()->getMKVMergeEXE();
+                processInfo.fCmd = NPreferences::NCore::CPreferences::instance()->getMKVMergeEXE();
                 bool aOK = true;
                 if (processInfo.fCmd.isEmpty() || !QFileInfo(processInfo.fCmd).isExecutable())
                 {
@@ -755,7 +755,7 @@ namespace NMediaManager
         {
             if ( treeNode.fIsFile )
             {
-                auto isSubFile = NCore::CPreferences::instance()->isSubtitleFile( treeNode.name() );
+                auto isSubFile = NPreferences::NCore::CPreferences::instance()->isSubtitleFile( treeNode.name() );
                 auto useAsParent =
                     [isSubFile, this ]( QStandardItem * item )
                 {
@@ -768,7 +768,7 @@ namespace NMediaManager
                     auto path = item->data( ECustomRoles::eFullPathRole ).toString();
                     if (isSubFile)
                     {
-                        return NCore::CPreferences::instance()->isMediaFile( path );
+                        return NPreferences::NCore::CPreferences::instance()->isMediaFile( path );
                     }
 
                     return false;
@@ -814,7 +814,7 @@ namespace NMediaManager
 
         void CMergeSRTModel::postFileFunction( bool aOK, const QFileInfo & fileInfo )
         {
-            if ( aOK && NCore::CPreferences::instance()->isMediaFile( fileInfo ) )
+            if ( aOK && NPreferences::NCore::CPreferences::instance()->isMediaFile( fileInfo ) )
             {
                 auto pos = fPathMapping.find( fileInfo.absoluteFilePath() );
                 if ( pos != fPathMapping.end() )

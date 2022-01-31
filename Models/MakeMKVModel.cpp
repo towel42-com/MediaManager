@@ -21,7 +21,7 @@
 // SOFTWARE.
 
 #include "MakeMKVModel.h"
-#include "Core/Preferences.h"
+#include "Preferences/Core/Preferences.h"
 #include "SABUtils/DoubleProgressDlg.h"
 #include "SABUtils/FileUtils.h"
 #include "SABUtils/QtUtils.h"
@@ -69,7 +69,7 @@ namespace NMediaManager
                 int numSeconds = NSABUtils::getNumberOfSeconds( processInfo.fOldName );
                 progressDlg()->setSecondaryMaximum( numSeconds );
 
-                processInfo.fCmd = NCore::CPreferences::instance()->getFFMpegEXE();
+                processInfo.fCmd = NPreferences::NCore::CPreferences::instance()->getFFMpegEXE();
                 if ( processInfo.fCmd.isEmpty() || !QFileInfo( processInfo.fCmd ).isExecutable() )
                 {
                     QStandardItem * errorItem = nullptr;

@@ -22,7 +22,7 @@
 
 #include "TransformPage.h"
 #include "SelectTMDB.h"
-#include "Core/Preferences.h"
+#include "Preferences/Core/Preferences.h"
 #include "Models/TransformModel.h"
 #include "Core/TransformResult.h"
 #include "Core/SearchTMDBInfo.h"
@@ -171,7 +171,7 @@ namespace NMediaManager
             auto parentName = model()->getSearchName( index );
 
             auto name = model()->getSearchName( index );
-            if ( NCore::CPreferences::instance()->isPathToDelete( index.data( NModels::ECustomRoles::eFullPathRole ).toString() ) )
+            if ( NPreferences::NCore::CPreferences::instance()->isPathToDelete( index.data( NModels::ECustomRoles::eFullPathRole ).toString() ) )
             {
                 appendToLog( QString( "Deleting file '%1'" ).arg( index.data( NModels::ECustomRoles::eFullPathRole ).toString() ), true );
                 model()->setDeleteItem( index );
@@ -183,7 +183,7 @@ namespace NMediaManager
                     auto path = model()->filePath(index);
                     auto titleInfo = model()->getTransformResult( index, false );
                     auto searchInfo = std::make_shared< NCore::SSearchTMDBInfo >( name, titleInfo );
-                    searchInfo->setExactMatchOnly( NCore::CPreferences::instance()->getExactMatchesOnly() );
+                    searchInfo->setExactMatchOnly( NPreferences::NCore::CPreferences::instance()->getExactMatchesOnly() );
                     if ( mediaType.has_value() )
                         searchInfo->setMediaType( mediaType.value() );
 
@@ -318,17 +318,17 @@ namespace NMediaManager
 
         QStringList CTransformPage::dirModelFilter() const
         {
-            auto retVal = NCore::CPreferences::instance()->getMediaExtensions() << NCore::CPreferences::instance()->getSubtitleExtensions();
-            retVal << NCore::CPreferences::instance()->getExtensionsToDelete();
+            auto retVal = NPreferences::NCore::CPreferences::instance()->getMediaExtensions() << NPreferences::NCore::CPreferences::instance()->getSubtitleExtensions();
+            retVal << NPreferences::NCore::CPreferences::instance()->getExtensionsToDelete();
             return retVal;
         }
 
         void CTransformPage::setupModel()
         {
-            model()->slotTVOutputFilePatternChanged( NCore::CPreferences::instance()->getTVOutFilePattern() );
-            model()->slotTVOutputDirPatternChanged( NCore::CPreferences::instance()->getTVOutDirPattern() );
-            model()->slotMovieOutputFilePatternChanged( NCore::CPreferences::instance()->getMovieOutFilePattern() );
-            model()->slotMovieOutputDirPatternChanged( NCore::CPreferences::instance()->getMovieOutDirPattern() );
+            model()->slotTVOutputFilePatternChanged( NPreferences::NCore::CPreferences::instance()->getTVOutFilePattern() );
+            model()->slotTVOutputDirPatternChanged( NPreferences::NCore::CPreferences::instance()->getTVOutDirPattern() );
+            model()->slotMovieOutputFilePatternChanged( NPreferences::NCore::CPreferences::instance()->getMovieOutFilePattern() );
+            model()->slotMovieOutputDirPatternChanged( NPreferences::NCore::CPreferences::instance()->getMovieOutDirPattern() );
 
             CBasePage::setupModel();
         }
@@ -345,7 +345,7 @@ namespace NMediaManager
 
             CSelectTMDB dlg( nm, titleInfo, this );
             dlg.setSearchForTVShows( model()->treatAsTVShow( QFileInfo( fullPath ), isTVShow ), true );
-            dlg.setExactMatchOnly( NCore::CPreferences::instance()->getExactMatchesOnly(), true );
+            dlg.setExactMatchOnly( NPreferences::NCore::CPreferences::instance()->getExactMatchesOnly(), true );
 
             if ( dlg.exec() == QDialog::Accepted )
             {
@@ -372,7 +372,7 @@ namespace NMediaManager
                 fExactMatchesOnlyAction->setText( QCoreApplication::translate( "NMediaManager::NUi::CMainWindow", "Exact Matches Only?", nullptr ) );
                 connect(fExactMatchesOnlyAction, &QAction::triggered, [this]()
                     {
-                        NCore::CPreferences::instance()->setExactMatchesOnly(fExactMatchesOnlyAction->isChecked());
+                        NPreferences::NCore::CPreferences::instance()->setExactMatchesOnly(fExactMatchesOnlyAction->isChecked());
                     }
                 );
 
@@ -382,62 +382,62 @@ namespace NMediaManager
                 fTreatAsTVShowByDefaultAction->setText( QCoreApplication::translate( "NMediaManager::NUi::CMainWindow", "Treat as TV Show by Default?", nullptr ) );
                 connect(fTreatAsTVShowByDefaultAction, &QAction::triggered, [this]()
                     {
-                        NCore::CPreferences::instance()->setTreatAsTVShowByDefault(fTreatAsTVShowByDefaultAction->isChecked());
+                        NPreferences::NCore::CPreferences::instance()->setTreatAsTVShowByDefault(fTreatAsTVShowByDefaultAction->isChecked());
                     }
                 );
 
                 fDeleteEXE = new QAction( this );
                 fDeleteEXE->setObjectName( QString::fromUtf8( "actionDeleteKnownPathEXEs" ) );
                 fDeleteEXE->setCheckable( true );
-                fDeleteEXE->setChecked( NCore::CPreferences::instance()->deleteEXE() );
+                fDeleteEXE->setChecked( NPreferences::NCore::CPreferences::instance()->deleteEXE() );
                 fDeleteEXE->setText( QCoreApplication::translate( "NMediaManager::NUi::CMainWindow", "Delete Executables (*.exe)?", nullptr ) );
                 connect(fDeleteEXE, &QAction::triggered, [ this ]()
                 {
-                    NCore::CPreferences::instance()->setDeleteEXE(fDeleteEXE->isChecked() );
+                    NPreferences::NCore::CPreferences::instance()->setDeleteEXE(fDeleteEXE->isChecked() );
                 }
                 );
 
                 fDeleteTXT = new QAction(this);
                 fDeleteTXT->setObjectName(QString::fromUtf8("actionDeleteKnownPathTXTs"));
                 fDeleteTXT->setCheckable(true);
-                fDeleteTXT->setChecked(NCore::CPreferences::instance()->deleteTXT());
+                fDeleteTXT->setChecked(NPreferences::NCore::CPreferences::instance()->deleteTXT());
                 fDeleteTXT->setText(QCoreApplication::translate("NMediaManager::NUi::CMainWindow", "Delete Text Files (*.txt)?", nullptr));
                 connect(fDeleteTXT, &QAction::triggered, [this]()
                     {
-                        NCore::CPreferences::instance()->setDeleteTXT(fDeleteTXT->isChecked());
+                        NPreferences::NCore::CPreferences::instance()->setDeleteTXT(fDeleteTXT->isChecked());
                     }
                 );
 
                 fDeleteBAK = new QAction(this);
                 fDeleteBAK->setObjectName(QString::fromUtf8("actionDeleteKnownPathBAKs"));
                 fDeleteBAK->setCheckable(true);
-                fDeleteBAK->setChecked(NCore::CPreferences::instance()->deleteBAK());
+                fDeleteBAK->setChecked(NPreferences::NCore::CPreferences::instance()->deleteBAK());
                 fDeleteBAK->setText(QCoreApplication::translate("NMediaManager::NUi::CMainWindow", "Delete Backup Files (*.bak)?", nullptr));
                 connect(fDeleteBAK, &QAction::triggered, [this]()
                     {
-                        NCore::CPreferences::instance()->setDeleteBAK(fDeleteBAK->isChecked());
+                        NPreferences::NCore::CPreferences::instance()->setDeleteBAK(fDeleteBAK->isChecked());
                     }
                 );
 
                 fDeleteNFO = new QAction(this);
                 fDeleteNFO->setObjectName(QString::fromUtf8("actionDeleteKnownPathNFOs"));
                 fDeleteNFO->setCheckable(true);
-                fDeleteNFO->setChecked(NCore::CPreferences::instance()->deleteNFO());
+                fDeleteNFO->setChecked(NPreferences::NCore::CPreferences::instance()->deleteNFO());
                 fDeleteNFO->setText(QCoreApplication::translate("NMediaManager::NUi::CMainWindow", "Delete NFO Files (*.nfo)?", nullptr));
                 connect(fDeleteNFO, &QAction::triggered, [this]()
                     {
-                        NCore::CPreferences::instance()->setDeleteNFO(fDeleteNFO->isChecked());
+                        NPreferences::NCore::CPreferences::instance()->setDeleteNFO(fDeleteNFO->isChecked());
                     }
                 );
 
                 fDeleteCustom = new QAction(this);
                 fDeleteCustom->setObjectName(QString::fromUtf8("actionDeleteKnownPathCustoms"));
                 fDeleteCustom->setCheckable(true);
-                fDeleteCustom->setChecked(NCore::CPreferences::instance()->deleteCustom());
+                fDeleteCustom->setChecked(NPreferences::NCore::CPreferences::instance()->deleteCustom());
                 fDeleteCustom->setText(QCoreApplication::translate("NMediaManager::NUi::CMainWindow", "Delete Custom Known Paths?", nullptr));
                 connect(fDeleteCustom, &QAction::triggered, [this]()
                     {
-                        NCore::CPreferences::instance()->setDeleteCustom(fDeleteCustom->isChecked());
+                        NPreferences::NCore::CPreferences::instance()->setDeleteCustom(fDeleteCustom->isChecked());
                     }
                 );
 
@@ -460,13 +460,13 @@ namespace NMediaManager
 
         void CTransformPage::slotMenuAboutToShow()
         {
-            fTreatAsTVShowByDefaultAction->setChecked( NCore::CPreferences::instance()->getTreatAsTVShowByDefault() );
-            fExactMatchesOnlyAction->setChecked( NCore::CPreferences::instance()->getExactMatchesOnly() );
-            fDeleteEXE->setChecked(NCore::CPreferences::instance()->deleteEXE());
-            fDeleteTXT->setChecked(NCore::CPreferences::instance()->deleteTXT());
-            fDeleteBAK->setChecked(NCore::CPreferences::instance()->deleteBAK());
-            fDeleteNFO->setChecked(NCore::CPreferences::instance()->deleteNFO());
-            fDeleteCustom->setChecked(NCore::CPreferences::instance()->deleteCustom());
+            fTreatAsTVShowByDefaultAction->setChecked( NPreferences::NCore::CPreferences::instance()->getTreatAsTVShowByDefault() );
+            fExactMatchesOnlyAction->setChecked( NPreferences::NCore::CPreferences::instance()->getExactMatchesOnly() );
+            fDeleteEXE->setChecked(NPreferences::NCore::CPreferences::instance()->deleteEXE());
+            fDeleteTXT->setChecked(NPreferences::NCore::CPreferences::instance()->deleteTXT());
+            fDeleteBAK->setChecked(NPreferences::NCore::CPreferences::instance()->deleteBAK());
+            fDeleteNFO->setChecked(NPreferences::NCore::CPreferences::instance()->deleteNFO());
+            fDeleteCustom->setChecked(NPreferences::NCore::CPreferences::instance()->deleteCustom());
         }
     }
 }

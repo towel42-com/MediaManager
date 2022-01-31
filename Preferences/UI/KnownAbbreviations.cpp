@@ -21,7 +21,7 @@
 // SOFTWARE.
 
 #include "KnownAbbreviations.h"
-#include "Core/Preferences.h"
+#include "Preferences/Core/Preferences.h"
 
 #include "ui_KnownAbbreviations.h"
 
@@ -32,58 +32,61 @@
 
 namespace NMediaManager
 {
-    namespace NUi
+    namespace NPreferences
     {
-        CKnownAbbreviations::CKnownAbbreviations( QWidget * parent )
-            : CBasePrefPage( parent ),
-            fImpl( new Ui::CKnownAbbreviations )
+        namespace NUi
         {
-            fImpl->setupUi( this );
+            CKnownAbbreviations::CKnownAbbreviations( QWidget * parent )
+                : CBasePrefPage( parent ),
+                fImpl( new Ui::CKnownAbbreviations )
+            {
+                fImpl->setupUi( this );
 
-            connect( fImpl->btnAddAbbreviation, &QToolButton::clicked, this, &CKnownAbbreviations::slotAddAbbreviation );
-            connect( fImpl->btnDelAbbreviation, &QToolButton::clicked, this, &CKnownAbbreviations::slotDelAbbreviation );
+                connect( fImpl->btnAddAbbreviation, &QToolButton::clicked, this, &CKnownAbbreviations::slotAddAbbreviation );
+                connect( fImpl->btnDelAbbreviation, &QToolButton::clicked, this, &CKnownAbbreviations::slotDelAbbreviation );
 
-            fAbbreviationsModel = new NSABUtils::CKeyValuePairModel( this );
-            fImpl->knownAbbreviations->setModel( fAbbreviationsModel );
+                fAbbreviationsModel = new NSABUtils::CKeyValuePairModel( this );
+                fImpl->knownAbbreviations->setModel( fAbbreviationsModel );
 
-            new NSABUtils::CButtonEnabler( fImpl->knownAbbreviations, fImpl->btnDelAbbreviation );
-        }
+                new NSABUtils::CButtonEnabler( fImpl->knownAbbreviations, fImpl->btnDelAbbreviation );
+            }
 
-        CKnownAbbreviations::~CKnownAbbreviations()
-        {
-        }
+            CKnownAbbreviations::~CKnownAbbreviations()
+            {
+            }
 
-        void CKnownAbbreviations::slotAddAbbreviation()
-        {
-            auto text = QInputDialog::getText( this, tr( "Add Abbreviation in the form Abbreviation=FullText" ), tr( "String:" ) );
-            if ( text.isEmpty() )
-                return;
-            text = text.trimmed();
+            void CKnownAbbreviations::slotAddAbbreviation()
+            {
+                auto text = QInputDialog::getText( this, tr( "Add Abbreviation in the form Abbreviation=FullText" ), tr( "String:" ) );
+                if ( text.isEmpty() )
+                    return;
+                text = text.trimmed();
 
-            fAbbreviationsModel->addRow( text );
-            fImpl->knownAbbreviations->scrollTo( fAbbreviationsModel->index( fAbbreviationsModel->rowCount() - 1 , 0 ) );
-        }
+                fAbbreviationsModel->addRow( text );
+                fImpl->knownAbbreviations->scrollTo( fAbbreviationsModel->index( fAbbreviationsModel->rowCount() - 1, 0 ) );
+            }
 
-        void CKnownAbbreviations::slotDelAbbreviation()
-        {
-            auto model = fImpl->knownAbbreviations->selectionModel();
-            if ( !model )
-                return;
-            auto selected = model->selectedRows();
-            if ( selected.isEmpty() )
-                return;
-            fAbbreviationsModel->removeRow( selected.front().row() );
-            fImpl->knownAbbreviations->scrollTo( fAbbreviationsModel->index( selected.front().row(), 0 ) );
-        }
+            void CKnownAbbreviations::slotDelAbbreviation()
+            {
+                auto model = fImpl->knownAbbreviations->selectionModel();
+                if ( !model )
+                    return;
+                auto selected = model->selectedRows();
+                if ( selected.isEmpty() )
+                    return;
+                fAbbreviationsModel->removeRow( selected.front().row() );
+                fImpl->knownAbbreviations->scrollTo( fAbbreviationsModel->index( selected.front().row(), 0 ) );
+            }
 
-        void CKnownAbbreviations::load()
-        {
-            fAbbreviationsModel->setValues( NCore::CPreferences::instance()->getKnownAbbreviations() );
-        }
+            void CKnownAbbreviations::load()
+            {
+                fAbbreviationsModel->setValues( NPreferences::NCore::CPreferences::instance()->getKnownAbbreviations() );
+            }
 
-        void CKnownAbbreviations::save()
-        {
-            NCore::CPreferences::instance()->setKnownAbbreviations( fAbbreviationsModel->data() );
+            void CKnownAbbreviations::save()
+            {
+                NPreferences::NCore::CPreferences::instance()->setKnownAbbreviations( fAbbreviationsModel->data() );
+            }
         }
     }
 }

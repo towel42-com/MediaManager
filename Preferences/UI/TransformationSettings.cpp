@@ -21,7 +21,7 @@
 // SOFTWARE.
 
 #include "TransformationSettings.h"
-#include "Core/Preferences.h"
+#include "Preferences/Core/Preferences.h"
 
 #include "ui_TransformationSettings.h"
 
@@ -37,30 +37,33 @@
 
 namespace NMediaManager
 {
-    namespace NUi
+    namespace NPreferences
     {
-        CTransformationSettings::CTransformationSettings( QWidget * parent )
-            : CBasePrefPage( parent ),
-            fImpl( new Ui::CTransformationSettings )
+        namespace NUi
         {
-            fImpl->setupUi( this );
-        }
+            CTransformationSettings::CTransformationSettings( QWidget * parent )
+                : CBasePrefPage( parent ),
+                fImpl( new Ui::CTransformationSettings )
+            {
+                fImpl->setupUi( this );
+            }
 
-        CTransformationSettings::~CTransformationSettings()
-        {
-        }
+            CTransformationSettings::~CTransformationSettings()
+            {
+            }
 
 
-        void CTransformationSettings::load()
-        {
-            fImpl->treatAsTVShowByDefault->setChecked( NCore::CPreferences::instance()->getTreatAsTVShowByDefault() );
-            fImpl->exactMatchesOnly->setChecked( NCore::CPreferences::instance()->getExactMatchesOnly() );
-        }
+            void CTransformationSettings::load()
+            {
+                fImpl->treatAsTVShowByDefault->setChecked( NPreferences::NCore::CPreferences::instance()->getTreatAsTVShowByDefault() );
+                fImpl->exactMatchesOnly->setChecked( NPreferences::NCore::CPreferences::instance()->getExactMatchesOnly() );
+            }
 
-        void CTransformationSettings::save()
-        {
-            NCore::CPreferences::instance()->setTreatAsTVShowByDefault( fImpl->treatAsTVShowByDefault->isChecked() );
-            NCore::CPreferences::instance()->setExactMatchesOnly(fImpl->exactMatchesOnly->isChecked());
+            void CTransformationSettings::save()
+            {
+                NPreferences::NCore::CPreferences::instance()->setTreatAsTVShowByDefault( fImpl->treatAsTVShowByDefault->isChecked() );
+                NPreferences::NCore::CPreferences::instance()->setExactMatchesOnly( fImpl->exactMatchesOnly->isChecked() );
+            }
         }
     }
 }

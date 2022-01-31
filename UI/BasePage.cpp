@@ -24,7 +24,7 @@
 #include "BasePage.h"
 #include "SetTags.h"
 
-#include "Core/Preferences.h"
+#include "Preferences/Core/Preferences.h"
 #include "Models/DirModel.h"
 #include "SABUtils/DoubleProgressDlg.h"
 #include "SABUtils/QtUtils.h"

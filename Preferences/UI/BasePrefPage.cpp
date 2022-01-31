@@ -29,61 +29,64 @@
 
 namespace NMediaManager
 {
-    namespace NUi
+    namespace NPreferences
     {
-        CBasePrefPage::CBasePrefPage( QWidget * parent )
-            : QWidget( parent )
+        namespace NUi
         {
-        }
-
-        CBasePrefPage::~CBasePrefPage()
-        {
-        }
-
-        void CBasePrefPage::addString( const QString & title, const QString & label, QStringListModel * model, QListView * listView, bool splitWords )
-        {
-            auto text = QInputDialog::getText( this, title, label ).trimmed();
-            if ( text.isEmpty() )
-                return;
-
-            QStringList words;
-            if ( splitWords )
-                words = text.split( QRegularExpression( "\\s" ), Qt::SkipEmptyParts );
-            else
-                words.push_back( text );
-
-            auto strings = model->stringList();
-
-            for ( auto && ii : words )
+            CBasePrefPage::CBasePrefPage( QWidget * parent )
+                : QWidget( parent )
             {
-                ii = ii.trimmed();
-                strings.removeAll( ii );
             }
 
-            strings << words;
-            model->setStringList( strings );
-            listView->scrollTo( model->index( strings.count() - 1, 0 ) );
-        }
-
-        void CBasePrefPage::delString( QStringListModel * listModel, QListView * listView )
-        {
-            auto model = listView->selectionModel();
-            if ( !model )
-                return;
-
-            auto selected = model->selectedRows();
-            if ( selected.isEmpty() )
-                return;
-
-            auto strings = listModel->stringList();
-            for ( auto && ii : selected )
+            CBasePrefPage::~CBasePrefPage()
             {
-                auto text = ii.data().toString();
-                strings.removeAll( text );
             }
 
-            listModel->setStringList( strings );
-            listView->scrollTo( listModel->index( selected.front().row(), 0 ) );
+            void CBasePrefPage::addString( const QString & title, const QString & label, QStringListModel * model, QListView * listView, bool splitWords )
+            {
+                auto text = QInputDialog::getText( this, title, label ).trimmed();
+                if ( text.isEmpty() )
+                    return;
+
+                QStringList words;
+                if ( splitWords )
+                    words = text.split( QRegularExpression( "\\s" ), Qt::SkipEmptyParts );
+                else
+                    words.push_back( text );
+
+                auto strings = model->stringList();
+
+                for ( auto && ii : words )
+                {
+                    ii = ii.trimmed();
+                    strings.removeAll( ii );
+                }
+
+                strings << words;
+                model->setStringList( strings );
+                listView->scrollTo( model->index( strings.count() - 1, 0 ) );
+            }
+
+            void CBasePrefPage::delString( QStringListModel * listModel, QListView * listView )
+            {
+                auto model = listView->selectionModel();
+                if ( !model )
+                    return;
+
+                auto selected = model->selectedRows();
+                if ( selected.isEmpty() )
+                    return;
+
+                auto strings = listModel->stringList();
+                for ( auto && ii : selected )
+                {
+                    auto text = ii.data().toString();
+                    strings.removeAll( text );
+                }
+
+                listModel->setStringList( strings );
+                listView->scrollTo( listModel->index( selected.front().row(), 0 ) );
+            }
         }
     }
 }

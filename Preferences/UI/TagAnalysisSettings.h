@@ -36,27 +36,30 @@ class QListView;
 class QTreeWidgetItem;
 namespace NMediaManager
 {
-    namespace NUi
+    namespace NPreferences
     {
-        namespace Ui { class CTagAnalysisSettings; };
-        class CTagAnalysisSettings : public CBasePrefPage
+        namespace NUi
         {
-            Q_OBJECT
-        public:
-            CTagAnalysisSettings( QWidget * parent = nullptr );
-            virtual ~CTagAnalysisSettings() override;
-
-            void load() override;
-            void save() override;
-            virtual QStringList pageName() const override
+            namespace Ui { class CTagAnalysisSettings; };
+            class CTagAnalysisSettings : public CBasePrefPage
             {
-                return QStringList( { "Tag Analysis Settings" } );
-            }
-        public Q_SLOTS:
-        private:
-            std::unique_ptr< Ui::CTagAnalysisSettings > fImpl;
-            NSABUtils::CCheckableStringListModel * fModel{ nullptr };
-        };
+                Q_OBJECT
+            public:
+                CTagAnalysisSettings( QWidget * parent = nullptr );
+                virtual ~CTagAnalysisSettings() override;
+
+                void load() override;
+                void save() override;
+                virtual QStringList pageName() const override
+                {
+                    return QStringList( { "Tag Analysis Settings" } );
+                }
+            public Q_SLOTS:
+            private:
+                std::unique_ptr< Ui::CTagAnalysisSettings > fImpl;
+                NSABUtils::CCheckableStringListModel * fModel{ nullptr };
+            };
+        }
     }
 }
 #endif 

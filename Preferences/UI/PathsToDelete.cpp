@@ -21,7 +21,7 @@
 // SOFTWARE.
 
 #include "PathsToDelete.h"
-#include "Core/Preferences.h"
+#include "Preferences/Core/Preferences.h"
 
 #include "ui_PathsToDelete.h"
 
@@ -31,55 +31,58 @@
 
 namespace NMediaManager
 {
-    namespace NUi
+    namespace NPreferences
     {
-        CPathsToDelete::CPathsToDelete( QWidget * parent )
-            : CBasePrefPage( parent ),
-            fImpl( new Ui::CPathsToDelete )
+        namespace NUi
         {
-            fImpl->setupUi( this );
+            CPathsToDelete::CPathsToDelete( QWidget * parent )
+                : CBasePrefPage( parent ),
+                fImpl( new Ui::CPathsToDelete )
+            {
+                fImpl->setupUi( this );
 
-            connect( fImpl->btnAddPathToDelete, &QToolButton::clicked, this, &CPathsToDelete::slotAddPathToDelete );
-            connect( fImpl->btnDelPathToDelete, &QToolButton::clicked, this, &CPathsToDelete::slotDelPathToDelete );
+                connect( fImpl->btnAddPathToDelete, &QToolButton::clicked, this, &CPathsToDelete::slotAddPathToDelete );
+                connect( fImpl->btnDelPathToDelete, &QToolButton::clicked, this, &CPathsToDelete::slotDelPathToDelete );
 
-            fPathsToDeleteModel = new QStringListModel( this );
-            fImpl->pathsToDelete->setModel( fPathsToDeleteModel );
+                fPathsToDeleteModel = new QStringListModel( this );
+                fImpl->pathsToDelete->setModel( fPathsToDeleteModel );
 
-            new NSABUtils::CButtonEnabler( fImpl->pathsToDelete, fImpl->btnDelPathToDelete );
-        }
+                new NSABUtils::CButtonEnabler( fImpl->pathsToDelete, fImpl->btnDelPathToDelete );
+            }
 
-        CPathsToDelete::~CPathsToDelete()
-        {
-        }
+            CPathsToDelete::~CPathsToDelete()
+            {
+            }
 
-        void CPathsToDelete::slotAddPathToDelete()
-        {
-            addString( tr( "Add Path (Regular Expressions Allowed) Name to Delete" ), tr( "Name:" ), fPathsToDeleteModel, fImpl->pathsToDelete, false );
-        }
+            void CPathsToDelete::slotAddPathToDelete()
+            {
+                addString( tr( "Add Path (Regular Expressions Allowed) Name to Delete" ), tr( "Name:" ), fPathsToDeleteModel, fImpl->pathsToDelete, false );
+            }
 
-        void CPathsToDelete::slotDelPathToDelete()
-        {
-            delString( fPathsToDeleteModel, fImpl->pathsToDelete );
-        }
+            void CPathsToDelete::slotDelPathToDelete()
+            {
+                delString( fPathsToDeleteModel, fImpl->pathsToDelete );
+            }
 
-        void CPathsToDelete::load()
-        {
-            fPathsToDeleteModel->setStringList( NCore::CPreferences::instance()->getCustomPathsToDelete() );
-            fImpl->deleteEXE->setChecked( NCore::CPreferences::instance()->deleteEXE());
-            fImpl->deleteTXT->setChecked(NCore::CPreferences::instance()->deleteTXT());
-            fImpl->deleteNFO->setChecked(NCore::CPreferences::instance()->deleteNFO());
-            fImpl->deleteBAK->setChecked(NCore::CPreferences::instance()->deleteBAK());
-            fImpl->deleteCustom->setChecked(NCore::CPreferences::instance()->deleteCustom());
-        }
+            void CPathsToDelete::load()
+            {
+                fPathsToDeleteModel->setStringList( NPreferences::NCore::CPreferences::instance()->getCustomPathsToDelete() );
+                fImpl->deleteEXE->setChecked( NPreferences::NCore::CPreferences::instance()->deleteEXE() );
+                fImpl->deleteTXT->setChecked( NPreferences::NCore::CPreferences::instance()->deleteTXT() );
+                fImpl->deleteNFO->setChecked( NPreferences::NCore::CPreferences::instance()->deleteNFO() );
+                fImpl->deleteBAK->setChecked( NPreferences::NCore::CPreferences::instance()->deleteBAK() );
+                fImpl->deleteCustom->setChecked( NPreferences::NCore::CPreferences::instance()->deleteCustom() );
+            }
 
-        void CPathsToDelete::save()
-        {
-            NCore::CPreferences::instance()->setCustomPathsToDelete( fPathsToDeleteModel->stringList() );
-            NCore::CPreferences::instance()->setDeleteEXE(fImpl->deleteEXE->isChecked());
-            NCore::CPreferences::instance()->setDeleteTXT(fImpl->deleteTXT->isChecked());
-            NCore::CPreferences::instance()->setDeleteNFO(fImpl->deleteNFO->isChecked());
-            NCore::CPreferences::instance()->setDeleteBAK(fImpl->deleteBAK->isChecked());
-            NCore::CPreferences::instance()->setDeleteCustom(fImpl->deleteCustom->isChecked());
+            void CPathsToDelete::save()
+            {
+                NPreferences::NCore::CPreferences::instance()->setCustomPathsToDelete( fPathsToDeleteModel->stringList() );
+                NPreferences::NCore::CPreferences::instance()->setDeleteEXE( fImpl->deleteEXE->isChecked() );
+                NPreferences::NCore::CPreferences::instance()->setDeleteTXT( fImpl->deleteTXT->isChecked() );
+                NPreferences::NCore::CPreferences::instance()->setDeleteNFO( fImpl->deleteNFO->isChecked() );
+                NPreferences::NCore::CPreferences::instance()->setDeleteBAK( fImpl->deleteBAK->isChecked() );
+                NPreferences::NCore::CPreferences::instance()->setDeleteCustom( fImpl->deleteCustom->isChecked() );
+            }
         }
     }
 }

@@ -24,12 +24,12 @@ cmake_minimum_required(VERSION 3.1)
 if(CMAKE_VERSION VERSION_LESS "3.7.0")
     set(CMAKE_INCLUDE_CURRENT_DIR ON)
 endif()
-project( Preferences )
+project( PreferencesUI )
 
 include( include.cmake )
 include( ${CMAKE_SOURCE_DIR}/SABUtils/Project.cmake )
 
-add_library(Preferences STATIC
+add_library(PreferencesUI STATIC
     ${project_SRCS} 
     ${project_H}  
     ${qtproject_SRCS} 
@@ -42,4 +42,4 @@ add_library(Preferences STATIC
     ${qtproject_QRC_SOURCES}
     ${_CMAKE_FILES}
 )
-set_target_properties( Preferences PROPERTIES FOLDER Libs )
+set_target_properties( PreferencesUI PROPERTIES FOLDER Libs/Preferences )

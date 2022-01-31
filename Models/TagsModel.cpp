@@ -22,7 +22,7 @@
 
 #include "TagsModel.h"
 #include "Core/SearchTMDBInfo.h"
-#include "Core/Preferences.h"
+#include "Preferences/Core/Preferences.h"
 #include "Core/TransformResult.h"
 
 #include "SABUtils/MKVUtils.h"
@@ -72,7 +72,7 @@ namespace NMediaManager
 
         void CTagsModel::preLoad( QTreeView * /*treeView*/ )
         {
-            fTagsBeingShown = NCore::CPreferences::instance()->getEnabledTags();
+            fTagsBeingShown = NPreferences::NCore::CPreferences::instance()->getEnabledTags();
             fFirstColumn = -1;
             int colNum = EColumns::eMediaColumnLoc;
             for ( auto && ii : fTagsBeingShown )
@@ -95,7 +95,7 @@ namespace NMediaManager
 
         QStringList CTagsModel::headers() const
         {
-            return CDirModel::headers() << NCore::CPreferences::instance()->getEnabledTagsForDisplay();
+            return CDirModel::headers() << NPreferences::NCore::CPreferences::instance()->getEnabledTagsForDisplay();
         }
 
         std::list< SDirNodeItem > CTagsModel::addAdditionalItems(const QFileInfo & fileInfo) const
@@ -106,7 +106,7 @@ namespace NMediaManager
 
             bool isMediaFile = this->isMediaFile( fileInfo );
 
-            auto tagsToShow = NCore::CPreferences::instance()->getEnabledTags();
+            auto tagsToShow = NPreferences::NCore::CPreferences::instance()->getEnabledTags();
             auto mediaInfo = getMediaTags( fileInfo, tagsToShow );
             int colNum = EColumns::eMediaColumnLoc;
 
@@ -152,7 +152,7 @@ namespace NMediaManager
             if ( isRootPath( idx ) )
                 return {};
 
-            if ( !NCore::CPreferences::instance()->getVerifyMediaTags() )
+            if ( !NPreferences::NCore::CPreferences::instance()->getVerifyMediaTags() )
                 return {};
 
             if ( !canShowMediaInfo() )
@@ -170,23 +170,23 @@ namespace NMediaManager
             QString expr;
             if ( idx.column() == getMediaTitleLoc() )
             {
-                validate = NCore::CPreferences::instance()->getVerifyMediaTitle() && !NCore::CPreferences::instance()->getVerifyMediaTitleExpr().isEmpty();
-                expr = NCore::CPreferences::instance()->getVerifyMediaTitleExpr();
-                regExp = NCore::CPreferences::instance()->getVerifyMediaTitleExpr( fileInfo, mediaDate );
+                validate = NPreferences::NCore::CPreferences::instance()->getVerifyMediaTitle() && !NPreferences::NCore::CPreferences::instance()->getVerifyMediaTitleExpr().isEmpty();
+                expr = NPreferences::NCore::CPreferences::instance()->getVerifyMediaTitleExpr();
+                regExp = NPreferences::NCore::CPreferences::instance()->getVerifyMediaTitleExpr( fileInfo, mediaDate );
                 tagName = tr( "Title" );
             }
             else if ( idx.column() == getMediaDateLoc() )
             {
-                validate = NCore::CPreferences::instance()->getVerifyMediaDate() && !NCore::CPreferences::instance()->getVerifyMediaDateExpr().isEmpty();
-                expr = NCore::CPreferences::instance()->getVerifyMediaDateExpr();
-                regExp = NCore::CPreferences::instance()->getVerifyMediaDateExpr( fileInfo, mediaDate );
+                validate = NPreferences::NCore::CPreferences::instance()->getVerifyMediaDate() && !NPreferences::NCore::CPreferences::instance()->getVerifyMediaDateExpr().isEmpty();
+                expr = NPreferences::NCore::CPreferences::instance()->getVerifyMediaDateExpr();
+                regExp = NPreferences::NCore::CPreferences::instance()->getVerifyMediaDateExpr( fileInfo, mediaDate );
                 tagName = tr( "Date" );
             }
             else if ( idx.column() == getMediaCommentLoc() )
             {
-                validate = NCore::CPreferences::instance()->getVerifyMediaComment() && !NCore::CPreferences::instance()->getVerifyMediaCommentExpr().isEmpty();
-                expr = NCore::CPreferences::instance()->getVerifyMediaCommentExpr();
-                regExp = NCore::CPreferences::instance()->getVerifyMediaCommentExpr( fileInfo, mediaDate );
+                validate = NPreferences::NCore::CPreferences::instance()->getVerifyMediaComment() && !NPreferences::NCore::CPreferences::instance()->getVerifyMediaCommentExpr().isEmpty();
+                expr = NPreferences::NCore::CPreferences::instance()->getVerifyMediaCommentExpr();
+                regExp = NPreferences::NCore::CPreferences::instance()->getVerifyMediaCommentExpr( fileInfo, mediaDate );
                 tagName = tr( "Comment" );
             }
 
@@ -204,7 +204,7 @@ namespace NMediaManager
                         .arg( expr.toHtmlEscaped() )
                         .arg( tag );
 
-                    return TItemStatus( NCore::EItemStatus::eWarning, msg );
+                    return TItemStatus( NPreferences::NCore::EItemStatus::eWarning, msg );
                 }
             }
             return {};

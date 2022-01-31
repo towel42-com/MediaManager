@@ -21,7 +21,7 @@
 // SOFTWARE.
 
 #include "SkippedPaths.h"
-#include "Core/Preferences.h"
+#include "Preferences/Core/Preferences.h"
 
 #include "ui_SkippedPaths.h"
 
@@ -37,45 +37,48 @@
 
 namespace NMediaManager
 {
-    namespace NUi
+    namespace NPreferences
     {
-        CSkippedPaths::CSkippedPaths( QWidget * parent )
-            : CBasePrefPage( parent ),
-            fImpl( new Ui::CSkippedPaths )
+        namespace NUi
         {
-            fImpl->setupUi( this );
+            CSkippedPaths::CSkippedPaths( QWidget * parent )
+                : CBasePrefPage( parent ),
+                fImpl( new Ui::CSkippedPaths )
+            {
+                fImpl->setupUi( this );
 
-            connect( fImpl->btnAddSkipPathName, &QToolButton::clicked, this, &CSkippedPaths::slotAddSkipPathName );
-            connect( fImpl->btnDelSkipPathName, &QToolButton::clicked, this, &CSkippedPaths::slotDelSkipPathName );
+                connect( fImpl->btnAddSkipPathName, &QToolButton::clicked, this, &CSkippedPaths::slotAddSkipPathName );
+                connect( fImpl->btnDelSkipPathName, &QToolButton::clicked, this, &CSkippedPaths::slotDelSkipPathName );
 
-            fSkipPathNamesModel = new QStringListModel( this );
-            fImpl->pathNamesToSkip->setModel( fSkipPathNamesModel );
+                fSkipPathNamesModel = new QStringListModel( this );
+                fImpl->pathNamesToSkip->setModel( fSkipPathNamesModel );
 
-            new NSABUtils::CButtonEnabler( fImpl->pathNamesToSkip, fImpl->btnDelSkipPathName );
-        }
+                new NSABUtils::CButtonEnabler( fImpl->pathNamesToSkip, fImpl->btnDelSkipPathName );
+            }
 
-        CSkippedPaths::~CSkippedPaths()
-        {
-        }
+            CSkippedPaths::~CSkippedPaths()
+            {
+            }
 
-        void CSkippedPaths::slotAddSkipPathName()
-        {
-            addString( tr( "Add Path Name to Skip" ), tr( "Path Name:" ), fSkipPathNamesModel, fImpl->pathNamesToSkip, false );
-        }
+            void CSkippedPaths::slotAddSkipPathName()
+            {
+                addString( tr( "Add Path Name to Skip" ), tr( "Path Name:" ), fSkipPathNamesModel, fImpl->pathNamesToSkip, false );
+            }
 
-        void CSkippedPaths::slotDelSkipPathName()
-        {
-            delString( fSkipPathNamesModel, fImpl->pathNamesToSkip );
-        }
+            void CSkippedPaths::slotDelSkipPathName()
+            {
+                delString( fSkipPathNamesModel, fImpl->pathNamesToSkip );
+            }
 
-        void CSkippedPaths::load()
-        {
-            fSkipPathNamesModel->setStringList( NCore::CPreferences::instance()->getSkippedPaths() );
-        }
+            void CSkippedPaths::load()
+            {
+                fSkipPathNamesModel->setStringList( NPreferences::NCore::CPreferences::instance()->getSkippedPaths() );
+            }
 
-        void CSkippedPaths::save()
-        {
-            NCore::CPreferences::instance()->setSkippedPaths( fSkipPathNamesModel->stringList() );
+            void CSkippedPaths::save()
+            {
+                NPreferences::NCore::CPreferences::instance()->setSkippedPaths( fSkipPathNamesModel->stringList() );
+            }
         }
     }
 }

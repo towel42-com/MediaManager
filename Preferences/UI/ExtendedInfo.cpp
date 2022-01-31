@@ -21,7 +21,7 @@
 // SOFTWARE.
 
 #include "ExtendedInfo.h"
-#include "Core/Preferences.h"
+#include "Preferences/Core/Preferences.h"
 
 #include "ui_ExtendedInfo.h"
 
@@ -30,45 +30,48 @@
 
 namespace NMediaManager
 {
-    namespace NUi
+    namespace NPreferences
     {
-        CExtendedInfo::CExtendedInfo( QWidget * parent )
-            : CBasePrefPage( parent ),
-            fImpl( new Ui::CExtendedInfo )
+        namespace NUi
         {
-            fImpl->setupUi( this );
+            CExtendedInfo::CExtendedInfo( QWidget * parent )
+                : CBasePrefPage( parent ),
+                fImpl( new Ui::CExtendedInfo )
+            {
+                fImpl->setupUi( this );
 
-            connect( fImpl->btnAddExtraString, &QToolButton::clicked, this, &CExtendedInfo::slotAddExtraString );
-            connect( fImpl->btnDelExtraString, &QToolButton::clicked, this, &CExtendedInfo::slotDelExtraString );
+                connect( fImpl->btnAddExtraString, &QToolButton::clicked, this, &CExtendedInfo::slotAddExtraString );
+                connect( fImpl->btnDelExtraString, &QToolButton::clicked, this, &CExtendedInfo::slotDelExtraString );
 
-            fExtraStringModel = new QStringListModel( this );
-            fImpl->knownExtraStrings->setModel( fExtraStringModel );
+                fExtraStringModel = new QStringListModel( this );
+                fImpl->knownExtraStrings->setModel( fExtraStringModel );
 
-            new NSABUtils::CButtonEnabler( fImpl->knownExtraStrings, fImpl->btnDelExtraString );
-        }
+                new NSABUtils::CButtonEnabler( fImpl->knownExtraStrings, fImpl->btnDelExtraString );
+            }
 
-        CExtendedInfo::~CExtendedInfo()
-        {
-        }
+            CExtendedInfo::~CExtendedInfo()
+            {
+            }
 
-        void CExtendedInfo::slotAddExtraString()
-        {
-            addString( tr( "Add Known String For Extended Information" ), tr( "String:" ), fExtraStringModel, fImpl->knownExtraStrings, false );
-        }
+            void CExtendedInfo::slotAddExtraString()
+            {
+                addString( tr( "Add Known String For Extended Information" ), tr( "String:" ), fExtraStringModel, fImpl->knownExtraStrings, false );
+            }
 
-        void CExtendedInfo::slotDelExtraString()
-        {
-            delString( fExtraStringModel, fImpl->knownExtraStrings );
-        }
+            void CExtendedInfo::slotDelExtraString()
+            {
+                delString( fExtraStringModel, fImpl->knownExtraStrings );
+            }
 
-        void CExtendedInfo::load()
-        {
-            fExtraStringModel->setStringList( NCore::CPreferences::instance()->getKnownExtendedStrings() );
-        }
+            void CExtendedInfo::load()
+            {
+                fExtraStringModel->setStringList( NPreferences::NCore::CPreferences::instance()->getKnownExtendedStrings() );
+            }
 
-        void CExtendedInfo::save()
-        {
-            NCore::CPreferences::instance()->setKnownExtendedStrings( fExtraStringModel->stringList() );
+            void CExtendedInfo::save()
+            {
+                NPreferences::NCore::CPreferences::instance()->setKnownExtendedStrings( fExtraStringModel->stringList() );
+            }
         }
     }
 }
