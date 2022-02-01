@@ -75,6 +75,7 @@ namespace NMediaManager
             NModels::CTagsModel * model();
 
             QMenu * fMenu{ nullptr };
+            QAction * fIgnoreSkippedPathSettings{ nullptr };
             QAction * fVerifyMediaTitle{ nullptr };
             QAction * fVerifyMediaDate{ nullptr };
             QAction * fVerifyMediaComment{ nullptr };

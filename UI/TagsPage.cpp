@@ -69,25 +69,10 @@ namespace NMediaManager
                 load();
         }
 
-        bool CTagsPage::extendContextMenu( QMenu * menu, const QModelIndex & idx )
+        bool CTagsPage::extendContextMenu( QMenu * /*menu*/, const QModelIndex & idx )
         {
             if ( !idx.isValid() )
                 return false;
-
-            if ( fModel->isMediaFile( idx ) )
-            {
-                menu->addSeparator();
-                menu->addAction( tr( "Set Tags..." ),
-                                 [idx, this]()
-                {
-                    editMediaTags( idx );
-                } );
-                menu->addAction( tr( "Auto Set Tags from File Name..." ),
-                                 [idx, this]()
-                {
-                    fModel->autoSetMediaTags( idx );
-                } );
-            }
 
             return true;
         }
@@ -145,6 +130,18 @@ namespace NMediaManager
                 fMenu->setObjectName( "Tags Menu " );
                 fMenu->setTitle( tr( "Tags" ) );
                 connect( fMenu, &QMenu::aboutToShow, this, &CTagsPage::slotMenuAboutToShow );
+
+                fIgnoreSkippedPathSettings = new QAction( this );
+                fIgnoreSkippedPathSettings->setObjectName( QString::fromUtf8( "actionIgnoreSkippedPathSettings" ) );
+                fIgnoreSkippedPathSettings->setCheckable( true );
+                fIgnoreSkippedPathSettings->setChecked( NPreferences::NCore::CPreferences::instance()->getIgnorePathNamesToSkip() );
+                fIgnoreSkippedPathSettings->setText( QCoreApplication::translate( "NMediaManager::NUi::CMainWindow", "Ignore Skipped Path Settings?", nullptr ) );
+                connect( fIgnoreSkippedPathSettings, &QAction::triggered, [this]()
+                {
+                    NPreferences::NCore::CPreferences::instance()->setIgnorePathNamesToSkip( fIgnoreSkippedPathSettings->isChecked() );
+                    model()->reloadModel();
+                }
+                );
 
                 fVerifyMediaTitle = new QAction( this );
                 fVerifyMediaTitle->setObjectName( QString::fromUtf8( "actionVerifyMediaTitle" ) );
@@ -207,6 +204,8 @@ namespace NMediaManager
                 verifyMediaMenu->addAction( fVerifyMediaDate );
                 verifyMediaMenu->addAction( fVerifyMediaComment );
 
+                fMenu->addAction( fIgnoreSkippedPathSettings );
+                fMenu->addSeparator();
                 fMenu->addMenu( verifyMediaMenu );
                 setActive( true );
             }
@@ -215,6 +214,8 @@ namespace NMediaManager
 
         void CTagsPage::slotMenuAboutToShow()
         {
+            fIgnoreSkippedPathSettings->setChecked( NPreferences::NCore::CPreferences::instance()->getIgnorePathNamesToSkip() );
+
             fVerifyMediaDate->setChecked( NPreferences::NCore::CPreferences::instance()->getVerifyMediaDate() );
             fVerifyMediaTitle->setChecked( NPreferences::NCore::CPreferences::instance()->getVerifyMediaTitle() );
             fVerifyMediaComment->setChecked( NPreferences::NCore::CPreferences::instance()->getVerifyMediaComment() );
