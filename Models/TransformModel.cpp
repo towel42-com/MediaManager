@@ -289,11 +289,65 @@ namespace NMediaManager
             return isTVType( mediaType );
         }
 
-        void CTransformModel::setInAutoSearch(bool val)
+        void CTransformModel::processPostAutoSearch()
+        {
+            processPostAutoSearch( invisibleRootItem() );
+        }
+
+        void CTransformModel::processPostAutoSearch( QStandardItem * item )
+        {
+            if ( !item )
+                return;
+
+            auto myTransformItem = getTransformItem( item );
+            auto myTransformResult = getTransformResult( item, false );
+            bool transformChanged = false;
+
+            auto currItem = item;
+            while ( currItem && ( currItem != invisibleRootItem() ) && !itemSearchOK( indexFromItem( myTransformItem ) ) )
+            {
+                auto parent = currItem->parent();
+                if ( parent )
+                {
+                    myTransformItem = getTransformItem( parent );
+                    myTransformResult = getTransformResult( parent, false );
+                    transformChanged = true;
+                }
+                else
+                {
+                    myTransformItem = nullptr;
+                    myTransformResult.reset();
+                }
+
+                currItem = parent;
+            }
+
+            if ( myTransformResult && transformChanged )
+            {
+                setSearchResult( item, myTransformResult, false, true );
+            }
+            auto numRows = item->rowCount();
+            for ( int ii = 0; ii < numRows; ++ii )
+            {
+                auto child = item->child( ii );
+                if ( child )
+                {
+                    processPostAutoSearch( child );
+                }
+            }
+
+        }
+
+        void CTransformModel::setInAutoSearch(bool val, bool reset )
         {
             beginResetModel();
-            fInAutoSearch = val;
+            if ( reset )
+                fInAutoSearch.reset();
+            else
+                fInAutoSearch = val;
             endResetModel();
+            if ( filesView() )
+                filesView()->expandAll();
         }
 
         void CTransformModel::setDeleteItem(const QModelIndex & idx)
@@ -708,7 +762,40 @@ namespace NMediaManager
 
         bool CTransformModel::canComputeStatus() const
         {
-            return !fInAutoSearch && CDirModel::canComputeStatus();
+            return !autoSearchFinished() && CDirModel::canComputeStatus();
+        }
+
+        bool CTransformModel::itemSearchOK( const QModelIndex & idx, QString * msg ) const
+        {
+            bool retVal = true;
+
+            auto fileInfo = this->fileInfo( idx );
+
+            QStringList msgs;
+            if ( canAutoSearch( fileInfo, false ) )
+            {
+                auto transformInfo = transformItem( fileInfo );
+                if ( NCore::STransformResult::isDeleteThis( transformInfo.second ) )
+                {
+                    msgs << tr( "File Scheduled for deletion." );
+                }
+                else if ( NCore::STransformResult::isNoMatch( transformInfo.second ) )
+                {
+                    retVal = false;
+                    msgs << tr( "No Match found" );
+                }
+                else if ( !transformInfo.first )
+                {
+                    retVal = false;
+                    msgs << tr( "Could not properly transform item" );
+                }
+            }
+            if ( msg )
+            {
+                msgs.removeAll( QString() );
+                *msg = msgs.join( "\n" );
+            }
+            return retVal;
         }
 
         std::optional< TItemStatus > CTransformModel::computeItemStatus( const QModelIndex & idx) const
@@ -727,29 +814,7 @@ namespace NMediaManager
                 retVal.first = NPreferences::NCore::EItemStatus::eOK;
             else if ( fileInfo.isDir() || isMediaFile(fileInfo))
             {
-                QStringList msgs;
-                auto isTVShow = treatAsTVShow(fileInfo, isChecked(path, EColumns::eIsTVShow));
-                if (canAutoSearch(fileInfo, false))
-                {
-                    auto transformInfo = transformItem(fileInfo);
-                    if ( NCore::STransformResult::isDeleteThis( transformInfo.second ) )
-                    {
-                        retVal.first = NPreferences::NCore::EItemStatus::eOK;
-                        msgs << tr( "File Scheduled for deletion." );
-                    }
-                    else if ( NCore::STransformResult::isNoMatch( transformInfo.second ) )
-                    {
-                        retVal.first = NPreferences::NCore::EItemStatus::eError;
-                        msgs << tr( "No Match found" );
-                    }
-                    else if (!transformInfo.first)
-                    {
-                        retVal.first = NPreferences::NCore::EItemStatus::eError;
-                        msgs << tr("Could not properly transform item");
-                    }
-                }
-                msgs.removeAll( QString() );
-                retVal.second = msgs.join("\n");
+                retVal.first = itemSearchOK( idx, &retVal.second ) ? NPreferences::NCore::EItemStatus::eOK : NPreferences::NCore::EItemStatus::eError;
             }
 
             return retVal;
@@ -862,7 +927,7 @@ namespace NMediaManager
                 year = searchResults->getYear();
                 title = searchResults->transformedName( fileName, searchResults->isTVShow() ? fTVPatterns : fMoviePatterns, true );
             }
-            return CDirModel::setMediaTags( fileName, title, year, &msg );
+            return CDirModel::setMediaTags( fileName, title, year, QString(), &msg );
         }
 
         bool CTransformModel::canAutoSearch( const QModelIndex & index, bool recursive) const
@@ -905,6 +970,12 @@ namespace NMediaManager
             return hasFiles;
         }
 
+        std::shared_ptr< NCore::STransformResult > CTransformModel::getTransformResult( QStandardItem * item, bool checkParents ) const
+        {
+            auto idx = indexFromItem( item );
+            return getTransformResult( idx, checkParents );
+        }
+
         std::shared_ptr< NCore::STransformResult > CTransformModel::getTransformResult( const QModelIndex & idx, bool checkParents ) const
         {
             if ( !idx.isValid() )
@@ -912,6 +983,11 @@ namespace NMediaManager
 
             auto fi = fileInfo( idx );
             return getTransformResult( fi, checkParents );
+        }
+
+        std::shared_ptr< NCore::STransformResult > CTransformModel::getTransformResult( const QString & path, bool checkParents ) const
+        {
+            return getTransformResult( QFileInfo( path ), checkParents );
         }
 
         std::shared_ptr< NCore::STransformResult > CTransformModel::getTransformResult( const QFileInfo & fi, bool checkParents ) const
@@ -937,11 +1013,6 @@ namespace NMediaManager
                 return {};
 
             return getTransformResult( fi.absolutePath(), true );
-        }
-
-        std::shared_ptr< NCore::STransformResult > CTransformModel::getTransformResult( const QString & path, bool checkParents ) const
-        {
-            return getTransformResult( QFileInfo( path ), checkParents );
         }
 
         void CTransformModel::updateFile(const QModelIndex &idx, const QString & oldFile, const QString & newFile)

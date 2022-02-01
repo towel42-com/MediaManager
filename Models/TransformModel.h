@@ -68,13 +68,17 @@ namespace NMediaManager
             void computeEpisodesForDiskNumbers();
             virtual QString getSearchName( const QModelIndex & idx ) const;
 
-            bool inAutoSearch() const { return fInAutoSearch; }
-            void setInAutoSearch(bool val);
+            bool autoSearchFinished() const { return !fInAutoSearch.has_value() || fInAutoSearch.value(); }
+            bool inSearchFinished() const { return fInAutoSearch.has_value() && fInAutoSearch.value(); }
+            void setInAutoSearch( bool val, bool reset=false );
 
             void setDeleteItem( const QModelIndex & idx );
             bool canAutoSearch( const QModelIndex & index, bool recursive ) const;
             bool canAutoSearch( const QFileInfo & info, bool recursive) const;
 
+            virtual void processPostAutoSearch();
+
+            std::shared_ptr< NCore::STransformResult > getTransformResult( QStandardItem * item, bool checkParents ) const;
             std::shared_ptr< NCore::STransformResult > getTransformResult( const QModelIndex & idx, bool checkParents ) const;
             std::shared_ptr< NCore::STransformResult > getTransformResult( const QString & path, bool checkParents ) const;
             std::shared_ptr< NCore::STransformResult > getTransformResult( const QFileInfo & path, bool checkParents ) const;
@@ -86,7 +90,8 @@ namespace NMediaManager
             void slotMovieOutputDirPatternChanged( const QString & outPattern );
             void slotMovieOutputFilePatternChanged( const QString & outPattern );
         private:
-            virtual void updateFile(const QModelIndex &idx, const QString & oldFile, const QString & newFile) override;
+            bool itemSearchOK( const QModelIndex & idx, QString * msg = nullptr ) const;
+            virtual void updateFile( const QModelIndex & idx, const QString & oldFile, const QString & newFile ) override;
             virtual void updateDir(const QModelIndex & idx, const QDir & oldDir, const QDir & newDir) override;
             virtual void postAddItems( const QFileInfo & fileInfo, std::list< SDirNodeItem > & currItems ) const override;
             virtual std::list< SDirNodeItem > addAdditionalItems( const QFileInfo & fileInfo ) const override;
@@ -113,7 +118,7 @@ namespace NMediaManager
 
             virtual std::pair< bool, QStandardItem * > processItem( const QStandardItem * item, QStandardItem * parentResultItem, bool displayOnly ) override;
 
-            QStandardItem * getTransformItem( const QStandardItem * parent ) const;
+            QStandardItem * getTransformItem( const QStandardItem * item ) const;
 
             bool setMediaTags( const QString & fileName, std::shared_ptr< NCore::STransformResult > & searchResults, QString & msg ) const;
 
@@ -132,6 +137,8 @@ namespace NMediaManager
             void findTitlesPerDiskNumbers( const QModelIndex & parentIdx, TTitleMap & retVal );
             std::map< int, QString > getDiskTitles( const QModelIndex & parentIdx );
 
+            void processPostAutoSearch( QStandardItem * item );
+
             NCore::SPatternInfo fTVPatterns;
             NCore::SPatternInfo fMoviePatterns;
 
@@ -142,7 +149,7 @@ namespace NMediaManager
 
             //bool fTreatAsTVShowByDefault{ false };
             QTimer * fPatternTimer{ nullptr };
-            bool fInAutoSearch{ false };
+            std::optional< bool > fInAutoSearch; // 3 values, notset means NOT run, true or false
         };
     }
 }
