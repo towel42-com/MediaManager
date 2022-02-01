@@ -39,7 +39,7 @@ namespace NMediaManager
 {
     namespace NUi
     {
-        CTagsPage::CTagsPage( QWidget *parent )
+        CTagsPage::CTagsPage( QWidget * parent )
             : CBasePage( "Tags", parent )
         {
         }
@@ -59,7 +59,7 @@ namespace NMediaManager
             if ( !fModel )
                 return nullptr;
 
-            return dynamic_cast<NModels::CTagsModel *>(fModel.get());
+            return dynamic_cast<NModels::CTagsModel *>( fModel.get() );
         }
 
         void CTagsPage::postNonQueuedRun( bool finalStep, bool canceled )
@@ -74,19 +74,19 @@ namespace NMediaManager
             if ( !idx.isValid() )
                 return false;
 
-            if ( fModel->isMediaFile(idx) )
+            if ( fModel->isMediaFile( idx ) )
             {
                 menu->addSeparator();
-                menu->addAction(tr("Set Tags..."),
-                    [idx, this]()
-                    {
-                        editMediaTags(idx);
-                    });
-                menu->addAction(tr("Auto Set Tags from File Name..."),
-                    [idx, this]()
-                    {
-                        fModel->autoSetMediaTags(idx);
-                    });
+                menu->addAction( tr( "Set Tags..." ),
+                                 [idx, this]()
+                {
+                    editMediaTags( idx );
+                } );
+                menu->addAction( tr( "Auto Set Tags from File Name..." ),
+                                 [idx, this]()
+                {
+                    fModel->autoSetMediaTags( idx );
+                } );
             }
 
             return true;
@@ -144,55 +144,70 @@ namespace NMediaManager
                 fMenu = new QMenu( this );
                 fMenu->setObjectName( "Tags Menu " );
                 fMenu->setTitle( tr( "Tags" ) );
-                connect(fMenu, &QMenu::aboutToShow, this, &CTagsPage::slotMenuAboutToShow);
+                connect( fMenu, &QMenu::aboutToShow, this, &CTagsPage::slotMenuAboutToShow );
 
-                fVerifyMediaTitle = new QAction(this);
-                fVerifyMediaTitle->setObjectName(QString::fromUtf8("actionVerifyMediaTitle"));
-                fVerifyMediaTitle->setCheckable(true);
-                fVerifyMediaTitle->setChecked(NPreferences::NCore::CPreferences::instance()->deleteNFO());
-                fVerifyMediaTitle->setText(QCoreApplication::translate("NMediaManager::NUi::CMainWindow", "Verify Media Title?", nullptr));
-                connect(fVerifyMediaTitle, &QAction::triggered, [this]()
-                    {
-                        //model()->clearStatusResults();
-                        NPreferences::NCore::CPreferences::instance()->setVerifyMediaTitle(fVerifyMediaTitle->isChecked());
-                    }
+                fVerifyMediaTitle = new QAction( this );
+                fVerifyMediaTitle->setObjectName( QString::fromUtf8( "actionVerifyMediaTitle" ) );
+                fVerifyMediaTitle->setCheckable( true );
+                fVerifyMediaTitle->setChecked( NPreferences::NCore::CPreferences::instance()->deleteNFO() );
+                fVerifyMediaTitle->setText( QCoreApplication::translate( "NMediaManager::NUi::CMainWindow", "Verify Media Title?", nullptr ) );
+                connect( fVerifyMediaTitle, &QAction::triggered, [this]()
+                {
+                    NPreferences::NCore::CPreferences::instance()->setVerifyMediaTitle( fVerifyMediaTitle->isChecked() );
+                    model()->resetStatusCaches();
+                }
                 );
 
-                fVerifyMediaDate = new QAction(this);
-                fVerifyMediaDate->setObjectName(QString::fromUtf8("actionVerifyMediaDate"));
-                fVerifyMediaDate->setCheckable(true);
-                fVerifyMediaDate->setChecked(NPreferences::NCore::CPreferences::instance()->deleteNFO());
-                fVerifyMediaDate->setText(QCoreApplication::translate("NMediaManager::NUi::CMainWindow", "Verify Media Date?", nullptr));
-                connect(fVerifyMediaDate, &QAction::triggered, [this]()
-                    {
-                        //model()->clearStatusResults();
-                        NPreferences::NCore::CPreferences::instance()->setVerifyMediaDate(fVerifyMediaDate->isChecked());
-                    }
+                fVerifyMediaDate = new QAction( this );
+                fVerifyMediaDate->setObjectName( QString::fromUtf8( "actionVerifyMediaDate" ) );
+                fVerifyMediaDate->setCheckable( true );
+                fVerifyMediaDate->setChecked( NPreferences::NCore::CPreferences::instance()->deleteNFO() );
+                fVerifyMediaDate->setText( QCoreApplication::translate( "NMediaManager::NUi::CMainWindow", "Verify Media Date?", nullptr ) );
+                connect( fVerifyMediaDate, &QAction::triggered, [this]()
+                {
+                    NPreferences::NCore::CPreferences::instance()->setVerifyMediaDate( fVerifyMediaDate->isChecked() );
+                    model()->resetStatusCaches();
+                }
                 );
 
-                fVerifyMediaTags = new QAction(this);
-                fVerifyMediaTags->setObjectName(QString::fromUtf8("actionVerifyMediaTags"));
-                fVerifyMediaTags->setCheckable(true);
-                fVerifyMediaTags->setChecked(NPreferences::NCore::CPreferences::instance()->deleteNFO());
-                fVerifyMediaTags->setText(QCoreApplication::translate("NMediaManager::NUi::CMainWindow", "Verify Media Tags?", nullptr));
-                connect(fVerifyMediaTags, &QAction::triggered, [this]()
-                    {
-                        fVerifyMediaDate->setEnabled(fVerifyMediaTags->isChecked());
-                        fVerifyMediaTitle->setEnabled(fVerifyMediaTags->isChecked());
-                        //model()->clearStatusResults();
-                        NPreferences::NCore::CPreferences::instance()->setVerifyMediaTags(fVerifyMediaTags->isChecked());
-                    }
+                fVerifyMediaComment = new QAction( this );
+                fVerifyMediaComment->setObjectName( QString::fromUtf8( "actionVerifyMediaComment" ) );
+                fVerifyMediaComment->setCheckable( true );
+                fVerifyMediaComment->setChecked( NPreferences::NCore::CPreferences::instance()->deleteNFO() );
+                fVerifyMediaComment->setText( QCoreApplication::translate( "NMediaManager::NUi::CMainWindow", "Verify Media Comment?", nullptr ) );
+                connect( fVerifyMediaComment, &QAction::triggered, [this]()
+                {
+                    NPreferences::NCore::CPreferences::instance()->setVerifyMediaComment( fVerifyMediaComment->isChecked() );
+                    model()->resetStatusCaches();
+                }
                 );
 
-                auto verifyMediaMenu = new QMenu(this);
-                verifyMediaMenu->setObjectName("VerifyMediaMenu");
-                verifyMediaMenu->setTitle("Verify Media Tags");
+                fVerifyMediaTags = new QAction( this );
+                fVerifyMediaTags->setObjectName( QString::fromUtf8( "actionVerifyMediaTags" ) );
+                fVerifyMediaTags->setCheckable( true );
+                fVerifyMediaTags->setChecked( NPreferences::NCore::CPreferences::instance()->deleteNFO() );
+                fVerifyMediaTags->setText( QCoreApplication::translate( "NMediaManager::NUi::CMainWindow", "Verify Media Tags?", nullptr ) );
+                connect( fVerifyMediaTags, &QAction::triggered, [this]()
+                {
+                    fVerifyMediaDate->setEnabled( fVerifyMediaTags->isChecked() );
+                    fVerifyMediaTitle->setEnabled( fVerifyMediaTags->isChecked() );
+                    fVerifyMediaComment->setEnabled( fVerifyMediaTags->isChecked() );
+                    NPreferences::NCore::CPreferences::instance()->setVerifyMediaTags( fVerifyMediaTags->isChecked() );
+                    model()->resetStatusCaches();
+                }
+                );
 
-                verifyMediaMenu->addAction(fVerifyMediaTags);
-                verifyMediaMenu->addAction(fVerifyMediaTitle);
-                verifyMediaMenu->addAction(fVerifyMediaDate);
+                auto verifyMediaMenu = new QMenu( this );
+                verifyMediaMenu->setObjectName( "VerifyMediaMenu" );
+                verifyMediaMenu->setTitle( "Verify Media Tags" );
 
-                fMenu->addMenu(verifyMediaMenu);
+                verifyMediaMenu->addAction( fVerifyMediaTags );
+                verifyMediaMenu->addSeparator();
+                verifyMediaMenu->addAction( fVerifyMediaTitle );
+                verifyMediaMenu->addAction( fVerifyMediaDate );
+                verifyMediaMenu->addAction( fVerifyMediaComment );
+
+                fMenu->addMenu( verifyMediaMenu );
                 setActive( true );
             }
             return fMenu;
@@ -200,11 +215,13 @@ namespace NMediaManager
 
         void CTagsPage::slotMenuAboutToShow()
         {
-            fVerifyMediaDate->setChecked(NPreferences::NCore::CPreferences::instance()->getVerifyMediaDate());
-            fVerifyMediaTitle->setChecked(NPreferences::NCore::CPreferences::instance()->getVerifyMediaTitle());
-            fVerifyMediaTags->setChecked(NPreferences::NCore::CPreferences::instance()->getVerifyMediaTags());
-            fVerifyMediaDate->setEnabled(fVerifyMediaTags->isChecked());
-            fVerifyMediaTitle->setEnabled(fVerifyMediaTags->isChecked());
+            fVerifyMediaDate->setChecked( NPreferences::NCore::CPreferences::instance()->getVerifyMediaDate() );
+            fVerifyMediaTitle->setChecked( NPreferences::NCore::CPreferences::instance()->getVerifyMediaTitle() );
+            fVerifyMediaComment->setChecked( NPreferences::NCore::CPreferences::instance()->getVerifyMediaComment() );
+            fVerifyMediaTags->setChecked( NPreferences::NCore::CPreferences::instance()->getVerifyMediaTags() );
+            fVerifyMediaDate->setEnabled( fVerifyMediaTags->isChecked() );
+            fVerifyMediaTitle->setEnabled( fVerifyMediaTags->isChecked() );
+            fVerifyMediaComment->setEnabled( fVerifyMediaTags->isChecked() );
         }
     }
 }

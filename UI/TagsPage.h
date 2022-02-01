@@ -77,6 +77,7 @@ namespace NMediaManager
             QMenu * fMenu{ nullptr };
             QAction * fVerifyMediaTitle{ nullptr };
             QAction * fVerifyMediaDate{ nullptr };
+            QAction * fVerifyMediaComment{ nullptr };
             QAction * fVerifyMediaTags{ nullptr };
         };
     }

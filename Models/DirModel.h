@@ -214,6 +214,7 @@ namespace NMediaManager
             bool isRootPath( const QFileInfo & fileInfo ) const;
             bool isRootPath(const QModelIndex & index ) const;
 
+            virtual void resetStatusCaches();
         Q_SIGNALS:
             void sigDirLoadFinished( bool canceled );
             void sigProcessesFinished( bool status, bool showProcessResults, bool cancelled, bool reloadModel );
@@ -248,7 +249,6 @@ namespace NMediaManager
             virtual std::optional< TItemStatus > getPathStatus(const QFileInfo & fi) const final;
             virtual std::optional< TItemStatus > computePathStatus(const QFileInfo & fi) const;
 
-            virtual void resetStatusCaches();
             virtual void clearItemStatusCache( const QModelIndex & idx ) const; // const due to possible (often) calls in ::data
             virtual void clearPathStatusCache( const QFileInfo & fi ) const;
             virtual void clearPathStatusCache( const QString & path ) const;
