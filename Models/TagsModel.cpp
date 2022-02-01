@@ -53,16 +53,48 @@ namespace NMediaManager
         {
         }
 
-        std::pair< bool, QStandardItem * > CTagsModel::processItem(const QStandardItem * item, QStandardItem * parentResultItem, bool displayOnly)
+        std::pair< bool, QStandardItem * > CTagsModel::processItem(const QStandardItem * item, bool displayOnly)
         {
+            auto fi = fileInfo( item );
+            if ( !isMediaFile( fi ) )
+                return std::make_pair( true, nullptr );
+
             QStandardItem * myItem = nullptr;
             bool aOK = true;
-            auto oldName = computeTransformPath(item, true);
-            auto newName = computeTransformPath(item, false);
 
-            (void)parentResultItem;
-            (void)displayOnly;
-            return std::make_pair(aOK, nullptr);
+            if ( !areMediaTagsSameAsAutoSet( indexFromItem( item ) ) )
+            {
+                auto oldName = computeTransformPath( item, true );
+                myItem = new QStandardItem( getDispName( oldName ) );
+
+                auto idx = indexFromItem( item );
+                QString msg;
+                if ( !isTitleSameAsAutoSet( idx, &msg ) )
+                {
+                    myItem->appendRow( new QStandardItem( msg ) );
+                }
+
+                if ( !isDateSameAsAutoSet( idx, &msg ) )
+                {
+                    myItem->appendRow( new QStandardItem( msg ) );
+                }
+
+                if ( !isCommentSameAsAutoSet( idx, &msg ) )
+                {
+                    myItem->appendRow( new QStandardItem( msg ) );
+                }
+                if ( !displayOnly )
+                {
+                    QString msg;
+                    if ( !autoSetMediaTags( idx, &msg ) )
+                    {
+                        appendError( myItem, msg );
+                        aOK = false;
+                    }
+                }
+            }
+
+            return std::make_pair(aOK, myItem);
         }
 
         void CTagsModel::attachTreeNodes( QStandardItem * /*nextParent*/, QStandardItem *& /*prevParent*/, const STreeNode & /*treeNode*/ )

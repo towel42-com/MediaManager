@@ -53,12 +53,14 @@ namespace NMediaManager
             virtual int firstMediaItemColumn() const override { return fFirstColumn; }
             virtual int lastMediaItemColumn() const override { return fLastColumn; }
             virtual QStringList headers() const override;
-            virtual std::pair< bool, QStandardItem * > processItem(const QStandardItem * item, QStandardItem * parentResultItem, bool displayOnly) override;
+            virtual std::pair< bool, QStandardItem * > processItem(const QStandardItem * item, bool displayOnly) override;
             virtual void attachTreeNodes( QStandardItem * nextParent, QStandardItem *& prevParent, const STreeNode & treeNode ) override;;
             virtual bool usesQueuedProcessing() const override { return false; }
             virtual void postFileFunction(bool /*aOK*/, const QFileInfo & /*fileInfo*/) override;
             virtual bool preFileFunction(const QFileInfo & /*fileInfo*/, std::unordered_set<QString> & /*alreadyAdded*/, TParentTree & /*tree*/) override;
             virtual std::optional< TItemStatus > computeItemStatus(const QModelIndex & idx ) const override;
+
+            virtual bool showMediaItemsContextMenu() const override { return true; };
 
             virtual bool showMediaItems() const override { return false; };
             virtual int getMediaTitleLoc() const override { return fTitleColumn; }
