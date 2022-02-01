@@ -188,7 +188,7 @@ namespace NMediaManager
 
         void CDirModel::preLoad()
         {
-            fLoading = true;
+            setIsLoading( true );
             clear();
             setHorizontalHeaderLabels( headers() );
             preLoad( filesView() );
@@ -196,7 +196,7 @@ namespace NMediaManager
 
         void CDirModel::postLoad( bool /*aOK*/ )
         {
-            fLoading = false;
+            setIsLoading( false );
 
             if ( !filesView() )
                 return;
@@ -208,7 +208,7 @@ namespace NMediaManager
         void CDirModel::postLoad( QTreeView * treeView )
         {
             resizeColumns();
-            treeView->expandAll();
+            (void)treeView;//treeView->expandAll();
         }
 
         void CDirModel::preLoad( QTreeView * /*treeView*/ )
@@ -951,11 +951,7 @@ namespace NMediaManager
             if ( !NPreferences::NCore::CPreferences::instance()->isMediaFile( fi ) )
                 return false;
 
-            auto baseName = fi.completeBaseName();
-
-            auto year = getMediaYear( fi );
-
-            if ( setMediaTags( fi.absoluteFilePath(), baseName, year, msg ) )
+            if ( setMediaTags( fi.absoluteFilePath(), QString(), QString(), QString(), msg ) )
             {
                 reloadMediaTags( idx );
                 return true;
@@ -964,18 +960,35 @@ namespace NMediaManager
         }
 
 
-        bool CDirModel::setMediaTags( const QString & fileName, const QString & title, const QString & year, QString * msg ) const
+        bool CDirModel::setMediaTags( const QString & fileName, QString title, QString year, QString comment, QString * msg ) const
         {
             NSABUtils::CAutoWaitCursor awc;
 
-            std::unordered_map< NSABUtils::EMediaTags, QString > tags =
-            {
-                { NSABUtils::EMediaTags::eTitle, (title.isEmpty() ? QFileInfo( fileName ).completeBaseName() : title) }
-                ,{ NSABUtils::EMediaTags::eDate, year }
-            };
-
+            auto fi = QFileInfo( fileName );
             QString localMsg;
-            auto aOK = NSABUtils::setMediaTags( fileName, tags, NPreferences::NCore::CPreferences::instance()->getMKVPropEditEXE(), &localMsg );
+            bool aOK = true;
+            if ( !NPreferences::NCore::CPreferences::instance()->isMediaFile( fi ) )
+            {
+                localMsg = tr( "'%1' is not a supported media file" ).arg( fileName );
+                aOK = false;
+            }
+            else
+            {
+                if ( title.isEmpty() )
+                    title = fi.completeBaseName();
+                if ( year.isEmpty() )
+                    year = getMediaYear( fi );
+
+                std::unordered_map< NSABUtils::EMediaTags, QString > tags =
+                {
+                     { NSABUtils::EMediaTags::eTitle, title }
+                    ,{ NSABUtils::EMediaTags::eDate, year }
+                    ,{ NSABUtils::EMediaTags::eComment, comment }
+                };
+
+                aOK = NSABUtils::setMediaTags( fileName, tags, NPreferences::NCore::CPreferences::instance()->getMKVPropEditEXE(), &localMsg );
+            }
+
             if ( !aOK )
             {
                 if ( msg )
@@ -1207,7 +1220,7 @@ namespace NMediaManager
             }
 
             QString msg;
-            if ( fSetMKVTagsOnSuccess && !model->setMediaTags( fNewName, QString(), QString(), &msg ) )
+            if ( fSetMKVTagsOnSuccess && !model->setMediaTags( fNewName, QString(), QString(), QString(), &msg ) )
             {
                 auto errorItem = new QStandardItem( QString( "ERROR: %1: FAILED TO SET MKV Tags - %2" ).arg( model->getDispName( fNewName ) ).arg( msg ) );
                 errorItem->setData( ECustomRoles::eIsErrorNode, true );
@@ -1440,9 +1453,18 @@ namespace NMediaManager
             }
         }
 
+        void CDirModel::setIsLoading( bool isLoading )
+        {
+            beginResetModel();
+            fIsLoading = isLoading;
+            endResetModel();
+            if ( filesView() )
+                filesView()->expandAll();
+        }
+
         bool CDirModel::canComputeStatus() const
         {
-            return !fLoading;
+            return !isLoading();
         }
 
         std::optional<TItemStatus> CDirModel::getRowStatus( const QModelIndex & idx ) const
@@ -1488,6 +1510,14 @@ namespace NMediaManager
             return itemStatus;
         }
 
+        std::optional< TItemStatus > CDirModel::computeItemStatus( QStandardItem * item ) const
+        {
+            auto idx = indexFromItem( item );
+            if ( !idx.isValid() )
+                return {};
+            return computeItemStatus( idx );
+        }
+
         std::optional< TItemStatus > CDirModel::computeItemStatus( const QModelIndex & idx ) const
         {
             (void)idx;
@@ -1511,10 +1541,7 @@ namespace NMediaManager
 
 
             auto retVal = computeItemStatus( idx );
-            if ( retVal.has_value() )
-            {
-                fItemStatusCache[fi.absoluteFilePath()][idx.column()] = retVal.value();
-            }
+            fItemStatusCache[ fi.absoluteFilePath() ][ idx.column() ] = retVal;
             return retVal;
         }
 
@@ -1534,10 +1561,7 @@ namespace NMediaManager
                 return {};
 
             auto retVal = computePathStatus( fi );
-            if ( retVal.has_value() )
-            {
-                fPathStatusCache[fi.absoluteFilePath()] = retVal.value();
-            }
+            fPathStatusCache[fi.absoluteFilePath()] = retVal;
             return retVal;
         }
 
@@ -1611,6 +1635,8 @@ namespace NMediaManager
             fPathStatusCache.clear();
             fItemStatusCache.clear();
             endResetModel();
+            if ( filesView() )
+                filesView()->expandAll();
         }
 
     }

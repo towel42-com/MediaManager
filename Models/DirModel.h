@@ -203,7 +203,7 @@ namespace NMediaManager
             virtual void reloadMediaTags(const QModelIndex & idx, bool force);
             virtual bool autoSetMediaTags( const QModelIndex & idx, QString * msg = nullptr );
 
-            bool setMediaTags( const QString & fileName, const QString & title, const QString & year, QString * msg = nullptr ) const;
+            bool setMediaTags( const QString & fileName, QString title, QString year, QString comment, QString * msg = nullptr ) const;
             bool setMediaTag( const QString & filename, const std::pair< NSABUtils::EMediaTags, QString > & tagData, QString * msg = nullptr ) const; //pair => tag, value
 
             virtual void updatePath( const QModelIndex & idx, const QString & oldPath, const QString & newPath) final;
@@ -213,6 +213,7 @@ namespace NMediaManager
             bool isRootPath( const QString & path ) const;
             bool isRootPath( const QFileInfo & fileInfo ) const;
             bool isRootPath(const QModelIndex & index ) const;
+
         Q_SIGNALS:
             void sigDirLoadFinished( bool canceled );
             void sigProcessesFinished( bool status, bool showProcessResults, bool cancelled, bool reloadModel );
@@ -243,6 +244,7 @@ namespace NMediaManager
             virtual std::optional<TItemStatus> getRowStatus( const QModelIndex & idx ) const;
             virtual std::optional< TItemStatus > getItemStatus(const QModelIndex & idx) const final;
             virtual std::optional< TItemStatus > computeItemStatus(const QModelIndex & idx) const;
+            virtual std::optional< TItemStatus > computeItemStatus( QStandardItem * item ) const final;
             virtual std::optional< TItemStatus > getPathStatus(const QFileInfo & fi) const final;
             virtual std::optional< TItemStatus > computePathStatus(const QFileInfo & fi) const;
 
@@ -277,7 +279,8 @@ namespace NMediaManager
             virtual void postLoad( QTreeView * treeView );
             virtual void preLoad( QTreeView * treeView );
 
-            virtual bool isLoading() const final { return fLoading; }
+            virtual bool isLoading() const final { return fIsLoading; }
+            virtual void setIsLoading( bool isLoading );
 
             QStringList getMediaHeaders() const;
 
@@ -360,11 +363,11 @@ namespace NMediaManager
 
             bool fProcessFinishedHandled{ false };
             mutable bool fFirstProcess{ true };
-            mutable bool fLoading{ false };
+            mutable bool fIsLoading{ false };
 
         private:
-            mutable std::unordered_map< QString, TItemStatus > fPathStatusCache;
-            mutable std::unordered_map< QString, std::unordered_map< int, TItemStatus > > fItemStatusCache;
+            mutable std::unordered_map< QString, std::optional< TItemStatus > > fPathStatusCache;
+            mutable std::unordered_map< QString, std::unordered_map< int, std::optional< TItemStatus > > > fItemStatusCache;
         };
     }
 }
