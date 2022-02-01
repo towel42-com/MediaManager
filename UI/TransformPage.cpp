@@ -242,7 +242,9 @@ namespace NMediaManager
             else
             {
                 clearProgressDlg( fProgressDlg->wasCanceled() );
-                model()->setInAutoSearch(false);
+                if ( !progressCanceled() )
+                    model()->processPostAutoSearch();
+                model()->setInAutoSearch( false, true );
             }
 
             auto logMsg = QString( "\n\t" );
