@@ -35,6 +35,7 @@
 #include <QDateTime>
 #include <QDir>
 #include <QDate>
+#include <functional>
 
 namespace NSABUtils
 {
@@ -154,7 +155,7 @@ namespace NMediaManager
             Q_OBJECT
         public:
             CDirModel( NUi::CBasePage * page, QObject * parent = nullptr );
-            ~CDirModel();
+            virtual ~CDirModel() override;
 
             bool isDir( const QModelIndex & idx ) const;
             QFileInfo fileInfo( const QModelIndex & idx ) const;
@@ -195,13 +196,15 @@ namespace NMediaManager
 
             virtual void clear();
 
+            virtual bool showMediaItemsContextMenu() const { return showMediaItems(); };
             virtual bool showMediaItems() const { return false; };
 
             bool canShowMediaInfo() const;
             virtual std::unordered_map< NSABUtils::EMediaTags, QString > getMediaTags( const QFileInfo & fi, const std::list< NSABUtils::EMediaTags > & tags = {} ) const;
             virtual void reloadMediaTags(const QModelIndex & idx);
             virtual void reloadMediaTags(const QModelIndex & idx, bool force);
-            virtual bool autoSetMediaTags( const QModelIndex & idx, QString * msg = nullptr );
+            virtual bool autoSetMediaTags( const QModelIndex & idx, QString * msg = nullptr ) final;
+            virtual bool areMediaTagsSameAsAutoSet( const QModelIndex & idx ) const final;
 
             bool setMediaTags( const QString & fileName, QString title, QString year, QString comment, QString * msg = nullptr ) const;
             bool setMediaTag( const QString & filename, const std::pair< NSABUtils::EMediaTags, QString > & tagData, QString * msg = nullptr ) const; //pair => tag, value
@@ -234,6 +237,11 @@ namespace NMediaManager
             virtual void slotDataChanged(const QModelIndex & start, const QModelIndex & end, const QVector<int> &roles);
 
         protected:
+            virtual bool isTitleSameAsAutoSet( const QModelIndex & idx, QString * msg = nullptr ) const;
+            virtual bool isDateSameAsAutoSet( const QModelIndex & idx, QString * msg = nullptr ) const;
+            virtual bool isCommentSameAsAutoSet( const QModelIndex & idx, QString * msg = nullptr ) const;
+            bool isTagSameAsAutoSet( const QModelIndex & idx, QString * msg, int location, const QString & tagName, const std::function< QString( const QModelIndex & idx ) > & reference ) const;
+
             virtual QVariant getItemBackground(const QModelIndex & idx) const final;
             virtual QVariant getItemForeground(const QModelIndex & idx) const final;
             virtual QVariant getToolTip(const QModelIndex & idx) const  final;
@@ -261,7 +269,7 @@ namespace NMediaManager
             QTreeView * filesView() const;
             NSABUtils::CDoubleProgressDlg * progressDlg() const;
 
-            virtual std::pair< bool, QStandardItem * > processItem( const QStandardItem * item, QStandardItem * parentResultItem, bool displayOnly ) = 0;
+            virtual std::pair< bool, QStandardItem * > processItem( const QStandardItem * item, bool displayOnly ) = 0;
             virtual void postAddItems( const QFileInfo & fileInfo, std::list< SDirNodeItem > & currItems ) const;
             virtual int firstMediaItemColumn() const { return -1; }
             virtual int lastMediaItemColumn() const;
@@ -305,7 +313,7 @@ namespace NMediaManager
             void processFinished( const QString & msg, bool withError );
 
             void appendRow( QStandardItem * parent, QList< QStandardItem * > & items );
-            static void appendError( QStandardItem * parent, QStandardItem * errorNode );
+            static void appendError( QStandardItem * parent, const QString & errorMsg );
 
             struct SIterateInfo
             {
@@ -323,8 +331,8 @@ namespace NMediaManager
 
             QStandardItem * attachTreeNodes( TParentTree & parentTree ); // returns the root item (col 0) of the leaf node
 
-            bool isIgnoredPathName( const QFileInfo & ii ) const;
-            bool isSkippedDirName( const QFileInfo & ii ) const;
+            bool isIgnoredPathName( const QFileInfo & ii, bool allowIgnore = true ) const;
+            bool isSkippedPathName( const QFileInfo & ii, bool allowIgnore = true ) const;
 
             STreeNode getItemRow( const QFileInfo & path ) const;
 

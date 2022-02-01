@@ -334,7 +334,7 @@ namespace NMediaManager
             SIterateInfo info;
             info.fPreDirFunction = [ this, &numDirs ]( const QFileInfo & dirInfo )
             {
-                if ( isSkippedDirName( dirInfo ) )
+                if ( isSkippedPathName( dirInfo ) )
                     return false;
                 numDirs++;
                 return true;
@@ -368,7 +368,7 @@ namespace NMediaManager
                 if ( progressDlg() )
                     progressDlg()->setLabelText( tr( "Searching Directory '%1'" ).arg( QDir( fRootPath ).relativeFilePath( dirInfo.absoluteFilePath() ) ) );
 
-                if ( isSkippedDirName( dirInfo ) )
+                if ( isSkippedPathName( dirInfo ) )
                 {
                     //qDebug().noquote().nospace() << "Pre Directory B: returning false" << dirInfo.absoluteFilePath() << tree;
                     return false;
@@ -463,13 +463,19 @@ namespace NMediaManager
             return prevParent;
         }
 
-        bool CDirModel::isSkippedDirName( const QFileInfo & ii ) const
+        bool CDirModel::isSkippedPathName( const QFileInfo & ii, bool allowIgnore ) const
         {
+            if ( allowIgnore && NPreferences::NCore::CPreferences::instance()->getIgnorePathNamesToSkip() )
+                return false;
+
             return NPreferences::NCore::CPreferences::instance()->isSkippedPath( ii );
         }
 
-        bool CDirModel::isIgnoredPathName( const QFileInfo & fileInfo ) const
+        bool CDirModel::isIgnoredPathName( const QFileInfo & fileInfo, bool allowIgnore ) const
         {
+            if ( allowIgnore && NPreferences::NCore::CPreferences::instance()->getIgnorePathNamesToIgnore() )
+                return false;
+
             return NPreferences::NCore::CPreferences::instance()->isIgnoredPath( fileInfo );
         }
 
@@ -699,8 +705,14 @@ namespace NMediaManager
             return getDispName( absPath.absoluteFilePath() );
         }
 
-        void CDirModel::appendError( QStandardItem * parent, QStandardItem * errorNode )
+        void CDirModel::appendError( QStandardItem * parent, const QString & msg )
         {
+            auto errorNode = new QStandardItem( tr( "ERROR: %1" ).arg( msg ) );
+            errorNode->setData( ECustomRoles::eIsErrorNode, true );
+            QIcon icon;
+            icon.addFile( QString::fromUtf8( ":/resources/error.png" ), QSize(), QIcon::Normal, QIcon::Off );
+            errorNode->setIcon( icon );
+
             auto pos = -1;
             for ( int ii = 0; ii < parent->rowCount(); ++ii )
             {
@@ -712,8 +724,6 @@ namespace NMediaManager
             }
             if ( pos == -1 )
                 pos = parent->rowCount();
-
-            parent->insertRow( pos, errorNode );
         }
 
         bool CDirModel::checkProcessItemExists( const QString & fileName, QStandardItem * parentItem, bool scheduledForRemoval ) const
@@ -721,13 +731,7 @@ namespace NMediaManager
             QFileInfo fi( fileName );
             if ( !fi.exists() && !scheduledForRemoval )
             {
-                auto errorItem = new QStandardItem( QString( "ERROR: '%1' - No Longer Exists" ).arg( fileName ) );
-                errorItem->setData( ECustomRoles::eIsErrorNode, true );
-                appendError( parentItem, errorItem );
-
-                QIcon icon;
-                icon.addFile( QString::fromUtf8( ":/resources/error.png" ), QSize(), QIcon::Normal, QIcon::Off );
-                errorItem->setIcon( icon );
+                appendError( parentItem, tr( "'%1' - No Longer Exists" ).arg( fileName ) );
                 return false;
             }
             return true;
@@ -741,7 +745,16 @@ namespace NMediaManager
             bool aOK = true;
             QStandardItem * myItem = nullptr;
             if ( item != invisibleRootItem() )
-                std::tie( aOK, myItem ) = processItem( item, parentItem, displayOnly );
+            {
+                std::tie( aOK, myItem ) = processItem( item, displayOnly );
+                if ( myItem != parentItem )
+                {
+                    if ( parentItem )
+                        parentItem->appendRow( myItem );
+                    else
+                        fProcessResults.second->appendRow( myItem );
+                }
+            }
 
             auto numRows = item->rowCount();
             for ( int ii = 0; ii < numRows; ++ii )
@@ -959,7 +972,60 @@ namespace NMediaManager
             return false;
         }
 
+        bool CDirModel::areMediaTagsSameAsAutoSet( const QModelIndex & idx ) const
+        {
+            auto fi = fileInfo( idx );
+            if ( !NPreferences::NCore::CPreferences::instance()->isMediaFile( fi ) )
+                return false;
 
+            return isTitleSameAsAutoSet( idx ) && isDateSameAsAutoSet( idx ) && isCommentSameAsAutoSet( idx );
+        }
+
+        bool CDirModel::isTagSameAsAutoSet( const QModelIndex & idx, QString * msg, int location, const QString & tagName, const std::function< QString( const QModelIndex & idx ) > & reference ) const
+        {
+            auto item = itemFromIndex( idx );
+            auto tagItem = getItem( item, location );
+            if ( !tagItem )
+                return true;
+
+            auto referenceString = reference( idx );
+            bool retVal = ( tagItem->text() == referenceString );
+            if ( !retVal && msg )
+            {
+                *msg = tr( "%1: '%2' => '%3'" ).arg( tagName ).arg( tagItem->text().isEmpty() ? "<EMPTY>" : tagItem->text() ).arg( referenceString );
+            }
+            return retVal;
+        }
+
+        bool CDirModel::isTitleSameAsAutoSet( const QModelIndex & idx, QString * msg ) const
+        {
+            return isTagSameAsAutoSet( idx, msg, getMediaTitleLoc(), "Title",
+                                       [this]( const QModelIndex & idx )
+                                       {
+                                           auto fi = fileInfo( idx );
+                                           return fi.completeBaseName();
+                                       } );
+        }
+
+        bool CDirModel::isDateSameAsAutoSet( const QModelIndex & idx, QString * msg ) const
+        {
+            return isTagSameAsAutoSet( idx, msg, getMediaDateLoc(), "Date",
+                                       [this]( const QModelIndex & idx )
+                                       {
+                                           auto fi = fileInfo( idx );
+                                           return getMediaYear( fi );
+                                       } );
+        }
+
+        bool CDirModel::isCommentSameAsAutoSet( const QModelIndex & idx, QString * msg ) const
+        {
+            return isTagSameAsAutoSet( idx, msg, getMediaCommentLoc(), "Comment",
+                                       []( const QModelIndex & /*idx*/ )
+                                       {
+                                           return QString();
+                                       } );
+        }
+        
         bool CDirModel::setMediaTags( const QString & fileName, QString title, QString year, QString comment, QString * msg ) const
         {
             NSABUtils::CAutoWaitCursor awc;
@@ -1026,14 +1092,7 @@ namespace NMediaManager
 
             if ( !fProcessQueue.front().fItem )
                 return;
-            auto errorItem = new QStandardItem( QString( "ERROR: %1: FAILED TO PROCESS" ).arg( msg ) );
-            errorItem->setData( ECustomRoles::eIsErrorNode, true );
-            appendError( fProcessQueue.front().fItem, errorItem );
-
-            QIcon icon;
-            icon.addFile( QString::fromUtf8( ":/resources/error.png" ), QSize(), QIcon::Normal, QIcon::Off );
-            errorItem->setIcon( icon );
-            fProcessResults.first = false;
+            appendError( fProcessQueue.front().fItem, tr( "%1: FAILED TO PROCESS" ).arg( msg ) );
         }
 
         void CDirModel::slotRunNextProcessInQueue()
@@ -1193,14 +1252,7 @@ namespace NMediaManager
 
             if ( !QFileInfo::exists( fNewName ) )
             {
-                auto errorItem = new QStandardItem( QString( "ERROR: %1:  New file does not exist" ).arg( model->getDispName( fOldName ) ).arg( model->getDispName( fNewName ) ) );
-                errorItem->setData( ECustomRoles::eIsErrorNode, true );
-                CDirModel::appendError( fItem, errorItem );
-
-                QIcon icon;
-                icon.addFile( QString::fromUtf8( ":/resources/error.png" ), QSize(), QIcon::Normal, QIcon::Off );
-                errorItem->setIcon( icon );
-
+                CDirModel::appendError( fItem, QObject::tr( "%1:  New file does not exist" ).arg( model->getDispName( fOldName ) ).arg( model->getDispName( fNewName ) ) );
                 model->fProcessResults.first = false;
                 return;
             }
@@ -1208,13 +1260,7 @@ namespace NMediaManager
             auto backupName = fOldName + ".bak";
             if ( !QFile::rename( fOldName, backupName ) )
             {
-                auto errorItem = new QStandardItem( QString( "ERROR: %1: FAILED TO MOVE ITEM TO %2" ).arg( model->getDispName( fOldName ) ).arg( model->getDispName( backupName ) ) );
-                errorItem->setData( ECustomRoles::eIsErrorNode, true );
-                CDirModel::appendError( fItem, errorItem );
-
-                QIcon icon;
-                icon.addFile( QString::fromUtf8( ":/resources/error.png" ), QSize(), QIcon::Normal, QIcon::Off );
-                errorItem->setIcon( icon );
+                CDirModel::appendError( fItem, QObject::tr( "%1: FAILED TO MOVE ITEM TO %2" ).arg( model->getDispName( fOldName ) ).arg( model->getDispName( backupName ) ) );
                 model->fProcessResults.first = false;
                 return;
             }
@@ -1222,13 +1268,7 @@ namespace NMediaManager
             QString msg;
             if ( fSetMKVTagsOnSuccess && !model->setMediaTags( fNewName, QString(), QString(), QString(), &msg ) )
             {
-                auto errorItem = new QStandardItem( QString( "ERROR: %1: FAILED TO SET MKV Tags - %2" ).arg( model->getDispName( fNewName ) ).arg( msg ) );
-                errorItem->setData( ECustomRoles::eIsErrorNode, true );
-                CDirModel::appendError( fItem, errorItem );
-
-                QIcon icon;
-                icon.addFile( QString::fromUtf8( ":/resources/error.png" ), QSize(), QIcon::Normal, QIcon::Off );
-                errorItem->setIcon( icon );
+                CDirModel::appendError( fItem, QObject::tr( "%1: FAILED TO SET MKV Tags - %2" ).arg( model->getDispName( fNewName ) ).arg( msg ) );
                 model->fProcessResults.first = false;
                 return;
             }
@@ -1236,37 +1276,19 @@ namespace NMediaManager
             QStringList msgs;
             if ( !model->postExtProcess( *this, msgs ) )
             {
-                auto errorItem = new QStandardItem( QString( "ERROR: %1: FAILED TO MOVE ITEM TO %2" ).arg( model->getDispName( fNewName ) ).arg( model->getDispName( fOldName ) ) );
-                errorItem->setData( ECustomRoles::eIsErrorNode, true );
-                CDirModel::appendError( fItem, errorItem );
-
-                QIcon icon;
-                icon.addFile( QString::fromUtf8( ":/resources/error.png" ), QSize(), QIcon::Normal, QIcon::Off );
-                errorItem->setIcon( icon );
+                CDirModel::appendError( fItem, QObject::tr( "%1: FAILED TO MOVE ITEM TO %2" ).arg( model->getDispName( fNewName ) ).arg( model->getDispName( fOldName ) ) );
                 model->fProcessResults.first = false;
             }
 
             if ( QFileInfo::exists( fNewName ) && !NSABUtils::NFileUtils::setTimeStamps( fNewName, fTimeStamps ) )
             {
-                auto errorItem = new QStandardItem( QString( "ERROR: %1: FAILED TO MODIFY TIMESTAMP" ).arg( model->getDispName( fOldName ) ) );
-                errorItem->setData( ECustomRoles::eIsErrorNode, true );
-                CDirModel::appendError( fItem, errorItem );
-
-                QIcon icon;
-                icon.addFile( QString::fromUtf8( ":/resources/error.png" ), QSize(), QIcon::Normal, QIcon::Off );
-                errorItem->setIcon( icon );
+                CDirModel::appendError( fItem, QObject::tr( "%1: FAILED TO MODIFY TIMESTAMP" ).arg( model->getDispName( fOldName ) ) );
                 model->fProcessResults.first = false;
             }
 
             if ( QFileInfo::exists( fOldName ) && !NSABUtils::NFileUtils::setTimeStamps( fOldName, fTimeStamps ) )
             {
-                auto errorItem = new QStandardItem( QString( "ERROR: %1: FAILED TO MODIFY TIMESTAMP" ).arg( model->getDispName( fOldName ) ) );
-                errorItem->setData( ECustomRoles::eIsErrorNode, true );
-                CDirModel::appendError( fItem, errorItem );
-
-                QIcon icon;
-                icon.addFile( QString::fromUtf8( ":/resources/error.png" ), QSize(), QIcon::Normal, QIcon::Off );
-                errorItem->setIcon( icon );
+                CDirModel::appendError( fItem, QObject::tr( "%1: FAILED TO MODIFY TIMESTAMP" ).arg( model->getDispName( fOldName ) ) );
                 model->fProcessResults.first = false;
             }
         }

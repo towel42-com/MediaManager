@@ -43,7 +43,7 @@ namespace NMediaManager
         {
         }
 
-        std::pair< bool, QStandardItem * > CMakeMKVModel::processItem( const QStandardItem * item, QStandardItem * parentResultItem, bool displayOnly )
+        std::pair< bool, QStandardItem * > CMakeMKVModel::processItem( const QStandardItem * item, bool displayOnly )
         {
             if ( item->data( ECustomRoles::eIsDir ).toBool() )
                 return std::make_pair( true, nullptr );
@@ -56,10 +56,6 @@ namespace NMediaManager
             processInfo.fItem = new QStandardItem( QString( "Convert '%1' => '%2'" ).arg( getDispName( processInfo.fOldName ) ).arg( getDispName( processInfo.fNewName ) ) );
             processInfo.fItem->setData( processInfo.fOldName, ECustomRoles::eOldName );
             processInfo.fItem->setData( processInfo.fNewName, ECustomRoles::eNewName );
-            if ( parentResultItem )
-                parentResultItem->appendRow( processInfo.fItem );
-            else
-                fProcessResults.second->appendRow( processInfo.fItem );
 
             bool aOK = true;
             QStandardItem * myItem = nullptr;
@@ -74,16 +70,9 @@ namespace NMediaManager
                 {
                     QStandardItem * errorItem = nullptr;
                     if ( processInfo.fCmd.isEmpty() )
-                        errorItem = new QStandardItem( QString( "ERROR: ffmpeg is not set properly" ) );
+                        appendError( processInfo.fItem, tr( "ffmpeg is not set properly" ) );
                     else
-                        errorItem = new QStandardItem( QString( "ERROR: ffmpeg '%1' is not an executable" ).arg( processInfo.fCmd ) );
-
-                    errorItem->setData( ECustomRoles::eIsErrorNode, true );
-                    appendError( processInfo.fItem, errorItem );
-
-                    QIcon icon;
-                    icon.addFile( QString::fromUtf8( ":/resources/error.png" ), QSize(), QIcon::Normal, QIcon::Off );
-                    errorItem->setIcon( icon );
+                        appendError( processInfo.fItem, tr( "ffmpeg '%1' is not an executable" ).arg( processInfo.fCmd ) );
                     aOK = false;
                 }
 

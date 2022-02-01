@@ -411,7 +411,7 @@ namespace NMediaManager
             setSearchResult( idx, {}, recursive, true );
         }
 
-        std::pair< bool, QStandardItem * > CTransformModel::processItem( const QStandardItem * item, QStandardItem * parentResultItem, bool displayOnly )
+        std::pair< bool, QStandardItem * > CTransformModel::processItem( const QStandardItem * item, bool displayOnly )
         {
             QStandardItem * myItem = nullptr;
             bool aOK = true;
@@ -424,17 +424,13 @@ namespace NMediaManager
                 QFileInfo newFileInfo( newName );
 
                 if ( NCore::STransformResult::isDeleteThis( newName ) )
-                    myItem = new QStandardItem( QString( "Delete '%1'" ).arg( getDispName( oldName ) ) );
+                    myItem = new QStandardItem( tr( "Delete '%1'" ).arg( getDispName( oldName ) ) );
                 else
                     myItem = new QStandardItem( QString( "'%1' => '%2'" ).arg( getDispName( oldName ) ).arg( getDispName( newName ) ) );
 
 
                 myItem->setData( oldName, ECustomRoles::eOldName );
                 myItem->setData( newName, ECustomRoles::eNewName );
-                if ( parentResultItem )
-                    parentResultItem->appendRow( myItem );
-                else
-                    fProcessResults.second->appendRow( myItem );
 
                 if ( !displayOnly )
                 {
@@ -462,13 +458,7 @@ namespace NMediaManager
                             auto newPath = QDir( newFileInfo.absoluteFilePath() ).absoluteFilePath( relPath );
                             if ( !QFile::rename( oldPath, newPath ) )
                             {
-                                auto errorItem = new QStandardItem( QString( "ERROR: %1: FAILED TO MOVE ITEM TO %2" ).arg( oldPath ).arg( newPath ) );
-                                errorItem->setData( ECustomRoles::eIsErrorNode, true );
-                                appendError( myItem, errorItem );
-
-                                QIcon icon;
-                                icon.addFile( QString::fromUtf8( ":/resources/error.png" ), QSize(), QIcon::Normal, QIcon::Off );
-                                errorItem->setIcon( icon );
+                                appendError( myItem, tr( "%1: FAILED TO MOVE ITEM TO %2" ).arg( oldPath ).arg( newPath ) );
                                 allDeletedOK = false;
                             }
                         }
@@ -478,9 +468,7 @@ namespace NMediaManager
                             aOK = dir.removeRecursively();
                             if ( !aOK )
                             {
-                                auto errorItem = new QStandardItem( QString( "ERROR: Failed to Remove '%1'" ).arg( oldName ) );
-                                errorItem->setData( ECustomRoles::eIsErrorNode, true );
-                                appendError( myItem, errorItem );
+                                appendError( myItem, tr( "Failed to Remove '%1'" ).arg( oldName ) );
                             }
                         }
                         progressDlg()->setValue( progressDlg()->value() + 4 );
@@ -515,9 +503,7 @@ namespace NMediaManager
                             }
                             if ( !aOK )
                             {
-                                auto errorItem = new QStandardItem( QString( "ERROR: Failed to Remove '%1' - '%2'" ).arg( oldName ).arg( errorMsg ) );
-                                errorItem->setData( ECustomRoles::eIsErrorNode, true );
-                                appendError( myItem, errorItem );
+                                appendError( myItem, tr( "Failed to Remove '%1' - '%2'" ).arg( oldName ).arg( errorMsg ) );
                             }
                         }
                         else
@@ -543,13 +529,7 @@ namespace NMediaManager
                                     parentPathOK = QDir( parentPath ).mkpath( myParentPath );
                                     if ( !parentPathOK )
                                     {
-                                        auto errorItem = new QStandardItem( QString( "ERROR: '%1' => '%2' : FAILED TO MAKE PARENT DIRECTORY PATH" ).arg( oldName ).arg( newName ) );
-                                        errorItem->setData( ECustomRoles::eIsErrorNode, true );
-                                        appendError( myItem, errorItem );
-
-                                        QIcon icon;
-                                        icon.addFile( QString::fromUtf8( ":/resources/error.png" ), QSize(), QIcon::Normal, QIcon::Off );
-                                        errorItem->setIcon( icon );
+                                        appendError( myItem, tr( "'%1' => '%2' : FAILED TO MAKE PARENT DIRECTORY PATH" ).arg( oldName ).arg( newName ) );
                                     }
                                 }
                             }
@@ -594,13 +574,7 @@ namespace NMediaManager
 
                             if ( parentPathOK && !aOK )
                             {
-                                auto errorItem = new QStandardItem( QString( "ERROR: '%1' => '%2' : FAILED TO RENAME - %3" ).arg( oldName ).arg( newName ).arg( errorMsg ) );
-                                errorItem->setData( ECustomRoles::eIsErrorNode, true );
-                                appendError( myItem, errorItem );
-
-                                QIcon icon;
-                                icon.addFile( QString::fromUtf8( ":/resources/error.png" ), QSize(), QIcon::Normal, QIcon::Off );
-                                errorItem->setIcon( icon );
+                                appendError( myItem, tr( "'%1' => '%2' : FAILED TO RENAME - %3" ).arg( oldName ).arg( newName ).arg( errorMsg ) );
                             }
                             else if ( parentPathOK && !dirAlreadyExisted )
                             {
@@ -622,13 +596,7 @@ namespace NMediaManager
 
                                 if ( !aOK )
                                 {
-                                    auto errorItem = new QStandardItem( QString( "ERROR: %1: FAILED TO MODIFY TAGS: %2" ).arg( newName ).arg( msg ) );
-                                    errorItem->setData( ECustomRoles::eIsErrorNode, true );
-                                    appendError( myItem, errorItem );
-
-                                    QIcon icon;
-                                    icon.addFile( QString::fromUtf8( ":/resources/error.png" ), QSize(), QIcon::Normal, QIcon::Off );
-                                    errorItem->setIcon( icon );
+                                    appendError( myItem, tr( "%1: FAILED TO MODIFY TAGS: %2" ).arg( newName ).arg( msg ) );
                                 }
                                 else
                                 {
@@ -640,13 +608,7 @@ namespace NMediaManager
                                     }
                                     if ( !aOK )
                                     {
-                                        auto errorItem = new QStandardItem( QString( "ERROR: %1: FAILED TO MODIFY TIMESTAMP" ).arg( newName ) );
-                                        errorItem->setData( ECustomRoles::eIsErrorNode, true );
-                                        appendError( myItem, errorItem );
-
-                                        QIcon icon;
-                                        icon.addFile( QString::fromUtf8( ":/resources/error.png" ), QSize(), QIcon::Normal, QIcon::Off );
-                                        errorItem->setIcon( icon );
+                                        appendError( myItem, tr( "%1: FAILED TO MODIFY TIMESTAMP" ).arg( newName ) );
                                     }
                                 }
                             }
@@ -940,7 +902,7 @@ namespace NMediaManager
 
         bool CTransformModel::canAutoSearch( const QFileInfo & fileInfo, bool recursive) const
         {
-            if ( NPreferences::NCore::CPreferences::instance()->isIgnoredPath( fileInfo ) || NPreferences::NCore::CPreferences::instance()->isSkippedPath( fileInfo ) )
+            if ( isIgnoredPathName( fileInfo, false ) || isSkippedPathName( fileInfo, false ) )
                 return false;
 
             bool isLangFormat;
