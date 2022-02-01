@@ -27,7 +27,6 @@ set(qtproject_SRCS
     MakeMKVPage.cpp
     MergeSRTPage.cpp
     SelectTMDB.cpp
-    SetTags.cpp
     ProcessConfirm.cpp
     TagsPage.cpp
     TransformPage.cpp
@@ -40,7 +39,6 @@ set(qtproject_H
     MakeMKVPage.h
     MergeSRTPage.h
     SelectTMDB.h
-    SetTags.h
     ProcessConfirm.h
     TagsPage.h
     TransformPage.h
@@ -54,7 +52,6 @@ set(qtproject_UIS
     BasePage.ui
     MainWindow.ui
     SelectTMDB.ui
-    SetTags.ui
     ProcessConfirm.ui
 )
 
