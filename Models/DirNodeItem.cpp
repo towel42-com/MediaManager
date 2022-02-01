@@ -23,6 +23,7 @@
 #include "DirNodeItem.h"
 #include "DirModel.h"
 #include "Core/TransformResult.h"
+#include "Preferences/Core/Preferences.h"
 
 #include <QVariant>
 #include <QStandardItem>
@@ -61,9 +62,15 @@ namespace NMediaManager
             else
             {
                 retVal = new CDirModelItem( fText, fEditable.value().first );
+                bool editable = true;
                 if ( fEditable.value().first == EType::eMediaTag )
-                    retVal->setData( static_cast<int>(fEditable.value().second), NModels::ECustomRoles::eMediaTagTypeRole );
-                retVal->setEditable( true );
+                {
+                    retVal->setData( static_cast<int>( fEditable.value().second ), NModels::ECustomRoles::eMediaTagTypeRole );
+                    auto mkvPropEdit = NPreferences::NCore::CPreferences::instance()->getMKVPropEditEXE();
+                    if ( mkvPropEdit.isEmpty() )
+                        editable = false;
+                }
+                retVal->setEditable( editable );
             }
 
             retVal->setIcon( fIcon );
