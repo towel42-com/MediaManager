@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
+    <width>420</width>
     <height>300</height>
    </rect>
   </property>
@@ -15,15 +15,25 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QGroupBox" name="groupBox_4">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>If checked, These paths are loaded in, but will not be analyzed.  If unchecked, these paths will be loaded and analyzed</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="ignorePathNamesToIgnore">
      <property name="title">
       <string>Path Names to Ignore</string>
      </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
      <layout class="QGridLayout" name="gridLayout_10">
-      <item row="0" column="0" rowspan="3">
-       <widget class="QListView" name="pathNamesToIgnore"/>
-      </item>
-      <item row="0" column="1">
+      <item row="1" column="1">
        <widget class="QToolButton" name="btnAddIgnorePathName">
         <property name="text">
          <string>...</string>
@@ -34,7 +44,21 @@
         </property>
        </widget>
       </item>
+      <item row="1" column="0" rowspan="3">
+       <widget class="QListView" name="pathNamesToIgnore"/>
+      </item>
       <item row="2" column="1">
+       <widget class="QToolButton" name="btnDelIgnorePathName">
+        <property name="text">
+         <string>...</string>
+        </property>
+        <property name="icon">
+         <iconset resource="../../SABUtils/resources/SABUtils.qrc">
+          <normaloff>:/SABUtilsResources/delete.png</normaloff>:/SABUtilsResources/delete.png</iconset>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
        <spacer name="verticalSpacer_9">
         <property name="orientation">
          <enum>Qt::Vertical</enum>
@@ -46,17 +70,6 @@
          </size>
         </property>
        </spacer>
-      </item>
-      <item row="1" column="1">
-       <widget class="QToolButton" name="btnDelIgnorePathName">
-        <property name="text">
-         <string>...</string>
-        </property>
-        <property name="icon">
-         <iconset resource="../../SABUtils/resources/SABUtils.qrc">
-          <normaloff>:/SABUtilsResources/delete.png</normaloff>:/SABUtilsResources/delete.png</iconset>
-        </property>
-       </widget>
       </item>
      </layout>
     </widget>

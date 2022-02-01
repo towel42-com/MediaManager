@@ -264,11 +264,6 @@ namespace NMediaManager
                 return containsValue( pathName, values );
             }
 
-            bool CPreferences::isIgnoredPath( const QFileInfo & fileInfo ) const
-            {
-                return pathMatches( fileInfo, getIgnoredPaths() );
-            }
-
             bool CPreferences::isSkippedPath( const QFileInfo & fileInfo ) const
             {
                 return pathMatches( fileInfo, getSkippedPaths() );
@@ -284,6 +279,20 @@ namespace NMediaManager
                     ii = ii.toLower();
 #endif
                 settings.setValue( "SkippedDirs", realValues );
+            }
+
+            void CPreferences::setIgnorePathNamesToSkip( bool value )
+            {
+                QSettings settings;
+                settings.beginGroup( "Transform" );
+                settings.setValue( "IgnoreSkipFileNames", value );
+            }
+
+            bool CPreferences::getIgnorePathNamesToSkip() const
+            {
+                QSettings settings;
+                settings.beginGroup( "Transform" );
+                return settings.value( "IgnoreSkipFileNames", false ).toBool();
             }
 
             QStringList CPreferences::getSkippedPaths() const
@@ -305,6 +314,12 @@ namespace NMediaManager
                 return settings.value( "SkippedDirs", defaultValues ).toStringList();
             }
 
+
+            bool CPreferences::isIgnoredPath( const QFileInfo & fileInfo ) const
+            {
+                return pathMatches( fileInfo, getIgnoredPaths() );
+            }
+
             void CPreferences::setIgnoredPaths( const QStringList & values )
             {
                 QSettings settings;
@@ -315,6 +330,20 @@ namespace NMediaManager
                     ii = ii.toLower();
 #endif
                 settings.setValue( "IgnoredFileNames", realValues );
+            }
+
+            bool CPreferences::getIgnorePathNamesToIgnore() const
+            {
+                QSettings settings;
+                settings.beginGroup( "Transform" );
+                return settings.value( "IgnoreIgnoredFileNames", false ).toBool();
+            }
+
+            void CPreferences::setIgnorePathNamesToIgnore( bool value )
+            {
+                QSettings settings;
+                settings.beginGroup( "Transform" );
+                settings.setValue( "IgnoreIgnoredFileNames", value );
             }
 
             QStringList CPreferences::getIgnoredPaths() const

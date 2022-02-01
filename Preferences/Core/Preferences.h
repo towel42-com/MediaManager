@@ -83,13 +83,18 @@ namespace NMediaManager
                 QString getMovieOutDirPattern() const;
 
                 bool isSkippedPath( const QFileInfo & fileInfo ) const;
-                bool isIgnoredPath( const QFileInfo & fileInfo ) const;
-
                 QStringList getSkippedPaths() const;
                 void setSkippedPaths( const QStringList & value );
 
+                void setIgnorePathNamesToSkip( bool value );
+                bool getIgnorePathNamesToSkip() const;
+
+                bool isIgnoredPath( const QFileInfo & fileInfo ) const;
                 QStringList getIgnoredPaths() const;
                 void setIgnoredPaths( const QStringList & value );
+
+                void setIgnorePathNamesToIgnore( bool value );
+                bool getIgnorePathNamesToIgnore() const;
 
                 std::list< std::pair< NSABUtils::EMediaTags, bool > > getAllMediaTags() const;
                 std::list< NSABUtils::EMediaTags > getEnabledTags() const;
