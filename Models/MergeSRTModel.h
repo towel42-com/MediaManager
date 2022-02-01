@@ -45,9 +45,9 @@ namespace NMediaManager
             virtual ~CMergeSRTModel() override;
 
         private:
-            virtual std::pair< bool, QStandardItem * > processItem( const QStandardItem * item, QStandardItem * parentResultItem, bool displayOnly ) override;
-            QStandardItem * processSRTSubTitle(QStandardItem * mkvFile, const std::unordered_map< QString, std::vector< QStandardItem * > > & srtFiles, QStandardItem * parentItem, bool displayOnly) const;
-            QStandardItem * processSUBIDXSubTitle(QStandardItem * mkvFile, const std::list< std::pair< QStandardItem *, QStandardItem * > > & subidxFiles, QStandardItem * parentItem, bool displayOnly) const;
+            virtual std::pair< bool, QStandardItem * > processItem( const QStandardItem * item, bool displayOnly ) override;
+            QStandardItem * processSRTSubTitle(QStandardItem * mkvFile, const std::unordered_map< QString, std::vector< QStandardItem * > > & srtFiles, bool displayOnly) const;
+            QStandardItem * processSUBIDXSubTitle(QStandardItem * mkvFile, const std::list< std::pair< QStandardItem *, QStandardItem * > > & subidxFiles, bool displayOnly) const;
             std::list< std::pair< QStandardItem *, QStandardItem * > > pairSubIDX(const std::list< QStandardItem * > & idxFiles, const std::list< QStandardItem * > & subFiles) const;
 
             virtual std::list< SDirNodeItem > addAdditionalItems( const QFileInfo & fileInfo ) const override;

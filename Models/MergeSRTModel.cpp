@@ -331,7 +331,7 @@ namespace NMediaManager
             return namebasedFiles << languageFiles;
         }
 
-        QStandardItem * CMergeSRTModel::processSUBIDXSubTitle(QStandardItem * mkvFile, const std::list< std::pair< QStandardItem *, QStandardItem * > > & subidxFiles, QStandardItem * parentItem, bool displayOnly) const
+        QStandardItem * CMergeSRTModel::processSUBIDXSubTitle(QStandardItem * mkvFile, const std::list< std::pair< QStandardItem *, QStandardItem * > > & subidxFiles, bool displayOnly) const
         {
             SProcessInfo processInfo;
             processInfo.fSetMKVTagsOnSuccess = true;
@@ -340,10 +340,6 @@ namespace NMediaManager
 
             processInfo.fNewName = oldFI.absoluteDir().absoluteFilePath(oldFI.fileName() + ".new");// prevents the emby system from picking it up
             processInfo.fItem = new QStandardItem(QString("'%1' => '%2'").arg(getDispName(processInfo.fOldName)).arg(getDispName(processInfo.fNewName)));
-            if (parentItem)
-                parentItem->appendRow(processInfo.fItem);
-            else
-                fProcessResults.second->appendRow(processInfo.fItem);
 
             std::list< std::pair< std::pair< QStandardItem *, QStandardItem * >, NCore::SLanguageInfo > > allLangInfos;
             std::unordered_map<  QStandardItem *, std::unordered_map< int, std::pair< bool, bool > > > langMap;
@@ -420,16 +416,10 @@ namespace NMediaManager
                 {
                     QStandardItem * errorItem = nullptr;
                     if (processInfo.fCmd.isEmpty())
-                        errorItem = new QStandardItem(QString("ERROR: mkvmerge is not set properly"));
+                        appendError( processInfo.fItem, tr("mkvmerge is not set properly"));
                     else
-                        errorItem = new QStandardItem(QString("ERROR: mkvmerge '%1' is not an executable").arg(processInfo.fCmd));
+                        appendError( processInfo.fItem, tr("mkvmerge '%1' is not an executable").arg(processInfo.fCmd));
 
-                    errorItem->setData(ECustomRoles::eIsErrorNode, true);
-                    appendError(processInfo.fItem, errorItem);
-
-                    QIcon icon;
-                    icon.addFile(QString::fromUtf8(":/resources/error.png"), QSize(), QIcon::Normal, QIcon::Off);
-                    errorItem->setIcon(icon);
                     aOK = false;
                 }
 
@@ -520,7 +510,7 @@ namespace NMediaManager
             return processInfo.fItem;
         }
 
-        QStandardItem * CMergeSRTModel::processSRTSubTitle(QStandardItem * mkvFile, const std::unordered_map< QString, std::vector< QStandardItem * > > & srtFiles, QStandardItem * parentItem, bool displayOnly ) const
+        QStandardItem * CMergeSRTModel::processSRTSubTitle(QStandardItem * mkvFile, const std::unordered_map< QString, std::vector< QStandardItem * > > & srtFiles, bool displayOnly ) const
         {
             SProcessInfo processInfo;
             processInfo.fSetMKVTagsOnSuccess = true;
@@ -530,10 +520,6 @@ namespace NMediaManager
             processInfo.fNewName = oldFI.absoluteDir().absoluteFilePath(oldFI.fileName() + ".new");// prevents the emby system from picking it up
 
             processInfo.fItem = new QStandardItem(QString("'%1' => '%2'").arg(getDispName(processInfo.fOldName)).arg(getDispName(processInfo.fNewName)));
-            if (parentItem)
-                parentItem->appendRow(processInfo.fItem);
-            else
-                fProcessResults.second->appendRow(processInfo.fItem);
 
             for (auto && ii : srtFiles)
             {
@@ -562,16 +548,9 @@ namespace NMediaManager
                 {
                     QStandardItem * errorItem = nullptr;
                     if (processInfo.fCmd.isEmpty())
-                        errorItem = new QStandardItem(QString("ERROR: mkvmerge is not set properly"));
+                        appendError( processInfo.fItem, tr("mkvmerge is not set properly"));
                     else
-                        errorItem = new QStandardItem(QString("ERROR: mkvmerge '%1' is not an executable").arg(processInfo.fCmd));
-
-                    errorItem->setData(ECustomRoles::eIsErrorNode, true);
-                    appendError(processInfo.fItem, errorItem);
-
-                    QIcon icon;
-                    icon.addFile(QString::fromUtf8(":/resources/error.png"), QSize(), QIcon::Normal, QIcon::Off);
-                    errorItem->setIcon(icon);
+                        appendError( processInfo.fItem, tr("mkvmerge '%1' is not an executable").arg(processInfo.fCmd));
                     aOK = false;
                 }
                 aOK = aOK && checkProcessItemExists(processInfo.fOldName, processInfo.fItem);
@@ -628,7 +607,7 @@ namespace NMediaManager
             return processInfo.fItem;
         }
 
-        std::pair< bool, QStandardItem * > CMergeSRTModel::processItem( const QStandardItem * item, QStandardItem * parentResultItem, bool displayOnly )
+        std::pair< bool, QStandardItem * > CMergeSRTModel::processItem( const QStandardItem * item, bool displayOnly )
         {
             if ( !item->data( ECustomRoles::eIsDir ).toBool() )
                 return std::make_pair( true, nullptr );
@@ -644,20 +623,17 @@ namespace NMediaManager
             {
                 auto srtFiles = getChildSRTFiles( mkvFile, false );
                 if ( !srtFiles.empty() )
-                    myItem = processSRTSubTitle( mkvFile, srtFiles, parentResultItem, displayOnly );
+                    myItem = processSRTSubTitle( mkvFile, srtFiles, displayOnly );
                 else
                 {
                     auto idxFiles = getChildFiles(mkvFile, "idx");
                     auto subFiles = getChildFiles(mkvFile, "sub");
                     auto subIDXPairFiles = pairSubIDX(idxFiles, subFiles);
                     if (!subIDXPairFiles.empty())
-                        myItem = processSUBIDXSubTitle(mkvFile, subIDXPairFiles, parentResultItem, displayOnly);
+                        myItem = processSUBIDXSubTitle(mkvFile, subIDXPairFiles, displayOnly);
                 }
             }
-            if ( mkvFiles.count() > 1 )
-                return std::make_pair( aOK, myItem );
-            else
-                return std::make_pair( aOK, parentResultItem );
+            return std::make_pair( aOK, myItem );
         }
 
         QStandardItem * CMergeSRTModel::getLanguageItem( const QStandardItem * item ) const
