@@ -92,8 +92,6 @@ namespace NMediaManager
 
             static bool isAutoSetText( const QString & text );
 
-
-
             QString transformedName( const QFileInfo & fileInfo, const SPatternInfo & info, bool titleOnly ) const;
             void removeChild( std::shared_ptr< STransformResult > info );
 
@@ -108,6 +106,8 @@ namespace NMediaManager
             void setReleaseDate( const QString & releaseDate );
             [[nodiscard]] static QString cleanFileName(const QString & inFile, bool isDir);
             [[nodiscard]] static QString cleanFileName(const QFileInfo & fi);
+
+            bool operator==( const STransformResult & rhs ) const;
 
             QString fTitle;
             std::pair< QDate, QString > fReleaseDate;

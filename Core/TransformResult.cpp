@@ -211,7 +211,25 @@ namespace NMediaManager
             return cleanFileName(fi.completeBaseName(), fi.isDir());
         }
 
-        QString STransformResult::transformedName(const QFileInfo & fileInfo, const SPatternInfo & patternInfo, bool titleOnly) const
+        bool STransformResult::operator==( const STransformResult & rhs ) const
+        {
+            return ( fTitle == rhs.fTitle )
+                && ( fReleaseDate == rhs.fReleaseDate )
+                && ( fTMDBID == rhs.fTMDBID )
+                && ( fSeasonTMDBID == rhs.fSeasonTMDBID )
+                && ( fEpisodeTMDBID == rhs.fEpisodeTMDBID )
+                && ( fSeason == rhs.fSeason )
+                && ( fSeasonOnly == rhs.fSeasonOnly )
+                && ( fEpisode == rhs.fEpisode )
+                && ( fSubTitle == rhs.fSubTitle )
+                && ( fExtraInfo == rhs.fExtraInfo )
+                && ( fDiskNum == rhs.fDiskNum )
+                && ( fDescription == rhs.fDescription )
+                ;
+            // pixmap, parent, children and mediatype do not count
+        }
+
+        QString STransformResult::transformedName( const QFileInfo & fileInfo, const SPatternInfo & patternInfo, bool titleOnly ) const
         {
             auto title = getTitle();
             auto year = getInitialYear();
