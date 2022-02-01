@@ -22,11 +22,11 @@
 
 #include "ui_BasePage.h"
 #include "BasePage.h"
-#include "SetTags.h"
 
 #include "Preferences/Core/Preferences.h"
 #include "Models/DirModel.h"
 #include "SABUtils/DoubleProgressDlg.h"
+#include "SABUtils/SetMKVTags.h"
 #include "SABUtils/QtUtils.h"
 
 #include <QSettings>
@@ -389,9 +389,9 @@ namespace NMediaManager
         void CBasePage::editMediaTags( const QModelIndex & idx )
         {
             auto fn = fModel->fileInfo( idx ).absoluteFilePath();
-            CSetTags dlg( fn, this );
-            dlg.exec();
-            fModel->reloadMediaTags( idx );
+            NSABUtils::CSetMKVTags dlg( fn, NPreferences::NCore::CPreferences::instance()->getMKVPropEditEXE(), this );
+            if ( dlg.exec() == QDialog::Accepted )
+                fModel->reloadMediaTags( idx );
         }
     }
 }
