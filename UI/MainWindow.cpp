@@ -21,10 +21,15 @@
 // SOFTWARE.
 
 #include "MainWindow.h"
-#include "Preferences/UI/Preferences.h"
+#include "MakeMKVPage.h"
+#include "MergeSRTPage.h"
+#include "TransformPage.h"
+#include "TagsPage.h"
+#include "BIFViewerPage.h"
 
 #include "ui_MainWindow.h"
 
+#include "Preferences/UI/Preferences.h"
 #include "Preferences/Core/Preferences.h"
 #include "Models/DirModel.h"
 #include "Core/SearchTMDBInfo.h"
@@ -92,6 +97,8 @@ namespace NMediaManager
             fFileChecker = new NSABUtils::CBackgroundFileCheck( this );
             connect( fFileChecker, &NSABUtils::CBackgroundFileCheck::sigFinished, this, &CMainWindow::slotFileCheckFinished );
 
+            addPages();
+
             fImpl->directory->setDelay( 1000 );
             auto delayLE = new NSABUtils::CPathBasedDelayLineEdit;
             delayLE->setCheckExists( true );
@@ -126,8 +133,6 @@ namespace NMediaManager
             delayLE->setCheckIsFile( true );
             delayLE->setCheckIsReadable( true );
             fImpl->fileName->setDelayLineEdit( delayLE );
-            connect( fImpl->fileName, &NSABUtils::CDelayComboBox::sigEditTextChangedAfterDelay, fImpl->bifViewerPage, &CBIFViewerPage::slotFileChanged );
-            connect( fImpl->fileName->lineEdit(), &NSABUtils::CDelayLineEdit::sigFinishedEditingAfterDelay, fImpl->bifViewerPage, &CBIFViewerPage::slotFileFinishedEditing );
 
             connect( fImpl->actionOpen, &QAction::triggered, this, &CMainWindow::slotOpen );
             connect( fImpl->actionLoad, &QAction::triggered, this, &CMainWindow::slotLoad );
@@ -139,25 +144,78 @@ namespace NMediaManager
 
             loadSettings();
             
-            addUIComponents( fImpl->bifViewerTab, fImpl->bifViewerPage );
-            addUIComponents( fImpl->transformTab, fImpl->transformPage );
-            addUIComponents( fImpl->tagsTab, fImpl->tagsPage);
-            addUIComponents( fImpl->makeMKVTab, fImpl->makeMKVPage );
-            addUIComponents( fImpl->mergeSRTTab, fImpl->mergeSRTPage );
-
             new NSABUtils::CSelectFileUrl( this );
 
             QTimer::singleShot( 0, this, &CMainWindow::slotDirectoryChangedImmediate );
             QTimer::singleShot( 0, this, &CMainWindow::slotWindowChanged );
+            QTimer::singleShot( 0, this, &CMainWindow::slotValidateDefaults );
         }
-
 
         CMainWindow::~CMainWindow()
         {
             saveSettings();
         }
 
-        bool CMainWindow::nativeEvent(const QByteArray & eventType, void * message, long * result)
+        void CMainWindow::connectBasePage( CBasePage * basePage )
+        {
+            connect( this, &CMainWindow::sigSettingsChanged, basePage, &CBasePage::slotPreferencesChanged );
+            connect( basePage, &CBasePage::sigLoadFinished, this, &CMainWindow::slotLoadFinished );
+            connect( basePage, &CBasePage::sigStartStayAwake, this, &CMainWindow::slotStartStayAwake );
+            connect( basePage, &CBasePage::sigStopStayAwake, this, &CMainWindow::slotStopStayAwake );
+        }
+
+        void CMainWindow::addUIComponents( QWidget * tab, CBasePage * page )
+        {
+            auto menu = page->menu();
+            auto toolBar = page->toolBar();
+
+            QAction * menuAction = nullptr;
+            if ( menu )
+                menuAction = menuBar()->addMenu( menu );
+            if ( toolBar )
+                addToolBar( toolBar );
+            fUIComponentMap[ tab ] = std::make_tuple( page, menuAction, toolBar );
+            connectBasePage( page );
+        }
+
+        std::pair< QWidget *, CBasePage * > CMainWindow::addPage( CBasePage * currPage, const QString & pageName, const QString & iconImage )
+        {
+            auto * currTab = new QWidget();
+            currTab->setObjectName( QString( "%1-Tab" ).arg( pageName ) );
+            auto vertLayout = new QVBoxLayout( currTab );
+            vertLayout->setSpacing( 6 );
+            vertLayout->setObjectName( QString( "%1-Vertlayout" ).arg( pageName ) );
+            vertLayout->setContentsMargins( 0, 0, 0, 0 );
+
+            currPage->setParent( currTab );
+            currPage->setObjectName( QString( "%1-Page" ).arg( pageName ) );
+
+            vertLayout->addWidget( currPage );
+
+            QIcon icon4;
+            icon4.addFile( iconImage, QSize(), QIcon::Normal, QIcon::Off );
+            Q_ASSERT( !icon4.isNull() );
+
+            fImpl->tabWidget->addTab( currTab, icon4, pageName );
+
+            addUIComponents( currTab, currPage );
+            return { currTab, currPage };
+        }
+
+        void CMainWindow::addPages()
+        {
+            addPage( new CMakeMKVPage( nullptr ), tr( "Make MKV" ), QString::fromUtf8( ":/mkv.png" ) );
+            addPage( new CMergeSRTPage( nullptr ), tr( "Make SRT" ), QString::fromUtf8( ":/cc.png" ) );
+            addPage( new CTransformPage( nullptr ), tr( "Media Namer" ), QString::fromUtf8( ":/rename.png" ) );
+            addPage( new CTagsPage( nullptr ), tr( "Media Tags" ), QString::fromUtf8( ":/tag.png" ) );
+            auto bifInfo = addPage( new CBIFViewerPage( nullptr ), tr( "BIF Viewer" ), QString::fromUtf8( ":/roku.png" ) );
+
+            connect( fImpl->fileName, &NSABUtils::CDelayComboBox::sigEditTextChangedAfterDelay, dynamic_cast<CBIFViewerPage*>( bifInfo.second ), &CBIFViewerPage::slotFileChanged );
+            connect( fImpl->fileName->lineEdit(), &NSABUtils::CDelayLineEdit::sigFinishedEditingAfterDelay, dynamic_cast<CBIFViewerPage *>( bifInfo.second ), &CBIFViewerPage::slotFileFinishedEditing );
+
+        }
+
+        bool CMainWindow::nativeEvent( const QByteArray & eventType, void * message, long * result )
         {
             if (eventType == "windows_generic_MSG")
             {
@@ -179,6 +237,17 @@ namespace NMediaManager
             return QMainWindow::nativeEvent(eventType, message, result);
         }
 
+        void CMainWindow::slotValidateDefaults()
+        {
+#ifdef _DEBUG
+            auto diffs = NPreferences::NCore::CPreferences::instance()->validateDefaults();
+            if ( !diffs.isEmpty() )
+            {
+                QMessageBox::warning( this, tr( "Preferences have changed:" ), diffs, QMessageBox::Ok );
+            }
+#endif
+        }
+
         bool CMainWindow::isActivePageFileBased() const
         {
             auto basePage = getCurrentBasePage();
@@ -196,32 +265,29 @@ namespace NMediaManager
 
             return false;
         }
-
-        void CMainWindow::connectBasePage( CBasePage * basePage )
-        {
-            connect( basePage, &CBasePage::sigLoadFinished, this, &CMainWindow::slotLoadFinished );
-            connect( basePage, &CBasePage::sigStartStayAwake, this, &CMainWindow::slotStartStayAwake );
-            connect( basePage, &CBasePage::sigStopStayAwake, this, &CMainWindow::slotStopStayAwake );
-        }
-
-        void CMainWindow::addUIComponents( QWidget * tab, CBasePage * page )
-        {
-            auto menu = page->menu();
-            auto toolBar = page->toolBar();
-
-            QAction * menuAction = nullptr;
-            if ( menu )
-                menuAction = menuBar()->addMenu( menu );
-            if ( toolBar )
-                addToolBar( toolBar );
-            fUIComponentMap[tab] = std::make_tuple( page, menuAction, toolBar );
-            connectBasePage( page );
-        }
-
+        
         bool CMainWindow::setBIFFileName( const QString & name )
         {
-            fImpl->tabWidget->setCurrentWidget( fImpl->bifViewerTab );
-            return fImpl->bifViewerPage->setFileName( fImpl->fileName, name, true );
+            QSettings settings;
+            int index = -1;
+            CBIFViewerPage * page = nullptr;
+            for ( auto && ii : fUIComponentMap )
+            {
+                page = dynamic_cast<CBIFViewerPage *>( std::get< 0 >( ii.second ) );
+                if ( page )
+                {
+                    index = fImpl->tabWidget->indexOf( ii.first );
+                    break;
+                }
+            }
+
+            Q_ASSERT( index != -1 );
+
+            if ( ( index == -1 ) || ( page == nullptr ) )
+                return false;
+
+            fImpl->tabWidget->setCurrentIndex( index );
+            return page->setFileName( fImpl->fileName, name, true );
         }
 
         void CMainWindow::loadSettings()
@@ -230,9 +296,17 @@ namespace NMediaManager
             fImpl->fileName->addItems( NPreferences::NCore::CPreferences::instance()->getFileNames(), true );
 
             QSettings settings;
-            auto renamerPage = fImpl->tabWidget->indexOf( fImpl->transformTab );
+            int index = -1;
+            for ( auto && ii : fUIComponentMap )
+            {
+                if ( dynamic_cast<CTransformPage *>( std::get< 0 >( ii.second ) ) )
+                {
+                    index = fImpl->tabWidget->indexOf( ii.first );
+                    break;
+                }
+            }
 
-            fImpl->tabWidget->setCurrentIndex( settings.value( "LastFunctionalityPage", renamerPage ).toInt() );
+            fImpl->tabWidget->setCurrentIndex( settings.value( "LastFunctionalityPage", index ).toInt() );
         }
 
         void CMainWindow::saveSettings()
@@ -259,8 +333,6 @@ namespace NMediaManager
             validateRunAction();
             validateLoadAction();
 
-            auto tmp = fImpl->bifViewerPage->parentWidget();
-            auto index = fImpl->tabWidget->indexOf( fImpl->bifViewerPage );
             auto activePage = fImpl->tabWidget->currentWidget();
             for ( auto && ii : fUIComponentMap )
             {
@@ -341,6 +413,7 @@ namespace NMediaManager
             NPreferences::NUi::CPreferences dlg;
             if ( dlg.exec() == QDialog::Accepted )
             {
+                emit sigSettingsChanged();
             }
         }
 

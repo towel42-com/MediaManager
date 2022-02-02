@@ -53,7 +53,7 @@ namespace NMediaManager
             Q_OBJECT
         public:
             CMainWindow( QWidget *parent = nullptr );
-            ~CMainWindow();
+            virtual ~CMainWindow() override;
 
             bool setBIFFileName( const QString &name );
         public Q_SLOTS:
@@ -70,7 +70,13 @@ namespace NMediaManager
             virtual void slotStopStayAwake();
             virtual void slotStartStayAwake();
             virtual void slotFileCheckFinished( bool aOK, const QString & msg );
+            virtual void slotValidateDefaults();
+        Q_SIGNALS:
+            void sigSettingsChanged();
         private:
+            void addPages();
+            std::pair< QWidget *, CBasePage * > addPage( CBasePage * basePage, const QString & pageName, const QString & iconImage );
+
             virtual bool nativeEvent(const QByteArray & eventType, void * message, long * result) override;
             CBasePage * getCurrentBasePage() const;
    
@@ -93,6 +99,7 @@ namespace NMediaManager
             CCompleterFileSystemModel * fFileModel{ nullptr };
             NSABUtils::CBackgroundFileCheck * fFileChecker;
             NSABUtils::CStayAwake * fStayAwake{ nullptr };
+
             std::map< QWidget *, std::tuple< CBasePage *, QAction *, QToolBar * > > fUIComponentMap;
         };
     }
