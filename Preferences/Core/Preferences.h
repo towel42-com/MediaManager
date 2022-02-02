@@ -58,6 +58,8 @@ namespace NMediaManager
                 static CPreferences * instance();
                 ~CPreferences();
 
+                QString validateDefaults();
+
                 void setDirectories( const QStringList & dirs );
                 QStringList getDirectories() const;
 
@@ -83,6 +85,7 @@ namespace NMediaManager
                 QString getMovieOutDirPattern() const;
 
                 bool isSkippedPath( const QFileInfo & fileInfo ) const;
+                QStringList getDefaultSkippedPaths() const;
                 QStringList getSkippedPaths() const;
                 void setSkippedPaths( const QStringList & value );
 
@@ -90,6 +93,7 @@ namespace NMediaManager
                 bool getIgnorePathNamesToSkip() const;
 
                 bool isIgnoredPath( const QFileInfo & fileInfo ) const;
+                QStringList getDefaultIgnoredPaths() const;
                 QStringList getIgnoredPaths() const;
                 void setIgnoredPaths( const QStringList & value );
 
@@ -125,6 +129,7 @@ namespace NMediaManager
                 QRegularExpression getVerifyMediaCommentExpr( const QFileInfo & fi, const QDate & date ) const;
                 void setVerifyMediaCommentExpr( const QString & value );
 
+                QStringList getDefaultCustomPathsToDelete() const;
                 QStringList getCustomPathsToDelete() const;
                 void setCustomPathsToDelete( const QStringList & paths );
 
@@ -158,14 +163,18 @@ namespace NMediaManager
 
                 void addKnownStrings( const QStringList & value );
                 void setKnownStrings( const QStringList & value );
+
+                QStringList getDefaultKnownStrings() const;
                 QStringList getKnownStrings() const;
                 QStringList getKnownStringRegExs() const;
 
                 void setKnownExtendedStrings( const QStringList & value );
+                QStringList getDefaultKnownExtendedStrings() const;
                 QStringList getKnownExtendedStrings() const;
 
                 void setKnownAbbreviations( const QVariantMap & value );  // needs to be QString to QString
                 void setKnownAbbreviations( const QList<QPair<QString, QString >> & value );
+                QVariantMap getDefaultKnownAbbreviations() const;
                 QVariantMap getKnownAbbreviations() const;
 
                 void setMKVMergeEXE( const QString & value );
