@@ -383,6 +383,9 @@ namespace NMediaManager
             {
                 tree.push_back( std::move( getItemRow( fileInfo ) ) ); // mkv file
 
+                if ( isSkippedPathName( fileInfo ) )
+                    return false;
+
                 // need to be children of file
                 auto attachFile = preFileFunction( fileInfo, alreadyAdded, tree );
 
