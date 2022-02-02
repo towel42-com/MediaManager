@@ -77,6 +77,8 @@ namespace NMediaManager
             void slotAutoSearchForNewNames();
             void slotAutoSearchFinished( const QString & path, NCore::SSearchTMDBInfo * searchInfo, bool searchesRemaining );
             void slotMenuAboutToShow();
+            virtual void slotPreferencesChanged( NPreferences::EPreferenceTypes prefTypes ) override;
+                
         protected:
             void manualSearch( const QModelIndex & idx );
 

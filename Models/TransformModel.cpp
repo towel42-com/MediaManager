@@ -769,14 +769,14 @@ namespace NMediaManager
                 return {};
 
             auto fileInfo = this->fileInfo( idx );
-            TItemStatus retVal = { NPreferences::NCore::EItemStatus::eOK, QString() };
+            TItemStatus retVal = { NPreferences::EItemStatus::eOK, QString() };
             auto path = fileInfo.absoluteFilePath();
         
             if (isIgnoredPathName(fileInfo) && !NPreferences::NCore::CPreferences::instance()->isSubtitleFile(fileInfo))
-                retVal.first = NPreferences::NCore::EItemStatus::eOK;
+                retVal.first = NPreferences::EItemStatus::eOK;
             else if ( fileInfo.isDir() || isMediaFile(fileInfo))
             {
-                retVal.first = itemSearchOK( idx, &retVal.second ) ? NPreferences::NCore::EItemStatus::eOK : NPreferences::NCore::EItemStatus::eError;
+                retVal.first = itemSearchOK( idx, &retVal.second ) ? NPreferences::EItemStatus::eOK : NPreferences::EItemStatus::eError;
             }
 
             return retVal;

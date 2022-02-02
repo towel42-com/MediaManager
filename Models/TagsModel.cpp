@@ -236,7 +236,7 @@ namespace NMediaManager
                         .arg( expr.toHtmlEscaped() )
                         .arg( tag );
 
-                    return TItemStatus( NPreferences::NCore::EItemStatus::eWarning, msg );
+                    return TItemStatus( NPreferences::EItemStatus::eWarning, msg );
                 }
             }
             return {};

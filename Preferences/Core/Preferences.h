@@ -36,27 +36,45 @@ namespace NSABUtils
     enum class EMediaTags;
 }
 
+class QTimer;
 namespace NMediaManager
 {
     namespace NPreferences
     {
+        enum class EItemStatus
+        {
+            eOK,
+            eWarning,
+            eError
+        };
+
+        QString toString( EItemStatus status );
+
+        enum EPreferenceType
+        {
+            eSystemPrefs,
+            eColorsPrefs,
+            eLoadPrefs,
+            eTransformPrefs,
+            eTagPrefs,
+            eExtToolsPrefs,
+            eBIFPrefs,
+            eGIFPrefs
+        };
+        Q_DECLARE_FLAGS( EPreferenceTypes, EPreferenceType );
+        Q_DECLARE_OPERATORS_FOR_FLAGS( EPreferenceTypes );
+        QString toString( EPreferenceType prefType );
+
         namespace NCore
         {
-            enum class EItemStatus
+            class CPreferences : public QObject
             {
-                eOK,
-                eWarning,
-                eError
-            };
+                Q_OBJECT;
 
-            QString toString( EItemStatus status );
-
-            class CPreferences
-            {
                 CPreferences();
             public:
                 static CPreferences * instance();
-                ~CPreferences();
+                virtual ~CPreferences() override;
 
                 QString validateDefaults();
 
@@ -218,12 +236,17 @@ namespace NMediaManager
 
                 QColor getColorForStatus( EItemStatus status, bool background ) const;
                 void setColorForStatus( EItemStatus, bool background, const QColor & value );
+            Q_SIGNALS:
+                void sigPreferencesChanged( EPreferenceTypes prefType );
             private:
+                void emitSigPreferencesChanged( EPreferenceTypes prefType );
                 bool pathMatches( const QFileInfo & fileInfo, const QStringList & values ) const;
                 bool containsValue( const QString & value, const QStringList & values ) const;
                 //QString getDefaultInPattern( bool forTV ) const;
                 QString getDefaultOutDirPattern( bool forTV ) const;
                 QString getDefaultOutFilePattern( bool forTV ) const;
+                QTimer * fPrefChangeTimer{ nullptr };
+                EPreferenceTypes fPending;
             };
         }
     }

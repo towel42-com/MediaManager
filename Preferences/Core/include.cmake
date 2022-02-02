@@ -25,10 +25,10 @@ set(qtproject_SRCS
 )
 
 set(qtproject_H
+    Preferences.h
 )
 
 set(project_H
-    Preferences.h
 )
 
 set(qtproject_UIS

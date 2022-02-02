@@ -372,20 +372,20 @@ namespace NMediaManager
                 fExactMatchesOnlyAction->setObjectName( QString::fromUtf8( "actionExactMatchesOnly" ) );
                 fExactMatchesOnlyAction->setCheckable( true );
                 fExactMatchesOnlyAction->setText( QCoreApplication::translate( "NMediaManager::NUi::CMainWindow", "Exact Matches Only?", nullptr ) );
-                connect(fExactMatchesOnlyAction, &QAction::triggered, [this]()
-                    {
-                        NPreferences::NCore::CPreferences::instance()->setExactMatchesOnly(fExactMatchesOnlyAction->isChecked());
-                    }
+                connect( fExactMatchesOnlyAction, &QAction::triggered, [this]()
+                         {
+                             NPreferences::NCore::CPreferences::instance()->setExactMatchesOnly( fExactMatchesOnlyAction->isChecked() );
+                         }
                 );
 
                 fTreatAsTVShowByDefaultAction = new QAction( this );
                 fTreatAsTVShowByDefaultAction->setObjectName( QString::fromUtf8( "actionTreatAsTVShowByDefault" ) );
                 fTreatAsTVShowByDefaultAction->setCheckable( true );
                 fTreatAsTVShowByDefaultAction->setText( QCoreApplication::translate( "NMediaManager::NUi::CMainWindow", "Treat as TV Show by Default?", nullptr ) );
-                connect(fTreatAsTVShowByDefaultAction, &QAction::triggered, [this]()
-                    {
-                        NPreferences::NCore::CPreferences::instance()->setTreatAsTVShowByDefault(fTreatAsTVShowByDefaultAction->isChecked());
-                    }
+                connect( fTreatAsTVShowByDefaultAction, &QAction::triggered, [this]()
+                         {
+                             NPreferences::NCore::CPreferences::instance()->setTreatAsTVShowByDefault( fTreatAsTVShowByDefaultAction->isChecked() );
+                         }
                 );
 
                 fDeleteEXE = new QAction( this );
@@ -393,68 +393,68 @@ namespace NMediaManager
                 fDeleteEXE->setCheckable( true );
                 fDeleteEXE->setChecked( NPreferences::NCore::CPreferences::instance()->deleteEXE() );
                 fDeleteEXE->setText( QCoreApplication::translate( "NMediaManager::NUi::CMainWindow", "Delete Executables (*.exe)?", nullptr ) );
-                connect(fDeleteEXE, &QAction::triggered, [ this ]()
-                {
-                    NPreferences::NCore::CPreferences::instance()->setDeleteEXE(fDeleteEXE->isChecked() );
-                }
+                connect( fDeleteEXE, &QAction::triggered, [this]()
+                         {
+                             NPreferences::NCore::CPreferences::instance()->setDeleteEXE( fDeleteEXE->isChecked() );
+                         }
                 );
 
-                fDeleteTXT = new QAction(this);
-                fDeleteTXT->setObjectName(QString::fromUtf8("actionDeleteKnownPathTXTs"));
-                fDeleteTXT->setCheckable(true);
-                fDeleteTXT->setChecked(NPreferences::NCore::CPreferences::instance()->deleteTXT());
-                fDeleteTXT->setText(QCoreApplication::translate("NMediaManager::NUi::CMainWindow", "Delete Text Files (*.txt)?", nullptr));
-                connect(fDeleteTXT, &QAction::triggered, [this]()
-                    {
-                        NPreferences::NCore::CPreferences::instance()->setDeleteTXT(fDeleteTXT->isChecked());
-                    }
+                fDeleteTXT = new QAction( this );
+                fDeleteTXT->setObjectName( QString::fromUtf8( "actionDeleteKnownPathTXTs" ) );
+                fDeleteTXT->setCheckable( true );
+                fDeleteTXT->setChecked( NPreferences::NCore::CPreferences::instance()->deleteTXT() );
+                fDeleteTXT->setText( QCoreApplication::translate( "NMediaManager::NUi::CMainWindow", "Delete Text Files (*.txt)?", nullptr ) );
+                connect( fDeleteTXT, &QAction::triggered, [this]()
+                         {
+                             NPreferences::NCore::CPreferences::instance()->setDeleteTXT( fDeleteTXT->isChecked() );
+                         }
                 );
 
-                fDeleteBAK = new QAction(this);
-                fDeleteBAK->setObjectName(QString::fromUtf8("actionDeleteKnownPathBAKs"));
-                fDeleteBAK->setCheckable(true);
-                fDeleteBAK->setChecked(NPreferences::NCore::CPreferences::instance()->deleteBAK());
-                fDeleteBAK->setText(QCoreApplication::translate("NMediaManager::NUi::CMainWindow", "Delete Backup Files (*.bak)?", nullptr));
-                connect(fDeleteBAK, &QAction::triggered, [this]()
-                    {
-                        NPreferences::NCore::CPreferences::instance()->setDeleteBAK(fDeleteBAK->isChecked());
-                    }
+                fDeleteBAK = new QAction( this );
+                fDeleteBAK->setObjectName( QString::fromUtf8( "actionDeleteKnownPathBAKs" ) );
+                fDeleteBAK->setCheckable( true );
+                fDeleteBAK->setChecked( NPreferences::NCore::CPreferences::instance()->deleteBAK() );
+                fDeleteBAK->setText( QCoreApplication::translate( "NMediaManager::NUi::CMainWindow", "Delete Backup Files (*.bak)?", nullptr ) );
+                connect( fDeleteBAK, &QAction::triggered, [this]()
+                         {
+                             NPreferences::NCore::CPreferences::instance()->setDeleteBAK( fDeleteBAK->isChecked() );
+                         }
                 );
 
-                fDeleteNFO = new QAction(this);
-                fDeleteNFO->setObjectName(QString::fromUtf8("actionDeleteKnownPathNFOs"));
-                fDeleteNFO->setCheckable(true);
-                fDeleteNFO->setChecked(NPreferences::NCore::CPreferences::instance()->deleteNFO());
-                fDeleteNFO->setText(QCoreApplication::translate("NMediaManager::NUi::CMainWindow", "Delete NFO Files (*.nfo)?", nullptr));
-                connect(fDeleteNFO, &QAction::triggered, [this]()
-                    {
-                        NPreferences::NCore::CPreferences::instance()->setDeleteNFO(fDeleteNFO->isChecked());
-                    }
+                fDeleteNFO = new QAction( this );
+                fDeleteNFO->setObjectName( QString::fromUtf8( "actionDeleteKnownPathNFOs" ) );
+                fDeleteNFO->setCheckable( true );
+                fDeleteNFO->setChecked( NPreferences::NCore::CPreferences::instance()->deleteNFO() );
+                fDeleteNFO->setText( QCoreApplication::translate( "NMediaManager::NUi::CMainWindow", "Delete NFO Files (*.nfo)?", nullptr ) );
+                connect( fDeleteNFO, &QAction::triggered, [this]()
+                         {
+                             NPreferences::NCore::CPreferences::instance()->setDeleteNFO( fDeleteNFO->isChecked() );
+                         }
                 );
 
-                fDeleteCustom = new QAction(this);
-                fDeleteCustom->setObjectName(QString::fromUtf8("actionDeleteKnownPathCustoms"));
-                fDeleteCustom->setCheckable(true);
-                fDeleteCustom->setChecked(NPreferences::NCore::CPreferences::instance()->deleteCustom());
-                fDeleteCustom->setText(QCoreApplication::translate("NMediaManager::NUi::CMainWindow", "Delete Custom Known Paths?", nullptr));
-                connect(fDeleteCustom, &QAction::triggered, [this]()
-                    {
-                        NPreferences::NCore::CPreferences::instance()->setDeleteCustom(fDeleteCustom->isChecked());
-                    }
+                fDeleteCustom = new QAction( this );
+                fDeleteCustom->setObjectName( QString::fromUtf8( "actionDeleteKnownPathCustoms" ) );
+                fDeleteCustom->setCheckable( true );
+                fDeleteCustom->setChecked( NPreferences::NCore::CPreferences::instance()->deleteCustom() );
+                fDeleteCustom->setText( QCoreApplication::translate( "NMediaManager::NUi::CMainWindow", "Delete Custom Known Paths?", nullptr ) );
+                connect( fDeleteCustom, &QAction::triggered, [this]()
+                         {
+                             NPreferences::NCore::CPreferences::instance()->setDeleteCustom( fDeleteCustom->isChecked() );
+                         }
                 );
 
-                auto deleteKnownMenu = new QMenu(this);
-                deleteKnownMenu->setObjectName("DeleteKnownMenu");
-                deleteKnownMenu->setTitle("Delete Known Paths");
-                deleteKnownMenu->addAction(fDeleteEXE);
-                deleteKnownMenu->addAction(fDeleteTXT);
-                deleteKnownMenu->addAction(fDeleteBAK);
-                deleteKnownMenu->addAction(fDeleteNFO);
-                deleteKnownMenu->addAction(fDeleteCustom);
+                auto deleteKnownMenu = new QMenu( this );
+                deleteKnownMenu->setObjectName( "DeleteKnownMenu" );
+                deleteKnownMenu->setTitle( "Delete Known Paths" );
+                deleteKnownMenu->addAction( fDeleteEXE );
+                deleteKnownMenu->addAction( fDeleteTXT );
+                deleteKnownMenu->addAction( fDeleteBAK );
+                deleteKnownMenu->addAction( fDeleteNFO );
+                deleteKnownMenu->addAction( fDeleteCustom );
 
                 fMenu->addAction( fExactMatchesOnlyAction );
                 fMenu->addAction( fTreatAsTVShowByDefaultAction );
-                fMenu->addMenu(deleteKnownMenu);
+                fMenu->addMenu( deleteKnownMenu );
                 setActive( true );
             }
             return fMenu;
@@ -469,6 +469,16 @@ namespace NMediaManager
             fDeleteBAK->setChecked(NPreferences::NCore::CPreferences::instance()->deleteBAK());
             fDeleteNFO->setChecked(NPreferences::NCore::CPreferences::instance()->deleteNFO());
             fDeleteCustom->setChecked(NPreferences::NCore::CPreferences::instance()->deleteCustom());
+        }
+
+        void CTransformPage::slotPreferencesChanged( NPreferences::EPreferenceTypes prefTypes )
+        {
+            if ( prefTypes & NPreferences::EPreferenceType::eTransformPrefs )
+            {
+                if ( model() )
+                    model()->reloadModel();
+            }
+            CBasePage::slotPreferencesChanged( prefTypes );
         }
     }
 }

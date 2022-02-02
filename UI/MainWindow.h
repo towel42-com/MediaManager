@@ -30,6 +30,7 @@ class QUrl;
 #include <QMainWindow>
 #include <optional>
 #include <tuple>
+#include "Preferences/Core/Preferences.h"
 
 namespace NSABUtils 
 {
@@ -72,7 +73,7 @@ namespace NMediaManager
             virtual void slotFileCheckFinished( bool aOK, const QString & msg );
             virtual void slotValidateDefaults();
         Q_SIGNALS:
-            void sigSettingsChanged();
+            void sigPreferencesChanged( NPreferences::EPreferenceTypes prefType );
         private:
             void addPages();
             std::pair< QWidget *, CBasePage * > addPage( CBasePage * basePage, const QString & pageName, const QString & iconImage );

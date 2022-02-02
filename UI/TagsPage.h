@@ -70,6 +70,8 @@ namespace NMediaManager
         public Q_SLOTS:
         protected Q_SLOTS:
             void slotMenuAboutToShow();
+            void slotPreferencesChanged( NPreferences::EPreferenceTypes prefTypes );
+
         protected:
             virtual void loadSettings() override;
             NModels::CTagsModel * model();

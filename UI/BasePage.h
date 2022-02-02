@@ -24,6 +24,7 @@
 #define _BASEPAGE_H
 
 #include <QWidget>
+#include "Preferences/Core/Preferences.h"
 namespace NSABUtils
 {
     class CDoubleProgressDlg;
@@ -91,7 +92,7 @@ namespace NMediaManager
             void showResults();
             virtual void slotDoubleClicked( const QModelIndex & idx ) final;
             virtual void slotContextMenu( const QPoint & pt ) final;
-            virtual void slotPreferencesChanged();
+            virtual void slotPreferencesChanged( NPreferences::EPreferenceTypes prefType );
         protected Q_SLOTS:
             virtual void slotPostInit();
         Q_SIGNALS:

@@ -143,7 +143,9 @@ namespace NMediaManager
             connect( fImpl->tabWidget, &QTabWidget::currentChanged, this, &CMainWindow::slotWindowChanged );
 
             loadSettings();
-            
+
+            connect( NPreferences::NCore::CPreferences::instance(), &NPreferences::NCore::CPreferences::sigPreferencesChanged, this, &CMainWindow::sigPreferencesChanged );
+
             new NSABUtils::CSelectFileUrl( this );
 
             QTimer::singleShot( 0, this, &CMainWindow::slotDirectoryChangedImmediate );
@@ -158,7 +160,7 @@ namespace NMediaManager
 
         void CMainWindow::connectBasePage( CBasePage * basePage )
         {
-            connect( this, &CMainWindow::sigSettingsChanged, basePage, &CBasePage::slotPreferencesChanged );
+            connect( this, &CMainWindow::sigPreferencesChanged, basePage, &CBasePage::slotPreferencesChanged );
             connect( basePage, &CBasePage::sigLoadFinished, this, &CMainWindow::slotLoadFinished );
             connect( basePage, &CBasePage::sigStartStayAwake, this, &CMainWindow::slotStartStayAwake );
             connect( basePage, &CBasePage::sigStopStayAwake, this, &CMainWindow::slotStopStayAwake );
@@ -413,7 +415,6 @@ namespace NMediaManager
             NPreferences::NUi::CPreferences dlg;
             if ( dlg.exec() == QDialog::Accepted )
             {
-                emit sigSettingsChanged();
             }
         }
 

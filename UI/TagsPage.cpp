@@ -139,7 +139,6 @@ namespace NMediaManager
                 connect( fIgnoreSkippedPathSettings, &QAction::triggered, [this]()
                 {
                     NPreferences::NCore::CPreferences::instance()->setIgnorePathNamesToSkip( fIgnoreSkippedPathSettings->isChecked() );
-                    model()->reloadModel();
                 }
                 );
 
@@ -151,7 +150,6 @@ namespace NMediaManager
                 connect( fVerifyMediaTitle, &QAction::triggered, [this]()
                 {
                     NPreferences::NCore::CPreferences::instance()->setVerifyMediaTitle( fVerifyMediaTitle->isChecked() );
-                    model()->resetStatusCaches();
                 }
                 );
 
@@ -163,7 +161,6 @@ namespace NMediaManager
                 connect( fVerifyMediaDate, &QAction::triggered, [this]()
                 {
                     NPreferences::NCore::CPreferences::instance()->setVerifyMediaDate( fVerifyMediaDate->isChecked() );
-                    model()->resetStatusCaches();
                 }
                 );
 
@@ -175,7 +172,6 @@ namespace NMediaManager
                 connect( fVerifyMediaComment, &QAction::triggered, [this]()
                 {
                     NPreferences::NCore::CPreferences::instance()->setVerifyMediaComment( fVerifyMediaComment->isChecked() );
-                    model()->resetStatusCaches();
                 }
                 );
 
@@ -190,7 +186,6 @@ namespace NMediaManager
                     fVerifyMediaTitle->setEnabled( fVerifyMediaTags->isChecked() );
                     fVerifyMediaComment->setEnabled( fVerifyMediaTags->isChecked() );
                     NPreferences::NCore::CPreferences::instance()->setVerifyMediaTags( fVerifyMediaTags->isChecked() );
-                    model()->resetStatusCaches();
                 }
                 );
 
@@ -223,6 +218,16 @@ namespace NMediaManager
             fVerifyMediaDate->setEnabled( fVerifyMediaTags->isChecked() );
             fVerifyMediaTitle->setEnabled( fVerifyMediaTags->isChecked() );
             fVerifyMediaComment->setEnabled( fVerifyMediaTags->isChecked() );
+        }
+
+        void CTagsPage::slotPreferencesChanged( NPreferences::EPreferenceTypes prefTypes )
+        {
+            if ( prefTypes & NPreferences::EPreferenceType::eTagPrefs )
+            {
+                if ( model() )
+                    model()->resetStatusCaches();
+            }
+            CBasePage::slotPreferencesChanged( prefTypes );
         }
     }
 }
