@@ -91,6 +91,7 @@ namespace NMediaManager
             static QString getDeleteThis();
 
             static bool isAutoSetText( const QString & text );
+            bool isAutoSetText() const;
 
             QString transformedName( const QFileInfo & fileInfo, const SPatternInfo & info, bool titleOnly ) const;
             void removeChild( std::shared_ptr< STransformResult > info );

@@ -264,7 +264,7 @@ namespace NMediaManager
 
             fSearchName = smartTrim( fSearchName, true );
 
-            if ( fSearchResultInfo )
+            if ( fSearchResultInfo && !fSearchResultInfo->isAutoSetText() )
             {
                 fSearchName = fSearchResultInfo->fTitle;
             }

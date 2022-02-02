@@ -62,12 +62,12 @@ namespace NMediaManager
 
         QString STransformResult::getInitialYear() const
         {
-            if ( (fMediaType != EMediaType::eTVEpisode)
-              && (fMediaType != EMediaType::eTVSeason) )
+            if ( ( fMediaType != EMediaType::eTVEpisode )
+                 && ( fMediaType != EMediaType::eTVSeason ) )
             {
                 return getYear();
             }
-            
+
             auto tvShowInfo = getTVShowInfo();
             if ( !tvShowInfo )
                 return getYear();
@@ -76,8 +76,8 @@ namespace NMediaManager
 
         const STransformResult * STransformResult::getTVShowInfo() const
         {
-            if (  ( fMediaType == EMediaType::eTVEpisode )
-               || (fMediaType == EMediaType::eTVSeason) )
+            if ( ( fMediaType == EMediaType::eTVEpisode )
+                 || ( fMediaType == EMediaType::eTVSeason ) )
             {
                 auto parent = fParent.lock();
                 if ( parent )
@@ -206,9 +206,9 @@ namespace NMediaManager
             return retVal;
         }
 
-        QString STransformResult::cleanFileName(const QFileInfo & fi)
+        QString STransformResult::cleanFileName( const QFileInfo & fi )
         {
-            return cleanFileName(fi.completeBaseName(), fi.isDir());
+            return cleanFileName( fi.completeBaseName(), fi.isDir() );
         }
 
         bool STransformResult::operator==( const STransformResult & rhs ) const
@@ -256,7 +256,7 @@ namespace NMediaManager
 
         void STransformResult::removeChild( std::shared_ptr< STransformResult > info )
         {
-            for ( auto &&ii = fChildren.begin(); ii != fChildren.end(); ++ii )
+            for ( auto && ii = fChildren.begin(); ii != fChildren.end(); ++ii )
             {
                 if ( ( *ii ).get() == info.get() )
                 {
@@ -317,7 +317,7 @@ namespace NMediaManager
                     if ( fSubTitle.isEmpty() )
                         tmp << "Sub Title: '" + fSubTitle + "'";
                 }
-                
+
                 tmp << "ExtraInfo: '" + fExtraInfo + "'"
                     ;
             }
@@ -465,9 +465,19 @@ namespace NMediaManager
             return kDeleteThis;
         }
 
+        bool STransformResult::isAutoSetText() const
+        {
+            if ( ( fMediaType == EMediaType::eDeleteFileType )
+                 || ( fMediaType == EMediaType::eNotFoundType )
+                 || ( fMediaType == EMediaType::eUnknownType ) )
+                return true;
+
+            return isAutoSetText( fTitle );
+        }
+
         bool STransformResult::isAutoSetText( const QString & text )
         {
-            return isNoItems( text ) || isDeleteThis( text );
+            return isNoItems( text ) || isDeleteThis( text ) || isNoMatch( text );
         }
 
         QString toEnumString( EMediaType infoType )
