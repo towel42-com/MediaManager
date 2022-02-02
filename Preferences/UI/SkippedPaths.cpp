@@ -73,13 +73,13 @@ namespace NMediaManager
             void CSkippedPaths::load()
             {
                 fSkipPathNamesModel->setStringList( NPreferences::NCore::CPreferences::instance()->getSkippedPaths() );
-                fImpl->ignorePathNamesToSkip->setChecked( NPreferences::NCore::CPreferences::instance()->getIgnorePathNamesToSkip() );
+                fImpl->ignorePathNamesToSkip->setChecked( !NPreferences::NCore::CPreferences::instance()->getIgnorePathNamesToSkip() );
             }
 
             void CSkippedPaths::save()
             {
                 NPreferences::NCore::CPreferences::instance()->setSkippedPaths( fSkipPathNamesModel->stringList() );
-                NPreferences::NCore::CPreferences::instance()->setIgnorePathNamesToSkip( fImpl->ignorePathNamesToSkip->isChecked() );
+                NPreferences::NCore::CPreferences::instance()->setIgnorePathNamesToSkip( !fImpl->ignorePathNamesToSkip->isChecked() );
             }
         }
     }

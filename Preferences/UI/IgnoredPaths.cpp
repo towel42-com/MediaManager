@@ -66,13 +66,13 @@ namespace NMediaManager
             void CIgnoredPaths::load()
             {
                 fModel->setStringList( NPreferences::NCore::CPreferences::instance()->getIgnoredPaths() );
-                fImpl->ignorePathNamesToIgnore->setChecked( NPreferences::NCore::CPreferences::instance()->getIgnorePathNamesToIgnore() );
+                fImpl->ignorePathNamesToIgnore->setChecked( !NPreferences::NCore::CPreferences::instance()->getIgnorePathNamesToIgnore() );
             }
 
             void CIgnoredPaths::save()
             {
                 NPreferences::NCore::CPreferences::instance()->setIgnoredPaths( fModel->stringList() );
-                NPreferences::NCore::CPreferences::instance()->setIgnorePathNamesToIgnore( fImpl->ignorePathNamesToIgnore->isChecked() );
+                NPreferences::NCore::CPreferences::instance()->setIgnorePathNamesToIgnore( !fImpl->ignorePathNamesToIgnore->isChecked() );
             }
         }
     }
