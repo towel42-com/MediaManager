@@ -100,6 +100,12 @@ namespace NMediaManager
                 fImpl->vsplitter->setSizes( QList< int >() << 100 << 0 );
         }
 
+        void CBasePage::slotPreferencesChanged()
+        {
+            if ( fModel )
+                fModel->reloadModel();
+        }
+
         void CBasePage::saveSettings()
         {
             if ( !fImpl )

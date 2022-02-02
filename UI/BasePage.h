@@ -91,6 +91,7 @@ namespace NMediaManager
             void showResults();
             virtual void slotDoubleClicked( const QModelIndex & idx ) final;
             virtual void slotContextMenu( const QPoint & pt ) final;
+            virtual void slotPreferencesChanged();
         protected Q_SLOTS:
             virtual void slotPostInit();
         Q_SIGNALS:
