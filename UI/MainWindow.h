@@ -26,6 +26,7 @@
 class QMenu;
 class QToolBar;
 class QUrl;
+class QTabWidget;
 
 #include <QMainWindow>
 #include <optional>
@@ -49,6 +50,22 @@ namespace NMediaManager
         class CBasePage;
         class CCompleterFileSystemModel;
         namespace Ui { class CMainWindow; };
+        struct STabDef
+        {
+            STabDef( CBasePage * page, const QString & name, const QString & iconPath, QTabWidget * tabWidget );
+
+            void setVisiblePerPrefs();
+            int fTabIndex{ -1 };
+            QWidget * fTab{ nullptr };
+            QString fName;
+            QIcon fIcon;
+            CBasePage * fPage{ nullptr };
+            QAction * fMenuAction{ nullptr };
+            QToolBar * fToolbar{ nullptr };
+            QAction * fViewAction{ nullptr };
+            QTabWidget * fTabWidget{ nullptr };
+        };
+
         class CMainWindow : public QMainWindow
         {
             Q_OBJECT
@@ -72,11 +89,13 @@ namespace NMediaManager
             virtual void slotStartStayAwake();
             virtual void slotFileCheckFinished( bool aOK, const QString & msg );
             virtual void slotValidateDefaults();
+            virtual void slotPreferencesChanged( NPreferences::EPreferenceTypes prefType );
+
         Q_SIGNALS:
             void sigPreferencesChanged( NPreferences::EPreferenceTypes prefType );
         private:
             void addPages();
-            std::pair< QWidget *, CBasePage * > addPage( CBasePage * basePage, const QString & pageName, const QString & iconImage );
+            std::shared_ptr< STabDef > addPage( std::shared_ptr< STabDef > & tabDef );
 
             virtual bool nativeEvent(const QByteArray & eventType, void * message, long * result) override;
             CBasePage * getCurrentBasePage() const;
@@ -85,7 +104,6 @@ namespace NMediaManager
             bool isActivePageDirBased() const;
 
             void connectBasePage( CBasePage * basePage );
-            void addUIComponents( QWidget * tab, CBasePage * page );
 
             void validateLoadAction();
             void validateRunAction();
@@ -101,7 +119,7 @@ namespace NMediaManager
             NSABUtils::CBackgroundFileCheck * fFileChecker;
             NSABUtils::CStayAwake * fStayAwake{ nullptr };
 
-            std::map< QWidget *, std::tuple< CBasePage *, QAction *, QToolBar * > > fUIComponentMap;
+            std::list< std::shared_ptr< STabDef > > fUIComponentMap;
         };
     }
 }

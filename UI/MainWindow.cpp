@@ -145,6 +145,7 @@ namespace NMediaManager
             loadSettings();
 
             connect( NPreferences::NCore::CPreferences::instance(), &NPreferences::NCore::CPreferences::sigPreferencesChanged, this, &CMainWindow::sigPreferencesChanged );
+            connect( this, &CMainWindow::sigPreferencesChanged, this, &CMainWindow::slotPreferencesChanged );
 
             new NSABUtils::CSelectFileUrl( this );
 
@@ -166,54 +167,37 @@ namespace NMediaManager
             connect( basePage, &CBasePage::sigStopStayAwake, this, &CMainWindow::slotStopStayAwake );
         }
 
-        void CMainWindow::addUIComponents( QWidget * tab, CBasePage * page )
+        std::shared_ptr< STabDef > CMainWindow::addPage( std::shared_ptr< STabDef > & tabDef )
         {
-            auto menu = page->menu();
-            auto toolBar = page->toolBar();
+            fImpl->menuView->addAction( tabDef->fViewAction );
+
+            bool isVisible = NPreferences::NCore::CPreferences::instance()->getPageVisible( tabDef->fName );
+            fImpl->tabWidget->setTabVisible( tabDef->fTabIndex, isVisible );
+
+            auto menu = tabDef->fPage->menu();
+            auto toolBar = tabDef->fPage->toolBar();
 
             QAction * menuAction = nullptr;
             if ( menu )
                 menuAction = menuBar()->addMenu( menu );
             if ( toolBar )
                 addToolBar( toolBar );
-            fUIComponentMap[ tab ] = std::make_tuple( page, menuAction, toolBar );
-            connectBasePage( page );
-        }
+            fUIComponentMap.emplace_back( tabDef );
+            connectBasePage( tabDef->fPage );
 
-        std::pair< QWidget *, CBasePage * > CMainWindow::addPage( CBasePage * currPage, const QString & pageName, const QString & iconImage )
-        {
-            auto * currTab = new QWidget();
-            currTab->setObjectName( QString( "%1-Tab" ).arg( pageName ) );
-            auto vertLayout = new QVBoxLayout( currTab );
-            vertLayout->setSpacing( 6 );
-            vertLayout->setObjectName( QString( "%1-Vertlayout" ).arg( pageName ) );
-            vertLayout->setContentsMargins( 0, 0, 0, 0 );
-
-            currPage->setParent( currTab );
-            currPage->setObjectName( QString( "%1-Page" ).arg( pageName ) );
-
-            vertLayout->addWidget( currPage );
-
-            QIcon icon4;
-            icon4.addFile( iconImage, QSize(), QIcon::Normal, QIcon::Off );
-            Q_ASSERT( !icon4.isNull() );
-
-            fImpl->tabWidget->addTab( currTab, icon4, pageName );
-
-            addUIComponents( currTab, currPage );
-            return { currTab, currPage };
+            return tabDef;
         }
 
         void CMainWindow::addPages()
         {
-            addPage( new CMakeMKVPage( nullptr ), tr( "Make MKV" ), QString::fromUtf8( ":/mkv.png" ) );
-            addPage( new CMergeSRTPage( nullptr ), tr( "Make SRT" ), QString::fromUtf8( ":/cc.png" ) );
-            addPage( new CTransformPage( nullptr ), tr( "Media Namer" ), QString::fromUtf8( ":/rename.png" ) );
-            addPage( new CTagsPage( nullptr ), tr( "Media Tags" ), QString::fromUtf8( ":/tag.png" ) );
-            auto bifInfo = addPage( new CBIFViewerPage( nullptr ), tr( "BIF Viewer" ), QString::fromUtf8( ":/roku.png" ) );
+            addPage( std::make_shared< STabDef >( new CMakeMKVPage( nullptr ), tr( "Make MKV" ), QString::fromUtf8( ":/mkv.png" ), fImpl->tabWidget ) );
+            addPage( std::make_shared< STabDef >( new CMergeSRTPage( nullptr ), tr( "Make SRT" ), QString::fromUtf8( ":/cc.png" ), fImpl->tabWidget ) );
+            addPage( std::make_shared< STabDef >( new CTransformPage( nullptr ), tr( "Media Namer" ), QString::fromUtf8( ":/rename.png" ), fImpl->tabWidget ) );
+            addPage( std::make_shared< STabDef >( new CTagsPage( nullptr ), tr( "Media Tags" ), QString::fromUtf8( ":/tag.png" ), fImpl->tabWidget ) );
+            auto bifPage = addPage( std::make_shared< STabDef >( new CBIFViewerPage( nullptr ), tr( "BIF Viewer" ), QString::fromUtf8( ":/roku.png" ), fImpl->tabWidget ) );
 
-            connect( fImpl->fileName, &NSABUtils::CDelayComboBox::sigEditTextChangedAfterDelay, dynamic_cast<CBIFViewerPage*>( bifInfo.second ), &CBIFViewerPage::slotFileChanged );
-            connect( fImpl->fileName->lineEdit(), &NSABUtils::CDelayLineEdit::sigFinishedEditingAfterDelay, dynamic_cast<CBIFViewerPage *>( bifInfo.second ), &CBIFViewerPage::slotFileFinishedEditing );
+            connect( fImpl->fileName, &NSABUtils::CDelayComboBox::sigEditTextChangedAfterDelay, dynamic_cast<CBIFViewerPage*>( bifPage->fPage ), &CBIFViewerPage::slotFileChanged );
+            connect( fImpl->fileName->lineEdit(), &NSABUtils::CDelayLineEdit::sigFinishedEditingAfterDelay, dynamic_cast<CBIFViewerPage *>( bifPage->fPage ), &CBIFViewerPage::slotFileFinishedEditing );
 
         }
 
@@ -250,6 +234,17 @@ namespace NMediaManager
 #endif
         }
 
+        void CMainWindow::slotPreferencesChanged( NPreferences::EPreferenceTypes prefType )
+        {
+            if ( ( prefType & NPreferences::EPreferenceType::eSystemPrefs ) == 0 )
+                return;
+
+            for ( auto && ii : fUIComponentMap )
+            {
+                ii->setVisiblePerPrefs();
+            }
+        }
+
         bool CMainWindow::isActivePageFileBased() const
         {
             auto basePage = getCurrentBasePage();
@@ -275,10 +270,10 @@ namespace NMediaManager
             CBIFViewerPage * page = nullptr;
             for ( auto && ii : fUIComponentMap )
             {
-                page = dynamic_cast<CBIFViewerPage *>( std::get< 0 >( ii.second ) );
+                page = dynamic_cast<CBIFViewerPage *>( ii->fPage );
                 if ( page )
                 {
-                    index = fImpl->tabWidget->indexOf( ii.first );
+                    index = fImpl->tabWidget->indexOf( ii->fTab );
                     break;
                 }
             }
@@ -301,9 +296,9 @@ namespace NMediaManager
             int index = -1;
             for ( auto && ii : fUIComponentMap )
             {
-                if ( dynamic_cast<CTransformPage *>( std::get< 0 >( ii.second ) ) )
+                if ( dynamic_cast<CTransformPage *>( ii->fPage ) )
                 {
-                    index = fImpl->tabWidget->indexOf( ii.first );
+                    index = fImpl->tabWidget->indexOf( ii->fTab );
                     break;
                 }
             }
@@ -338,25 +333,15 @@ namespace NMediaManager
             auto activePage = fImpl->tabWidget->currentWidget();
             for ( auto && ii : fUIComponentMap )
             {
-                if ( std::get< 1 >( ii.second ) )
-                    std::get< 1 >( ii.second )->setVisible( false );
-                if ( std::get< 2 >( ii.second ) )
-                    std::get< 2 >( ii.second )->setVisible( false );
+                auto tabWidget = ii->fTab;
 
-                auto tabWidget = ii.first;
-                auto currBasePage = dynamic_cast<CBasePage *>(std::get< 0 >( ii.second ));
+                bool isActive = ( activePage == tabWidget );
+                ii->fPage->setActive( isActive );
 
-                bool isActive = (activePage == tabWidget) ;
-                currBasePage->setActive( isActive );
-            }
-
-            auto pos = fUIComponentMap.find( activePage );
-            if ( pos != fUIComponentMap.end() )
-            {
-                if ( std::get< 1 >( (*pos).second ) )
-                    std::get< 1 >( (*pos).second )->setVisible( true );
-                if ( std::get< 2 >( (*pos).second ) )
-                    std::get< 2 >( (*pos).second )->setVisible( true );
+                if ( ii->fMenuAction )
+                    ii->fMenuAction->setVisible( isActive );
+                if ( ii->fToolbar )
+                    ii->fToolbar->setVisible( isActive );
             }
         }
 
@@ -471,6 +456,47 @@ namespace NMediaManager
             if ( !fStayAwake )
                 return;
             fStayAwake->stop();
+        }
+
+        STabDef::STabDef( CBasePage * page, const QString & name, const QString & iconPath, QTabWidget * tabWidget ) :
+            fPage( page ),
+            fName( name ),
+            fTabWidget( tabWidget )
+        {
+            fIcon.addFile( iconPath, QSize(), QIcon::Normal, QIcon::Off );
+            Q_ASSERT( !fIcon.isNull() );
+
+            fTab = new QWidget();
+            fTab->setObjectName( QString( "%1-Tab" ).arg( name ) );
+            auto vertLayout = new QVBoxLayout( fTab );
+            vertLayout->setSpacing( 6 );
+            vertLayout->setObjectName( QString( "%1-Vertlayout" ).arg( name ) );
+            vertLayout->setContentsMargins( 0, 0, 0, 0 );
+
+            fPage->setParent( fTab );
+            fPage->setObjectName( QString( "%1-Page" ).arg( name ) );
+
+            vertLayout->addWidget( fPage );
+
+            fViewAction = new QAction( fIcon, QObject::tr( "View %1?" ).arg( fName ), nullptr );
+            fViewAction->setCheckable( true );
+            fViewAction->setChecked( NPreferences::NCore::CPreferences::instance()->getPageVisible( fName ) );
+
+            QObject::connect( fViewAction, &QAction::triggered,
+                     [name]( bool checked )
+                     {
+                         NPreferences::NCore::CPreferences::instance()->setPageVisible( name, checked );
+                     }
+            );
+
+            fTabIndex = fTabWidget->addTab( fTab, fIcon, fName );
+            setVisiblePerPrefs();
+        }
+
+        void STabDef::setVisiblePerPrefs()
+        {
+            auto shouldBeVisible = NPreferences::NCore::CPreferences::instance()->getPageVisible( fName );
+            fTabWidget->setTabVisible( fTabIndex, shouldBeVisible );
         }
     }
 }

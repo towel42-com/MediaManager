@@ -52,14 +52,14 @@ namespace NMediaManager
 
         enum EPreferenceType
         {
-            eSystemPrefs,
-            eColorsPrefs,
-            eLoadPrefs,
-            eTransformPrefs,
-            eTagPrefs,
-            eExtToolsPrefs,
-            eBIFPrefs,
-            eGIFPrefs
+            eSystemPrefs = 1,
+            eColorsPrefs = 2,
+            eLoadPrefs = 4,
+            eTransformPrefs = 8,
+            eTagPrefs = 16,
+            eExtToolsPrefs = 32,
+            eBIFPrefs = 64,
+            eGIFPrefs = 128
         };
         Q_DECLARE_FLAGS( EPreferenceTypes, EPreferenceType );
         Q_DECLARE_OPERATORS_FOR_FLAGS( EPreferenceTypes );
@@ -236,6 +236,9 @@ namespace NMediaManager
 
                 QColor getColorForStatus( EItemStatus status, bool background ) const;
                 void setColorForStatus( EItemStatus, bool background, const QColor & value );
+
+                bool getPageVisible( const QString & pageName ) const;
+                void setPageVisible( const QString & pageName, bool isVisible );
             Q_SIGNALS:
                 void sigPreferencesChanged( EPreferenceTypes prefType );
             private:

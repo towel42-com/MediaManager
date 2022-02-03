@@ -122,6 +122,21 @@ namespace NMediaManager
             /// System Options
             /// ////////////////////////////////////////////////////////
 
+            void CPreferences::setPageVisible( const QString & pageName, bool isVisible )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
+                settings.setValue( QString( "PageVisible-%1" ).arg( pageName ), isVisible );
+                emitSigPreferencesChanged( EPreferenceType::eSystemPrefs );
+            }
+
+            bool CPreferences::getPageVisible( const QString & pageName ) const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
+                return settings.value( QString( "PageVisible-%1" ).arg( pageName ), true ).toBool();
+            }
+                
             void CPreferences::setDirectories( const QStringList & dir )
             {
                 QSettings settings;
