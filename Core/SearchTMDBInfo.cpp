@@ -336,7 +336,16 @@ namespace NMediaManager
 
         bool SSearchTMDBInfo::isMatch( std::shared_ptr< STransformResult > searchResult ) const
         {
-            return isMatch( searchResult->fReleaseDate, searchResult->fTMDBID, searchResult->getTitle(), searchResult->mediaType(), searchResult->getSeason(), searchResult->getEpisode() );
+            if ( isTVMedia() )
+            {
+                return isMatch( searchResult->fShowFirstAirDate, searchResult->fTMDBID, searchResult->getTitle(), searchResult->mediaType(), searchResult->getSeason(), searchResult->getEpisode() )
+                    || isMatch( searchResult->fSeasonStartDate, searchResult->fTMDBID, searchResult->getTitle(), searchResult->mediaType(), searchResult->getSeason(), searchResult->getEpisode() )
+                    || isMatch( searchResult->fEpisodeAirDate, searchResult->fTMDBID, searchResult->getTitle(), searchResult->mediaType(), searchResult->getSeason(), searchResult->getEpisode() )
+                    ;
+            }
+            else
+                return isMatch( searchResult->fMovieReleaseDate, searchResult->fTMDBID, searchResult->getTitle(), searchResult->mediaType(), searchResult->getSeason(), searchResult->getEpisode() );
+
         }
 
         bool SSearchTMDBInfo::isSeasonMatch( int seasonMatch ) const
@@ -478,7 +487,7 @@ namespace NMediaManager
                 }
             }
             if ( fSearchResultInfo )
-                fReleaseDate = fSearchResultInfo->fReleaseDate;
+                fReleaseDate = fSearchResultInfo->getDate();
         }
 
         bool SSearchTMDBInfo::isTVMedia() const

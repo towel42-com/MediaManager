@@ -40,7 +40,7 @@ namespace NMediaManager
         enum class ETitleInfo
         {
             eTitle,
-            eReleaseDate,
+            eYear,
             eTMDBID,
             eSeason,
             eEpisode,
@@ -71,9 +71,18 @@ namespace NMediaManager
             bool isDeleteResult() const { return fMediaType == EMediaType::eDeleteFileType; } // tvshow, season or episode are all not movie
             bool isNotFoundResult() const { return fMediaType == EMediaType::eNotFoundType; } // search not found
             QString getTitle() const;
+            QString getMovieReleaseYear() const;
+            QString getShowFirstAirYear() const;
+            QString getSeasonStartYear() const;
+            QString getEpisodeAirYear() const;
             QString getYear() const;
-            QString getInitialYear() const; // if its a TV episode, get the show description year
-            std::pair< QDate, QString > getReleaseDate() const;
+
+            std::pair< QDate, QString > getMovieReleaseDate() const;
+            std::pair< QDate, QString > getShowFirstAirDate() const;
+            std::pair< QDate, QString > getSeasonStartDate() const;
+            std::pair< QDate, QString > getEpisodeAirDate() const;
+            std::pair< QDate, QString > getDate() const;
+
             QString getSubTitle() const;
             QString getTMDBID() const;
             bool isSeasonOnly() const { return fSeasonOnly; }
@@ -104,14 +113,26 @@ namespace NMediaManager
 
             const STransformResult * getTVShowInfo() const; // not to be saved, only used and ignored
 
-            void setReleaseDate( const QString & releaseDate );
+            void setMovieReleaseDate( const QString & date );
+            void setShowFirstAirDate( const QString & date );
+            void setSeasonStartDate( const QString & date );
+            void setEpisodeAirDate( const QString & date );
+
+            void setMovieReleaseDate( const std::pair< QDate, QString > & date ) { fMovieReleaseDate = date; }
+            void setShowFirstAirDate( const std::pair< QDate, QString > & date ) { fShowFirstAirDate = date; }
+            void setSeasonStartDate( const std::pair< QDate, QString > & date ) { fSeasonStartDate = date; }
+            void setEpisodeAirDate( const std::pair< QDate, QString > & date ) { fEpisodeAirDate = date; }
+
             [[nodiscard]] static QString cleanFileName(const QString & inFile, bool isDir);
             [[nodiscard]] static QString cleanFileName(const QFileInfo & fi);
 
             bool operator==( const STransformResult & rhs ) const;
 
             QString fTitle;
-            std::pair< QDate, QString > fReleaseDate;
+            std::pair< QDate, QString > fMovieReleaseDate;
+            std::pair< QDate, QString > fShowFirstAirDate;
+            std::pair< QDate, QString > fSeasonStartDate;
+            std::pair< QDate, QString > fEpisodeAirDate;
             QString fTMDBID;
             QString fSeasonTMDBID;
             QString fEpisodeTMDBID;

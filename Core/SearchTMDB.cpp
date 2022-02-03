@@ -676,7 +676,7 @@ namespace NMediaManager
         */
         bool CSearchTMDB::loadSearchResult( const QJsonObject &resultItem )
         {
-            //qDebug().nospace().noquote() << QJsonDocument( resultItem ).toJson( QJsonDocument::Indented );
+            qDebug().nospace().noquote() << QJsonDocument( resultItem ).toJson( QJsonDocument::Indented );
 
             if ( !fSearchInfo )
                 return false;
@@ -688,10 +688,9 @@ namespace NMediaManager
                 title = resultItem.contains( "name" ) ? resultItem["name"].toString() : QString();
             else
                 title = resultItem.contains( "title" ) ? resultItem["title"].toString() : QString();
-            auto releaseDate = resultItem.contains( "release_date" )
-                ? resultItem["release_date"].toString()
-                : resultItem.contains( "first_air_date" ) ? resultItem["first_air_date"].toString()
-                : QString();
+            auto releaseDate = resultItem[ "release_date" ].toString();
+            auto firstAirDate = resultItem[ "first_air_date" ].toString();
+
             auto posterPath = resultItem.contains( "poster_path" ) ? resultItem["poster_path"].toString() : QString();
 
             if ( !fSearchInfo->isMatch( releaseDate, tmdbid, title ) )
@@ -699,7 +698,8 @@ namespace NMediaManager
 
             auto searchResult = std::make_shared< STransformResult >( fSearchInfo->isTVMedia() ? EMediaType::eTVShow : EMediaType::eMovie ); // movie or TV show
             searchResult->fDescription = desc;
-            searchResult->setReleaseDate( releaseDate );
+            searchResult->setMovieReleaseDate( releaseDate );
+            searchResult->setShowFirstAirDate( firstAirDate );
             searchResult->fTitle = title;
             searchResult->fTMDBID = QString::number( tmdbid );
             searchResult->fExtraInfo = fSearchInfo->getExtendedInfo();
@@ -823,8 +823,15 @@ namespace NMediaManager
 
             auto data = reply->getData();
             auto doc = QJsonDocument::fromJson( data );
-            //qDebug().nospace().noquote() << doc.toJson( QJsonDocument::Indented );
+            qDebug().nospace().noquote() << doc.toJson( QJsonDocument::Indented );
 
+            auto seasonStartDate = doc.object()[ "air_date" ].toString();
+            {
+                auto parentPtr = seasonInfo->fParent.lock();
+                if ( parentPtr )
+                    seasonInfo->setShowFirstAirDate( parentPtr->getShowFirstAirDate() ); // should go to the parent
+            }
+            seasonInfo->setSeasonStartDate( seasonStartDate );
             seasonInfo->fSubTitle = doc.object().contains( "name" ) ? doc.object()["name"].toString() : QString();;
             seasonInfo->fSeason = doc.object().contains( "season_number" ) ? QString::number( doc.object()["season_number"].toInt() ) : QString();
             seasonInfo->setSeasonOnly( true );
@@ -877,7 +884,9 @@ namespace NMediaManager
             episodeInfo->fSeasonTMDBID = seasonInfo->fSeasonTMDBID;
             episodeInfo->fEpisodeTMDBID = episodeObj.contains( "id" ) ? QString::number( episodeObj["id"].toInt() ) : QString();
             episodeInfo->fTitle = seasonInfo->fTitle;
-            episodeInfo->setReleaseDate( episodeObj.contains( "air_date" ) ? episodeObj["air_date"].toString() : QString() );
+            episodeInfo->setShowFirstAirDate( seasonInfo->getShowFirstAirDate() );
+            episodeInfo->setSeasonStartDate( seasonInfo->getSeasonStartDate() );
+            episodeInfo->setEpisodeAirDate( episodeObj["air_date"].toString() );
 
             seasonInfo->fChildren.push_back( episodeInfo );
             if ( fSearchInfo->episode() != -1 )

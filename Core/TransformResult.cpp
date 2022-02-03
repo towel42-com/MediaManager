@@ -49,30 +49,74 @@ namespace NMediaManager
             return NSABUtils::NStringUtils::transformTitle( fTitle );
         }
 
-        std::pair< QDate, QString > STransformResult::getReleaseDate() const
+        std::pair< QDate, QString > STransformResult::getMovieReleaseDate() const
         {
-            if ( fReleaseDate.second.isEmpty() || !fReleaseDate.first.isValid() )
+            if ( fMovieReleaseDate.second.isEmpty() || !fMovieReleaseDate.first.isValid() )
             {
                 auto parent = fParent.lock();
                 if ( parent )
-                    return parent->getReleaseDate();
+                    return parent->getMovieReleaseDate();
             }
-            return fReleaseDate;
+            return fMovieReleaseDate;
         }
 
-        QString STransformResult::getInitialYear() const
+        std::pair< QDate, QString > STransformResult::getShowFirstAirDate() const
         {
-            if ( ( fMediaType != EMediaType::eTVEpisode )
-                 && ( fMediaType != EMediaType::eTVSeason ) )
+            if ( fShowFirstAirDate.second.isEmpty() || !fShowFirstAirDate.first.isValid() )
             {
-                return getYear();
+                auto parent = fParent.lock();
+                if ( parent )
+                    return parent->getShowFirstAirDate();
             }
-
-            auto tvShowInfo = getTVShowInfo();
-            if ( !tvShowInfo )
-                return getYear();
-            return tvShowInfo->getYear();
+            return fShowFirstAirDate;
         }
+
+        std::pair< QDate, QString > STransformResult::getSeasonStartDate() const
+        {
+            if ( fSeasonStartDate.second.isEmpty() || !fSeasonStartDate.first.isValid() )
+            {
+                auto parent = fParent.lock();
+                if ( parent )
+                    return parent->getSeasonStartDate();
+            }
+            return fSeasonStartDate;
+        }
+
+        std::pair< QDate, QString > STransformResult::getEpisodeAirDate() const
+        {
+            if ( fEpisodeAirDate.second.isEmpty() || !fEpisodeAirDate.first.isValid() )
+            {
+                auto parent = fParent.lock();
+                if ( parent )
+                    return parent->getEpisodeAirDate();
+            }
+            return fEpisodeAirDate;
+        }
+
+        std::pair< QDate, QString > STransformResult::getDate() const
+        {
+            switch ( fMediaType )
+            {
+                case EMediaType::eMovie: return getMovieReleaseDate();
+                case EMediaType::eTVShow: return getShowFirstAirDate();
+                case EMediaType::eTVSeason: return getSeasonStartDate();
+                case EMediaType::eTVEpisode: return getEpisodeAirDate();
+                default: return {};
+            }
+        }
+                //QString STransformResult::getInitialYear() const
+        //{
+        //    if ( ( fMediaType != EMediaType::eTVEpisode )
+        //         && ( fMediaType != EMediaType::eTVSeason ) )
+        //    {
+        //        return getYear();
+        //    }
+
+        //    auto tvShowInfo = getTVShowInfo();
+        //    if ( !tvShowInfo )
+        //        return getYear();
+        //    return tvShowInfo->getYear();
+        //}
 
         const STransformResult * STransformResult::getTVShowInfo() const
         {
@@ -88,16 +132,65 @@ namespace NMediaManager
             return this;
         }
 
-
-        void STransformResult::setReleaseDate( const QString & releaseDate )
+        void STransformResult::setMovieReleaseDate( const QString & date )
         {
-            fReleaseDate.second = releaseDate;
-            fReleaseDate.first = NSABUtils::getDate( releaseDate );
+            fMovieReleaseDate = { NSABUtils::getDate( date ), date };
+        }
+
+        void STransformResult::setShowFirstAirDate( const QString & date )
+        {
+            fShowFirstAirDate = { NSABUtils::getDate( date ), date };
+        }
+
+        void STransformResult::setSeasonStartDate( const QString & date )
+        {
+            fSeasonStartDate = { NSABUtils::getDate( date ), date };
+        }
+
+        void STransformResult::setEpisodeAirDate( const QString & date )
+        {
+            fEpisodeAirDate = { NSABUtils::getDate( date ), date };
         }
 
         QString STransformResult::getYear() const
         {
-            auto dt = getReleaseDate().first;
+            switch ( fMediaType )
+            {
+                case EMediaType::eMovie: return getMovieReleaseYear();
+                case EMediaType::eTVShow: return getShowFirstAirYear();
+                case EMediaType::eTVSeason: return getSeasonStartYear();
+                case EMediaType::eTVEpisode: return getEpisodeAirYear();
+                default: return {};
+            }
+        }
+
+        QString STransformResult::getMovieReleaseYear() const
+        {
+            auto dt = getMovieReleaseDate().first;
+            if ( !dt.isValid() )
+                return {};
+            return QString::number( dt.year() );
+        }
+
+        QString STransformResult::getShowFirstAirYear() const
+        {
+            auto dt = getShowFirstAirDate().first;
+            if ( !dt.isValid() )
+                return {};
+            return QString::number( dt.year() );
+        }
+
+        QString STransformResult::getSeasonStartYear() const
+        {
+            auto dt = getSeasonStartDate().first;
+            if ( !dt.isValid() )
+                return {};
+            return QString::number( dt.year() );
+        }
+
+        QString STransformResult::getEpisodeAirYear() const
+        {
+            auto dt = getEpisodeAirDate().first;
             if ( !dt.isValid() )
                 return {};
             return QString::number( dt.year() );
@@ -214,7 +307,10 @@ namespace NMediaManager
         bool STransformResult::operator==( const STransformResult & rhs ) const
         {
             return ( fTitle == rhs.fTitle )
-                && ( fReleaseDate == rhs.fReleaseDate )
+                && ( fMovieReleaseDate == rhs.fMovieReleaseDate )
+                && ( fShowFirstAirDate == rhs.fShowFirstAirDate )
+                && ( fSeasonStartDate == rhs.fSeasonStartDate )
+                && ( fEpisodeAirDate == rhs.fEpisodeAirDate )
                 && ( fTMDBID == rhs.fTMDBID )
                 && ( fSeasonTMDBID == rhs.fSeasonTMDBID )
                 && ( fEpisodeTMDBID == rhs.fEpisodeTMDBID )
@@ -232,7 +328,10 @@ namespace NMediaManager
         QString STransformResult::transformedName( const QFileInfo & fileInfo, const SPatternInfo & patternInfo, bool titleOnly ) const
         {
             auto title = getTitle();
-            auto year = getInitialYear();
+            auto releaseYear = getMovieReleaseYear();
+            auto showYear = getShowFirstAirYear();
+            auto seasonYear = getSeasonStartYear();
+            auto episodeYear = getEpisodeAirYear();
             auto tmdbid = fTMDBID;
             auto season = fSeason;
             auto episode = fEpisode;
@@ -241,7 +340,10 @@ namespace NMediaManager
 
             QString retVal = fileInfo.isDir() ? patternInfo.dirPattern() : patternInfo.filePattern();
             retVal = replaceCapture( "title", retVal, title );
-            retVal = replaceCapture( "year", retVal, year );
+            retVal = replaceCapture( "year", retVal, releaseYear );
+            retVal = replaceCapture( "show_year", retVal, showYear );
+            retVal = replaceCapture( "season_year", retVal, seasonYear );
+            retVal = replaceCapture( "episode_year", retVal, episodeYear );
             retVal = replaceCapture( "tmdbid", retVal, tmdbid );
             retVal = replaceCapture( "season", retVal, QString( "%1" ).arg( season, fileInfo.isDir() ? 1 : 2, QChar( '0' ) ) );
             retVal = replaceCapture( "episode", retVal, QString( "%1" ).arg( episode, fileInfo.isDir() ? 1 : 2, QChar( '0' ) ) );
@@ -274,7 +376,10 @@ namespace NMediaManager
                 QStringList tmp;
                 tmp << "InfoType: '" + NMediaManager::NCore::toEnumString( fMediaType ) + "'"
                     << "Title: '" + fTitle + "'"
-                    << "ReleaseDate: '" + fReleaseDate.second + "'"
+                    << "Movie ReleaseDate: '" + fMovieReleaseDate.second + "'"
+                    << "ShowFirstAirDate: '" + fShowFirstAirDate.second + "'"
+                    << "SeasonStartDate: '" + fSeasonStartDate.second + "'"
+                    << "EpisodeAirDate: '" + fEpisodeAirDate.second + "'"
                     << "TMDBID: '" + fTMDBID + "'"
                     << "Season TMBDID: '" + fSeasonTMDBID + "'"
                     << "Episode TMDBID: '" + fEpisodeTMDBID + "'"
@@ -297,9 +402,23 @@ namespace NMediaManager
             {
                 tmp << NMediaManager::NCore::toEnumString( fMediaType ) + " -"
                     << "Title: '" + fTitle + "'"
-                    << "ReleaseDate: '" + fReleaseDate.second + "'"
-                    << "TMDBID: '" + fTMDBID + "'"
                     ;
+                switch ( fMediaType )
+                {
+                    case EMediaType::eMovie:
+                        tmp << "Release Date: '" + fMovieReleaseDate.second + "'";
+                        break;
+                    case EMediaType::eTVEpisode:
+                        tmp << "Episode Air Date: '" + fEpisodeAirDate.second + "'";
+                    case EMediaType::eTVSeason:
+                        tmp << "Season Start Date: '" + fSeasonStartDate.second + "'";
+                    case EMediaType::eTVShow:
+                        tmp << "Show First Air Date: '" + fShowFirstAirDate.second + "'";
+                        break;
+                    default:
+                        break;
+                }
+                tmp << "TMDBID: '" + fTMDBID + "'";
 
                 if ( fMediaType != EMediaType::eMovie )
                 {
@@ -420,7 +539,23 @@ namespace NMediaManager
             switch ( which )
             {
                 case ETitleInfo::eTitle: return getTitle();
-                case ETitleInfo::eReleaseDate: return getYear();
+                case ETitleInfo::eYear:
+                {
+                    switch ( fMediaType )
+                    {
+                        case EMediaType::eMovie:
+                            return getMovieReleaseYear();
+                        case EMediaType::eTVShow:
+                            return getShowFirstAirYear();
+                        case EMediaType::eTVSeason:
+                            return getSeasonStartYear();
+                        case EMediaType::eTVEpisode:
+                            return getEpisodeAirYear();
+                        default:
+                            break;
+                    }
+                }
+                break;
                 case ETitleInfo::eTMDBID: return fTMDBID;
                 case ETitleInfo::eSeason: return fSeason;
                 case ETitleInfo::eEpisode: return fEpisode;
