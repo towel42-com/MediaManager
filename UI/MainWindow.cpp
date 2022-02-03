@@ -175,13 +175,12 @@ namespace NMediaManager
             fImpl->tabWidget->setTabVisible( tabDef->fTabIndex, isVisible );
 
             auto menu = tabDef->fPage->menu();
-            auto toolBar = tabDef->fPage->toolBar();
+            tabDef->fToolbar = tabDef->fPage->toolBar();
 
-            QAction * menuAction = nullptr;
             if ( menu )
-                menuAction = menuBar()->addMenu( menu );
-            if ( toolBar )
-                addToolBar( toolBar );
+                tabDef->fMenuAction = menuBar()->addMenu( menu );
+            if ( tabDef->fToolbar )
+                addToolBar( tabDef->fToolbar );
             fUIComponentMap.emplace_back( tabDef );
             connectBasePage( tabDef->fPage );
 
