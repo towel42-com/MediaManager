@@ -299,13 +299,13 @@ namespace NMediaManager
             int labelPos = -1;
             if ( fImpl->searchForTVShows->isChecked() )
             {
-                data = QStringList() << info->fTitle << info->getTMDBID() << info->fSeason << info->fEpisode << info->fReleaseDate.second << info->fSubTitle << QString();
+                data = QStringList() << info->fTitle << info->getTMDBID() << info->fSeason << info->fEpisode << info->getDate().second << info->fSubTitle << QString();
                 itemType = EItemType::eTVShow;
                 labelPos = 6;
             }
             else
             {
-                data = QStringList() << info->fTitle << info->getTMDBID() << info->fReleaseDate.second << QString();
+                data = QStringList() << info->fTitle << info->getTMDBID() << info->getDate().second << QString();
                 itemType = EItemType::eMovie;
                 labelPos = 3;
             }
