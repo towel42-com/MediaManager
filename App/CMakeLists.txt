@@ -41,15 +41,30 @@ add_executable( MediaManager WIN32
                  ${_CMAKE_MODULE_FILES}
                 application.rc 
           )
+if ( NOT DEPLOYQT_EXECUTABLE )
+    message( FATAL_ERROR "DEPLOYQT_EXECUTABLE not set" )
+endif()
+
+if ( NOT OPENSSL_DEPLOY_BINDIR )
+    message( FATAL_ERROR "OPENSSL_DEPLOY_BINDIR not set" )
+endif()
+
+get_filename_component( QTDIR ${DEPLOYQT_EXECUTABLE} DIRECTORY )
+
 set ( DEBUG_PATH 
         "%PATH%"
         "$<TARGET_FILE_DIR:mediainfo>"
         "$<TARGET_FILE_DIR:SABUtils>"
+        "${QTDIR}"
         )
 set ( DEBUG_PLUGINPATH 
         "$<TARGET_FILE_DIR:bif>/.."
         "$<TARGET_FILE_DIR:gif>/.."
         )
+#get_cmake_property(_variableNames VARIABLES)
+#foreach(_variableName ${_variableNames})
+#        MESSAGE( STATUS "${_variableName}=${${_variableName}}" )
+#endforeach()
         
 set_target_properties( MediaManager PROPERTIES FOLDER Apps 
                                     VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:MediaManager>" 
@@ -69,8 +84,8 @@ target_link_libraries( MediaManager
                  Models
           )
 
-DeployQt( MediaManager . )
-DeploySystem( MediaManager . )
+DeployQt( MediaManager . INSTALL_ONLY 1 )
+DeploySystem( MediaManager . INSTALL_ONLY 1 )
 DeployOpenSSL( MediaManager . )
 
 INSTALL( TARGETS ${PROJECT_NAME} RUNTIME DESTINATION . )
