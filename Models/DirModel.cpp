@@ -1298,16 +1298,10 @@ namespace NMediaManager
 
         QString CDirModel::getMediaYear( const QFileInfo & fi ) const
         {
-            auto searchPath = fi;
-            QString year;
-            while ( year.isEmpty() && !isRootPath( searchPath.absoluteFilePath() ) )
-            {
-                NCore::SSearchTMDBInfo searchInfo( searchPath.completeBaseName(), {} );
-                if ( searchInfo.releaseDateSet() )
-                    year = QString::number( searchInfo.releaseDate().first.year() );
-                searchPath = searchPath.absolutePath();
-            }
-            return year;
+            auto date = getMediaDate( fi );
+            if ( date.isValid() )
+                return QString::number( date.year() );;
+            return {};
         }
 
         QDate CDirModel::getMediaDate( const QFileInfo & fi ) const
@@ -1316,8 +1310,13 @@ namespace NMediaManager
             QDate retVal;
             while ( !retVal.isValid() && !isRootPath( searchPath.absoluteFilePath() ) )
             {
-                NCore::SSearchTMDBInfo searchInfo( searchPath.completeBaseName(), {} );
-                retVal = searchInfo.releaseDate().first;
+                auto baseName = searchPath.completeBaseName();
+                if ( !baseName.startsWith( "season", Qt::CaseInsensitive ) )
+                {
+                    NCore::SSearchTMDBInfo searchInfo( baseName, {} );
+                    if ( searchInfo.releaseDateSet() )
+                        retVal = searchInfo.releaseDate().first;
+                }
                 searchPath = searchPath.absolutePath();
             }
             return retVal;

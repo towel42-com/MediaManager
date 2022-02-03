@@ -90,6 +90,8 @@ namespace NMediaManager
             void slotMovieOutputDirPatternChanged( const QString & outPattern );
             void slotMovieOutputFilePatternChanged( const QString & outPattern );
         private:
+            virtual QDate getMediaDate( const QFileInfo & fi ) const override;
+
             bool itemSearchOK( const QModelIndex & idx, QString * msg = nullptr ) const;
             virtual void updateFile( const QModelIndex & idx, const QString & oldFile, const QString & newFile ) override;
             virtual void updateDir(const QModelIndex & idx, const QDir & oldDir, const QDir & newDir) override;

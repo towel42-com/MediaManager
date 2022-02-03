@@ -258,8 +258,8 @@ namespace NMediaManager
             virtual void clearPathStatusCache( const QFileInfo & fi ) const;
             virtual void clearPathStatusCache( const QString & path ) const;
 
-            QString getMediaYear(const QFileInfo & fi) const;
-            QDate getMediaDate( const QFileInfo & fi ) const;
+            virtual QString getMediaYear(const QFileInfo & fi) const final;
+            virtual QDate getMediaDate( const QFileInfo & fi ) const;
             bool progressCanceled() const;
 
             QPlainTextEdit * log() const;

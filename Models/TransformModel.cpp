@@ -727,6 +727,14 @@ namespace NMediaManager
             return !autoSearchFinished() && CDirModel::canComputeStatus();
         }
 
+        QDate CTransformModel::getMediaDate( const QFileInfo & fi ) const
+        {
+            auto transformResults = getTransformResult( fi, true );
+            if ( transformResults )
+                return transformResults->getDate().first;
+            return CDirModel::getMediaDate( fi );
+        }
+
         bool CTransformModel::itemSearchOK( const QModelIndex & idx, QString * msg ) const
         {
             bool retVal = true;
