@@ -41,7 +41,21 @@ add_executable( MediaManager WIN32
                  ${_CMAKE_MODULE_FILES}
                 application.rc 
           )
-set_target_properties( MediaManager PROPERTIES FOLDER Apps )
+set ( DEBUG_PATH 
+        "%PATH%"
+        "$<TARGET_FILE_DIR:mediainfo>"
+        "$<TARGET_FILE_DIR:SABUtils>"
+        )
+set ( DEBUG_PLUGINPATH 
+        "$<TARGET_FILE_DIR:bif>/.."
+        "$<TARGET_FILE_DIR:gif>/.."
+        )
+        
+set_target_properties( MediaManager PROPERTIES FOLDER Apps 
+                                    VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:MediaManager>" 
+                                    VS_DEBUGGER_COMMAND "$<TARGET_FILE:MediaManager>" 
+                                    VS_DEBUGGER_ENVIRONMENT "PATH=${DEBUG_PATH}\nQT_PLUGIN_PATH=${DEBUG_PLUGINPATH}" 
+                     )
 
 target_link_libraries( MediaManager 
                  Qt5::Widgets
@@ -62,21 +76,3 @@ DeployOpenSSL( MediaManager . )
 INSTALL( TARGETS ${PROJECT_NAME} RUNTIME DESTINATION . )
 INSTALL( FILES ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.pdb DESTINATION . CONFIGURATIONS Debug RelWithDebInfo )
 
-SET( _SL_FILES
-    "$<TARGET_FILE:bif>"
-    "$<TARGET_FILE_DIR:bif>/$<TARGET_FILE_BASE_NAME:bif>.pdb"
-    "$<TARGET_FILE:gif>"
-    "$<TARGET_FILE_DIR:gif>/$<TARGET_FILE_BASE_NAME:gif>.pdb"
-    )
-
-find_package(InstallFile REQUIRED)    
-InstallFilesPostBuild( TARGET MediaManager INFILES ${_SL_FILES} TARGET_DIR "$<TARGET_FILE_DIR:MediaManager>/imageformats" )
-
-SET( _SL_FILES
-    "$<TARGET_FILE:mediainfo>"
-    "$<TARGET_FILE_DIR:mediainfo>/$<TARGET_FILE_BASE_NAME:mediainfo>.pdb"
-    "$<TARGET_FILE:SABUtils>"
-    "$<TARGET_FILE_DIR:SABUtils>/$<TARGET_FILE_BASE_NAME:SABUtils>.pdb"
-    )
-
-InstallFilesPostBuild( TARGET MediaManager INFILES ${_SL_FILES} TARGET_DIR "$<TARGET_FILE_DIR:MediaManager>" )
