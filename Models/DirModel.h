@@ -203,7 +203,7 @@ namespace NMediaManager
             virtual bool autoSetMediaTags( const QModelIndex & idx, QString * msg = nullptr ) final;
             virtual bool areMediaTagsSameAsAutoSet( const QModelIndex & idx ) const final;
 
-            bool setMediaTags( const QString & fileName, QString title, QString year, QString comment, QString * msg = nullptr ) const;
+            bool setMediaTags( const QString & fileName, QString title, QString year, QString comment, QString * msg = nullptr, bool ignoreIsMediaFile=false ) const;
             bool setMediaTag( const QString & filename, const std::pair< NSABUtils::EMediaTags, QString > & tagData, QString * msg = nullptr ) const; //pair => tag, value
 
             virtual void updatePath( const QModelIndex & idx, const QString & oldPath, const QString & newPath) final;

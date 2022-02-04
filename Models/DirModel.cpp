@@ -750,7 +750,7 @@ namespace NMediaManager
             if ( item != invisibleRootItem() )
             {
                 std::tie( aOK, myItem ) = processItem( item, displayOnly );
-                if ( myItem != parentItem )
+                if ( myItem && ( myItem != parentItem ) )
                 {
                     if ( parentItem )
                         parentItem->appendRow( myItem );
@@ -1029,14 +1029,14 @@ namespace NMediaManager
                                        } );
         }
         
-        bool CDirModel::setMediaTags( const QString & fileName, QString title, QString year, QString comment, QString * msg ) const
+        bool CDirModel::setMediaTags( const QString & fileName, QString title, QString year, QString comment, QString * msg, bool ignoreIsMediaFile ) const
         {
             NSABUtils::CAutoWaitCursor awc;
 
             auto fi = QFileInfo( fileName );
             QString localMsg;
             bool aOK = true;
-            if ( !NPreferences::NCore::CPreferences::instance()->isMediaFile( fi ) )
+            if ( !ignoreIsMediaFile && !NPreferences::NCore::CPreferences::instance()->isMediaFile( fi ) )
             {
                 localMsg = tr( "'%1' is not a supported media file" ).arg( fileName );
                 aOK = false;
@@ -1269,7 +1269,7 @@ namespace NMediaManager
             }
 
             QString msg;
-            if ( fSetMKVTagsOnSuccess && !model->setMediaTags( fNewName, QString(), QString(), QString(), &msg ) )
+            if ( fSetMKVTagsOnSuccess && !model->setMediaTags( fNewName, QString(), QString(), QString(), &msg, true ) )
             {
                 CDirModel::appendError( fItem, QObject::tr( "%1: FAILED TO SET MKV Tags - %2" ).arg( model->getDispName( fNewName ) ).arg( msg ) );
                 model->fProcessResults.first = false;

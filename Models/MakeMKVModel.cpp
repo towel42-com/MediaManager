@@ -31,112 +31,112 @@
 
 namespace NMediaManager
 {
-	namespace NModels
-	{
-		CMakeMKVModel::CMakeMKVModel( NUi::CBasePage * page, QObject * parent /*= 0*/ ) :
-			CDirModel( page, parent )
-		{
-		}
+    namespace NModels
+    {
+        CMakeMKVModel::CMakeMKVModel( NUi::CBasePage * page, QObject * parent /*= 0*/ ) :
+            CDirModel( page, parent )
+        {
+        }
 
-		CMakeMKVModel::~CMakeMKVModel()
-		{
-		}
+        CMakeMKVModel::~CMakeMKVModel()
+        {
+        }
 
-		std::pair< bool, QStandardItem * > CMakeMKVModel::processItem( const QStandardItem * item, bool displayOnly )
-		{
-			if ( item->data( ECustomRoles::eIsDir ).toBool() )
-				return std::make_pair( true, nullptr );
+        std::pair< bool, QStandardItem * > CMakeMKVModel::processItem( const QStandardItem * item, bool displayOnly )
+        {
+            if ( item->data( ECustomRoles::eIsDir ).toBool() )
+                return std::make_pair( true, nullptr );
 
-			SProcessInfo processInfo;
-			processInfo.fSetMKVTagsOnSuccess = true;
-			processInfo.fOldName = item->data( ECustomRoles::eFullPathRole ).toString();
-			auto fi = QFileInfo( processInfo.fOldName );
-			processInfo.fNewName = fi.absoluteDir().absoluteFilePath( fi.completeBaseName() + ".mkv" );
-			processInfo.fItem = new QStandardItem( QString( "Convert '%1' => '%2'" ).arg( getDispName( processInfo.fOldName ) ).arg( getDispName( processInfo.fNewName ) ) );
-			processInfo.fItem->setData( processInfo.fOldName, ECustomRoles::eOldName );
-			processInfo.fItem->setData( processInfo.fNewName, ECustomRoles::eNewName );
+            SProcessInfo processInfo;
+            processInfo.fSetMKVTagsOnSuccess = true;
+            processInfo.fOldName = item->data( ECustomRoles::eFullPathRole ).toString();
+            auto fi = QFileInfo( processInfo.fOldName );
+            processInfo.fNewName = fi.absoluteDir().absoluteFilePath( fi.completeBaseName() + ".mkv" );
+            processInfo.fItem = new QStandardItem( QString( "Convert '%1' => '%2'" ).arg( getDispName( processInfo.fOldName ) ).arg( getDispName( processInfo.fNewName ) ) );
+            processInfo.fItem->setData( processInfo.fOldName, ECustomRoles::eOldName );
+            processInfo.fItem->setData( processInfo.fNewName, ECustomRoles::eNewName );
 
-			bool aOK = true;
-			QStandardItem * myItem = nullptr;
-			fFirstProcess = true;
-			if ( !displayOnly )
-			{
-				int numSeconds = NSABUtils::getNumberOfSeconds( processInfo.fOldName );
-				progressDlg()->setSecondaryMaximum( numSeconds );
+            bool aOK = true;
+            QStandardItem * myItem = nullptr;
+            fFirstProcess = true;
+            if ( !displayOnly )
+            {
+                int numSeconds = NSABUtils::getNumberOfSeconds( processInfo.fOldName );
+                progressDlg()->setSecondaryMaximum( numSeconds );
 
-				processInfo.fCmd = NPreferences::NCore::CPreferences::instance()->getFFMpegEXE();
-				if ( processInfo.fCmd.isEmpty() || !QFileInfo( processInfo.fCmd ).isExecutable() )
-				{
-					QStandardItem * errorItem = nullptr;
-					if ( processInfo.fCmd.isEmpty() )
-						appendError( processInfo.fItem, tr( "ffmpeg is not set properly" ) );
-					else
-						appendError( processInfo.fItem, tr( "ffmpeg '%1' is not an executable" ).arg( processInfo.fCmd ) );
-					aOK = false;
-				}
+                processInfo.fCmd = NPreferences::NCore::CPreferences::instance()->getFFMpegEXE();
+                if ( processInfo.fCmd.isEmpty() || !QFileInfo( processInfo.fCmd ).isExecutable() )
+                {
+                    QStandardItem * errorItem = nullptr;
+                    if ( processInfo.fCmd.isEmpty() )
+                        appendError( processInfo.fItem, tr( "ffmpeg is not set properly" ) );
+                    else
+                        appendError( processInfo.fItem, tr( "ffmpeg '%1' is not an executable" ).arg( processInfo.fCmd ) );
+                    aOK = false;
+                }
 
-				aOK = aOK && checkProcessItemExists( processInfo.fOldName, processInfo.fItem );
-				processInfo.fTimeStamps = NSABUtils::NFileUtils::timeStamps( processInfo.fOldName );
+                aOK = aOK && checkProcessItemExists( processInfo.fOldName, processInfo.fItem );
+                processInfo.fTimeStamps = NSABUtils::NFileUtils::timeStamps( processInfo.fOldName );
 
-				processInfo.fArgs = QStringList()
-					<< "-y"
-					<< "-fflags"
-					<< "+genpts"
-					<< "-i"
-					<< processInfo.fOldName
-					<< "-c:v" << "copy"
-					<< "-c:a" << "copy"
-					<< processInfo.fNewName;
-				fProcessQueue.push_back( processInfo );
-				QTimer::singleShot( 0, this, &CDirModel::slotRunNextProcessInQueue );
-			}
-			myItem = processInfo.fItem;
-			return std::make_pair( aOK, myItem );
-		}
+                processInfo.fArgs = QStringList()
+                    << "-y"
+                    << "-fflags"
+                    << "+genpts"
+                    << "-i"
+                    << processInfo.fOldName
+                    << "-c:v" << "copy"
+                    << "-c:a" << "copy"
+                    << processInfo.fNewName;
+                fProcessQueue.push_back( processInfo );
+                QTimer::singleShot( 0, this, &CDirModel::slotRunNextProcessInQueue );
+            }
+            myItem = processInfo.fItem;
+            return std::make_pair( aOK, myItem );
+        }
 
-		QString CMakeMKVModel::getProgressLabel( const SProcessInfo & processInfo ) const
-		{
-			auto retVal = QString("Converting to MKV<ul><li>%1</li>to<li>%2</li></ul>").arg(getDispName(processInfo.fOldName)).arg(getDispName(processInfo.fNewName));
-			return retVal;
-		}
+        QString CMakeMKVModel::getProgressLabel( const SProcessInfo & processInfo ) const
+        {
+            auto retVal = QString( "Converting to MKV<ul><li>%1</li>to<li>%2</li></ul>" ).arg( getDispName( processInfo.fOldName ) ).arg( getDispName( processInfo.fNewName ) );
+            return retVal;
+        }
 
-		QStringList CMakeMKVModel::headers() const
-		{
-			return CDirModel::headers()
-				<< getMediaHeaders();
-				;
-		}
+        QStringList CMakeMKVModel::headers() const
+        {
+            return CDirModel::headers()
+                << getMediaHeaders();
+            ;
+        }
 
-		void CMakeMKVModel::postLoad( QTreeView * treeView)
-		{
-			CDirModel::postLoad(treeView);
-		}
+        void CMakeMKVModel::postLoad( QTreeView * treeView )
+        {
+            CDirModel::postLoad( treeView );
+        }
 
-		void CMakeMKVModel::preLoad(QTreeView * treeView)
-		{
-			CDirModel::preLoad(treeView);
-		}
+        void CMakeMKVModel::preLoad( QTreeView * treeView )
+        {
+            CDirModel::preLoad( treeView );
+        }
 
-		void CMakeMKVModel::postProcess(bool /*displayOnly*/)
-		{
-			if (progressDlg())
-				progressDlg()->setValue(0);
-		}
+        void CMakeMKVModel::postProcess( bool /*displayOnly*/ )
+        {
+            if ( progressDlg() )
+                progressDlg()->setValue( 0 );
+        }
 
-		void CMakeMKVModel::postFileFunction( bool /*aOK*/, const QFileInfo & /*fileInfo*/ )
-		{
+        void CMakeMKVModel::postFileFunction( bool /*aOK*/, const QFileInfo & /*fileInfo*/ )
+        {
 
-		}
+        }
 
-		bool CMakeMKVModel::preFileFunction( const QFileInfo & /*fileInfo*/, std::unordered_set<QString> & /*alreadyAdded*/, TParentTree & /*tree*/ )
-		{
-			return true;
-		}
+        bool CMakeMKVModel::preFileFunction( const QFileInfo & /*fileInfo*/, std::unordered_set<QString> & /*alreadyAdded*/, TParentTree & /*tree*/ )
+        {
+            return true;
+        }
 
-		void CMakeMKVModel::attachTreeNodes( QStandardItem * /*nextParent*/, QStandardItem *& /*prevParent*/, const STreeNode & /*treeNode*/ )
-		{
+        void CMakeMKVModel::attachTreeNodes( QStandardItem * /*nextParent*/, QStandardItem *& /*prevParent*/, const STreeNode & /*treeNode*/ )
+        {
 
-		}
+        }
 
-	}
+    }
 }
