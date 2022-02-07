@@ -29,7 +29,6 @@
 #include <QTextStream>
 #include <QFileInfo>
 #include <QMessageBox>
-#include "SABUtils/QtUtils.h"
 
 
 void myMessageOutput( QtMsgType type, const QMessageLogContext & context, const QString & msg )
@@ -83,7 +82,7 @@ int main( int argc, char ** argv )
 {
     Q_INIT_RESOURCE( application );
 
-    NSABUtils::setDPIAwarenessToMode( argc, argv, "0" );
+    QApplication::setAttribute( Qt::AA_EnableHighDpiScaling ); 
     QApplication appl( argc, argv );
     appl.setApplicationName( QString::fromStdString( NVersion::APP_NAME ) );
     appl.setApplicationVersion(QString::fromStdString(NVersion::getVersionString( true ) ) );
