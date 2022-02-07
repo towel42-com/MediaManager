@@ -693,7 +693,8 @@ namespace NMediaManager
 
             auto posterPath = resultItem.contains( "poster_path" ) ? resultItem["poster_path"].toString() : QString();
 
-            if ( !fSearchInfo->isMatch( releaseDate, tmdbid, title ) )
+            if ( !fSearchInfo->isMatch( releaseDate, tmdbid, title ) &&
+                 !fSearchInfo->isMatch( firstAirDate, tmdbid, title ) )
                 return false;
 
             auto searchResult = std::make_shared< STransformResult >( fSearchInfo->isTVMedia() ? EMediaType::eTVShow : EMediaType::eMovie ); // movie or TV show
