@@ -29,6 +29,7 @@
 #include <QTextStream>
 #include <QFileInfo>
 #include <QMessageBox>
+#include "SABUtils/QtUtils.h"
 
 
 void myMessageOutput( QtMsgType type, const QMessageLogContext & context, const QString & msg )
@@ -82,36 +83,7 @@ int main( int argc, char ** argv )
 {
     Q_INIT_RESOURCE( application );
 
-    auto localArgc = argc;
-    bool dpiAwarenessFound = false;
-    for ( int ii = 1; ii < argc; ++ii )
-    {
-        if ( strncmp( argv[ ii ], "-platform", 9 ) == 0 )
-        {
-            if ( ( ii + 1 ) < argc )
-            {
-                std::string arg = argv[ ii + 1 ];
-                if ( arg.find( "dpiawareness=" ) != std::string::npos )
-                    dpiAwarenessFound = true;
-            }
-        }
-    }
-
-    if ( !dpiAwarenessFound )
-    {
-        char ** newArgv = new char*[ argc + 2 ];
-        for ( int ii = 0; ii < argc; ++ii )
-        {
-            newArgv[ ii ] = new char[ strlen( argv[ ii ] ) + 1 ];
-            strcpy( newArgv[ ii ], argv[ ii ] );
-        }
-        newArgv[ argc ] = new char[ strlen( "-platform" ) + 1 ];
-        strcpy( newArgv[ argc ], "-platform" );
-        newArgv[ argc + 1 ] = new char[ strlen( "windows:dpiawareness=0" ) + 1 ];
-        strcpy( newArgv[ argc + 1 ], "windows:dpiawareness=0" );
-        argc += 2;
-        argv = newArgv;
-    }
+    NSABUtils::setDPIAwarenessToMode( argc, argv, "0" );
     QApplication appl( argc, argv );
     appl.setApplicationName( QString::fromStdString( NVersion::APP_NAME ) );
     appl.setApplicationVersion(QString::fromStdString(NVersion::getVersionString( true ) ) );
