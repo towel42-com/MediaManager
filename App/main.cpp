@@ -83,6 +83,7 @@ int main( int argc, char ** argv )
     Q_INIT_RESOURCE( application );
 
     QApplication::setAttribute( Qt::AA_EnableHighDpiScaling ); 
+    QApplication::setAttribute( Qt::AA_UseHighDpiPixmaps );
     QApplication appl( argc, argv );
     appl.setApplicationName( QString::fromStdString( NVersion::APP_NAME ) );
     appl.setApplicationVersion(QString::fromStdString(NVersion::getVersionString( true ) ) );
