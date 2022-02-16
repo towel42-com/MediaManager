@@ -57,6 +57,7 @@
 #include <QLabel>
 #include <QSpinBox>
 #include <QThreadPool>
+#include <QAbstractNativeEventFilter>
 
 #include <QProgressBar>
 #ifdef Q_OS_WINDOWS
@@ -85,6 +86,34 @@ namespace NMediaManager
                     return path;
                 }
                 return QFileSystemModel::data( index, role );
+            }
+        };
+
+        class CClickOnTitleBar : public QAbstractNativeEventFilter
+        {
+        public:
+            CClickOnTitleBar() = default;
+            ~CClickOnTitleBar() override = default;
+
+            bool nativeEventFilter( const QByteArray & eventType, void * message, long * result ) override
+            {
+                (void)result;
+                if ( eventType == "windows_generic_MSG" )
+                {
+                    auto msg = static_cast<MSG *>( message );
+                    if ( msg->message == WM_NCLBUTTONDBLCLK )
+                    {
+                        auto hitTest = static_cast<int>( msg->wParam );
+                        if ( hitTest == HTCAPTION )
+                        {
+                            auto pt = QPoint( GET_X_LPARAM( msg->lParam ), GET_Y_LPARAM( msg->lParam ) );
+                            auto rootWindow = qApp->topLevelAt( pt );
+                            if ( dynamic_cast<CMainWindow *>( rootWindow ) )
+                                return dynamic_cast<CMainWindow *>( rootWindow )->titleBarClicked( pt );
+                        }
+                    }
+                }
+                return false;
             }
         };
 
@@ -149,6 +178,8 @@ namespace NMediaManager
 
             new NSABUtils::CSelectFileUrl( this );
 
+            qApp->installNativeEventFilter( new CClickOnTitleBar );
+
             QTimer::singleShot( 0, this, &CMainWindow::slotDirectoryChangedImmediate );
             QTimer::singleShot( 0, this, &CMainWindow::slotWindowChanged );
             QTimer::singleShot( 0, this, &CMainWindow::slotValidateDefaults );
@@ -198,28 +229,6 @@ namespace NMediaManager
             connect( fImpl->fileName, &NSABUtils::CDelayComboBox::sigEditTextChangedAfterDelay, dynamic_cast<CBIFViewerPage*>( bifPage->fPage ), &CBIFViewerPage::slotFileChanged );
             connect( fImpl->fileName->lineEdit(), &NSABUtils::CDelayLineEdit::sigFinishedEditingAfterDelay, dynamic_cast<CBIFViewerPage *>( bifPage->fPage ), &CBIFViewerPage::slotFileFinishedEditing );
 
-        }
-
-        bool CMainWindow::nativeEvent( const QByteArray & eventType, void * message, long * result )
-        {
-            if (eventType == "windows_generic_MSG")
-            {
-#ifdef Q_OS_WINDOWS
-                MSG * msg = static_cast<MSG *>(message);
-                if (msg->message == WM_NCLBUTTONDBLCLK)
-                {
-                    auto hitTest = static_cast<int>(msg->wParam);
-                    if (hitTest == HTCAPTION)
-                    {
-                        auto title = windowTitle();
-                        auto pt = mapFromGlobal(QPoint(GET_X_LPARAM(msg->lParam), GET_Y_LPARAM(msg->lParam)));
-                        if ( NSABUtils::launchIfURLClicked(title, pt, fImpl->menubar->font()) )
-                            return true;
-                    }
-                }
-#endif
-            }
-            return QMainWindow::nativeEvent(eventType, message, result);
         }
 
         void CMainWindow::slotValidateDefaults()
@@ -455,6 +464,13 @@ namespace NMediaManager
             if ( !fStayAwake )
                 return;
             fStayAwake->stop();
+        }
+
+        bool CMainWindow::titleBarClicked( const QPoint & pt ) const
+        {
+            auto localPt = mapFromGlobal( pt );
+            auto title = windowTitle();
+            return NSABUtils::launchIfURLClicked( title, localPt, fImpl->menubar->font() );
         }
 
         STabDef::STabDef( CBasePage * page, const QString & name, const QString & iconPath, QTabWidget * tabWidget ) :

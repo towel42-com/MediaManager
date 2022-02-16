@@ -74,6 +74,7 @@ namespace NMediaManager
             virtual ~CMainWindow() override;
 
             bool setBIFFileName( const QString &name );
+            bool titleBarClicked( const QPoint & pt ) const;
         public Q_SLOTS:
             virtual void slotOpen();
             virtual void slotDirectoryChanged();
@@ -97,7 +98,6 @@ namespace NMediaManager
             void addPages();
             std::shared_ptr< STabDef > addPage( std::shared_ptr< STabDef > & tabDef );
 
-            virtual bool nativeEvent(const QByteArray & eventType, void * message, long * result) override;
             CBasePage * getCurrentBasePage() const;
    
             bool isActivePageFileBased() const;
