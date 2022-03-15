@@ -27,19 +27,16 @@ endif()
 project( PreferencesCore )
 
 include( include.cmake )
-include( ${CMAKE_SOURCE_DIR}/SABUtils/Project.cmake )
+include( ${CMAKE_SOURCE_DIR}/Project.cmake )
 
-add_library(PreferencesCore STATIC
-    ${project_SRCS} 
-    ${project_H}  
-    ${qtproject_SRCS} 
-    ${qtproject_QRC} 
-    ${qtproject_QRC_SRCS} 
-    ${qtproject_UIS_H} 
-    ${qtproject_MOC_SRCS} 
-    ${qtproject_H} 
-    ${qtproject_UIS}
-    ${qtproject_QRC_SOURCES}
-    ${_CMAKE_FILES}
+add_library(${PROJECT_NAME} STATIC
+    ${_PROJECT_DEPENDENCIES} 
 )
-set_target_properties( PreferencesCore PROPERTIES FOLDER Libs/Preferences )
+set_target_properties( ${PROJECT_NAME} PROPERTIES FOLDER Libs/Preferences )
+
+target_link_libraries( ${PROJECT_NAME}
+    PUBLIC
+        ${project_pub_DEPS}
+    PRIVATE 
+        ${project_pri_DEPS}
+)

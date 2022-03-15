@@ -24,19 +24,11 @@ cmake_minimum_required(VERSION 3.1)
 if(CMAKE_VERSION VERSION_LESS "3.7.0")
     set(CMAKE_INCLUDE_CURRENT_DIR ON)
 endif()
-project( UI )
 
-include( include.cmake )
-include( ${CMAKE_SOURCE_DIR}/Project.cmake )
+include( ${CMAKE_SOURCE_DIR}/SABUtils/Project.cmake )
 
-add_library(${PROJECT_NAME} STATIC
-    ${_PROJECT_DEPENDENCIES} 
-    )
-set_target_properties( ${PROJECT_NAME} PROPERTIES FOLDER Libs )
+SET( project_pub_DEPS
+     Qt5::Network
+     ${project_pub_DEPS}
+     )
 
-target_link_libraries( ${PROJECT_NAME}
-    PUBLIC
-        ${project_pub_DEPS}
-    PRIVATE 
-        ${project_pri_DEPS}
-)

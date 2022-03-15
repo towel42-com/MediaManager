@@ -14,3 +14,12 @@ set(qtproject_UIS
 
 set(qtproject_QRC
 )
+
+set( project_pub_DEPS
+        SABUtils
+        UI
+        PreferencesUI
+        PreferencesCore
+        Core
+        Models
+)

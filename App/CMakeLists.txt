@@ -23,22 +23,12 @@
 project( MediaManager ) 
 
 include( include.cmake )
-include( ${CMAKE_SOURCE_DIR}/SABUtils/Project.cmake )
+include( ${CMAKE_SOURCE_DIR}/Project.cmake )
 include_directories( ${CMAKE_BINARY_DIR} )
 
-add_executable( MediaManager WIN32
-                 ${project_SRCS} 
-                 ${project_H} 
-                 ${qtproject_SRCS} 
-                 ${qtproject_QRC} 
-                 ${qtproject_QRC_SRCS} 
-                 ${qtproject_UIS_H} 
-                 ${qtproject_MOC_SRCS} 
-                 ${qtproject_H} 
-                 ${qtproject_UIS}
-                 ${qtproject_QRC_SOURCES}
-                 ${_CMAKE_FILES}
-                 ${_CMAKE_MODULE_FILES}
+add_executable( ${PROJECT_NAME} WIN32
+                ${_PROJECT_DEPENDENCIES} 
+                ${_CMAKE_MODULE_FILES}
                 application.rc 
           )
 if ( NOT DEPLOYQT_EXECUTABLE )
@@ -53,10 +43,16 @@ get_filename_component( QTDIR ${DEPLOYQT_EXECUTABLE} DIRECTORY )
 
 set ( DEBUG_PATH 
         "%PATH%"
-        "$<TARGET_FILE_DIR:mediainfo>"
         "$<TARGET_FILE_DIR:SABUtils>"
         "${QTDIR}"
         )
+if ( MKVUTILS )
+    set ( DEBUG_PATH 
+        ${DEBUG_PATH}
+        "$<TARGET_FILE_DIR:mediainfo>"
+    )
+endif()
+
 set ( DEBUG_PLUGINPATH 
         "$<TARGET_FILE_DIR:bif>/.."
         "$<TARGET_FILE_DIR:gif>/.."
@@ -66,23 +62,18 @@ set ( DEBUG_PLUGINPATH
 #        MESSAGE( STATUS "${_variableName}=${${_variableName}}" )
 #endforeach()
         
-set_target_properties( MediaManager PROPERTIES FOLDER Apps 
+set_target_properties( ${PROJECT_NAME} PROPERTIES FOLDER Apps 
                                     VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:MediaManager>" 
                                     VS_DEBUGGER_COMMAND "$<TARGET_FILE:MediaManager>" 
                                     VS_DEBUGGER_ENVIRONMENT "PATH=${DEBUG_PATH}\nQT_PLUGIN_PATH=${DEBUG_PLUGINPATH}" 
                      )
 
-target_link_libraries( MediaManager 
-                 Qt5::Widgets
-                 Qt5::Core
-                 SABUtils
-                 UI
-                 PreferencesUI
-                 PreferencesCore
-                 Core
-                 Core
-                 Models
-          )
+target_link_libraries( ${PROJECT_NAME}
+    PUBLIC
+        ${project_pub_DEPS}
+    PRIVATE 
+        ${project_pri_DEPS}
+)
 
 DeployQt( MediaManager . INSTALL_ONLY 1 )
 DeploySystem( MediaManager . INSTALL_ONLY 1 )
