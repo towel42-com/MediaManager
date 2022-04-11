@@ -298,8 +298,10 @@ namespace NMediaManager
             std::map< QString, QFileInfo > nameBasedMap;
             for (auto && ii : srtFiles)
             {
+                // qDebug() << ii.absoluteFilePath();
+
                 auto langInfo = NCore::SLanguageInfo(ii);
-                if ( langInfo.knownLanguage() && ( langInfo.baseName() != ii.completeBaseName() ) )
+                if ( !langInfo.knownLanguage() && ( langInfo.baseName() == fi.completeBaseName() ) )
                     nameBasedMap[langInfo.baseName()] = ii;
             }
             auto pos = nameBasedMap.find(fi.completeBaseName());
