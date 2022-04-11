@@ -36,8 +36,6 @@ find_package(Qt5 COMPONENTS Core Widgets Multimedia REQUIRED)
 find_package(Deploy REQUIRED)
 find_package(CheckOpenSSL REQUIRED)
 find_package(AddUnitTest REQUIRED)
-find_package(Git REQUIRED)
-find_package(CreateVersion REQUIRED)
 
 include( VersionInfo.cmake )
 
