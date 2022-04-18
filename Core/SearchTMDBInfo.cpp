@@ -609,7 +609,7 @@ namespace NMediaManager
                 query.addQueryItem( "api_key", CSearchTMDB::apiKeyV3() );
 
                 query.addQueryItem( "include_adult", "true" );
-                if ( !fReleaseDate.first.isValid() )
+                if ( fReleaseDate.first.isValid() )
                     query.addQueryItem( "year", QString::number( fReleaseDate.first.year() ) );
                 auto searchStrings = fSearchName.split( QRegularExpression( "[\\s\\.]" ), TSkipEmptyParts );
 
