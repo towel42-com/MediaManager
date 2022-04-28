@@ -34,6 +34,8 @@ namespace NMediaManager
 {
     namespace NCore
     {
+        QString SLanguageInfo::sDefaultISOCode{ "en_US" };
+
         SLanguageInfo::SLanguageInfo()
         {
 
@@ -122,7 +124,7 @@ namespace NMediaManager
         {
             if ( isKnownLanguage( value ) )
             {
-                fDefaultISOCode = prettyPrintISOCode( value );
+                sDefaultISOCode = prettyPrintISOCode( value );
                 return;
             }
             Q_ASSERT( isKnownLanguage( value ) );
@@ -556,7 +558,7 @@ namespace NMediaManager
 
             QRegularExpressionMatch match1;
             QRegularExpressionMatch match2;
-            QRegularExpressionMatch match3;
+
             QString num;
             QString langName;
             if ( ( match1 = regExp1.match( fFileName ) ).hasMatch() )
@@ -580,48 +582,58 @@ namespace NMediaManager
             else
             {
                 fUsingDefault = true;
-                langName = fDefaultISOCode;
+                langName = sDefaultISOCode;
             }
 
             computeLanguage( langName );
         }
 
-        void SLanguageInfo::computeLanguage( const QString &langName )
+        void SLanguageInfo::computeLanguage( const QString & langName )
+        {
+            std::tie( fLanguage, fCountry, fISOCode, fUsingDefault ) = computeLanguageInt( langName );
+        }
+
+        std::tuple< QString, QString, QString, bool > SLanguageInfo::computeLanguageInt( const QString &langName )
         {
             setupMaps();
 
             if ( langName.isEmpty() )
-                return;
+                return {};
 
+            QString language;
+            QString country;
+            QString isoCode;
             auto pos = sLangMap.find( langName.toLower() );
             if ( pos != sLangMap.end() )
             {
-                fLanguage = ( *pos ).second.first;
-                fCountry = ( *pos ).second.second;
-                fISOCode = prettyPrintISOCode( ( *pos ).first );
+                language = ( *pos ).second.first;
+                country = ( *pos ).second.second;
+                isoCode = prettyPrintISOCode( ( *pos ).first );
             }
             else
             {
                 auto pos = sNameToCodeMap.find( langName.toLower() );
                 if ( pos != sNameToCodeMap.end() )
                 {
-                    fLanguage = ( *pos ).second.first;
-                    fISOCode = prettyPrintISOCode( ( *pos ).second.second );
+                    language = ( *pos ).second.first;
+                    isoCode = prettyPrintISOCode( ( *pos ).second.second );
                 }
             }
-            if ( fLanguage.isEmpty() )
+            bool usingDefault{ false };
+            if ( language.isEmpty() )
             {
-                fUsingDefault = true;
-                computeLanguage( fDefaultISOCode );
+                std::tie( language, country, isoCode, usingDefault ) = computeLanguageInt( sDefaultISOCode );
+                usingDefault = true;
             }
 
-            if (    ( fISOCode.toLower() == fDefaultISOCode.left( 2 ) ) 
-                 && ( fISOCode.length() != 2 )
-                 && fCountry.isEmpty() )
+            if (    ( isoCode.toLower() == sDefaultISOCode.left( 2 ) ) 
+                 && ( isoCode.length() != 2 )
+                 && country.isEmpty() )
             {
-                fUsingDefault = true;
-                computeLanguage( fDefaultISOCode );
+                std::tie( language, country, isoCode, usingDefault ) = computeLanguageInt( sDefaultISOCode );
+                usingDefault = true;
             }
+            return std::make_tuple( language, country, isoCode, usingDefault );
         }
     }
 }

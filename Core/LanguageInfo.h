@@ -88,6 +88,8 @@ namespace NMediaManager
             void computeLanguages( const QFileInfo & fi );
             void computeLanguage();
             void computeLanguage( const QString & langName );
+            static std::tuple< QString, QString, QString, bool > computeLanguageInt( const QString & langName ); // returns lang, country, iscode, using default
+
 
             static void setupMaps();
 
@@ -98,7 +100,7 @@ namespace NMediaManager
             QString fCountry;
             bool fIsForced{ false };
             bool fIsSDH{ false };
-            QString fDefaultISOCode{ "en_US" };
+            static QString sDefaultISOCode;
             bool fUsingDefault{ false };
 
             std::unordered_map< QString, std::vector< SMultLangInfo > > fMultiLanguageList; // langinfo, index, numtimestamps
