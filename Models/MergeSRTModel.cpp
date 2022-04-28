@@ -272,6 +272,17 @@ namespace NMediaManager
             return srtFiles;
         }
 
+        bool CMergeSRTModel::nameMatch( const QString & mkvBaseName, QString subtitleFile ) const
+        {
+            subtitleFile.remove( mkvBaseName, Qt::CaseInsensitive );
+            if ( subtitleFile.isEmpty() )
+                return true;
+
+            auto regExp = QRegularExpression( R"(^(\d+_)|(_\d+)$)" );
+            auto match = regExp.match( subtitleFile );
+            return match.hasMatch();
+        }
+
         QList< QFileInfo > CMergeSRTModel::getSRTFilesForMKV( const QFileInfo & fi ) const
         {
             if ( !fi.exists() || !fi.isFile() )
@@ -295,21 +306,21 @@ namespace NMediaManager
             QList< QFileInfo > languageFiles;
             QList< QFileInfo > unknownFiles;
 
-            std::map< QString, QFileInfo > nameBasedMap;
+            std::map< QString, QList< QFileInfo > > nameBasedMap;
             for (auto && ii : srtFiles)
             {
                 // qDebug() << ii.absoluteFilePath();
 
                 auto langInfo = NCore::SLanguageInfo(ii);
-                if ( !langInfo.knownLanguage() && ( langInfo.baseName() == fi.completeBaseName() ) )
-                    nameBasedMap[langInfo.baseName()] = ii;
+                if ( !langInfo.knownLanguage() && ( nameMatch( fi.completeBaseName(), langInfo.baseName() ) ) )
+                    nameBasedMap[ fi.completeBaseName() ].push_back( ii );
             }
             auto pos = nameBasedMap.find(fi.completeBaseName());
             if (pos != nameBasedMap.end())
             {
                 namebasedFiles << (*pos).second;
             }
-            else if ( nameBasedMap.size() != srtFiles.size() ) // there are no non-named based srt files
+            else
             {
                 for (auto && ii : srtFiles)
                 {

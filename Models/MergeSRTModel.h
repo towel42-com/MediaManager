@@ -45,6 +45,7 @@ namespace NMediaManager
             virtual ~CMergeSRTModel() override;
 
         private:
+            bool nameMatch( const QString & mkvBaseName, QString subtitleFile ) const;
             virtual std::pair< bool, QStandardItem * > processItem( const QStandardItem * item, bool displayOnly ) override;
             QStandardItem * processSRTSubTitle(QStandardItem * mkvFile, const std::unordered_map< QString, std::vector< QStandardItem * > > & srtFiles, bool displayOnly) const;
             QStandardItem * processSUBIDXSubTitle(QStandardItem * mkvFile, const std::list< std::pair< QStandardItem *, QStandardItem * > > & subidxFiles, bool displayOnly) const;
