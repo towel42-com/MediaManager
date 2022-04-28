@@ -159,6 +159,15 @@ namespace NMediaManager
             postReloadModelRequest();
         }
 
+        bool CDirModel::isTVShow( const QModelIndex & idx ) const
+        {
+            if ( !idx.isValid() )
+                return false;
+
+            auto fi = this->fileInfo( idx );
+            return isTVType( NCore::SSearchTMDBInfo::looksLikeTVShow( fi.fileName(), nullptr ) );
+        }
+
         void CDirModel::slotLoadRootDirectory()
         {
             NSABUtils::CAutoWaitCursor awc;
@@ -513,7 +522,7 @@ namespace NMediaManager
 
         QString STreeNode::name() const
         {
-            return rootItem() ? rootItem()->text() : NCore::STransformResult::getNoItems();
+            return rootItem() ? rootItem()->text() : NCore::CTransformResult::getNoItems();
         }
 
         QStandardItem * STreeNode::item( EColumns column, bool createIfNecessary /*= true */ ) const
@@ -625,6 +634,35 @@ namespace NMediaManager
             return filePath( item );
         }
 
+        QUrl CDirModel::url( const QModelIndex & idx ) const
+        {
+            if ( isDir( idx ) )
+            {
+                auto name = fileInfo( idx ).fileName();
+                auto regExpStr = R"(\[\s*(tmdbid=(?<tmdbid>\d+)|(imdbid=<?<imdbid>tt.*))\s*\])";
+                auto regExp = QRegularExpression( regExpStr, QRegularExpression::CaseInsensitiveOption );
+                auto match = regExp.match( name );
+                if ( match.hasMatch() )
+                {
+                    QString urlPath;
+                    auto imdbid = match.captured( "imdbid" );
+                    auto tmdbid = match.captured( "tmdbid" );
+                    if ( !imdbid.isEmpty() )
+                        urlPath = QString( "https://imdb.com/title/%1" ).arg( imdbid );
+                    else if ( !tmdbid.isEmpty() )
+                        urlPath = QString( "https://themoviedb.org/%1/%2" ).arg( this->isTVShow( idx ) ? "tv" : "movie" ).arg( tmdbid );
+
+                    if ( !urlPath.isEmpty() )
+                        return QUrl( urlPath );
+                }
+                return {};
+            }
+            auto parent = idx.parent();
+            if ( parent.isValid() )
+                return url( parent );
+            return {};
+        }
+
         QFileInfo CDirModel::fileInfo( const QModelIndex & idx ) const
         {
             auto item = getPathItemFromIndex( idx );
@@ -680,7 +718,7 @@ namespace NMediaManager
                 return item->data( ECustomRoles::eFullPathRole ).toString();
 
             auto parentDir = computeTransformPath( item->parent(), false );
-            if ( NCore::STransformResult::isDeleteThis( parentDir ) )
+            if ( NCore::CTransformResult::isDeleteThis( parentDir ) )
                 return parentDir;
 
             auto myName = getMyTransformedName( item, transformParentsOnly );
@@ -688,7 +726,7 @@ namespace NMediaManager
             if ( myName.isEmpty() || parentDir.isEmpty() )
                 return {};
 
-            if ( NCore::STransformResult::isDeleteThis( myName ) )
+            if ( NCore::CTransformResult::isDeleteThis( myName ) )
                 return myName;
 
             auto retVal = QDir( parentDir ).absoluteFilePath( myName );

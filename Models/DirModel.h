@@ -158,6 +158,8 @@ namespace NMediaManager
             QFileInfo fileInfo( const QModelIndex & idx ) const;
             QString filePath( const QModelIndex & idx ) const;
 
+            QUrl url( const QModelIndex & idx ) const; // if the directory contains [tmdbid=XXX] or [imdbid=XXX], if a file, if the parent directory contains it
+
             bool isDir( const QStandardItem * item ) const;
             QFileInfo fileInfo( const QStandardItem * item ) const;
             QString filePath( const QStandardItem * item ) const;
@@ -220,6 +222,7 @@ namespace NMediaManager
             void sigProcessesFinished( bool status, bool showProcessResults, bool cancelled, bool reloadModel );
             void sigProcessingStarted();
         public Q_SLOTS:
+            virtual bool isTVShow( const QModelIndex & idx ) const;
             void slotLoadRootDirectory();
 
             void slotRunNextProcessInQueue();
