@@ -318,6 +318,16 @@ namespace NMediaManager
                 {
                     openLocation( idx );
                 } );
+
+                auto url = fModel->url( idx );
+                if ( url.isValid() )
+                {
+                    openLocationAction = retVal->addAction( tr( "Open Internet Info..." ),
+                                                            [url]()
+                                                            {
+                                                                QDesktopServices::openUrl( url );
+                                                            } );
+                }
                 separator = retVal->addSeparator();
             }
 
