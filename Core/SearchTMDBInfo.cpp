@@ -37,9 +37,9 @@ namespace NMediaManager
 {
     namespace NCore
     {
-        SSearchTMDBInfo::SSearchTMDBInfo( const QString &text, std::shared_ptr< STransformResult > searchResult )
+        SSearchTMDBInfo::SSearchTMDBInfo( const QString &text, std::shared_ptr< CTransformResult > searchResult )
         {
-            fSearchResultInfo = searchResult;
+            fSearchResult = searchResult;
             fInitSearchString = text;
             fMediaType = std::make_pair( looksLikeTVShow( text, nullptr ), true );
             updateSearchCriteria( true );
@@ -264,13 +264,21 @@ namespace NMediaManager
 
             fSearchName = smartTrim( fSearchName, true );
 
-            if ( fSearchResultInfo && !fSearchResultInfo->isAutoSetText() )
+            if ( fSearchResult && !fSearchResult->isAutoSetText() )
             {
-                fSearchName = fSearchResultInfo->fTitle;
+                fSearchName = fSearchResult->getTitle();
             }
 
             if ( updateSearchBy )
                 fSearchByName = fTMDBID.isEmpty();
+        }
+
+        void SSearchTMDBInfo::setPageNumber( int pageNumber )
+        {
+            if ( pageNumber == -1 )
+                fPageNumber.reset();
+            else
+                fPageNumber = pageNumber;
         }
 
         void SSearchTMDBInfo::setReleaseDate( const QString & releaseDate )
@@ -334,17 +342,17 @@ namespace NMediaManager
             return retVal;
         }
 
-        bool SSearchTMDBInfo::isMatch( std::shared_ptr< STransformResult > searchResult ) const
+        bool SSearchTMDBInfo::isMatch( std::shared_ptr< CTransformResult > searchResult ) const
         {
             if ( isTVMedia() )
             {
-                return isMatch( searchResult->fShowFirstAirDate, searchResult->fTMDBID, searchResult->getTitle(), searchResult->mediaType(), searchResult->getSeason(), searchResult->getEpisode() )
-                    || isMatch( searchResult->fSeasonStartDate, searchResult->fTMDBID, searchResult->getTitle(), searchResult->mediaType(), searchResult->getSeason(), searchResult->getEpisode() )
-                    || isMatch( searchResult->fEpisodeAirDate, searchResult->fTMDBID, searchResult->getTitle(), searchResult->mediaType(), searchResult->getSeason(), searchResult->getEpisode() )
+                return isMatch( searchResult->getShowFirstAirDate(), searchResult->getTMDBID(), searchResult->getTitle(), searchResult->mediaType(), searchResult->getSeason(), searchResult->getEpisode() )
+                    || isMatch( searchResult->getSeasonStartDate(), searchResult->getTMDBID(), searchResult->getTitle(), searchResult->mediaType(), searchResult->getSeason(), searchResult->getEpisode() )
+                    || isMatch( searchResult->getEpisodeAirDate(), searchResult->getTMDBID(), searchResult->getTitle(), searchResult->mediaType(), searchResult->getSeason(), searchResult->getEpisode() )
                     ;
             }
             else
-                return isMatch( searchResult->fMovieReleaseDate, searchResult->fTMDBID, searchResult->getTitle(), searchResult->mediaType(), searchResult->getSeason(), searchResult->getEpisode() );
+                return isMatch( searchResult->getMovieReleaseDate(), searchResult->getTMDBID(), searchResult->getTitle(), searchResult->mediaType(), searchResult->getSeason(), searchResult->getEpisode() );
 
         }
 
@@ -486,8 +494,8 @@ namespace NMediaManager
                     }
                 }
             }
-            if ( fSearchResultInfo )
-                fReleaseDate = fSearchResultInfo->getDate();
+            if ( fSearchResult )
+                fReleaseDate = fSearchResult->getDate();
         }
 
         bool SSearchTMDBInfo::isTVMedia() const
@@ -518,7 +526,7 @@ namespace NMediaManager
             return aOK;
         }
 
-        bool SSearchTMDBInfo::hasDiskNumber( QString & searchString, int & diskNum, std::shared_ptr< STransformResult > searchResultInfo )
+        bool SSearchTMDBInfo::hasDiskNumber( QString & searchString, int & diskNum, std::shared_ptr< CTransformResult > searchResult )
         {
             QString diskStr;
             auto regExpStr = "[^A-Za-z](?<fulltext>D(ISC|ISK)?_?(?<num>\\d+))(\\D|$)";
@@ -529,8 +537,8 @@ namespace NMediaManager
                 diskStr = match.captured( "num" );
                 searchString.replace( match.capturedStart( "fulltext" ), match.capturedLength( "fulltext" ), "" );
             }
-            if ( searchResultInfo && !searchResultInfo->fDiskNum.isEmpty() )
-                diskStr = searchResultInfo->fDiskNum;
+            if ( searchResult && !searchResult->diskNum().isEmpty() )
+                diskStr = searchResult->diskNum();
             if ( !diskStr.isEmpty() )
             {
                 bool aOK;
@@ -544,7 +552,7 @@ namespace NMediaManager
 
         void SSearchTMDBInfo::extractDiskNum()
         {
-            hasDiskNumber( fSearchName, fDiskNum, fSearchResultInfo );
+            hasDiskNumber( fSearchName, fDiskNum, fSearchResult );
         }
 
         void SSearchTMDBInfo::extractTVInfo()
@@ -556,11 +564,11 @@ namespace NMediaManager
                 looksLikeTVShow( fSearchName, &fSearchName, &seasonStr, &episodeStr, &fSubTitle );
                 fSubTitle = smartTrim( fSubTitle, true );
             }
-            if ( fSearchResultInfo )
+            if ( fSearchResult )
             {
-                episodeStr = fSearchResultInfo->fEpisode;
-                seasonStr = fSearchResultInfo->fSeason;
-                fSubTitle = fSearchResultInfo->fSubTitle;
+                episodeStr = fSearchResult->getEpisode();
+                seasonStr = fSearchResult->getSeason();
+                fSubTitle = fSearchResult->getSubTitle();
             }
 
             if ( !episodeStr.isEmpty() )
@@ -589,8 +597,19 @@ namespace NMediaManager
                 fTMDBID = smartTrim( match.captured( "tmdbid" ) );
                 fSearchName.replace( match.capturedStart( "fulltext" ), match.capturedLength( "fulltext" ), "" );
             }
-            if ( fSearchResultInfo )
-                fTMDBID = fSearchResultInfo->fTMDBID;
+            if ( fSearchResult )
+                fTMDBID = fSearchResult->getTMDBID();
+        }
+
+        bool SSearchTMDBInfo::canSearch() const
+        {
+            if ( CSearchTMDB::apiKeyV3().isEmpty() )
+                return false;
+
+            if ( fSearchByName )
+                return !getSearchStrings().isEmpty();
+            else
+                return !fTMDBID.isEmpty();
         }
 
         std::optional< std::pair< QUrl, ESearchType > > SSearchTMDBInfo::getSearchURL() const
@@ -600,6 +619,10 @@ namespace NMediaManager
             url.setHost( "api.themoviedb.org" );
             if ( fSearchByName )
             {
+                auto searchStrings = getSearchStrings();
+                if ( searchStrings.isEmpty() )
+                    return {};
+
                 if ( isTVMedia() )
                     url.setPath( "/3/search/tv" );
                 else
@@ -611,10 +634,8 @@ namespace NMediaManager
                 query.addQueryItem( "include_adult", "true" );
                 if ( fReleaseDate.first.isValid() )
                     query.addQueryItem( "year", QString::number( fReleaseDate.first.year() ) );
-                auto searchStrings = fSearchName.split( QRegularExpression( "[\\s\\.]" ), TSkipEmptyParts );
-
-                if ( searchStrings.isEmpty() )
-                    return {};
+                if ( fPageNumber.has_value() )
+                    query.addQueryItem( "page", QString::number( fPageNumber.value() ) );
 
                 query.addQueryItem( "query", searchStrings.join( "+" ) );
                 url.setQuery( query );
@@ -651,5 +672,11 @@ namespace NMediaManager
                 return std::make_pair( url, ESearchType::eGetMovie );
             }
         }
+
+        QStringList  SSearchTMDBInfo::getSearchStrings() const
+        {
+            return fSearchName.split( QRegularExpression( R"([\s\.])" ), TSkipEmptyParts );
+        }
+
     }
 }

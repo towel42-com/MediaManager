@@ -51,7 +51,7 @@ namespace NMediaManager
 {
     namespace NCore
     {
-        struct STransformResult;
+        class CTransformResult;
         struct SSearchTMDBInfo;
 
         class CNetworkReply;
@@ -62,14 +62,15 @@ namespace NMediaManager
             Q_OBJECT
         public:
             CSearchTMDB( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::optional< QString > & configuration, QObject * parent = nullptr );
-            ~CSearchTMDB();
+            virtual ~CSearchTMDB() override;
 
             void setSkipImages( bool value ) { fSkipImages = value; }
             bool isActive() const;
 
-            std::list < std::shared_ptr< STransformResult > > getResult( const QString & path ) const; // uses the queued results
-            std::list< std::shared_ptr< STransformResult > > getResults() const;
-            std::shared_ptr< STransformResult > bestMatch() const;
+            std::list < std::shared_ptr< CTransformResult > > getResult( const QString & path ) const; // uses the queued results
+            std::list< std::shared_ptr< CTransformResult > > getResults() const;
+            std::list< std::shared_ptr< CTransformResult > > getPartialResults();
+            std::shared_ptr< CTransformResult > bestMatch() const;
 
             bool searchByName();
 
@@ -102,6 +103,7 @@ namespace NMediaManager
 
         Q_SIGNALS:
             void sigSearchFinished();
+            void sigAutoSearchPartialFinished();
             void sigAutoSearchFinished( const QString & path, SSearchTMDBInfo * searchInfo, bool remaining );
             void sigMessage( const QString & msg );
             void sigFakeRequestFinished( ERequestType requestType, const QString & url, const QByteArray & cachedReply );
@@ -127,13 +129,13 @@ namespace NMediaManager
             bool loadTVDetails( std::shared_ptr< CNetworkReply > reply );
             bool loadSeasonDetails( std::shared_ptr< CNetworkReply > reply );
 
-            void searchTVDetails( std::shared_ptr< STransformResult > info, int tmdbid, int seasonNum );
+            void searchTVDetails( std::shared_ptr< CTransformResult > info, int tmdbid, int seasonNum );
 
             [[nodiscard]] bool loadSearchResult( const QJsonObject & resultItem );
-            [[nodiscard]] bool loadEpisodeDetails( const QJsonObject & episodeInfo, std::shared_ptr< STransformResult > seasonItem );
+            [[nodiscard]] bool loadEpisodeDetails( const QJsonObject & episodeInfo, std::shared_ptr< CTransformResult > seasonItem );
 
-            void addResult( std::shared_ptr<STransformResult> result );
-            void addResultToList( std::list< std::shared_ptr< STransformResult > > & list, std::shared_ptr<STransformResult> result, std::shared_ptr< SSearchTMDBInfo > searchInfo ) const;
+            void addResult( std::shared_ptr<CTransformResult> result );
+            void addResultToList( std::list< std::shared_ptr< CTransformResult > > & list, std::shared_ptr<CTransformResult> result, std::shared_ptr< SSearchTMDBInfo > searchInfo ) const;
 
             void checkIfStillSearching();
 
@@ -143,15 +145,16 @@ namespace NMediaManager
             std::shared_ptr< CNetworkReply > fGetMovieReply;
             std::shared_ptr< CNetworkReply > fGetTVReply;
 
-            std::unordered_map< QString, std::shared_ptr< STransformResult > > fImageInfoReplies;
-            std::unordered_map< QString, std::shared_ptr< STransformResult > > fTVInfoReplies;
-            std::pair< std::unordered_map< QString, std::shared_ptr< STransformResult > >, std::optional< bool > > fSeasonInfoReplies; // bool means episode found for this round of seasons searchess
+            std::unordered_map< QString, std::shared_ptr< CTransformResult > > fImageInfoReplies;
+            std::unordered_map< QString, std::shared_ptr< CTransformResult > > fTVInfoReplies;
+            std::pair< std::unordered_map< QString, std::shared_ptr< CTransformResult > >, std::optional< bool > > fSeasonInfoReplies; // bool means episode found for this round of seasons searchess
 
             std::shared_ptr< SSearchTMDBInfo > fSearchInfo;
+            std::pair< int, bool > fSearchPageNumber{ -1, false };
             std::optional< std::pair< QString, std::shared_ptr< SSearchTMDBInfo > > > fCurrentQueuedSearch;
-            std::unordered_map< QString, std::list< std::shared_ptr< STransformResult > > > fQueuedResults;
+            std::unordered_map< QString, std::list< std::shared_ptr< CTransformResult > > > fQueuedResults;
             std::list< std::pair< QString, std::shared_ptr< SSearchTMDBInfo > > > fSearchQueue;
-            QTimer * fAutoSearchTimer{ nullptr };
+            std::pair< QTimer *, bool > fAutoSearchTimer{ nullptr, false };
 
             std::optional< QString > fErrorMessage;
 
@@ -160,7 +163,9 @@ namespace NMediaManager
 
             bool fStopSearching{ true };
             bool fSkipImages{ false };
-            std::list< std::shared_ptr< STransformResult > > fResults;
+
+            std::unordered_set< std::shared_ptr< CTransformResult > > fRetrievedResults;
+            std::list< std::shared_ptr< CTransformResult > > fResults;
 
             std::unordered_map< QString, QByteArray > fURLResultsCache;
             std::unordered_map< QNetworkReply *, ERequestType > fRequestTypeMap;

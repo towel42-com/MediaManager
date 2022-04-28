@@ -34,7 +34,7 @@ namespace NMediaManager
 {
     namespace NCore
     {
-        struct STransformResult;
+        class CTransformResult;
 
         enum class EMediaType;
         enum class ESearchType
@@ -48,9 +48,12 @@ namespace NMediaManager
         struct SSearchTMDBInfo
         {
             SSearchTMDBInfo();
-            SSearchTMDBInfo( const QString & searchString, std::shared_ptr< STransformResult > titleInfo );
+            SSearchTMDBInfo( const QString & searchString, std::shared_ptr< CTransformResult > titleInfo );
 
-            static bool hasDiskNumber( QString & searchString, int & diskNum, std::shared_ptr< STransformResult > searchResult );
+            bool canSearch() const;
+
+
+            static bool hasDiskNumber( QString & searchString, int & diskNum, std::shared_ptr< CTransformResult > searchResult );
             static EMediaType looksLikeTVShow( const QString & searchString, QString * titleStr, QString * seasonStr = nullptr, QString * episodeStr = nullptr, QString * extraStr = nullptr );
             static bool isRippedFromMKV( const QString & name, int * titleNum=nullptr );
             static bool isRippedFromMKV( const QFileInfo & fi, int * titleNum = nullptr );
@@ -79,6 +82,7 @@ namespace NMediaManager
             void setSearchByName( bool searchByName ) { fSearchByName = searchByName; }
             bool searchByName() const { return fSearchByName; }
 
+            void setPageNumber( int pageNumber );
             void setReleaseDate( const QString & releaseDate );
             std::pair< QDate, QString > releaseDate() const { return fReleaseDate; }
             int releaseYear( bool * aOK = nullptr ) const;
@@ -98,7 +102,7 @@ namespace NMediaManager
             QString getExtendedInfo() const { return fFoundExtendedInfo; }
             QString toString( bool forDebug ) const;
 
-            bool isMatch( std::shared_ptr< STransformResult > searchResult ) const;
+            bool isMatch( std::shared_ptr< CTransformResult > searchResult ) const;
 
             template< typename T >
             bool isMatch( const std::pair< QDate, QString > & releaseDate, const T & tmdbid, const QString & name ) const
@@ -138,6 +142,8 @@ namespace NMediaManager
             bool isEpisodeMatch( int episodeToMatch ) const;
             bool isEpisodeMatch( const QString & episodeToMatch ) const;
         private:
+            QStringList getSearchStrings() const;
+
             bool isMatchingDate( const std::pair< QDate, QString > & releaseDate ) const;
             bool isMatchingTMDBID( int tmdbid ) const;
             bool isMatchingTMDBID( const QString & tmdbd ) const;
@@ -154,6 +160,7 @@ namespace NMediaManager
 
             QString fSearchName;
             std::pair< QDate, QString > fReleaseDate;
+            std::optional< int > fPageNumber;
             int fSeason{ -1 };
             int fEpisode{ -1 };
             int fDiskNum{ -1 };
@@ -169,7 +176,7 @@ namespace NMediaManager
             QString fFoundExtendedInfo;
 
             QString fInitSearchString;
-            std::shared_ptr< STransformResult > fSearchResultInfo;
+            std::shared_ptr< CTransformResult > fSearchResult;
         };
     }
 }
