@@ -30,7 +30,7 @@ namespace NMediaManager
 {
     namespace NCore
     {
-        struct STransformResult;
+        class CTransformResult;
     }
     namespace NModels
     {
@@ -55,8 +55,8 @@ namespace NMediaManager
             virtual std::optional< TItemStatus > computeItemStatus(const QModelIndex & idx ) const override;
             virtual bool canComputeStatus() const override;
 
-            void setSearchResult( const QModelIndex & idx, std::shared_ptr< NCore::STransformResult > info, bool applyToChilren, bool forceSet );
-            void setSearchResult( QStandardItem * item, std::shared_ptr< NCore::STransformResult > info, bool applyToChilren, bool forceSet);
+            void setSearchResult( const QModelIndex & idx, std::shared_ptr< NCore::CTransformResult > info, bool applyToChilren, bool forceSet );
+            void setSearchResult( QStandardItem * item, std::shared_ptr< NCore::CTransformResult > info, bool applyToChilren, bool forceSet);
             void clearSearchResult( const QModelIndex & idx, bool recursive );
 
             bool treatAsTVShow( const QFileInfo & fileInfo, bool defaultValue ) const;
@@ -78,10 +78,10 @@ namespace NMediaManager
 
             virtual void processPostAutoSearch();
 
-            std::shared_ptr< NCore::STransformResult > getTransformResult( QStandardItem * item, bool checkParents ) const;
-            std::shared_ptr< NCore::STransformResult > getTransformResult( const QModelIndex & idx, bool checkParents ) const;
-            std::shared_ptr< NCore::STransformResult > getTransformResult( const QString & path, bool checkParents ) const;
-            std::shared_ptr< NCore::STransformResult > getTransformResult( const QFileInfo & path, bool checkParents ) const;
+            std::shared_ptr< NCore::CTransformResult > getTransformResult( QStandardItem * item, bool checkParents ) const;
+            std::shared_ptr< NCore::CTransformResult > getTransformResult( const QModelIndex & idx, bool checkParents ) const;
+            std::shared_ptr< NCore::CTransformResult > getTransformResult( const QString & path, bool checkParents ) const;
+            std::shared_ptr< NCore::CTransformResult > getTransformResult( const QFileInfo & path, bool checkParents ) const;
         public Q_SLOTS:
             void slotPatternChanged();
 
@@ -90,6 +90,7 @@ namespace NMediaManager
             void slotMovieOutputDirPatternChanged( const QString & outPattern );
             void slotMovieOutputFilePatternChanged( const QString & outPattern );
         private:
+            virtual bool isTVShow( const QModelIndex & idx ) const override;
             virtual QDate getMediaDate( const QFileInfo & fi ) const override;
 
             bool itemSearchOK( const QModelIndex & idx, QString * msg = nullptr ) const;
@@ -122,7 +123,7 @@ namespace NMediaManager
 
             QStandardItem * getTransformItem( const QStandardItem * item ) const;
 
-            bool setMediaTags( const QString & fileName, std::shared_ptr< NCore::STransformResult > & searchResults, QString & msg ) const;
+            bool setMediaTags( const QString & fileName, std::shared_ptr< NCore::CTransformResult > & searchResults, QString & msg ) const;
 
             bool isValidName(const QFileInfo & fi, std::optional< bool > isTVShow = {} ) const;
             bool isValidName( const QString & absPath, bool isDir, std::optional< bool > isTVShow ) const;
@@ -146,10 +147,9 @@ namespace NMediaManager
 
             mutable std::map< QString, std::pair< bool, QString > > fFileMapping;
             mutable std::map< QString, std::pair< bool, QString > > fDirMapping;
-            std::unordered_map< QString, std::shared_ptr< NCore::STransformResult > > fTransformResultMap;
+            std::unordered_map< QString, std::shared_ptr< NCore::CTransformResult > > fTransformResultMap;
             std::unordered_map< QString, QString > fDiskRipSearchMap;
 
-            //bool fTreatAsTVShowByDefault{ false };
             QTimer * fPatternTimer{ nullptr };
             std::optional< bool > fInAutoSearch; // 3 values, notset means NOT run, true or false
         };
