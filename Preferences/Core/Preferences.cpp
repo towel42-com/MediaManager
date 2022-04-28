@@ -145,6 +145,21 @@ namespace NMediaManager
                 emitSigPreferencesChanged( EPreferenceType::eSystemPrefs );
             }
 
+            int CPreferences::getNumSearchPages() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
+                return settings.value( "NumSearchPages", -1 ).toInt();
+            }
+
+            void CPreferences::setNumSearchPages( int numpages )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
+                settings.setValue( "NumSearchPages", numpages );
+                emitSigPreferencesChanged( EPreferenceType::eSystemPrefs );
+            }
+
             QStringList CPreferences::getDirectories() const
             {
                 QSettings settings;
@@ -576,6 +591,19 @@ namespace NMediaManager
                     << "TEPES"
                     << "HMAX"
                     << "BTTF"
+                    << "B0MBARDiERS"
+                    << "THUGLiNE"
+                    << "LCHD"
+                    << "PiGNUS"
+                    << "YTS.AM"
+                    << "HEVC"
+                    << "HD4U"
+                    << "CMRG"
+                    << "DD2.0"
+                    << "NTb"
+                    << "MT"
+                    << "YTS"
+                    << "MX"
                     ;
                 return defaultValue;
             }

@@ -239,6 +239,9 @@ namespace NMediaManager
 
                 bool getPageVisible( const QString & pageName ) const;
                 void setPageVisible( const QString & pageName, bool isVisible );
+
+                int getNumSearchPages() const;
+                void setNumSearchPages( int numpages );
             Q_SIGNALS:
                 void sigPreferencesChanged( EPreferenceTypes prefType );
             private:
