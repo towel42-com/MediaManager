@@ -31,6 +31,7 @@ set(qtproject_SRCS
     PathsToDelete.cpp
     Preferences.cpp
     RemoveFromPaths.cpp
+    SearchSettings.cpp
     SkippedPaths.cpp
     TagAnalysisSettings.cpp
     TransformationSettings.cpp
@@ -48,6 +49,7 @@ set(qtproject_H
     PathsToDelete.h
     Preferences.h
     RemoveFromPaths.h
+    SearchSettings.h
     SkippedPaths.h
     TagAnalysisSettings.h
     TransformationSettings.h
@@ -67,6 +69,7 @@ set(qtproject_UIS
     PathsToDelete.ui
     Preferences.ui
     RemoveFromPaths.ui
+    SearchSettings.ui
     SkippedPaths.ui
     TagAnalysisSettings.ui
     TransformationSettings.ui

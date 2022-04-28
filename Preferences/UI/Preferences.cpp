@@ -34,6 +34,7 @@
 #include "PathsToDelete.h"
 #include "RemoveFromPaths.h"
 #include "SkippedPaths.h"
+#include "SearchSettings.h"
 #include "TransformationSettings.h"
 #include "TagAnalysisSettings.h"
 #include "TVShowSettings.h"
@@ -116,6 +117,7 @@ namespace NMediaManager
                 addPage( new CPathsToDelete );
                 addPage( new CRemoveFromPaths );
                 addPage( new CSkippedPaths );
+                addPage( new CSearchSettings );
                 addPage( new CTransformationSettings );
                 addPage( new CTVShowSettings );
                 addPage( new CTagAnalysisSettings );
