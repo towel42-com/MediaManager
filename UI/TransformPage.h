@@ -38,7 +38,7 @@ namespace NMediaManager
     namespace NCore
     {
         struct SSearchTMDBInfo;
-        struct STransformResult;
+        class CTransformResult;
         class CSearchTMDB;
         enum class EMediaType;
     }

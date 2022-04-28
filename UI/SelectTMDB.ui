@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>451</width>
+    <width>1073</width>
     <height>652</height>
    </rect>
   </property>
@@ -14,13 +14,78 @@
    <string>Select TMDB</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
-   <item row="13" column="1">
-    <widget class="QLineEdit" name="resultEpisodeTitle"/>
+   <item row="3" column="0" colspan="2">
+    <widget class="QCheckBox" name="searchForTVShows">
+     <property name="text">
+      <string>Search TV Shows?</string>
+     </property>
+    </widget>
+   </item>
+   <item row="12" column="0">
+    <widget class="QLabel" name="label_9">
+     <property name="text">
+      <string>Season:</string>
+     </property>
+    </widget>
    </item>
    <item row="7" column="0">
+    <widget class="QLabel" name="label_4">
+     <property name="text">
+      <string>Title:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0" colspan="2">
+    <widget class="QRadioButton" name="byName">
+     <property name="text">
+      <string>Search by Name and other Criteria</string>
+     </property>
+    </widget>
+   </item>
+   <item row="13" column="0">
+    <widget class="QLabel" name="label_10">
+     <property name="text">
+      <string>Episode:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="1">
+    <widget class="QLineEdit" name="resultTitle"/>
+   </item>
+   <item row="9" column="1">
+    <widget class="QLineEdit" name="resultReleaseDate"/>
+   </item>
+   <item row="8" column="1">
+    <widget class="QLineEdit" name="resultTMDBID"/>
+   </item>
+   <item row="9" column="0">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Release Date:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0" colspan="2">
+    <widget class="QCheckBox" name="exactMatchesOnly">
+     <property name="text">
+      <string>Exact Matches Only?</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="0">
     <widget class="QLabel" name="label_3">
      <property name="text">
       <string>TMDB ID:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="16" column="0" colspan="2">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Ok</set>
      </property>
     </widget>
    </item>
@@ -31,18 +96,27 @@
      </property>
     </widget>
    </item>
-   <item row="8" column="0">
-    <widget class="QLabel" name="label">
+   <item row="14" column="0">
+    <widget class="QLabel" name="label_11">
      <property name="text">
-      <string>Release Date:</string>
+      <string>Episode Title:</string>
      </property>
     </widget>
    </item>
-   <item row="11" column="1">
-    <widget class="QLineEdit" name="resultSeason"/>
+   <item row="15" column="1">
+    <widget class="QLineEdit" name="resultExtraInfo"/>
    </item>
-   <item row="12" column="1">
-    <widget class="QLineEdit" name="resultEpisode"/>
+   <item row="6" column="0" colspan="2">
+    <widget class="QTreeWidget" name="results">
+     <column>
+      <property name="text">
+       <string notr="true">1</string>
+      </property>
+     </column>
+    </widget>
+   </item>
+   <item row="14" column="1">
+    <widget class="QLineEdit" name="resultEpisodeTitle"/>
    </item>
    <item row="4" column="0" colspan="2">
     <widget class="QGroupBox" name="byNameGroupBox">
@@ -129,92 +203,25 @@
      </layout>
     </widget>
    </item>
-   <item row="11" column="0">
-    <widget class="QLabel" name="label_9">
-     <property name="text">
-      <string>Season:</string>
-     </property>
-    </widget>
+   <item row="12" column="1">
+    <widget class="QLineEdit" name="resultSeason"/>
    </item>
-   <item row="2" column="0" colspan="2">
-    <widget class="QCheckBox" name="exactMatchesOnly">
-     <property name="text">
-      <string>Exact Matches Only?</string>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="0" colspan="2">
-    <widget class="QTreeWidget" name="results">
-     <column>
-      <property name="text">
-       <string notr="true">1</string>
-      </property>
-     </column>
-    </widget>
-   </item>
-   <item row="7" column="1">
-    <widget class="QLineEdit" name="resultTMDBID"/>
-   </item>
-   <item row="6" column="0">
-    <widget class="QLabel" name="label_4">
-     <property name="text">
-      <string>Title:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="8" column="1">
-    <widget class="QLineEdit" name="resultReleaseDate"/>
-   </item>
-   <item row="3" column="0" colspan="2">
-    <widget class="QCheckBox" name="searchForTVShows">
-     <property name="text">
-      <string>Search TV Shows?</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="0" colspan="2">
-    <widget class="QRadioButton" name="byName">
-     <property name="text">
-      <string>Search by Name and other Criteria</string>
-     </property>
-    </widget>
-   </item>
-   <item row="13" column="0">
-    <widget class="QLabel" name="label_11">
-     <property name="text">
-      <string>Episode Title:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="15" column="0" colspan="2">
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Ok</set>
-     </property>
-    </widget>
-   </item>
-   <item row="12" column="0">
-    <widget class="QLabel" name="label_10">
-     <property name="text">
-      <string>Episode:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="6" column="1">
-    <widget class="QLineEdit" name="resultTitle"/>
-   </item>
-   <item row="14" column="0">
+   <item row="15" column="0">
     <widget class="QLabel" name="label_6">
      <property name="text">
       <string>Extra Info</string>
      </property>
     </widget>
    </item>
-   <item row="14" column="1">
-    <widget class="QLineEdit" name="resultExtraInfo"/>
+   <item row="13" column="1">
+    <widget class="QLineEdit" name="resultEpisode"/>
+   </item>
+   <item row="5" column="0" colspan="2">
+    <widget class="QLabel" name="resultsLabel">
+     <property name="text">
+      <string>Results:</string>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

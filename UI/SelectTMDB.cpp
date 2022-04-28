@@ -41,7 +41,7 @@ namespace NMediaManager
 {
     namespace NUi
     {
-        CSelectTMDB::CSelectTMDB( const QString &text, std::shared_ptr< NCore::STransformResult > searchResult, QWidget *parent )
+        CSelectTMDB::CSelectTMDB( const QString &text, std::shared_ptr< NCore::CTransformResult > searchResult, QWidget *parent )
             : QDialog( parent ),
             fImpl( new Ui::CSelectTMDB )
         {
@@ -51,23 +51,11 @@ namespace NMediaManager
             fSearchTMDB = new NCore::CSearchTMDB( fSearchInfo, std::optional< QString >(), this );
 
 
-            fImpl->resultExtraInfo->setText( searchResult ? searchResult->fExtraInfo : QString() );
+            fImpl->resultExtraInfo->setText( searchResult ? searchResult->extraInfo() : QString() );
             fImpl->resultEpisodeTitle->setText( fSearchInfo->subTitle() );
-
-            fImpl->searchName->setDelay( 1000 );
-            fImpl->searchSeason->setDelay( 1000 );
-            fImpl->searchEpisode->setDelay( 1000 );
-            fImpl->searchReleaseYear->setDelay( 1000 );
-            fImpl->searchTMDBID->setDelay( 1000 );
 
             updateFromSearchInfo( fSearchInfo );
             slotReset();
-
-            connect();
-            QObject::connect( this, &CSelectTMDB::sigStartSearch, fSearchTMDB, &NCore::CSearchTMDB::slotSearch );
-            QObject::connect( fImpl->results, &QTreeWidget::itemDoubleClicked, this, &CSelectTMDB::slotAcceptItem );
-            QObject::connect( fSearchTMDB, &NCore::CSearchTMDB::sigSearchFinished, this, &CSelectTMDB::slotSearchFinished );
-            QObject::connect( fImpl->results->selectionModel(), &QItemSelectionModel::selectionChanged, this, &CSelectTMDB::slotItemChanged );
 
             fImpl->results->setIconSize( QSize( 128, 128 ) );
 
@@ -75,6 +63,14 @@ namespace NMediaManager
             updateEnabled();
 
             QTimer::singleShot( 0, this, &CSelectTMDB::slotSearchCriteriaChanged );
+
+            QObject::connect( this, &CSelectTMDB::sigStartSearch, fSearchTMDB, &NCore::CSearchTMDB::slotSearch );
+            QObject::connect( fImpl->results, &QTreeWidget::itemDoubleClicked, this, &CSelectTMDB::slotAcceptItem );
+            QObject::connect( fSearchTMDB, &NCore::CSearchTMDB::sigSearchFinished, this, &CSelectTMDB::slotSearchFinished );
+            QObject::connect( fSearchTMDB, &NCore::CSearchTMDB::sigAutoSearchPartialFinished, this, &CSelectTMDB::slotSearchPartialFinished );
+            QObject::connect( fImpl->results->selectionModel(), &QItemSelectionModel::selectionChanged, this, &CSelectTMDB::slotItemChanged );
+
+            connect();
         }
 
         void CSelectTMDB::updateFromSearchInfo( std::shared_ptr< NCore::SSearchTMDBInfo > searchInfo )
@@ -103,6 +99,12 @@ namespace NMediaManager
             QObject::connect( fImpl->exactMatchesOnly, &QCheckBox::clicked, this, &CSelectTMDB::slotExactOrForTVShowsChanged );
             QObject::connect( fImpl->searchForTVShows, &QCheckBox::clicked, this, &CSelectTMDB::slotExactOrForTVShowsChanged );
 
+            fImpl->searchName->setDelay( 1000 );
+            fImpl->searchSeason->setDelay( 1000 );
+            fImpl->searchEpisode->setDelay( 1000 );
+            fImpl->searchReleaseYear->setDelay( 1000 );
+            fImpl->searchTMDBID->setDelay( 1000 );
+
             QObject::connect( fImpl->searchName, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchTextChanged );
             QObject::connect( fImpl->searchSeason, &NSABUtils::CDelaySpinBox::sigValueChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
             QObject::connect( fImpl->searchEpisode, &NSABUtils::CDelaySpinBox::sigValueChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
@@ -115,6 +117,12 @@ namespace NMediaManager
             QObject::disconnect( fImpl->byName, &QRadioButton::toggled, this, &CSelectTMDB::slotByNameChanged );
             QObject::disconnect( fImpl->exactMatchesOnly, &QCheckBox::clicked, this, &CSelectTMDB::slotExactOrForTVShowsChanged );
             QObject::disconnect( fImpl->searchForTVShows, &QCheckBox::clicked, this, &CSelectTMDB::slotExactOrForTVShowsChanged );
+
+            fImpl->searchName->setDelay( -1 );
+            fImpl->searchSeason->setDelay( -1 );
+            fImpl->searchEpisode->setDelay( -1 );
+            fImpl->searchReleaseYear->setDelay( -1 );
+            fImpl->searchTMDBID->setDelay( -1 );
 
             QObject::disconnect( fImpl->searchName, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchTextChanged );
             QObject::disconnect( fImpl->searchSeason, &NSABUtils::CDelaySpinBox::sigValueChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
@@ -135,6 +143,7 @@ namespace NMediaManager
             fStopLoading = false;
             fSearchTMDB->resetResults();
             fImpl->results->clear();
+            fImpl->resultsLabel->setText( tr( "Results:" ) );
             fSearchResultMap.clear();
             resetHeader();
         }
@@ -184,19 +193,80 @@ namespace NMediaManager
 
         void CSelectTMDB::slotSearchFinished()
         {
+            if ( fPartialResults )
+                fLoading = false;
+
+            fPartialResults = false;
+            searchFinished();
+        }
+
+        void CSelectTMDB::slotSearchPartialFinished()
+        {
+            fPartialResults = true;
+            searchFinished();
+        }
+
+        void CSelectTMDB::searchFinished()
+        {
             if ( fSearchTMDB->hasError() )
             {
                 QMessageBox::information( this, tr( "Error searching themoviedb" ), fSearchTMDB->errorString() );
                 return;
             }
 
-            auto currResults = fSearchTMDB->getResults();
-            fCurrentResults.insert( fCurrentResults.end(), currResults.begin(), currResults.end() );
-            fBestMatch = fSearchTMDB->bestMatch();
+            if ( fLoading && !fPartialResults )
+                return;
+
+            auto currResults = fPartialResults ? fSearchTMDB->getPartialResults() : fSearchTMDB->getResults();
+            for ( auto && ii : currResults )
+            {
+                if ( ii->isNotFoundResult() )
+                    continue;
+                fCurrentResults.push_back( ii );
+            }
+            //fCurrentResults.insert( fCurrentResults.end(), currResults.begin(), currResults.end() );
+            if ( !fPartialResults )
+                fBestMatch = fSearchTMDB->bestMatch();
 
             fLoading = true;
             //qDebug() << QDateTime::currentDateTime().toString() << "launching slotLoadNextResult" << fCurrentResults.size();
             QTimer::singleShot( 0, this, &CSelectTMDB::slotLoadNextResult );
+        }
+
+        void CSelectTMDB::countResults( QTreeWidgetItem * parent, std::tuple< int, int, int > & count )
+        {
+            auto childCount = parent ? parent->childCount() : fImpl->results->topLevelItemCount();
+            for ( int ii = 0; ii < childCount; ++ii )
+            {
+                auto item = parent ? parent->child( ii ) : fImpl->results->topLevelItem( ii );
+                if ( !item )
+                    continue;
+                auto type = static_cast<EItemType>( item->type() );
+                if ( type == EItemType::eMovie )
+                    std::get< 0 >( count )++;
+                else if ( type == EItemType::eTVShow )
+                    std::get< 1 >( count )++;
+                else if ( type == EItemType::eEpisode )
+                    std::get< 1 >( count )++;
+
+                countResults( item, count );
+            }
+        }
+
+        void CSelectTMDB::setResultsLabel()
+        {
+            std::tuple< int, int, int > count{ 0, 0, 0 };
+            countResults( nullptr, count );
+
+            QStringList results;
+            if ( std::get< 0 >( count ) )
+                results << tr( "Movies: %1" ).arg( std::get< 0 >( count ) );
+            if ( std::get< 1 >( count ) )
+                results << tr( "TV Shows: %1" ).arg( std::get< 1 >( count ) );
+            if ( std::get< 2 >( count ) )
+                results << tr( "TV Episodes: %1" ).arg( std::get< 2 >( count ) );
+
+            fImpl->resultsLabel->setText( tr( "Results: %1" ).arg( results.join( " - " ) ) );
         }
 
         void CSelectTMDB::slotLoadNextResult()
@@ -207,6 +277,13 @@ namespace NMediaManager
 
             if ( fCurrentResults.empty() )
             {
+                if ( fPartialResults )
+                    return;
+
+                QApplication::restoreOverrideCursor();
+
+                setResultsLabel();
+
                 delete fButtonEnabler;
                 fButtonEnabler = new NSABUtils::CButtonEnabler( fImpl->results, fImpl->buttonBox->button( QDialogButtonBox::Ok ) );
 
@@ -228,10 +305,11 @@ namespace NMediaManager
 
             auto curr = fCurrentResults.front();
             fCurrentResults.pop_front();
-            loadResults( curr, nullptr );
+            if ( !curr->isNotFoundResult() )
+                loadResults( curr, nullptr );
 
             //qDebug() << QDateTime::currentDateTime().toString() << "Launching slotLoadNextResult" << fCurrentResults.size();
-            QTimer::singleShot( 0, this, &CSelectTMDB::slotLoadNextResult );
+            QTimer::singleShot( 100, this, &CSelectTMDB::slotLoadNextResult );
         }
 
         bool CSelectTMDB::isMatchingItem( QTreeWidgetItem *item ) const
@@ -282,50 +360,55 @@ namespace NMediaManager
             return retVal;
         }
 
-        void CSelectTMDB::loadResults( std::shared_ptr< NCore::STransformResult > info, QTreeWidgetItem *parent )
+        void CSelectTMDB::loadResults( std::shared_ptr< NCore::CTransformResult > info, QTreeWidgetItem *parent )
         {
             if ( fStopLoading )
                 return;
 
-            if ( info->fMediaType == NCore::EMediaType::eTVShow || info->fMediaType == NCore::EMediaType::eTVSeason )
+            if ( info->mediaType() == NCore::EMediaType::eTVShow || info->mediaType() == NCore::EMediaType::eTVSeason )
             {
-                if ( info->fChildren.empty() )
+                if ( !info->hasChildren() )
                     return;
             }
 
+            //if ( fAddedInfo.find( info ) != fAddedInfo.end() )
+            //    return;
+
+            fAddedInfo.insert( info );
             //qDebug() << QDateTime::currentDateTime().toString() << "loading result" << fCurrentResults.size();
             QStringList data;
             EItemType itemType;
             int labelPos = -1;
             if ( fImpl->searchForTVShows->isChecked() )
             {
-                data = QStringList() << info->fTitle << info->getTMDBID() << info->fSeason << info->fEpisode << info->getDate().second << info->fSubTitle << QString();
+                data = QStringList() << info->title() << info->getTMDBID() << info->season() << info->episode() << info->getDate().second << info->subTitle() << QString();
                 itemType = EItemType::eTVShow;
                 labelPos = 6;
             }
             else
             {
-                data = QStringList() << info->fTitle << info->getTMDBID() << info->getDate().second << QString();
+                data = QStringList() << info->title() << info->getTMDBID() << info->getDate().second << QString();
                 itemType = EItemType::eMovie;
                 labelPos = 3;
             }
 
-            QTreeWidgetItem *item;
+
+            QTreeWidgetItem * item;
             if ( parent )
                 item = new QTreeWidgetItem( parent, data, EItemType::eMovie );
             else
                 item = new QTreeWidgetItem( fImpl->results, data, itemType );
 
-            fSearchResultMap[item] = info;
+            fSearchResultMap[ item ] = info;
 
-            auto label = new QLabel( info->fDescription, this );
+            auto label = new QLabel( info->description(), this );
             label->setWordWrap( true );
             fImpl->results->setItemWidget( item, labelPos, label );
             item->setExpanded( true );
 
-            if ( !info->fPixmap.isNull() )
+            if ( !info->pixmap().isNull() )
             {
-                item->setIcon( 0, QIcon( info->fPixmap ) );
+                item->setIcon( 0, QIcon( info->pixmap() ) );
             }
 
             fImpl->results->resizeColumnToContents( 0 );
@@ -340,18 +423,20 @@ namespace NMediaManager
                     parent = parent->parent();
                 }
             }
-            qApp->processEvents();
 
-            for ( auto &&ii : info->fChildren )
-            {
-                loadResults( ii, item );
-                if ( fStopLoading )
-                    break;
-            }
+            info->onAllChildren(
+                [item, this]( std::shared_ptr< NCore::CTransformResult > child )
+                {
+                    loadResults( child, item );
+                },
+                [this]()
+                {
+                    return fStopLoading;
+                } );
         }
 
 
-        std::shared_ptr< NCore::STransformResult > CSelectTMDB::getSearchResult() const
+        std::shared_ptr< NCore::CTransformResult > CSelectTMDB::getSearchResult() const
         {
             auto first = getFirstSelected();
             if ( !first )
@@ -361,7 +446,7 @@ namespace NMediaManager
                 return {};
 
             auto retVal = ( *pos ).second;
-            retVal->fExtraInfo = fImpl->resultExtraInfo->text();
+            retVal->setExtraInfo( fImpl->resultExtraInfo->text() );
             return ( *pos ).second;
         }
 
@@ -515,6 +600,10 @@ namespace NMediaManager
             searchInfo->setExactMatchOnly( fImpl->exactMatchesOnly->isChecked() );
             searchInfo->setSearchByName( fImpl->byName->isChecked() );
 
+            if ( !searchInfo->canSearch() )
+                return;
+
+            QApplication::setOverrideCursor( Qt::WaitCursor );
 
             slotReset();
 

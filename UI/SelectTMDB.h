@@ -28,6 +28,8 @@
 #include <QDate>
 #include <optional>
 #include <memory>
+#include <unordered_map>
+#include <unordered_set>
 
 class QNetworkAccessManager;
 class QNetworkReply;
@@ -43,7 +45,7 @@ namespace NMediaManager
     {
         class CSearchTMDB;
         struct SSearchTMDBInfo;
-        struct STransformResult;
+        class CTransformResult;
     }
     namespace NUi
     {
@@ -60,11 +62,11 @@ namespace NMediaManager
                 eEpisode
             };
 
-            CSelectTMDB( const QString &searchText, std::shared_ptr< NCore::STransformResult > searchResult, QWidget *parent = nullptr );
+            CSelectTMDB( const QString &searchText, std::shared_ptr< NCore::CTransformResult > searchResult, QWidget *parent = nullptr );
 
             ~CSelectTMDB();
 
-            std::shared_ptr< NCore::STransformResult > getSearchResult() const;
+            std::shared_ptr< NCore::CTransformResult > getSearchResult() const;
 
             void setSearchForTVShows( bool value, bool init );
             void setExactMatchOnly( bool value, bool init );
@@ -79,12 +81,16 @@ namespace NMediaManager
             void slotExactOrForTVShowsChanged();
 
             void slotSearchFinished();
+            void slotSearchPartialFinished();
             void slotLoadNextResult();
             void slotReset();
         Q_SIGNALS:
             void sigStartSearch();
         private:
+            void searchFinished();
             bool searchByName();
+            void setResultsLabel();
+            void countResults( QTreeWidgetItem * parent, std::tuple< int, int, int > & count );
             QTreeWidgetItem * getFirstSelected() const;
 
             bool isMatchingItem( QTreeWidgetItem *item ) const;
@@ -101,7 +107,7 @@ namespace NMediaManager
             std::shared_ptr< NCore::SSearchTMDBInfo > getSearchInfo();
             void resetHeader();
 
-            void loadResults( std::shared_ptr< NCore::STransformResult > item, QTreeWidgetItem *parent );
+            void loadResults( std::shared_ptr< NCore::CTransformResult > item, QTreeWidgetItem *parent );
             void deleteParent( QTreeWidgetItem *item );
 
             std::unique_ptr< Ui::CSelectTMDB > fImpl;
@@ -110,15 +116,17 @@ namespace NMediaManager
             NCore::CSearchTMDB *fSearchTMDB{ nullptr };
             std::shared_ptr< NCore::SSearchTMDBInfo > fSearchInfo;
 
+            bool fPartialResults{ false };
             bool fLoading{ false };
             bool fStopLoading{ false };
             bool fSearchPending{ false };
             std::shared_ptr< NCore::SSearchTMDBInfo > fQueuedSearchInfo;
             QString fPrevSearchName;
 
-            std::shared_ptr< NCore::STransformResult > fBestMatch;
-            std::list< std::shared_ptr< NCore::STransformResult > > fCurrentResults;
-            std::unordered_map< QTreeWidgetItem *, std::shared_ptr< NCore::STransformResult > > fSearchResultMap;
+            std::shared_ptr< NCore::CTransformResult > fBestMatch;
+            std::list< std::shared_ptr< NCore::CTransformResult > > fCurrentResults;
+            std::unordered_map< QTreeWidgetItem *, std::shared_ptr< NCore::CTransformResult > > fSearchResultMap;
+            std::unordered_set< std::shared_ptr< NCore::CTransformResult > > fAddedInfo;
         };
     }
 }
