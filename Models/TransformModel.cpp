@@ -56,15 +56,13 @@ namespace NMediaManager
 
         bool CTransformModel::setData( const QModelIndex & idx, const QVariant & value, int role )
         {
-            if ( role == Qt::CheckStateRole )
+            if ( ( role == Qt::CheckStateRole ) && ( idx.column() == EColumns::eIsTVShow ) )
             {
                 auto isTVShow = value.toInt() == Qt::Checked;
                 auto baseItem = getPathItemFromIndex( idx );
                 if ( baseItem && idx.column() == EColumns::eIsTVShow )
                     baseItem->setData( isTVShow, eIsTVShowRole );
                 auto item = itemFromIndex( idx );
-                // set Text calls updateItem, do not explicitly call it
-                item->setText( isTVShow ? "Yes" : "No" ); 
                 updateTransformPattern( item );
             }
             return CDirModel::setData( idx, value, role );
@@ -825,7 +823,7 @@ namespace NMediaManager
             auto mediaType = NCore::SSearchTMDBInfo::looksLikeTVShow( fileInfo.fileName(), nullptr );
             auto isTVShowItem = SDirNodeItem( QString(), EColumns::eIsTVShow );
             isTVShowItem.fMediaType = mediaType;
-            isTVShowItem.fCheckable = true;
+            isTVShowItem.fCheckable = { true, true, false };
 
             retVal.push_back( isTVShowItem );
 

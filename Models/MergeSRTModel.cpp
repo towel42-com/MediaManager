@@ -344,7 +344,7 @@ namespace NMediaManager
             return namebasedFiles << languageFiles;
         }
 
-        QStandardItem * CMergeSRTModel::processSUBIDXSubTitle(QStandardItem * mkvFile, const std::list< std::pair< QStandardItem *, QStandardItem * > > & subidxFiles, bool displayOnly) const
+        QStandardItem * CMergeSRTModel::processSUBIDXSubTitle( const QStandardItem * mkvFile, const std::list< std::pair< QStandardItem *, QStandardItem * > > & subidxFiles, bool displayOnly) const
         {
             SProcessInfo processInfo;
             processInfo.fSetMKVTagsOnSuccess = true;
@@ -358,7 +358,7 @@ namespace NMediaManager
             std::unordered_map<  QStandardItem *, std::unordered_map< int, std::pair< bool, bool > > > langMap;
             for (auto && ii : subidxFiles)
             {
-                auto idxItem = new QStandardItem(tr("IDX File: %1").arg(ii.first->text()));
+                auto idxItem = new QStandardItem( tr( "IDX File: %1 - SUB File: %2" ).arg( ii.first->text() ).arg( ii.second->text() ) );
                 processInfo.fItem->appendRow(idxItem);
                 auto path = ii.first->data(ECustomRoles::eFullPathRole).toString();
                 auto langInfo = NCore::SLanguageInfo(QFileInfo(path));
@@ -523,7 +523,7 @@ namespace NMediaManager
             return processInfo.fItem;
         }
 
-        QStandardItem * CMergeSRTModel::processSRTSubTitle(QStandardItem * mkvFile, const std::unordered_map< QString, std::vector< QStandardItem * > > & srtFiles, bool displayOnly ) const
+        QStandardItem * CMergeSRTModel::processSRTSubTitle(const QStandardItem * mkvFile, const std::unordered_map< QString, std::vector< QStandardItem * > > & srtFiles, bool displayOnly ) const
         {
             SProcessInfo processInfo;
             processInfo.fSetMKVTagsOnSuccess = true;
@@ -622,29 +622,26 @@ namespace NMediaManager
 
         std::pair< bool, QStandardItem * > CMergeSRTModel::processItem( const QStandardItem * item, bool displayOnly )
         {
-            if ( !item->data( ECustomRoles::eIsDir ).toBool() )
-                return std::make_pair( true, nullptr );
-
-            auto mkvFiles = getChildMKVFiles( item, false );
-            if ( mkvFiles.empty() )
-                return std::make_pair( true, nullptr );
+            if ( !isMediaFile( item ) )
+                 return std::make_pair( true, nullptr );
 
             bool aOK = true;
             QStandardItem * myItem = nullptr;
             fFirstProcess = true;
-            for ( auto && mkvFile : mkvFiles )
+
+            auto path = item->data( ECustomRoles::eFullPathRole ).toString();
+            qDebug() << path;
+
+            auto srtFiles = getChildSRTFiles( item, false );
+            if ( !srtFiles.empty() )
+                myItem = processSRTSubTitle( item, srtFiles, displayOnly );
+            else
             {
-                auto srtFiles = getChildSRTFiles( mkvFile, false );
-                if ( !srtFiles.empty() )
-                    myItem = processSRTSubTitle( mkvFile, srtFiles, displayOnly );
-                else
-                {
-                    auto idxFiles = getChildFiles(mkvFile, "idx");
-                    auto subFiles = getChildFiles(mkvFile, "sub");
-                    auto subIDXPairFiles = pairSubIDX(idxFiles, subFiles);
-                    if (!subIDXPairFiles.empty())
-                        myItem = processSUBIDXSubTitle(mkvFile, subIDXPairFiles, displayOnly);
-                }
+                auto idxFiles = getChildFiles( item, "idx");
+                auto subFiles = getChildFiles( item, "sub");
+                auto subIDXPairFiles = pairSubIDX(idxFiles, subFiles);
+                if (!subIDXPairFiles.empty())
+                    myItem = processSUBIDXSubTitle( item, subIDXPairFiles, displayOnly);
             }
             return std::make_pair( aOK, myItem );
         }
@@ -690,15 +687,15 @@ namespace NMediaManager
                 retVal.push_back( languageFileItem );
 
                 auto forcedItem = SDirNodeItem( QString(), EColumns::eForced );
-                forcedItem.fCheckable = true;
+                forcedItem.fCheckable = { true, true, false };
                 retVal.push_back( forcedItem );
 
                 auto sdhItem = SDirNodeItem( QString(), EColumns::eSDH );
-                sdhItem.fCheckable = true;
+                sdhItem.fCheckable = { true, true, false };
                 retVal.push_back( sdhItem );
 
                 auto onByDefaultItem = SDirNodeItem( QString(), EColumns::eOnByDefault );
-                onByDefaultItem.fCheckable = !language.isMultiLanguage();
+                onByDefaultItem.fCheckable = { !language.isMultiLanguage(), true, false };
                 retVal.push_back( onByDefaultItem );
             }
             else
