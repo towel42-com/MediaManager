@@ -391,13 +391,15 @@ namespace NMediaManager
         {
             if ( isActivePageFileBased() )
             {
-                auto fileName = QFileDialog::getOpenFileName( this, tr( "Select File:" ), fImpl->fileName->currentText(), getCurrentBasePage()->selectFileFilter() );
+                auto prev = fImpl->fileName->isOK() ? fImpl->fileName->currentText() : QString();
+                auto fileName = QFileDialog::getOpenFileName( this, tr( "Select File:" ), prev, getCurrentBasePage()->selectFileFilter() );
                 if ( !fileName.isEmpty() )
                     fImpl->fileName->setCurrentText( fileName );
             }
             else if ( isActivePageDirBased() )
             {
-                auto dir = QFileDialog::getExistingDirectory( this, tr( "Select Directory:" ), fImpl->directory->currentText() );
+                auto prev = fImpl->directory->isOK() ? fImpl->directory->currentText() : QString();
+                auto dir = QFileDialog::getExistingDirectory( this, tr( "Select Directory:" ), prev );
                 if ( !dir.isEmpty() )
                     fImpl->directory->setCurrentText( dir );
             }
