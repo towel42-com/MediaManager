@@ -87,7 +87,8 @@ namespace NMediaManager
             eOldName,
             eNewName,
             eIsErrorNode,
-            eMediaTagTypeRole
+            eMediaTagTypeRole,
+            eYesNoCheckableOnly
         };
 
         enum class EType
@@ -350,6 +351,9 @@ namespace NMediaManager
 
             void setChecked( QStandardItem * item, bool value ) const;
             void setChecked( QStandardItem * item, ECustomRoles role, bool value ) const;
+            void setCheckState( QStandardItem * item, Qt::CheckState state, bool adjustParent ) const;
+
+            void updateParentCheckState( QStandardItem * item ) const;
 
             void addProcessError( const QString & msg );
 

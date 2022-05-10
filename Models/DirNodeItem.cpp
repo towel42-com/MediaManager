@@ -81,7 +81,11 @@ namespace NMediaManager
                 retVal->setData( ii.first, ii.second );
             }
             if ( fCheckable.has_value() )
-                retVal->setCheckable( fCheckable.value() );
+            {
+                retVal->setCheckable( std::get< 0 >( fCheckable.value() ) );
+                retVal->setData( std::get< 1 >( fCheckable.value() ), NModels::ECustomRoles::eYesNoCheckableOnly );
+                retVal->setCheckState( std::get< 2 >( fCheckable.value() ) ? Qt::CheckState::Checked : Qt::CheckState::Unchecked );
+            }
             return retVal;
         }
     }

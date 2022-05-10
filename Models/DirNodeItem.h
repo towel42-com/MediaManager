@@ -75,7 +75,7 @@ namespace NMediaManager
             std::optional< Qt::Alignment > fAlignment;
             std::list< std::pair< QVariant, int > > fRoles;
             NCore::EMediaType fMediaType;
-            std::optional< bool > fCheckable;
+            std::optional< std::tuple< bool, bool, bool > > fCheckable; // isCHeckable, yesno only, is checked
             std::optional< std::pair< EType, NSABUtils::EMediaTags > > fEditable;
         };
     }

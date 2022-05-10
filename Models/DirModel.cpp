@@ -233,9 +233,14 @@ namespace NMediaManager
 
         bool CDirModel::setData( const QModelIndex & idx, const QVariant & value, int role )
         {
-            if ( role == Qt::EditRole )
+            auto item = itemFromIndex( idx );
+            if ( role == Qt::CheckStateRole )
             {
-                auto item = itemFromIndex( idx );
+                QStandardItemModel::setData( idx, value, role );
+                setCheckState( item, static_cast<Qt::CheckState>( value.toInt() ), true );
+            }
+            else if ( role == Qt::EditRole )
+            {
                 if ( !item )
                     return false;
 
@@ -506,6 +511,7 @@ namespace NMediaManager
             nameItem.setData( fileInfo.absoluteFilePath(), ECustomRoles::eFullPathRole );
             nameItem.setData( fileInfo.isDir(), ECustomRoles::eIsDir );
             nameItem.fEditable = std::make_pair( EType::ePath, static_cast< NSABUtils::EMediaTags >( -1 ) );
+            nameItem.fCheckable = { true, false, true };
             fItems.push_back( nameItem );
             fItems.emplace_back( fileInfo.isFile() ? NSABUtils::NFileUtils::fileSizeString( fileInfo ) : QString(), EColumns::eFSSize );
             if ( fileInfo.isFile() )
@@ -554,10 +560,54 @@ namespace NMediaManager
             return fRealItems;
         }
 
+        void CDirModel::setCheckState( QStandardItem * item, Qt::CheckState state, bool adjustParents ) const
+        {
+            for ( auto ii = 0; ii < item->rowCount(); ++ii )
+            {
+                auto curr = item->child( ii );
+                if ( !curr )
+                    continue;
+                curr->setCheckState( state );
+                setCheckState( curr, state, false );
+            }
+
+            if ( !adjustParents )
+                return;
+
+            updateParentCheckState( item );
+        }
+        
+        void CDirModel::updateParentCheckState( QStandardItem * item ) const
+        {
+            if ( !item )
+                return;
+            auto parent = item->parent();
+            if ( !parent || ( parent == invisibleRootItem() ) )
+                return;
+
+            auto childState = parent->child( 0 )->checkState();
+            for ( auto ii = 1; ii < parent->rowCount(); ++ii )
+            {
+                auto curr = parent->child( ii );
+                if ( !curr )
+                    continue;
+                qDebug() << curr->text() << curr->checkState();
+                if ( childState != curr->checkState() )
+                {
+                    childState = Qt::PartiallyChecked;
+                    break;
+                }
+            }
+            parent->setCheckState( childState );
+            updateParentCheckState( parent );
+        }
+
         void CDirModel::setChecked( QStandardItem * item, bool isChecked ) const
         {
-            item->setText( isChecked ? "Yes" : "No" );
-            item->setCheckState( isChecked ? Qt::Checked : Qt::Unchecked );
+            if ( !item )
+                return;
+
+            setCheckState( item, isChecked ? Qt::Checked : Qt::Unchecked, true );
         }
 
         void CDirModel::setChecked( QStandardItem * item, ECustomRoles role, bool isChecked ) const
@@ -600,6 +650,12 @@ namespace NMediaManager
                 auto text = getToolTip( idx );
                 if ( !text.isNull() )
                     return text;
+            }
+            else if ( role == Qt::DisplayRole )
+            {
+                auto item = getPathItemFromIndex( idx );
+                if ( item && item->data( ECustomRoles::eYesNoCheckableOnly ).toBool() )
+                    return ( item->checkState() == Qt::CheckState::Checked ) ? "Yes" : "No";
             }
             return QStandardItemModel::data( idx, role );
         }
@@ -781,6 +837,10 @@ namespace NMediaManager
         bool CDirModel::process( const QStandardItem * item, bool displayOnly, QStandardItem * parentItem )
         {
             if ( !item )
+                return false;
+
+            qDebug() << item->text() << item->checkState();
+            if ( item != invisibleRootItem() && ( item->checkState() == Qt::CheckState::Unchecked ) )
                 return false;
 
             bool aOK = true;
@@ -1700,6 +1760,5 @@ namespace NMediaManager
             if ( filesView() )
                 filesView()->expandAll();
         }
-
     }
 }
