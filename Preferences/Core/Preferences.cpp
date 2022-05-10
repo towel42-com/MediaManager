@@ -24,6 +24,7 @@
 #include "Core/LanguageInfo.h"
 #include "SABUtils/QtUtils.h"
 #include "SABUtils/MKVUtils.h"
+#include "SABUtils/FileUtils.h"
 
 #include <QSettings>
 #include <QStringListModel>
@@ -160,13 +161,26 @@ namespace NMediaManager
                 emitSigPreferencesChanged( EPreferenceType::eSystemPrefs );
             }
 
+            QStringList CPreferences::cleanUpPaths( const QStringList & paths, bool /*areDirs*/ ) const
+            {
+                QStringList retVal;
+                for ( auto && ii : paths )
+                {
+                    auto curr = NSABUtils::NFileUtils::getCorrectPathCase( ii );
+                    if ( curr.isEmpty() )
+                        continue;
+                    retVal << curr;
+                }
+                retVal.removeDuplicates();
+                return retVal;
+            }
+
             QStringList CPreferences::getDirectories() const
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
-                auto retVal = settings.value( "Directories", QStringList() ).toStringList();
-                retVal.removeDuplicates();
-                return retVal;
+                auto dirs = cleanUpPaths( settings.value( "Directories", QStringList() ).toStringList(), true );
+                return dirs;
             }
 
             void CPreferences::setFileNames( const QStringList & dir )
@@ -182,6 +196,10 @@ namespace NMediaManager
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
                 auto retVal = settings.value( "FileNames", QStringList() ).toStringList();
+                for ( auto && ii : retVal )
+                {
+                    ii = QDir::toNativeSeparators( ii );
+                }
                 retVal.removeDuplicates();
                 return retVal;
             }

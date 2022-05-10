@@ -245,6 +245,7 @@ namespace NMediaManager
             Q_SIGNALS:
                 void sigPreferencesChanged( EPreferenceTypes prefType );
             private:
+                QStringList cleanUpPaths( const QStringList & paths, bool areDirs ) const;
                 void emitSigPreferencesChanged( EPreferenceTypes prefType );
                 bool pathMatches( const QFileInfo & fileInfo, const QStringList & values ) const;
                 bool containsValue( const QString & value, const QStringList & values ) const;
