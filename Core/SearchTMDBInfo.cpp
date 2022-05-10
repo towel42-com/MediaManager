@@ -215,6 +215,21 @@ namespace NMediaManager
                 retVal = EMediaType::eTVEpisode;
             }
 
+            regExpStr = QString( R"((^|[^A-Z])(?<season>\d{1,4})[xX](?<episode>\d{1,4}))" );
+            regExp = QRegularExpression( regExpStr, QRegularExpression::PatternOption::CaseInsensitiveOption );
+            match = regExp.match( localRetVal );
+            if ( match.hasMatch() )
+            {
+                if ( seasonStr )
+                    *seasonStr = smartTrim( match.captured( "season" ) );
+                if ( episodeStr )
+                    *episodeStr = smartTrim( match.captured( "episode" ) );
+                positions.emplace_back( match.capturedStart( "season" ) - 1, match.capturedLength( "season" ) + 1 );
+                positions.emplace_back( match.capturedStart( "episode" ) - 1, match.capturedLength( "episode" ) + 1 );
+
+                retVal = EMediaType::eTVSeason;
+            }
+
             if ( titleStr )
             {
                 auto data = stripOutPositions( localRetVal, positions );
