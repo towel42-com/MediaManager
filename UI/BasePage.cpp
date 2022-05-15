@@ -162,6 +162,7 @@ namespace NMediaManager
             fProgressDlg->setRange( 0, max * eventsPerPath );
             fProgressDlg->setPrimaryEventsPerIncrement( eventsPerPath );
             fProgressDlg->show();
+            qApp->processEvents();
         }
 
         bool CBasePage::canRun() const
@@ -201,6 +202,7 @@ namespace NMediaManager
                 connect( fModel.get(), &NModels::CDirModel::sigDirLoadFinished, this, &CBasePage::slotLoadFinished );
                 connect( fModel.get(), &NModels::CDirModel::sigProcessingStarted, this, &CBasePage::slotProcessingStarted );
                 connect( fModel.get(), &NModels::CDirModel::sigProcessesFinished, this, &CBasePage::slotProcessesFinished );
+                connect( fModel.get(), &NModels::CDirModel::sigDialogClosed, this, &CBasePage::sigDialogClosed );
             }
             appendSeparatorToLog();
             appendToLog( tr( "Loading Directory: '%1'" ).arg( fDirName ), true );
@@ -414,6 +416,7 @@ namespace NMediaManager
             NSABUtils::CSetMKVTags dlg( fn, NPreferences::NCore::CPreferences::instance()->getMKVPropEditEXE(), this );
             if ( dlg.exec() == QDialog::Accepted )
                 fModel->reloadMediaTags( idx );
+            emit sigDialogClosed();
         }
     }
 }

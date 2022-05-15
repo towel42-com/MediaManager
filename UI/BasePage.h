@@ -100,6 +100,7 @@ namespace NMediaManager
             void sigLoadFinished( bool canceled );
             void sigStartStayAwake();
             void sigStopStayAwake();
+            void sigDialogClosed();
         protected:
             virtual QMenu * menuForIndex( const QModelIndex & idx ) final;
             virtual void openLocation( const QModelIndex & idx ) final;

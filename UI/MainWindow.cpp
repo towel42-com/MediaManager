@@ -59,7 +59,6 @@
 #include <QThreadPool>
 #include <QAbstractNativeEventFilter>
 
-#include <QProgressBar>
 #ifdef Q_OS_WINDOWS
 #include <qt_windows.h>
 #include <windowsx.h>
@@ -97,6 +96,7 @@ namespace NMediaManager
 
             bool nativeEventFilter( const QByteArray & eventType, void * message, long * result ) override
             {
+#ifdef Q_OS_WINDOWS
                 (void)result;
                 if ( eventType == "windows_generic_MSG" )
                 {
@@ -113,6 +113,7 @@ namespace NMediaManager
                         }
                     }
                 }
+#endif
                 return false;
             }
         };
@@ -173,8 +174,7 @@ namespace NMediaManager
 
             loadSettings();
 
-            connect( NPreferences::NCore::CPreferences::instance(), &NPreferences::NCore::CPreferences::sigPreferencesChanged, this, &CMainWindow::sigPreferencesChanged );
-            connect( this, &CMainWindow::sigPreferencesChanged, this, &CMainWindow::slotPreferencesChanged );
+            connect( NPreferences::NCore::CPreferences::instance(), &NPreferences::NCore::CPreferences::sigPreferencesChanged, this, &CMainWindow::slotPreferencesChanged );
 
             new NSABUtils::CSelectFileUrl( this );
 
@@ -196,6 +196,7 @@ namespace NMediaManager
             connect( basePage, &CBasePage::sigLoadFinished, this, &CMainWindow::slotLoadFinished );
             connect( basePage, &CBasePage::sigStartStayAwake, this, &CMainWindow::slotStartStayAwake );
             connect( basePage, &CBasePage::sigStopStayAwake, this, &CMainWindow::slotStopStayAwake );
+            connect( basePage, &CBasePage::sigDialogClosed, this, &CMainWindow::slotQueuedPrefChange );
         }
 
         std::shared_ptr< STabDef > CMainWindow::addPage( std::shared_ptr< STabDef > & tabDef )
@@ -244,13 +245,19 @@ namespace NMediaManager
 
         void CMainWindow::slotPreferencesChanged( NPreferences::EPreferenceTypes prefType )
         {
-            if ( ( prefType & NPreferences::EPreferenceType::eSystemPrefs ) == 0 )
-                return;
-
-            for ( auto && ii : fUIComponentMap )
+            if ( ( prefType & NPreferences::EPreferenceType::eSystemPrefs ) != 0 )
             {
-                ii->setVisiblePerPrefs();
+                for ( auto && ii : fUIComponentMap )
+                {
+                    ii->setVisiblePerPrefs();
+                }
             }
+
+            fQueuedPrefChanged.reset();
+            if ( !qApp->activeModalWidget() )
+                emit sigPreferencesChanged( prefType );
+            else
+                fQueuedPrefChanged = prefType;
         }
 
         bool CMainWindow::isActivePageFileBased() const
@@ -410,6 +417,7 @@ namespace NMediaManager
             NPreferences::NUi::CPreferences dlg;
             if ( dlg.exec() == QDialog::Accepted )
             {
+                slotQueuedPrefChange();
             }
         }
 
@@ -473,6 +481,15 @@ namespace NMediaManager
             auto localPt = mapFromGlobal( pt );
             auto title = windowTitle();
             return NSABUtils::launchIfURLClicked( title, localPt, fImpl->menubar->font() );
+        }
+
+        void CMainWindow::slotQueuedPrefChange()
+        {
+            if ( fQueuedPrefChanged.has_value() )
+            {
+                emit sigPreferencesChanged( fQueuedPrefChanged.value() );
+                fQueuedPrefChanged.reset();
+            }
         }
 
         STabDef::STabDef( CBasePage * page, const QString & name, const QString & iconPath, QTabWidget * tabWidget ) :

@@ -83,6 +83,9 @@ namespace NMediaManager
             virtual void slotLoad();
             virtual void slotRun();
             virtual void slotPreferences();
+
+            void slotQueuedPrefChange();
+
             virtual void slotWindowChanged();
 
             virtual void slotLoadFinished( bool canceled );
@@ -119,6 +122,7 @@ namespace NMediaManager
             NSABUtils::CBackgroundFileCheck * fFileChecker;
             NSABUtils::CStayAwake * fStayAwake{ nullptr };
 
+            std::optional< NPreferences::EPreferenceTypes > fQueuedPrefChanged;
             std::list< std::shared_ptr< STabDef > > fUIComponentMap;
         };
     }

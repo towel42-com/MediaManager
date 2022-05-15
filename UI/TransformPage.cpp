@@ -357,6 +357,7 @@ namespace NMediaManager
                     setChildren = false;
                 model()->setSearchResult( idx, results, setChildren, true );
             }
+            emit sigDialogClosed();
         }
 
         QMenu * CTransformPage::menu()
