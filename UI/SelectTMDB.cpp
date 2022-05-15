@@ -299,7 +299,7 @@ namespace NMediaManager
 
                 auto childNode = getSingleMatchingItem( nullptr );
                 if ( childNode && childNode->isSelected() )
-                    slotAcceptItem();
+                    slotItemChanged();
                 return;
             }
 
@@ -453,7 +453,7 @@ namespace NMediaManager
         void CSelectTMDB::slotAcceptItem()
         {
             slotItemChanged();
-            //accept();
+            accept();
         }
 
         void CSelectTMDB::slotItemChanged()
