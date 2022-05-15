@@ -27,7 +27,7 @@ GetGitInfo(${CMAKE_SOURCE_DIR} GIT_VERSION_INFO)
 STRING(TIMESTAMP BUILD_DATE "%m/%d/%Y")
 
 SET( MAJOR_VERSION    0.0 )
-SET( MINOR_VERSION    24 )
+SET( MINOR_VERSION    25 )
 SET( APP_NAME         "Media Manager" )
 SET( VENDOR           "Scott Aron Bloom" )
 SET( HOMEPAGE         "www.towel42.com" )
