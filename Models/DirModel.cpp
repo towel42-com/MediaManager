@@ -920,7 +920,9 @@ namespace NMediaManager
             dlg.setModel( fProcessResults.second.get() );
             dlg.setIconLabel( icon );
             dlg.setButtons( buttons );
-            return dlg.exec() == QDialog::Accepted;
+            auto retVal = dlg.exec() == QDialog::Accepted;
+            emit const_cast< CDirModel * >( this )->sigDialogClosed();
+            return retVal;
         }
 
         void CDirModel::clear()
