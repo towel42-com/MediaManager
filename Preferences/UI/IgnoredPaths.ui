@@ -17,7 +17,7 @@
    <item>
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>If checked, These paths are loaded in, but will not be analyzed.  If unchecked, these paths will be loaded and analyzed</string>
+      <string>If enabled, these paths will be loaded in, but any media files found will be ignored for processing</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>

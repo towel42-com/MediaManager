@@ -111,12 +111,12 @@ namespace NMediaManager
                 addPage( new CExtendedInfo );
                 addPage( new CExtensions );
                 addPage( new CExternalTools );
-                addPage( new CIgnoredPaths );
                 addPage( new CKnownAbbreviations );
                 addPage( new CMovieSettings );
                 addPage( new CPathsToDelete );
                 addPage( new CRemoveFromPaths );
                 addPage( new CSkippedPaths );
+                addPage( new CIgnoredPaths );
                 addPage( new CSearchSettings );
                 addPage( new CTransformationSettings );
                 addPage( new CTVShowSettings );
@@ -136,11 +136,10 @@ namespace NMediaManager
                 {
                     key += "__" + name[ ii ];
 
-                    QTreeWidgetItem * item = nullptr;
-
                     auto pos = fItemMap.find( key );
                     if ( pos == fItemMap.end() )
                     {
+                        QTreeWidgetItem * item = nullptr;
                         if ( parentItem )
                             item = new QTreeWidgetItem( parentItem );
                         else
@@ -153,7 +152,7 @@ namespace NMediaManager
                     }
                     else
                     {
-                        item = parentItem = ( *pos ).second;
+                        auto item = parentItem = ( *pos ).second;
                         if ( ( ii + 1 ) == name.count() )
                             fPageMap[ item ] = page;
                     }

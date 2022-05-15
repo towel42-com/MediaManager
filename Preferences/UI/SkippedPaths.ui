@@ -17,7 +17,7 @@
    <item>
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>If checked, these paths will not be loaded into the system.  If unchecked, these paths will be loaded as normal.</string>
+      <string>If enabled, paths that match, will be skipped while searching for media files.</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
