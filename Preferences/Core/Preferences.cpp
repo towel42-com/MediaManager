@@ -622,6 +622,8 @@ namespace NMediaManager
                     << "MT"
                     << "YTS"
                     << "MX"
+                    << "SHITBOX"
+                    << "TBD"
                     ;
                 return defaultValue;
             }
@@ -742,16 +744,11 @@ namespace NMediaManager
 
             bool CPreferences::pathMatches( const QFileInfo & fileInfo, const QStringList & values ) const
             {
-                auto fn = fileInfo.fileName().toLower();
-                if ( fn.endsWith( "-ignore", Qt::CaseInsensitive ) )
-                    return true;
-
                 auto pathName = fileInfo.fileName();
 
 #ifdef Q_OS_WINDOWS
                 pathName = pathName.toLower();
 #endif
-
                 return containsValue( pathName, values );
             }
 
@@ -792,6 +789,7 @@ namespace NMediaManager
             {
                 static auto defaultValues = QStringList(
                     {
+                        ".*-ignore",
                         "#recycle",
                         "#recycler",
                         "extra(s)?",
@@ -847,7 +845,7 @@ namespace NMediaManager
 
             QStringList CPreferences::getDefaultIgnoredPaths() const
             {
-                static auto defaultValues = QStringList( { "sub", "subs", "season \\d+" } );
+                static auto defaultValues = QStringList( { ".*-ignore", "sub", "subs", R"(season \d+)" } );
                 return defaultValues;
             }
 
