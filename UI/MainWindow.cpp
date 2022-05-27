@@ -235,11 +235,7 @@ namespace NMediaManager
         void CMainWindow::slotValidateDefaults()
         {
 #ifdef _DEBUG
-            auto diffs = NPreferences::NCore::CPreferences::instance()->validateDefaults();
-            if ( !diffs.isEmpty() )
-            {
-                QMessageBox::warning( this, tr( "Preferences have changed:" ), diffs, QMessageBox::Ok );
-            }
+            NPreferences::NCore::CPreferences::instance()->showValidateDefaults( this, false );
 #endif
         }
 

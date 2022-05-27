@@ -1397,7 +1397,6 @@ namespace NMediaManager
 
             void CPreferences::showValidateDefaults( QWidget * parent, bool showNoChange )
             {
-#ifdef _DEBUG
                 auto diffs = validateDefaults();
                 if ( !diffs.isEmpty() )
                 {
@@ -1426,7 +1425,6 @@ namespace NMediaManager
                 {
                     QMessageBox::information( parent, tr( "No differences found" ), tr( "No differences found" ) );
                 }
-#endif
             }
         }
     }
