@@ -840,8 +840,8 @@ namespace NMediaManager
                 return false;
 
             qDebug() << item->text() << item->checkState();
-            if ( item != invisibleRootItem() && ( item->checkState() == Qt::CheckState::Unchecked ) )
-                return false;
+            if ( item->checkState() == Qt::CheckState::Unchecked )
+                return true;
 
             bool aOK = true;
             QStandardItem * myItem = nullptr;
