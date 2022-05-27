@@ -821,6 +821,8 @@ namespace NMediaManager
             }
             if ( pos == -1 )
                 pos = parent->rowCount();
+
+            parent->insertRow( pos, errorNode );
         }
 
         bool CDirModel::checkProcessItemExists( const QString & fileName, QStandardItem * parentItem, bool scheduledForRemoval ) const
