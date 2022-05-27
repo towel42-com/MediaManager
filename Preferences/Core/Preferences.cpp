@@ -36,6 +36,10 @@
 #include <QVariant>
 #include <QString>
 #include <QTimer>
+#include <QMessageBox>
+#include <QClipboard>
+#include <QGuiApplication>
+#include <QPushButton>
 
 #include <optional>
 #include <unordered_set>
@@ -137,7 +141,7 @@ namespace NMediaManager
                 settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
                 return settings.value( QString( "PageVisible-%1" ).arg( pageName ), true ).toBool();
             }
-                
+
             void CPreferences::setDirectories( const QStringList & dir )
             {
                 QSettings settings;
@@ -255,23 +259,6 @@ namespace NMediaManager
             /// ////////////////////////////////////////////////////////
             /// transform Options
             /// ////////////////////////////////////////////////////////
-
-            QString CPreferences::getDefaultOutDirPattern( bool forTV ) const
-            {
-                if ( forTV )
-                    return "<title>{ (<year>)}:<year>/Season <season>";
-                else
-                    return "<title>{ (<year>)}:<year>{ [tmdbid=<tmdbid>]}:<tmdbid>{ - <extra_info>}:<extra_info>";
-            }
-
-            QString CPreferences::getDefaultOutFilePattern( bool forTV ) const
-            {
-                if ( forTV )
-                    return "<title> - S<season>E<episode>{ - <episode_title>}:<episode_title>{ - <extra_info>}:<extra_info>";
-                else
-                    return "<title>{ - <extra_info>}:<extra_info>";
-            }
-
             void CPreferences::setTreatAsTVShowByDefault( bool value )
             {
                 QSettings settings;
@@ -458,12 +445,6 @@ namespace NMediaManager
                 emitSigPreferencesChanged( EPreferenceType::eTransformPrefs );
             }
 
-            QStringList CPreferences::getDefaultCustomPathsToDelete() const
-            {
-                static auto defaultValue = QStringList();
-                return defaultValue;
-            }
-
             QStringList CPreferences::getCustomPathsToDelete() const
             {
                 QSettings settings;
@@ -533,101 +514,6 @@ namespace NMediaManager
                 emitSigPreferencesChanged( EPreferenceType::eTransformPrefs );
             }
 
-            QStringList CPreferences::getDefaultKnownStrings() const
-            {
-                static auto defaultValue =
-                    QStringList()
-                    << "2160p"
-                    << "1080p"
-                    << "720p"
-                    //<< "10bit"
-                    << "Amazon"
-                    << "DDP5.1"
-                    << "DL.DD+"
-                    << "DL.DD"
-                    << "DL.AAC2.0.AVC"
-                    << "AAC2.0.AVC"
-                    << "AAC2.0"
-                    << "AVC"
-                    << "AMZN"
-                    << "WebRip"
-                    << "WEB-DL"
-                    << "WEB"
-                    << "SDR"
-                    << "Atmos"
-                    << "RUMOUR"
-                    << "PECULATE"
-                    << "2.0.h.264"
-                    << "2.0.h.265"
-                    << "h.264"
-                    << "h.265"
-                    << "x264"
-                    << "x265"
-                    << "h264"
-                    << "h265"
-                    << "rarbg"
-                    << "BluRay"
-                    << "ion10"
-                    << "LiMiTED"
-                    << "DVDRip"
-                    << "XviDTLF"
-                    << "TrollHD"
-                    << "Troll"
-                    << "nogrp"
-                    << "CM"
-                    << "NF"
-                    << "REMASTERED"
-                    << "PROPER"
-                    << "DC"
-                    << "AAC"
-                    << "DSNP"
-                    << "10bit"
-                    << "HDR"
-                    << "DTS-HD"
-                    << "MA"
-                    << "5.1"
-                    << "SWTYBLZ"
-                    << "YIFY"
-                    << "ATVP"
-                    << "NAISU"
-                    << "CUPCAKES"
-                    << "MoviesFD"
-                    << "SPARKS"
-                    << "DD5.1"
-                    << "REMUX"
-                    << "BRRip"
-                    << "PLEW"
-                    << "Japhson"
-                    << "DTS"
-                    << "FGT"
-                    << "CCBB"
-                    << "IAMABLE"
-                    << "UHD"
-                    << "TrueHD"
-                    << "7.1"
-                    << "TERMiNAL"
-                    << "TEPES"
-                    << "HMAX"
-                    << "BTTF"
-                    << "B0MBARDiERS"
-                    << "THUGLiNE"
-                    << "LCHD"
-                    << "PiGNUS"
-                    << "YTS.AM"
-                    << "HEVC"
-                    << "HD4U"
-                    << "CMRG"
-                    << "DD2.0"
-                    << "NTb"
-                    << "MT"
-                    << "YTS"
-                    << "MX"
-                    << "SHITBOX"
-                    << "TBD"
-                    ;
-                return defaultValue;
-            }
-
             QStringList CPreferences::getKnownStrings() const
             {
                 QSettings settings;
@@ -668,18 +554,6 @@ namespace NMediaManager
                 emitSigPreferencesChanged( EPreferenceType::eTransformPrefs );
             }
 
-            QStringList CPreferences::getDefaultKnownExtendedStrings() const
-            {
-                static auto defaultValue =
-                    QStringList()
-                    << "Extended"
-                    << "Directors Cut"
-                    << "Director's Cut"
-                    << "Director"
-                    << "Unrated"
-                    ;
-                return defaultValue;
-            }
 
             QStringList CPreferences::getKnownExtendedStrings() const
             {
@@ -706,16 +580,6 @@ namespace NMediaManager
                 emitSigPreferencesChanged( EPreferenceType::eTransformPrefs );
             }
 
-            QVariantMap CPreferences::getDefaultKnownAbbreviations() const
-            {
-                static QVariantMap defaultValues(
-                    {
-                        { "Dont", "Don't" }
-                        ,{ "NY", "New York" }
-                    }
-                );
-                return defaultValues;
-            }
 
             QVariantMap CPreferences::getKnownAbbreviations() const
             {
@@ -784,24 +648,6 @@ namespace NMediaManager
                 settings.beginGroup( toString( EPreferenceType::eLoadPrefs ) );
                 return settings.value( "IgnoreSkipFileNames", false ).toBool();
             }
-
-            QStringList CPreferences::getDefaultSkippedPaths() const
-            {
-                static auto defaultValues = QStringList(
-                    {
-                        ".*-ignore",
-                        "#recycle",
-                        "#recycler",
-                        "extra(s)?",
-                        "trailer(s)?",
-                        "deleted scene(s)?",
-                        "interview(s)?",
-                        "featurette(s)?",
-                        "sample(s)?"
-                    }
-                );
-                return defaultValues;
-            }
             
             QStringList CPreferences::getSkippedPaths() const
             {
@@ -841,12 +687,6 @@ namespace NMediaManager
                 settings.beginGroup( toString( EPreferenceType::eLoadPrefs ) );
                 settings.setValue( "IgnoreIgnoredFileNames", value );
                 emitSigPreferencesChanged( EPreferenceType::eLoadPrefs );
-            }
-
-            QStringList CPreferences::getDefaultIgnoredPaths() const
-            {
-                static auto defaultValues = QStringList( { ".*-ignore", "sub", "subs", R"(season \d+)" } );
-                return defaultValues;
             }
 
             QStringList CPreferences::getIgnoredPaths() const
@@ -1323,71 +1163,6 @@ namespace NMediaManager
                 return true;
             }
 
-            QString compareValues( const QString & title, const QStringList & defaultValues, const QStringList & currValues )
-            {
-                if ( defaultValues == currValues )
-                    return {};
-
-                QStringList items;
-                int ii = 0;
-                for ( ; ( ii < defaultValues.count() ) && ( ii < currValues.count() ); ++ii )
-                {
-                    if ( defaultValues[ ii ] != currValues[ ii ] )
-                    {
-                        items << QString( "<li>%1 != %2</li>" ).arg( defaultValues[ ii ] ).arg( currValues[ ii ] );
-                    }
-                }
-
-                int origII = ii;
-                for ( int ii = origII; ii < defaultValues.count(); ++ii )
-                {
-                    items << QString( "<li>%1 currently missing</li>" ).arg( defaultValues[ ii ] );
-                }
-
-                for ( int ii = origII; ii < currValues.count(); ++ii )
-                {
-                    items << QString( "<li>%1 not in defaults</li>" ).arg( currValues[ ii ] );
-                }
-
-                if ( items.isEmpty() )
-                    return {};
-
-                auto retVal = QString( "<li>%1\n<ul>\n%2\n</ul>\n</li>\n" ).arg( title ).arg( items.join( "\n" ) );
-                return retVal;
-            }
-
-            QStringList variantMapToStringList( const QVariantMap & data )
-            {
-                QStringList retVal;
-                for ( auto && ii = data.cbegin(); ii != data.cend(); ++ii )
-                    retVal << QString( "%1=%2" ).arg( ii.key() ).arg( ii.value().toString() );
-                return retVal;
-            }
-
-            QString compareValues( const QString & title, const QVariantMap & defaultValues, const QVariantMap & currValues )
-            {
-                return compareValues( title, variantMapToStringList( defaultValues ), variantMapToStringList( currValues ) );
-            }
-
-            QString CPreferences::validateDefaults()
-            {
-                auto items =
-                    QStringList()
-                    << compareValues( "Skipped Paths", getDefaultSkippedPaths(), getSkippedPaths() )
-                    << compareValues( "Ignored Paths", getDefaultIgnoredPaths(), getIgnoredPaths() )
-                    << compareValues( "Paths to Delete", getDefaultCustomPathsToDelete(), getCustomPathsToDelete() )
-                    << compareValues( "Known Strings", getDefaultKnownStrings(), getKnownStrings() )
-                    << compareValues( "Known Extended Strings", getDefaultKnownExtendedStrings(), getKnownExtendedStrings() )
-                    << compareValues( "Known Abbreviations", getDefaultKnownAbbreviations(), getKnownAbbreviations() )
-                    ;
-                items.removeAll( QString() );
-
-                QString retVal;
-                if ( !items.isEmpty() )
-                    retVal = QString( "<p>Difference in Settings:\n<ul>\n%2\n</ul>\n</p>" ).arg( items.join( "\n" ) );
-                return retVal;
-            }
-
             void CPreferences::emitSigPreferencesChanged( EPreferenceTypes preferenceTypes )
             {
                 fPending |= preferenceTypes;
@@ -1408,6 +1183,251 @@ namespace NMediaManager
                 fPrefChangeTimer->start();
             }
 
+            void replaceText( const QString & txt, QStringList & curr, const QStringList & values )
+            {
+                auto pos = curr.indexOf( txt );
+                Q_ASSERT( pos != -1 );
+                if ( pos == -1 )
+                    return;
+
+                curr.removeAt( pos );
+                for ( auto && ii : values )
+                {
+                    if ( ii.lastIndexOf( QRegularExpression( R"(\S)" ) ) == -1 )
+                        curr.insert( pos++, QString() );
+                    else
+                        curr.insert( pos++, ii );
+                }
+            }
+
+            void replaceText( const QString & txt, QStringList & curr, const QString & funcName, const QString & boolVariable, const QString & trueValue, const QString & falseValue )
+            {
+                QStringList function;
+                function
+                    << QString( "QString CPreferences::%1( bool %2 ) const" ).arg( funcName ).arg( boolVariable )
+                    << "{"
+                    << QString( "    if ( %2 )" ).arg( boolVariable )
+                    << QString( "        return R\"(%1)\";" ).arg( trueValue )
+                    << QString( "    else" )
+                    << QString( "        return R\"(%1)\";" ).arg( falseValue )
+                    << "}"
+                    ;
+                for ( auto && ii : function )
+                {
+                    ii = QString( 12, ' ' ) + ii;
+                }
+                return replaceText( txt, curr, function );
+            }
+
+            void replaceText( const QString & txt, QStringList & curr, const QString & funcName, const QStringList & newValues, const QString & retValType = "QStringList", bool asString=true )
+            {
+                QStringList function;
+                function
+                    << QString( "%2 CPreferences::%1() const" ).arg( funcName ).arg( retValType )
+                    << "{"
+                    << "    static auto defaultValue = "
+                    << QString( "        %1( {" ).arg( retValType )
+                    ;
+
+                bool first = true;
+                for ( auto && ii : newValues )
+                {
+                    auto fmt = asString ? QString( "            %1R\"(%2)\"" ) : QString( "            %1%2" );
+                    function << fmt.arg( first ? " " : "," ).arg( ii );
+                    first = false;
+                }
+
+                function 
+                    << "        } );"
+                    << "    return defaultValue;"
+                    << "}"
+                    ;
+                for ( auto && ii : function )
+                {
+                    ii = QString( 12, ' ' ) + ii;
+                }
+                return replaceText( txt, curr, function );
+            }
+
+            void replaceText( const QString & txt, QStringList & curr, const QString & funcName, const QVariantMap & newValues )
+            {
+                QStringList varList;
+                for ( auto && ii = newValues.cbegin(); ii != newValues.cend(); ++ii )
+                {
+                    varList << QString( "{ R\"(%1)\", R\"(%2)\" }" ).arg( ii.key() ).arg( ii.value().toString() );
+                }
+                replaceText( txt, curr, funcName, varList, "QVariantMap", false );
+            }
+
+
+            QString CPreferences::compareValues( const QString & title, const QStringList & defaultValues, const QStringList & currValues ) const
+            {
+                if ( defaultValues == currValues )
+                    return {};
+
+                QStringList items;
+                int ii = 0;
+                for ( ; ( ii < defaultValues.count() ) && ( ii < currValues.count() ); ++ii )
+                {
+                    if ( defaultValues[ ii ] != currValues[ ii ] )
+                    {
+                        items << QString( "%1 != %2" ).arg( defaultValues[ ii ] ).arg( currValues[ ii ] );
+                    }
+                }
+
+                int origII = ii;
+                for ( int ii = origII; ii < defaultValues.count(); ++ii )
+                {
+                    items << QString( "%1 currently missing" ).arg( defaultValues[ ii ] );
+                }
+
+                for ( int ii = origII; ii < currValues.count(); ++ii )
+                {
+                    items << QString( "%1 not in defaults" ).arg( currValues[ ii ] );
+                }
+
+                if ( items.isEmpty() )
+                    return {};
+
+                for ( auto && ii : items )
+                {
+                    ii = "<li>" + ii.toHtmlEscaped() + "</li>";
+                }
+
+                auto retVal = QString( "<li>%1\n<ul>\n%2\n</ul>\n</li>\n" ).arg( title ).arg( items.join( "\n" ) );
+                return retVal;
+            }
+
+            QStringList CPreferences::variantMapToStringList( const QVariantMap & data ) const
+            {
+                QStringList retVal;
+                for ( auto && ii = data.cbegin(); ii != data.cend(); ++ii )
+                    retVal << QString( "%1=%2" ).arg( ii.key() ).arg( ii.value().toString() );
+                return retVal;
+            }
+
+            QString CPreferences::compareValues( const QString & title, const QVariantMap & defaultValues, const QVariantMap & currValues ) const
+            {
+                return compareValues( title, variantMapToStringList( defaultValues ), variantMapToStringList( currValues ) );
+            }
+
+            QString CPreferences::compareValues( const QString & title, const QString & defaultValues, const QString & currValues ) const
+            {
+                return compareValues( title, QStringList() << defaultValues, QStringList() << currValues );
+            }
+
+            QStringList CPreferences::getDefaultFile() const
+            {
+                auto retVal = QStringList()
+                    << R"(// The MIT License( MIT ))"
+                    << R"(//)"
+                    << R"(// Copyright( c ) 2020-2021 Scott Aron Bloom)"
+                    << R"(//)"
+                    << R"(// Permission is hereby granted, free of charge, to any person obtaining a copy)"
+                    << R"(// of this software and associated documentation files( the "Software" ), to deal)"
+                    << R"(// in the Software without restriction, including without limitation the rights)"
+                    << R"(// to use, copy, modify, merge, publish, distribute, sub-license, and/or sell)"
+                    << R"(// copies of the Software, and to permit persons to whom the Software is)"
+                    << R"(// furnished to do so, subject to the following conditions :)"
+                    << R"(//)"
+                    << R"(// The above copyright notice and this permission notice shall be included in)"
+                    << R"(// all copies or substantial portions of the Software.)"
+                    << R"(//)"
+                    << R"(// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR)"
+                    << R"(// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,)"
+                    << R"(// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE)"
+                    << R"(// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER)"
+                    << R"(// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,)"
+                    << R"(// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE)"
+                    << R"(// SOFTWARE.)"
+                    << R"()"
+                    << R"(#include "Preferences.h")"
+                    << R"(#include <QTextStream>)"
+                    << R"()"
+                    << R"(namespace NMediaManager)"
+                    << R"({)"
+                    << R"(    namespace NPreferences)"
+                    << R"(    {)"
+                    << R"(        namespace NCore)"
+                    << R"(        {)"
+                    << "%DEFAULT_OUT_DIR_PATTERN%"
+                    << R"()"
+                    << "%DEFAULT_OUT_FILE_PATTERN%"
+                    << R"()"
+                    << "%DEFAULT_CUSTOM_PATHS_TO_DELETE%"
+                    << R"()"
+                    << "%DEFAULT_KNOWN_STRINGS%"
+                    << R"()"
+                    << "%DEFAULT_KNOWN_EXTENDED_STRINGS%"
+                    << R"()"
+                    << "%DEFAULT_IGNORED_PATHS%"
+                    << R"()"
+                    << "%DEFAULT_KNOWN_ABBREVIATIONS%"
+                    << R"()"
+                    << "%DEFAULT_SKIPPED_PATHS%"
+                    << R"(        })"
+                    << R"(    })"
+                    << R"(})"
+                    ;
+                return retVal;
+            }
+
+            QString CPreferences::validateDefaults() const
+            {
+                auto items =
+                    QStringList()
+                    << compareValues( "Movie Out Dir Pattern", getDefaultOutDirPattern( false ), getMovieOutDirPattern() )
+                    << compareValues( "Movie Out File Pattern", getDefaultOutFilePattern( false ), getMovieOutFilePattern() )
+                    << compareValues( "TV Out Dir Pattern", getDefaultOutDirPattern( true ), getTVOutDirPattern() )
+                    << compareValues( "TV Out File Pattern", getDefaultOutFilePattern( true ), getTVOutFilePattern() )
+                    << compareValues( "Skipped Paths", getDefaultSkippedPaths(), getSkippedPaths() )
+                    << compareValues( "Ignored Paths", getDefaultIgnoredPaths(), getIgnoredPaths() )
+                    << compareValues( "Paths to Delete", getDefaultCustomPathsToDelete(), getCustomPathsToDelete() )
+                    << compareValues( "Known Strings", getDefaultKnownStrings(), getKnownStrings() )
+                    << compareValues( "Known Extended Strings", getDefaultKnownExtendedStrings(), getKnownExtendedStrings() )
+                    << compareValues( "Known Abbreviations", getDefaultKnownAbbreviations(), getKnownAbbreviations() )
+                    ;
+                items.removeAll( QString() );
+
+                QString retVal;
+                if ( !items.isEmpty() )
+                    retVal = QString( "<p>Difference in Settings:\n<ul>\n%2\n</ul>\n</p>" ).arg( items.join( "\n" ) );
+                return retVal;
+            }
+
+            void CPreferences::showValidateDefaults( QWidget * parent, bool showNoChange )
+            {
+#ifdef _DEBUG
+                auto diffs = validateDefaults();
+                if ( !diffs.isEmpty() )
+                {
+                    QMessageBox dlg( parent );
+                    dlg.setIcon( QMessageBox::Warning );
+                    dlg.setWindowTitle( tr( "Preferences have changed:" ) );
+                    dlg.setText( diffs );
+                    dlg.setStandardButtons( QMessageBox::StandardButton::Ok | QMessageBox::StandardButton::Apply );
+                    dlg.button( QMessageBox::StandardButton::Apply )->setText( tr( "Copy to Clipboard" ) );
+
+                    if ( dlg.exec() == QMessageBox::Apply )
+                    {
+                        auto newFileText = getDefaultFile();
+                        replaceText( "%DEFAULT_OUT_DIR_PATTERN%", newFileText, "getDefaultOutDirPattern", "forTV", getTVOutDirPattern(), getMovieOutDirPattern() );
+                        replaceText( "%DEFAULT_OUT_FILE_PATTERN%", newFileText, "getDefaultOutFilePattern", "forTV", getTVOutFilePattern(), getMovieOutFilePattern() );
+                        replaceText( "%DEFAULT_CUSTOM_PATHS_TO_DELETE%", newFileText, "getDefaultCustomPathsToDelete", getCustomPathsToDelete() );
+                        replaceText( "%DEFAULT_KNOWN_STRINGS%", newFileText, "getDefaultKnownStrings", getKnownStrings() );
+                        replaceText( "%DEFAULT_KNOWN_EXTENDED_STRINGS%", newFileText, "getDefaultKnownExtendedStrings", getKnownExtendedStrings() );
+                        replaceText( "%DEFAULT_IGNORED_PATHS%", newFileText, "getDefaultIgnoredPaths", getIgnoredPaths() );
+                        replaceText( "%DEFAULT_KNOWN_ABBREVIATIONS%", newFileText, "getDefaultKnownAbbreviations", getKnownAbbreviations() );
+                        replaceText( "%DEFAULT_SKIPPED_PATHS%", newFileText, "getDefaultSkippedPaths", getSkippedPaths() );
+                        QGuiApplication::clipboard()->setText( newFileText.join( "\n" ) );
+                    }
+                }
+                else if ( showNoChange )
+                {
+                    QMessageBox::information( parent, tr( "No differences found" ), tr( "No differences found" ) );
+                }
+#endif
+            }
         }
     }
 }

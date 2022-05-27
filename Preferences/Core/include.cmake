@@ -22,6 +22,7 @@
 
 set(qtproject_SRCS
     Preferences.cpp
+    DefaultPreferences.cpp
 )
 
 set(qtproject_H

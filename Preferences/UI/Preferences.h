@@ -44,6 +44,8 @@ namespace NMediaManager
                 void slotPageSelectorCurrChanged( QTreeWidgetItem * current, QTreeWidgetItem * previous );
                 void slotPageSelectorItemActived( QTreeWidgetItem * item );
                 void slotPageSelectorSelectionChanged();
+                void slotValidatePreferences();
+                void slotApply();
                 void accept() override;
             private:
                 static QString keyForItem( QTreeWidgetItem * item );

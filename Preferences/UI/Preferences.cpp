@@ -40,7 +40,9 @@
 #include "TVShowSettings.h"
 
 #include <QSettings>
+#include <QPushButton>
 #include "SABUtils/QtUtils.h"
+
 
 namespace NMediaManager
 {
@@ -53,6 +55,10 @@ namespace NMediaManager
                 fImpl( new Ui::CPreferences )
             {
                 fImpl->setupUi( this );
+
+                auto validateBtn = fImpl->buttonBox->addButton( "&Validate", QDialogButtonBox::ActionRole );
+                connect( validateBtn, &QPushButton::clicked, this, &CPreferences::slotValidatePreferences );
+                connect( fImpl->buttonBox->button( QDialogButtonBox::Apply ), &QPushButton::clicked, this, &CPreferences::slotApply );
 
                 connect( fImpl->pageSelector, &QTreeWidget::currentItemChanged, this, &CPreferences::slotPageSelectorCurrChanged );
                 connect( fImpl->pageSelector, &QTreeWidget::itemActivated, this, &CPreferences::slotPageSelectorItemActived );
@@ -180,11 +186,21 @@ namespace NMediaManager
                 fImpl->stackedWidget->setCurrentWidget( ( *ii ).second );
             }
 
+            void CPreferences::slotApply()
+            {
+                saveSettings();
+            }
+
+            void CPreferences::slotValidatePreferences()
+            {
+                saveSettings();
+                NPreferences::NCore::CPreferences::instance()->showValidateDefaults( this, true );
+            }
 
             QString CPreferences::keyForItem( QTreeWidgetItem * item )
             {
                 if ( !item )
-                    return QString();
+                    return {};
 
                 QString retVal;
                 if ( item->parent() )
@@ -192,7 +208,6 @@ namespace NMediaManager
                 retVal += "__" + item->text( 0 );
                 return retVal;
             }
-
         }
     }
 }

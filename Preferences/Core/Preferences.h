@@ -30,6 +30,7 @@
 #include <QHash>
 #include <QRegularExpression>
 class QFileInfo;
+class QWidget;
 
 namespace NSABUtils
 {
@@ -76,7 +77,8 @@ namespace NMediaManager
                 static CPreferences * instance();
                 virtual ~CPreferences() override;
 
-                QString validateDefaults();
+                QString validateDefaults() const;
+                void showValidateDefaults( QWidget * parent, bool showNoChange );
 
                 void setDirectories( const QStringList & dirs );
                 QStringList getDirectories() const;
@@ -245,6 +247,12 @@ namespace NMediaManager
             Q_SIGNALS:
                 void sigPreferencesChanged( EPreferenceTypes prefType );
             private:
+                QStringList getDefaultFile() const;
+                QString compareValues( const QString & title, const QStringList & defaultValues, const QStringList & currValues ) const;
+                QString compareValues( const QString & title, const QString & defaultValues, const QString & currValues ) const;
+                QString compareValues( const QString & title, const QVariantMap & defaultValues, const QVariantMap & currValues ) const;
+                QStringList variantMapToStringList( const QVariantMap & data ) const;
+
                 QStringList cleanUpPaths( const QStringList & paths, bool areDirs ) const;
                 void emitSigPreferencesChanged( EPreferenceTypes prefType );
                 bool pathMatches( const QFileInfo & fileInfo, const QStringList & values ) const;
