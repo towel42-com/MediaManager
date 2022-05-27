@@ -842,7 +842,7 @@ namespace NMediaManager
                 return false;
 
             qDebug() << item->text() << item->checkState();
-            if ( item->checkState() == Qt::CheckState::Unchecked )
+            if ( ( item != invisibleRootItem() ) && ( item->checkState() == Qt::CheckState::Unchecked ) )
                 return true;
 
             bool aOK = true;
@@ -860,7 +860,8 @@ namespace NMediaManager
             }
 
             auto numRows = item->rowCount();
-            for ( int ii = 0; ii < numRows; ++ii )
+            // do not traverse children if there is a failure
+            for ( int ii = 0; aOK && ii < numRows; ++ii )
             {
                 auto child = item->child( ii );
                 if ( !child )
