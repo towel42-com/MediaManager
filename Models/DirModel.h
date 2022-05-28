@@ -114,6 +114,7 @@ namespace NMediaManager
             ~STreeNode()
             {}
 
+            QFileInfo fileInfo() const { return fFileInfo; }
             QString name() const;
 
             QStandardItem * item( EColumns column, bool createIfNecessary = true ) const;
@@ -121,7 +122,10 @@ namespace NMediaManager
             QList< QStandardItem * > items( bool createIfNecessary = true ) const;
             bool fLoaded{ false };
             bool fIsFile{ false };
+
+            void updateName( const QDir & parentDir );
         private:
+            QFileInfo fFileInfo;
             const CDirModel * fModel{ nullptr };
             std::list< SDirNodeItem > fItems;
             mutable QList< QStandardItem * > fRealItems;
@@ -175,6 +179,7 @@ namespace NMediaManager
             void setNameFilters( const QStringList & filters );
             void reloadModel();
             void setRootPath( const QString & path );
+            QDir rootPath() const { return fRootPath; }
 
             virtual bool setData( const QModelIndex & idx, const QVariant & value, int role ) override;
 
@@ -338,8 +343,12 @@ namespace NMediaManager
 
             STreeNode getItemRow( const QFileInfo & path ) const;
 
-            QString getDispName( const QString & absPath ) const;
-            QString getDispName( const QFileInfo & absPath ) const;
+            virtual QString getDispName( const QString & absPath ) const;
+            virtual QString getDispName( const QFileInfo & fi ) const final;
+
+            virtual QString getTreeNodeName( const QFileInfo & fi ) const;
+            virtual QString getTreeNodeName( const QString & path ) const final;
+
             void process( const QModelIndex & idx, bool displayOnly );
             bool process( const QStandardItem * item, bool displayOnly, QStandardItem * resultsParentItem );
 

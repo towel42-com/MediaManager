@@ -502,11 +502,14 @@ namespace NMediaManager
         }
 
         STreeNode::STreeNode( const QFileInfo & fileInfo, const CDirModel * model, bool isRoot ) :
+            fFileInfo( fileInfo ),
             fModel( model )
         {
             fIsFile = fileInfo.isFile();
             //qDebug() << fileInfo.absoluteFilePath() << isRoot;
-            auto nameItem = SDirNodeItem( isRoot ? QDir::toNativeSeparators( fileInfo.canonicalFilePath() ) : fileInfo.fileName(), EColumns::eFSName );
+            QString name;
+
+            auto nameItem = SDirNodeItem( isRoot ? QDir::toNativeSeparators( fileInfo.canonicalFilePath() ) : fModel->getTreeNodeName( fileInfo ), EColumns::eFSName );
             nameItem.fIcon = model->iconProvider()->icon( fileInfo );
             nameItem.setData( fileInfo.absoluteFilePath(), ECustomRoles::eFullPathRole );
             nameItem.setData( fileInfo.isDir(), ECustomRoles::eIsDir );
@@ -558,6 +561,12 @@ namespace NMediaManager
                 }
             }
             return fRealItems;
+        }
+
+        void STreeNode::updateName( const QDir & parentDir )
+        {
+            auto name = parentDir.relativeFilePath( fFileInfo.absoluteFilePath() );
+            fItems.front().fText = name;
         }
 
         void CDirModel::setCheckState( QStandardItem * item, Qt::CheckState state, bool adjustParents ) const
@@ -797,10 +806,22 @@ namespace NMediaManager
             return rootDir.relativeFilePath( absPath );
         }
 
-        QString CDirModel::getDispName( const QFileInfo & absPath ) const
+        QString CDirModel::getDispName( const QFileInfo & fi ) const
         {
-            return getDispName( absPath.absoluteFilePath() );
+            return getDispName( fi.absoluteFilePath() );
         }
+
+        QString CDirModel::getTreeNodeName( const QFileInfo & fi ) const
+        {
+            return fi.fileName();
+        }
+
+        QString CDirModel::getTreeNodeName( const QString & path ) const
+        {
+            return getTreeNodeName( QFileInfo( path ) );
+        }
+
+
 
         void CDirModel::appendError( QStandardItem * parent, const QString & msg )
         {
