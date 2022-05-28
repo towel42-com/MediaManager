@@ -309,11 +309,20 @@ namespace NMediaManager
             std::map< QString, QList< QFileInfo > > nameBasedMap;
             for (auto && ii : srtFiles)
             {
+                // qDebug() << dir << ii;
                 // qDebug() << ii.absoluteFilePath();
 
                 auto langInfo = NCore::SLanguageInfo(ii);
-                if ( !langInfo.knownLanguage() && ( nameMatch( fi.completeBaseName(), langInfo.baseName() ) ) )
-                    nameBasedMap[ fi.completeBaseName() ].push_back( ii );
+                if ( !langInfo.knownLanguage() && nameMatch( fi.completeBaseName(), langInfo.baseName() ) )
+                        nameBasedMap[ fi.completeBaseName() ].push_back( ii );
+                else
+                {
+                    auto relPath = dir.relativeFilePath( ii.absolutePath() );
+                    if ( ( relPath != "." ) && ( relPath.indexOf( '/' ) == -1 ) && ( relPath.indexOf( '\\' ) == -1 ) && nameMatch( fi.completeBaseName(), relPath ) )
+                    {
+                        nameBasedMap[ fi.completeBaseName() ].push_back( ii );
+                    }
+                }
             }
             auto pos = nameBasedMap.find(fi.completeBaseName());
             if (pos != nameBasedMap.end())
@@ -780,7 +789,12 @@ namespace NMediaManager
                     if (alreadyAdded.find(ii.absoluteFilePath()) != alreadyAdded.end())
                         continue;
                     alreadyAdded.insert(ii.absoluteFilePath());
-                    tree.push_back(std::move(getItemRow(ii)));
+                    auto srtRow = getItemRow(ii);
+                    if ( dir != srtRow.fileInfo().absoluteDir() )
+                    {
+                        srtRow.updateName( dir );
+                    }
+                    tree.push_back( std::move( srtRow ) );
                 }
 
                 //for ( auto && ii : tree )
