@@ -197,6 +197,10 @@ namespace NMediaManager
                 QVariantMap getDefaultKnownAbbreviations() const;
                 QVariantMap getKnownAbbreviations() const;
 
+                void setKnownHyphenated( const QStringList & value );
+                QStringList getDefaultKnownHyphenated() const;
+                QStringList getKnownHyphenated() const;
+                std::list< std::pair< QString, int > > getKnownHyphenatedData() const;
                 void setMKVMergeEXE( const QString & value );
                 QString getMKVMergeEXE() const;
 

@@ -49,7 +49,7 @@ namespace NMediaManager
             {
                 static auto defaultValue =
                     QStringList( {
-                    } );
+                                 } );
                 return defaultValue;
             }
 
@@ -145,7 +145,9 @@ namespace NMediaManager
                         ,R"(TBD)"
                         ,R"(HDRip)"
                         ,R"(KORSUB)"
-                    } );
+                        ,R"(8bit)"
+                        ,R"(rartv)"
+                                 } );
                 return defaultValue;
             }
 
@@ -158,7 +160,7 @@ namespace NMediaManager
                         ,R"(Director's Cut)"
                         ,R"(Director)"
                         ,R"(Unrated)"
-                    } );
+                                 } );
                 return defaultValue;
             }
 
@@ -170,7 +172,7 @@ namespace NMediaManager
                         ,R"(sub)"
                         ,R"(subs)"
                         ,R"(season \d+)"
-                    } );
+                                 } );
                 return defaultValue;
             }
 
@@ -180,7 +182,16 @@ namespace NMediaManager
                     QVariantMap( {
                          { R"(Dont)", R"(Don't)" }
                         ,{ R"(NY)", R"(New York)" }
-                    } );
+                                 } );
+                return defaultValue;
+            }
+
+            QStringList CPreferences::getDefaultKnownHyphenated() const
+            {
+                static auto defaultValue =
+                    QStringList( {
+                         R"(Obi-Wan)"
+                                 } );
                 return defaultValue;
             }
 
@@ -197,7 +208,7 @@ namespace NMediaManager
                         ,R"(interview(s)?)"
                         ,R"(featurette(s)?)"
                         ,R"(sample(s)?)"
-                    } );
+                                 } );
                 return defaultValue;
             }
         }

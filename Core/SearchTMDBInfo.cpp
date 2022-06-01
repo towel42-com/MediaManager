@@ -126,7 +126,7 @@ namespace NMediaManager
             return retVal;
         }
 
-        QString SSearchTMDBInfo::smartTrim( const QString &string, bool stripInnerSeparators )
+        QString SSearchTMDBInfo::smartTrim( const QString &string, bool stripInnerSeparators, bool checkForKnownHyphens )
         {
             auto retVal = string;
             auto pos = retVal.indexOf( QRegularExpression( R"([^\.\s\-\_])" ) );
@@ -139,13 +139,39 @@ namespace NMediaManager
             if ( stripInnerSeparators )
             {
                 retVal.replace( QRegularExpression( R"(\:)" ), "" );
+
                 QString prev;
                 while ( prev != retVal )
                 {
                     prev = retVal;
-                    retVal.replace( QRegularExpression( R"(\s+|-|_|\.)" ), " " );
+                    retVal.replace( QRegularExpression( checkForKnownHyphens ? R"(\s+|_|\.)" : R"(\s+|-|_|\.)" ), " " );
                 }
                 retVal = retVal.trimmed();
+
+                if ( checkForKnownHyphens )
+                {
+                    auto knownHyphens = NPreferences::NCore::CPreferences::instance()->getKnownHyphenatedData();
+                    int from = 0;
+                    auto pos = retVal.indexOf( '-' );
+                    while ( pos != -1 )
+                    {
+                        bool isKnown = false;
+                        from = pos + 1;
+                        for ( auto && ii : knownHyphens )
+                        {
+                            auto currStr = retVal.mid( pos - ii.second, ii.first.length() );
+                            if ( currStr.compare( ii.first, Qt::CaseInsensitive ) == 0 )
+                            {
+                                isKnown = true;
+                                from = pos + ii.first.length();
+                                break;
+                            }
+                        }
+                        if ( !isKnown )
+                            retVal.replace( pos, ' ' );
+                        pos = retVal.indexOf( '-', from );
+                    }
+                }
             }
             return retVal;
         }
@@ -277,7 +303,7 @@ namespace NMediaManager
             extractReleaseDate();
             extractTMDBID();
 
-            fSearchName = smartTrim( fSearchName, true );
+            fSearchName = smartTrim( fSearchName, true, true );
 
             if ( fSearchResult && !fSearchResult->isAutoSetText() )
             {

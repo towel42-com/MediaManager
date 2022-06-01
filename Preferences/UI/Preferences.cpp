@@ -33,6 +33,7 @@
 #include "MovieSettings.h"
 #include "PathsToDelete.h"
 #include "RemoveFromPaths.h"
+#include "KnownHyphenated.h"
 #include "SkippedPaths.h"
 #include "SearchSettings.h"
 #include "TransformationSettings.h"
@@ -118,13 +119,14 @@ namespace NMediaManager
                 addPage( new CExtensions );
                 addPage( new CExternalTools );
                 addPage( new CKnownAbbreviations );
-                addPage( new CMovieSettings );
                 addPage( new CPathsToDelete );
                 addPage( new CRemoveFromPaths );
+                addPage( new CKnownHyphenated );
                 addPage( new CSkippedPaths );
                 addPage( new CIgnoredPaths );
                 addPage( new CSearchSettings );
                 addPage( new CTransformationSettings );
+                addPage( new CMovieSettings );
                 addPage( new CTVShowSettings );
                 addPage( new CTagAnalysisSettings );
             }
@@ -133,6 +135,7 @@ namespace NMediaManager
             {
                 fImpl->stackedWidget->addWidget( page );
                 auto name = page->pageName();
+                qDebug() << name;
                 Q_ASSERT( !name.isEmpty() );
                 if ( name.isEmpty() )
                     return;
@@ -160,7 +163,10 @@ namespace NMediaManager
                     {
                         auto item = parentItem = ( *pos ).second;
                         if ( ( ii + 1 ) == name.count() )
+                        {
+                            Q_ASSERT( fPageMap.find( item ) == fPageMap.end() );
                             fPageMap[ item ] = page;
+                        }
                     }
                 }
             }

@@ -580,13 +580,38 @@ namespace NMediaManager
                 emitSigPreferencesChanged( EPreferenceType::eTransformPrefs );
             }
 
-
             QVariantMap CPreferences::getKnownAbbreviations() const
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
                 return settings.value( "KnownAbbreviations", getDefaultKnownAbbreviations() ).toMap();
             };
+
+            void CPreferences::setKnownHyphenated( const QStringList & value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.setValue( "KnownHyphenated", value );
+                emitSigPreferencesChanged( EPreferenceType::eTransformPrefs );
+            }
+            
+            QStringList CPreferences::getKnownHyphenated() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                return settings.value( "KnownHyphenated", getDefaultKnownHyphenated() ).toStringList();
+            };
+
+            std::list< std::pair< QString, int > > CPreferences::getKnownHyphenatedData() const
+            {
+                std::list< std::pair< QString, int > > retVal;
+                auto data = getKnownHyphenated();
+                for ( auto && ii : data )
+                {
+                    retVal.push_back( { ii, ii.indexOf( '-' ) } );
+                }
+                return retVal;
+            }
 
             /// ////////////////////////////////////////////////////////
             /// Load Options
@@ -1364,6 +1389,8 @@ namespace NMediaManager
                     << R"()"
                     << "%DEFAULT_KNOWN_ABBREVIATIONS%"
                     << R"()"
+                    << "%DEFAULT_KNOWN_HYPHENATED%"
+                    << R"()"
                     << "%DEFAULT_SKIPPED_PATHS%"
                     << R"(        })"
                     << R"(    })"
@@ -1386,6 +1413,7 @@ namespace NMediaManager
                     << compareValues( "Known Strings", getDefaultKnownStrings(), getKnownStrings() )
                     << compareValues( "Known Extended Strings", getDefaultKnownExtendedStrings(), getKnownExtendedStrings() )
                     << compareValues( "Known Abbreviations", getDefaultKnownAbbreviations(), getKnownAbbreviations() )
+                    << compareValues( "Known Hyphenated", getDefaultKnownHyphenated(), getKnownHyphenated() )
                     ;
                 items.removeAll( QString() );
 
@@ -1417,6 +1445,7 @@ namespace NMediaManager
                         replaceText( "%DEFAULT_KNOWN_EXTENDED_STRINGS%", newFileText, "getDefaultKnownExtendedStrings", getKnownExtendedStrings() );
                         replaceText( "%DEFAULT_IGNORED_PATHS%", newFileText, "getDefaultIgnoredPaths", getIgnoredPaths() );
                         replaceText( "%DEFAULT_KNOWN_ABBREVIATIONS%", newFileText, "getDefaultKnownAbbreviations", getKnownAbbreviations() );
+                        replaceText( "%DEFAULT_KNOWN_HYPHENATED%", newFileText, "getDefaultKnownHyphenated", getKnownHyphenated() );
                         replaceText( "%DEFAULT_SKIPPED_PATHS%", newFileText, "getDefaultSkippedPaths", getSkippedPaths() );
                         QGuiApplication::clipboard()->setText( newFileText.join( "\n" ) );
                     }

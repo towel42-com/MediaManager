@@ -27,6 +27,7 @@ set(qtproject_SRCS
     ExternalTools.cpp
     IgnoredPaths.cpp
     KnownAbbreviations.cpp
+    KnownHyphenated.cpp
     MovieSettings.cpp
     PathsToDelete.cpp
     Preferences.cpp
@@ -45,6 +46,7 @@ set(qtproject_H
     ExternalTools.h
     IgnoredPaths.h
     KnownAbbreviations.h
+    KnownHyphenated.h
     MovieSettings.h
     PathsToDelete.h
     Preferences.h
@@ -65,6 +67,7 @@ set(qtproject_UIS
     ExternalTools.ui
     IgnoredPaths.ui
     KnownAbbreviations.ui
+    KnownHyphenated.ui
     MovieSettings.ui
     PathsToDelete.ui
     Preferences.ui

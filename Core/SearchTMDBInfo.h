@@ -155,7 +155,7 @@ namespace NMediaManager
             static QString stripKnownData( const QString & string );
             static QString replaceKnownAbbreviations( const QString & string );
 
-            static QString smartTrim( const QString & string, bool stripInnerSeparators = false );
+            static QString smartTrim( const QString & string, bool stripInnerSeparators = false, bool checkForKnownHyphens = false );
             static QStringList stripOutPositions( const QString & inString, const std::list< std::pair< int, int > > & positions );
 
             QString fSearchName;
