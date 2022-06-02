@@ -17,7 +17,7 @@
    <item>
     <widget class="QGroupBox" name="groupBox_3">
      <property name="title">
-      <string>Known Hyphenated</string>
+      <string>Known Hyphenated Words</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_9">
       <item row="0" column="1">
