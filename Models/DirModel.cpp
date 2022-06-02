@@ -911,6 +911,8 @@ namespace NMediaManager
                 item = getPathItemFromIndex( idx );
             fProcessResults.first = process( item, displayOnly, nullptr );
             postProcess( displayOnly );
+            if ( displayOnly && progressDlg() )
+                progressDlg()->stopAutoShowTimer();
         }
 
         void CDirModel::postProcess( bool /*displayOnly*/ )
