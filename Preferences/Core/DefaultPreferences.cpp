@@ -147,6 +147,7 @@ namespace NMediaManager
                         ,R"(KORSUB)"
                         ,R"(8bit)"
                         ,R"(rartv)"
+                        ,R"(LT)"
                                  } );
                 return defaultValue;
             }
