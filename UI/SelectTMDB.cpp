@@ -208,6 +208,8 @@ namespace NMediaManager
 
         void CSelectTMDB::searchFinished()
         {
+            QApplication::restoreOverrideCursor();
+
             if ( fSearchTMDB->hasError() )
             {
                 QMessageBox::information( this, tr( "Error searching themoviedb" ), fSearchTMDB->errorString() );
