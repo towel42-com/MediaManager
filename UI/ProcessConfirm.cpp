@@ -75,7 +75,12 @@ namespace NMediaManager
         void CProcessConfirm::setModel( QAbstractItemModel *model )
         {
             fImpl->transformations->setModel( model );
-            NSABUtils::expandAll( model, QModelIndex(), fImpl->transformations );
+            NSABUtils::expandAll( fImpl->transformations );
+            auto width = NSABUtils::autoSize( fImpl->transformations );
+            if ( fImpl->transformations->width() < width )
+            {
+                fImpl->transformations->setMinimumWidth( width );
+            }
         }
 
         void CProcessConfirm::setIconLabel( const QMessageBox::Icon &icon )
