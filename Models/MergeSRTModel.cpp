@@ -314,7 +314,7 @@ namespace NMediaManager
 
                 auto langInfo = NCore::SLanguageInfo(ii);
                 if ( !langInfo.knownLanguage() && nameMatch( fi.completeBaseName(), langInfo.baseName() ) )
-                        nameBasedMap[ fi.completeBaseName() ].push_back( ii );
+                    nameBasedMap[ fi.completeBaseName() ].push_back( ii );
                 else
                 {
                     auto relPath = dir.relativeFilePath( ii.absolutePath() );

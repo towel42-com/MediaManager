@@ -388,7 +388,8 @@ namespace NMediaManager
                 sLangMap["Tel"] = ( *sLangMap.find( "te-IN" ) ).second;
                 sLangMap["Eng"] = ( *sLangMap.find( "en-US" ) ).second;
                 sLangMap["no"] =  (*sLangMap.find("nb")).second;
-                
+                sLangMap[ "slo" ] = ( *sLangMap.find( "sl-SI" ) ).second;
+
                 for (auto &&ii : sLangMap)
                 {
                     sLangMap[ii.first.toLower()] = ii.second;
