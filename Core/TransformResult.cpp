@@ -314,6 +314,18 @@ namespace NMediaManager
             }
         }
 
+        void CTransformResult::setTitle( const QString & val )
+        {
+            fTitle = val;
+
+            auto regEx = QRegularExpression( R"((?<prefix>\s*)\:(?<suffix>\s*))" );
+            auto match = regEx.match( fTitle );
+            if ( match.hasMatch() )
+            {
+                fTitle = fTitle.mid( 0, match.capturedStart() ) + match.captured( "prefix" ) + "-" + match.captured( "suffix" ) + fTitle.mid( match.capturedEnd() );
+            }
+        }
+
         bool CTransformResult::operator==( const CTransformResult & rhs ) const
         {
             return ( title() == rhs.title() )

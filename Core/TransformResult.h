@@ -151,7 +151,7 @@ namespace NMediaManager
             void setDescription( const QString & val ) { fDescription = val; }
             
             QString title() const { return fTitle; }
-            void setTitle( const QString & val ) { fTitle = val; }
+            void setTitle( const QString & val );
             
             QString tmdbID() const { return fTMDBID; }
             void setTMDBID( const QString & val ) { fTMDBID = val; }
