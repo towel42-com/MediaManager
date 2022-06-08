@@ -148,6 +148,7 @@ namespace NMediaManager
                         ,R"(8bit)"
                         ,R"(rartv)"
                         ,R"(LT)"
+                        ,R"(AAC5.1)"
                                  } );
                 return defaultValue;
             }
