@@ -514,7 +514,7 @@ namespace NMediaManager
             nameItem.setData( fileInfo.absoluteFilePath(), ECustomRoles::eFullPathRole );
             nameItem.setData( fileInfo.isDir(), ECustomRoles::eIsDir );
             nameItem.fEditable = std::make_pair( EType::ePath, static_cast< NSABUtils::EMediaTags >( -1 ) );
-            nameItem.fCheckable = { true, false, true };
+            nameItem.fCheckable = { true, false, Qt::CheckState::Checked };
             fItems.push_back( nameItem );
             fItems.emplace_back( fileInfo.isFile() ? NSABUtils::NFileUtils::fileSizeString( fileInfo ) : QString(), EColumns::eFSSize );
             if ( fileInfo.isFile() )
@@ -571,6 +571,10 @@ namespace NMediaManager
 
         void CDirModel::setCheckState( QStandardItem * item, Qt::CheckState state, bool adjustParents ) const
         {
+            item->setCheckState( state );
+            if ( item->column() != 0 )
+                return;
+
             for ( auto ii = 0; ii < item->rowCount(); ++ii )
             {
                 auto curr = item->child( ii );
@@ -674,6 +678,8 @@ namespace NMediaManager
             if ( !item )
                 return {};
             auto baseItem = getItem( item, NModels::EColumns::eFSName );
+            if ( !baseItem )
+                return QFileInfo();
             auto path = baseItem->data( ECustomRoles::eFullPathRole ).toString();
             return QFileInfo( path );
         }
@@ -1065,12 +1071,12 @@ namespace NMediaManager
 
         QStandardItem * CDirModel::getItem( const QStandardItem * item, int column ) const
         {
-            auto idx = indexFromItem( item );
-            if ( !idx.isValid() )
+            auto parent = item->parent() ? item->parent() : QStandardItemModel::invisibleRootItem();
+            
+            if ( !parent )
                 return nullptr;
 
-            auto retVal = itemFromIndex( index( idx.row(), column, idx.parent() ) );
-            return retVal;
+            return parent->child( item->row(), column );
         }
 
         bool CDirModel::isChecked( const QFileInfo & fileInfo, int column ) const
