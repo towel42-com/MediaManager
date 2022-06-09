@@ -62,8 +62,6 @@ namespace NMediaManager
             updateByName( true );
             updateEnabled();
 
-            QTimer::singleShot( 0, this, &CSelectTMDB::slotSearchCriteriaChanged );
-
             QObject::connect( this, &CSelectTMDB::sigStartSearch, fSearchTMDB, &NCore::CSearchTMDB::slotSearch );
             QObject::connect( fImpl->results, &QTreeWidget::itemDoubleClicked, this, &CSelectTMDB::slotAcceptItem );
             QObject::connect( fSearchTMDB, &NCore::CSearchTMDB::sigSearchFinished, this, &CSelectTMDB::slotSearchFinished );
@@ -71,6 +69,8 @@ namespace NMediaManager
             QObject::connect( fImpl->results->selectionModel(), &QItemSelectionModel::selectionChanged, this, &CSelectTMDB::slotItemChanged );
 
             connect();
+ 
+            QTimer::singleShot( 0, this, &CSelectTMDB::slotSearchCriteriaChanged );
         }
 
         void CSelectTMDB::updateFromSearchInfo( std::shared_ptr< NCore::SSearchTMDBInfo > searchInfo )
