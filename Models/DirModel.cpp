@@ -1071,8 +1071,10 @@ namespace NMediaManager
 
         QStandardItem * CDirModel::getItem( const QStandardItem * item, int column ) const
         {
+            if ( !item )
+                return nullptr;
+
             auto parent = item->parent() ? item->parent() : QStandardItemModel::invisibleRootItem();
-            
             if ( !parent )
                 return nullptr;
 
