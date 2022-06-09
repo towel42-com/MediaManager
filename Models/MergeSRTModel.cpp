@@ -168,7 +168,7 @@ namespace NMediaManager
                         // if 2 
                         // smallest is normal
                         // largest is sdh
-                        setChecked(getItem(ii.second[1], EColumns::eSDH), ECustomRoles::eHearingImparedRole, true);
+                        setChecked( getItem( ii.second[ 1 ], EColumns::eSDH ), ECustomRoles::eHearingImparedRole, true);
                     }
                     else if (ii.second.size() == 1)
                     {
@@ -696,15 +696,15 @@ namespace NMediaManager
                 retVal.push_back( languageFileItem );
 
                 auto forcedItem = SDirNodeItem( QString(), EColumns::eForced );
-                forcedItem.fCheckable = { true, true, false };
+                forcedItem.fCheckable = { true, true, Qt::CheckState::Unchecked };
                 retVal.push_back( forcedItem );
 
                 auto sdhItem = SDirNodeItem( QString(), EColumns::eSDH );
-                sdhItem.fCheckable = { true, true, false };
+                sdhItem.fCheckable = { true, true, Qt::CheckState::Unchecked };
                 retVal.push_back( sdhItem );
 
                 auto onByDefaultItem = SDirNodeItem( QString(), EColumns::eOnByDefault );
-                onByDefaultItem.fCheckable = { !language.isMultiLanguage(), true, false };
+                onByDefaultItem.fCheckable = { !language.isMultiLanguage(), true, Qt::CheckState::Unchecked };
                 retVal.push_back( onByDefaultItem );
             }
             else

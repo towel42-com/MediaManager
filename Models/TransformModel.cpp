@@ -823,7 +823,7 @@ namespace NMediaManager
             auto mediaType = NCore::SSearchTMDBInfo::looksLikeTVShow( fileInfo.fileName(), nullptr );
             auto isTVShowItem = SDirNodeItem( QString(), EColumns::eIsTVShow );
             isTVShowItem.fMediaType = mediaType;
-            isTVShowItem.fCheckable = { true, true, false };
+            isTVShowItem.fCheckable = { true, true, Qt::CheckState::Unchecked };
 
             retVal.push_back( isTVShowItem );
 
