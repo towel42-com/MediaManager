@@ -1167,25 +1167,23 @@ namespace NMediaManager
             bool CPreferences::isSubtitleFile( const QFileInfo & fi, bool * isLangFileFormat ) const
             {
                 if ( isLangFileFormat )
-                    *isLangFileFormat = false;
+                {
+                    *isLangFileFormat = NMediaManager::NCore::SLanguageInfo::isLangFileFormat( fi );
+                }
 
                 auto exts = CPreferences::instance()->getSubtitleExtensions();
+                auto suffix = fi.suffix();
+
                 for ( auto && ii : exts )
                 {
                     auto pos = ii.lastIndexOf( '.' );
                     ii = ii.mid( pos + 1 );
-                }
-                auto extensions = NSABUtils::hashFromList( exts );
 
-                auto suffix = fi.suffix();
-                if ( extensions.find( suffix ) == extensions.end() )
-                    return false;
-
-                if ( isLangFileFormat )
-                {
-                    *isLangFileFormat = NMediaManager::NCore::SLanguageInfo::isLangFileFormat( fi );
+                    if ( ii.compare( suffix, Qt::CaseSensitivity::CaseInsensitive ) == 0 )
+                        return true;
                 }
-                return true;
+
+                return false;
             }
 
             void CPreferences::emitSigPreferencesChanged( EPreferenceTypes preferenceTypes )
