@@ -60,6 +60,13 @@ namespace NMediaManager
             eFirstCustomColumn
         };
 
+        struct SCheckable
+        {
+            bool fIsCheckable{ false };
+            bool fYesNoOnly{ false };
+            Qt::CheckState fCheckState{ Qt::CheckState::Unchecked };
+        };
+
         struct SDirNodeItem
         {
             SDirNodeItem();
@@ -75,7 +82,7 @@ namespace NMediaManager
             std::optional< Qt::Alignment > fAlignment;
             std::list< std::pair< QVariant, int > > fRoles;
             NCore::EMediaType fMediaType;
-            std::optional< std::tuple< bool, bool, bool > > fCheckable; // isCHeckable, yesno only, is checked
+            std::optional< SCheckable > fCheckable; // isCHeckable, yesno only, is checked
             std::optional< std::pair< EType, NSABUtils::EMediaTags > > fEditable;
         };
     }
