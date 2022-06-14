@@ -559,7 +559,7 @@ namespace NMediaManager
                                     else
                                     {
                                         aOK = false;
-                                        errorMsg = QString("Destination file Exists - Old Size: %1 New Size: %2").arg(NSABUtils::NFileUtils::fileSizeString(oldName, false)).arg(NSABUtils::NFileUtils::fileSizeString(newName, false));
+                                        errorMsg = QString("Destination file Exists - Old Size: %1 New Size: %2").arg(NSABUtils::NFileUtils::byteSizeString(oldName, false)).arg(NSABUtils::NFileUtils::byteSizeString(newName, false));
                                     }
                                 }
                                 else

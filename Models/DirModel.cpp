@@ -516,7 +516,7 @@ namespace NMediaManager
             nameItem.fEditable = std::make_pair( EType::ePath, static_cast< NSABUtils::EMediaTags >( -1 ) );
             nameItem.fCheckable = { true, false, Qt::CheckState::Checked };
             fItems.push_back( nameItem );
-            fItems.emplace_back( fileInfo.isFile() ? NSABUtils::NFileUtils::fileSizeString( fileInfo ) : QString(), EColumns::eFSSize );
+            fItems.emplace_back( fileInfo.isFile() ? NSABUtils::NFileUtils::byteSizeString( fileInfo ) : QString(), EColumns::eFSSize );
             if ( fileInfo.isFile() )
             {
                 fItems.back().fAlignment = Qt::AlignRight | Qt::AlignVCenter;
