@@ -149,6 +149,11 @@ namespace NMediaManager
                         ,R"(rartv)"
                         ,R"(LT)"
                         ,R"(AAC5.1)"
+                        ,R"(BTV)"
+                        ,R"(SMURF)"
+                        ,R"(FLUX)"
+                        ,R"(IMAX)"
+                        ,R"(KNiVES)"
                                  } );
                 return defaultValue;
             }
