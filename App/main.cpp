@@ -35,7 +35,7 @@ void myMessageOutput( QtMsgType type, const QMessageLogContext & context, const 
 {
     static QFile * sOutFile{ nullptr };
     QByteArray localMsg = msg.toLocal8Bit();
-    QString realMsg = QString( "%1 (%2:%3, %4)" ).arg( localMsg.constData() ).arg( (QFileInfo( context.file ).fileName()) ).arg( context.line ).arg( context.function );
+    QString realMsg = QString( "%1 (%2:%3, %4)" ).arg( localMsg.constData() ).arg( ( QFileInfo( context.file ).fileName() ) ).arg( context.line ).arg( context.function );
 
     QString typeString;
     switch ( type )
@@ -60,7 +60,7 @@ void myMessageOutput( QtMsgType type, const QMessageLogContext & context, const 
     realMsg = QString( "%1: %2" ).arg( typeString ).arg( realMsg ).trimmed();
 
 #ifdef Q_OS_WINDOWS
-    OutputDebugString( qUtf16Printable( msg + "\n"  ) );
+    OutputDebugString( qUtf16Printable( msg + "\n" ) );
 #else
     fprintf( "%s\n", qPrintable( realMsg ) );
 #endif
@@ -82,27 +82,27 @@ int main( int argc, char ** argv )
 {
     Q_INIT_RESOURCE( application );
 
-    QApplication::setAttribute( Qt::AA_EnableHighDpiScaling ); 
+    QApplication::setAttribute( Qt::AA_EnableHighDpiScaling );
     QApplication::setAttribute( Qt::AA_UseHighDpiPixmaps );
     QApplication appl( argc, argv );
     appl.setApplicationName( QString::fromStdString( NVersion::APP_NAME ) );
-    appl.setApplicationVersion(QString::fromStdString(NVersion::getVersionString( true ) ) );
-    appl.setOrganizationName(QString::fromStdString(NVersion::VENDOR ) );
-    appl.setOrganizationDomain(QString::fromStdString(NVersion::HOMEPAGE ));
+    appl.setApplicationVersion( QString::fromStdString( NVersion::getVersionString( true ) ) );
+    appl.setOrganizationName( QString::fromStdString( NVersion::VENDOR ) );
+    appl.setOrganizationDomain( QString::fromStdString( NVersion::HOMEPAGE ) );
 
     qInstallMessageHandler( myMessageOutput );
 
     auto aOK = NSABUtils::validateOpenSSL( true );
     if ( !aOK.first )
     {
-        QMessageBox::critical(nullptr, QObject::tr("Could not find OpenSSL libraries"), aOK.second );
+        QMessageBox::critical( nullptr, QObject::tr( "Could not find OpenSSL libraries" ), aOK.second );
         return -1;
     }
 
     QString bifName;
     for ( int ii = 1; ii < argc; ++ii )
     {
-        QString name = argv[ii];
+        QString name = argv[ ii ];
         if ( name.toLower().endsWith( ".bif" ) )
         {
             bifName = name;
@@ -110,7 +110,7 @@ int main( int argc, char ** argv )
         }
     }
     NMediaManager::NUi::CMainWindow mainWindow;
-    mainWindow.setWindowTitle(QString("%1 v%2 - http://%3").arg(QString::fromStdString(NVersion::APP_NAME)).arg(QString::fromStdString(NVersion::getVersionString(true))).arg(QString::fromStdString(NVersion::HOMEPAGE)));
+    mainWindow.setWindowTitle( QString::fromStdString( NVersion::getWindowTitle() ) );
     mainWindow.show();
     if ( !bifName.isEmpty() && !mainWindow.setBIFFileName( bifName ) )
         return -1;
