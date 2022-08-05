@@ -114,6 +114,51 @@ namespace NMediaManager
             setEditable( true );
         }
 
+        std::optional< QString > CDirModelItem::getCompareValue() const
+        {
+            const int role = model() ? model()->sortRole() : Qt::DisplayRole;
+            const auto && lData = data( role );
+            if ( lData.type() == QVariant::Type::String )
+            {
+                auto value = lData.toString();
+                auto dirs = value.split( QRegularExpression( R"([\/\\])" ) );
+                QStringList retVal;
+                for ( auto && curr : dirs )
+                {
+                    QString number;
+                    QString extra;
+                    bool numIsPrefix;
+                    if ( NSABUtils::NStringUtils::startsOrEndsWithNumber( curr, &number, &extra, &numIsPrefix ) )
+                    {
+                        if ( numIsPrefix )
+                            retVal << QString( "%1_%2" ).arg( number, 4, QChar( '0' ) ).arg( extra );
+                        else
+                            retVal << QString( "%1_%2" ).arg( extra ).arg( number, 4, QChar( '0' ) );
+                    }
+                    else
+                        retVal << curr;
+                }
+                return retVal.join( "/" );
+            }
+            return {};
+        }
+
+        bool CDirModelItem::operator<( const QStandardItem & rhs ) const
+        {
+            auto rhsItem = dynamic_cast<const CDirModelItem *>( &rhs );
+            if ( column() == 0 && rhsItem )
+            {
+                auto lhsValue = getCompareValue();
+                auto rhsValue = rhsItem->getCompareValue();
+                if ( lhsValue.has_value() && rhsValue.has_value() )
+                {
+                    return lhsValue.value() < rhsValue.value();
+                }
+            }
+            return QStandardItem::operator<( rhs );
+        }
+
+
         CDirModel::CDirModel( NUi::CBasePage * page, QObject * parent /*= 0*/ ) :
             QStandardItemModel( parent ),
             fBasePage( page )

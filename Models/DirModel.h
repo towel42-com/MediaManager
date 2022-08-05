@@ -36,6 +36,7 @@
 #include <QDir>
 #include <QDate>
 #include <functional>
+#include <optional>
 
 namespace NSABUtils
 {
@@ -102,6 +103,9 @@ namespace NMediaManager
         public:
             CDirModelItem( const QString & text, EType type );
             virtual int type() const override { return static_cast< int >( fType ); }
+            virtual bool operator<( const QStandardItem & rhs ) const override;
+
+            std::optional< QString > getCompareValue() const;
         private:
             EType fType;
         };
