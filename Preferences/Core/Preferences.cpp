@@ -170,7 +170,11 @@ namespace NMediaManager
                 QStringList retVal;
                 for ( auto && ii : paths )
                 {
-                    auto curr = NSABUtils::NFileUtils::getCorrectPathCase( ii );
+                    QString curr;
+                    if ( ii.startsWith( "//" ) || ii.startsWith( R"(\\)" ) )
+                        curr = ii;
+                    else
+                        curr = NSABUtils::NFileUtils::getCorrectPathCase( ii );
                     if ( curr.isEmpty() )
                         continue;
                     retVal << curr;
@@ -287,6 +291,21 @@ namespace NMediaManager
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
                 return settings.value( "ExactMatchesOnly", true ).toBool();
+            }
+
+            void CPreferences::setLoadMediaInfo( bool value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                return settings.setValue( "LoadMediaInfo", value );
+                emitSigPreferencesChanged( EPreferenceType::eTransformPrefs );
+            }
+
+            bool CPreferences::getLoadMediaInfo() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                return settings.value( "LoadMediaInfo", true ).toBool();
             }
 
             void CPreferences::setTVOutFilePattern( const QString & value )

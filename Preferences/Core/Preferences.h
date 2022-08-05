@@ -92,6 +92,9 @@ namespace NMediaManager
                 void setExactMatchesOnly( bool value );
                 bool getExactMatchesOnly() const;
 
+                void setLoadMediaInfo( bool value );
+                bool getLoadMediaInfo() const;
+
                 void setTVOutFilePattern( const QString & value );
                 QString getTVOutFilePattern() const;
 
