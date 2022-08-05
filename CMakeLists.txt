@@ -46,8 +46,15 @@ option( gtest_force_shared_crt "Use shared ( DLL ) run-time lib even when Google
 set_property( GLOBAL PROPERTY USE_FOLDERS ON )
 
 file( REAL_PATH ~/bin/MediaManager CMAKE_INSTALL_PREFIX EXPAND_TILDE)
-SET( SAB_ENABLE_TESTING ON )
+
+SET( SAB_ENABLE_TESTING ON CACHE bool "" FORCE )
+SET( MKVUTILS ON CACHE bool "" FORCE )
+SET( GIFSUPPORT ON CACHE bool "" FORCE )
+SET( BIFSUPPORT ON CACHE bool "" FORCE )
+
 add_subdirectory( SABUtils )
+message( STATUS "MKVUTILS=${MKVUTILS}" )
+
 add_subdirectory( SABUtils/bif)
 add_subdirectory( SABUtils/gif)
 add_subdirectory( UI )
