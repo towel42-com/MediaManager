@@ -355,6 +355,8 @@ namespace NMediaManager
             , {"ts", {"Tsonga", "" } }
             , {"uk", {"Ukrainian", "" } }
             , {"uk-UA", {"Ukrainian", "(Ukraine)" } }
+            , {"ukr", {"Ukrainian", "" } }
+            , {"ukr-UA", {"Ukrainian", "(Ukraine)" } }
             , {"ur", {"Urdu", "" } }
             , {"ur-PK", {"Urdu", "(Islamic Republic of Pakistan)" } }
             , {"uz", {"Uzbek", "(Latin)" } }
