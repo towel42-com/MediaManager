@@ -24,7 +24,7 @@
 #include "Core/LanguageInfo.h"
 #include "Preferences/Core/Preferences.h"
 #include "SABUtils/FileUtils.h"
-
+#include "SABUtils/StringUtils.h"
 #include "SABUtils/DoubleProgressDlg.h"
 
 #include <QDebug>
@@ -258,39 +258,56 @@ namespace NMediaManager
             return {};
         }
 
-        QFileInfoList CMergeSRTModel::getSRTFilesInDir( const QDir & dir ) const
+        bool CMergeSRTModel::nameMatch( const QString & mkvBaseName, const QString & origSubtitleFile ) const
         {
-            qDebug() << dir.absolutePath();
-
-            auto srtFiles = dir.entryInfoList( QStringList() << "*.srt" );
-
-            auto subDirs = dir.entryInfoList( QDir::Filter::AllDirs | QDir::Filter::NoDotAndDotDot );
-            for ( auto && ii : subDirs )
-            {
-                srtFiles << getSRTFilesInDir( QDir( ii.absoluteFilePath() ) );
-            }
-            return srtFiles;
-        }
-
-        bool CMergeSRTModel::nameMatch( const QString & mkvBaseName, QString subtitleFile ) const
-        {
+            auto subtitleFile = origSubtitleFile;
             subtitleFile.remove( mkvBaseName, Qt::CaseInsensitive );
+            if ( subtitleFile == origSubtitleFile )
+                return false;
+
             if ( subtitleFile.isEmpty() )
                 return true;
 
-            auto regExp = QRegularExpression( R"(^(\d+_)|(_\d+)$)" );
-            auto match = regExp.match( subtitleFile );
-            return match.hasMatch();
+            return NSABUtils::NStringUtils::startsOrEndsWithNumber( subtitleFile );
         }
 
-        QList< QFileInfo > CMergeSRTModel::getSRTFilesForMKV( const QFileInfo & fi ) const
+        bool CMergeSRTModel::isNameBasedMatch( const QFileInfo & mkvFile, const QFileInfo & srtFile ) const
         {
-            if ( !fi.exists() || !fi.isFile() )
+            qDebug() << mkvFile;
+            qDebug() << srtFile;
+            auto langInfo = NCore::SLanguageInfo( srtFile );
+            if ( !langInfo.knownLanguage() && nameMatch( mkvFile.completeBaseName(), langInfo.baseName() ) )
+                return true;
+            else
+            {
+                auto dir = mkvFile.absoluteDir();
+
+                auto relPath = dir.relativeFilePath( srtFile.absolutePath() );
+                auto dirs = relPath.split( QRegularExpression( R"([\/\\])" ) );
+                for ( auto & curr : dirs )
+                {
+                    if ( curr.toLower() == "subs" )
+                        continue;
+                    if ( curr.toLower() == "." )
+                        continue;
+                    if ( nameMatch( mkvFile.completeBaseName(), curr ) )
+                    {
+                        return true;
+                        break;
+                    }
+                }
+            }
+            return false;
+        }
+
+        QList< QFileInfo > CMergeSRTModel::getSRTFilesForMKV( const QFileInfo & mkvFile ) const
+        {
+            if ( !mkvFile.exists() || !mkvFile.isFile() )
                 return {};
 
-            auto dir = fi.absoluteDir();
-            qDebug().noquote().nospace() << "Finding SRT files for '" << getDispName( fi ) << "' in dir '" << getDispName( dir.absolutePath() ) << "'";
-            auto srtFiles = getSRTFilesInDir( dir );
+            auto dir = mkvFile.absoluteDir();
+            qDebug().noquote().nospace() << "Finding SRT files for '" << getDispName( mkvFile ) << "' in dir '" << getDispName( dir.absolutePath() ) << "'";
+            auto srtFiles = NSABUtils::NFileUtils::findFilesInDir( dir, QStringList() << "*.srt", true );
 
             //qDebug().noquote().nospace() << "Found '" << srtFiles.count() << "' SRT Files";
 
@@ -309,31 +326,10 @@ namespace NMediaManager
             std::map< QString, QList< QFileInfo > > nameBasedMap;
             for (auto && ii : srtFiles)
             {
-                qDebug() << dir << ii;
-                qDebug() << ii.absoluteFilePath();
-
-                auto langInfo = NCore::SLanguageInfo(ii);
-                if ( !langInfo.knownLanguage() && nameMatch( fi.completeBaseName(), langInfo.baseName() ) )
-                    nameBasedMap[ fi.completeBaseName() ].push_back( ii );
-                else
-                {
-                    auto relPath = dir.relativeFilePath( ii.absolutePath() );
-                    auto dirs = relPath.split( QRegularExpression( R"([\/\\])" ) );
-                    for ( auto & curr : dirs )
-                    {
-                        if ( curr.toLower() == "subs" )
-                            continue;
-                        if ( curr.toLower() == "." )
-                            continue;
-                        if ( nameMatch( fi.completeBaseName(), curr ) )
-                        {
-                            nameBasedMap[ fi.completeBaseName() ].push_back( ii );
-                            break;
-                        }
-                    }
-                }
+                if ( isNameBasedMatch( mkvFile, ii ) )
+                    nameBasedMap[ mkvFile.completeBaseName() ].push_back( ii );
             }
-            auto pos = nameBasedMap.find(fi.completeBaseName());
+            auto pos = nameBasedMap.find(mkvFile.completeBaseName());
             if (pos != nameBasedMap.end())
             {
                 namebasedFiles << (*pos).second;
@@ -718,7 +714,10 @@ namespace NMediaManager
             }
             else
             {
-                // do nothing for directories
+                retVal.push_back( SDirNodeItem() );
+                retVal.push_back( SDirNodeItem() );
+                retVal.push_back( SDirNodeItem() );
+                retVal.push_back( SDirNodeItem() );
             }
             return retVal;
         }

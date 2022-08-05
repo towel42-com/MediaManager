@@ -45,7 +45,9 @@ namespace NMediaManager
             virtual ~CMergeSRTModel() override;
 
         private:
-            bool nameMatch( const QString & mkvBaseName, QString subtitleFile ) const;
+            bool isNameBasedMatch( const QFileInfo & mkvFile, const QFileInfo & srtFile ) const;
+            bool nameMatch( const QString & mkvBaseName, const QString & subtitleFile ) const;
+
             virtual std::pair< bool, QStandardItem * > processItem( const QStandardItem * item, bool displayOnly ) override;
             QStandardItem * processSRTSubTitle(const QStandardItem * mkvFile, const std::unordered_map< QString, std::vector< QStandardItem * > > & srtFiles, bool displayOnly) const;
             QStandardItem * processSUBIDXSubTitle( const QStandardItem * mkvFile, const std::list< std::pair< QStandardItem *, QStandardItem * > > & subidxFiles, bool displayOnly) const;
@@ -72,7 +74,6 @@ namespace NMediaManager
             bool isSubtitleFile(const QFileInfo & fileInfo, bool * isLangFileFormat = nullptr) const;
 
             QList< QFileInfo > getSRTFilesForMKV( const QFileInfo & fi ) const;
-            QFileInfoList getSRTFilesInDir(const QDir & dir) const;
 
             std::optional< std::pair< QFileInfo, QFileInfo > > getIDXSUBFilesForMKV(const QFileInfo & fi) const;
             std::list< std::pair< QFileInfo, QFileInfo > > getIDXSUBFilesInDir(const QDir & dir) const;
