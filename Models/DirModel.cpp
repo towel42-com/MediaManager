@@ -1311,7 +1311,7 @@ namespace NMediaManager
 
         std::list< SDirNodeItem > CDirModel::addAdditionalItems( const QFileInfo & fileInfo ) const
         {
-            if ( showMediaItems() && canShowMediaInfo() )
+            if ( showMediaItems() && canShowMediaInfo() && NPreferences::NCore::CPreferences::instance()->getLoadMediaInfo() )
             {
                 return getMediaInfoItems( fileInfo, firstMediaItemColumn() );
             }
