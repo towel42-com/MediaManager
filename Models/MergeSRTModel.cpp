@@ -260,7 +260,7 @@ namespace NMediaManager
 
         QFileInfoList CMergeSRTModel::getSRTFilesInDir( const QDir & dir ) const
         {
-            //qDebug() << dir.absolutePath();
+            qDebug() << dir.absolutePath();
 
             auto srtFiles = dir.entryInfoList( QStringList() << "*.srt" );
 
@@ -289,7 +289,7 @@ namespace NMediaManager
                 return {};
 
             auto dir = fi.absoluteDir();
-            //qDebug().noquote().nospace() << "Finding SRT files for '" << getDispName( fi ) << "' in dir '" << getDispName( dir.absolutePath() ) << "'";
+            qDebug().noquote().nospace() << "Finding SRT files for '" << getDispName( fi ) << "' in dir '" << getDispName( dir.absolutePath() ) << "'";
             auto srtFiles = getSRTFilesInDir( dir );
 
             //qDebug().noquote().nospace() << "Found '" << srtFiles.count() << "' SRT Files";
@@ -309,8 +309,8 @@ namespace NMediaManager
             std::map< QString, QList< QFileInfo > > nameBasedMap;
             for (auto && ii : srtFiles)
             {
-                // qDebug() << dir << ii;
-                // qDebug() << ii.absoluteFilePath();
+                qDebug() << dir << ii;
+                qDebug() << ii.absoluteFilePath();
 
                 auto langInfo = NCore::SLanguageInfo(ii);
                 if ( !langInfo.knownLanguage() && nameMatch( fi.completeBaseName(), langInfo.baseName() ) )
@@ -318,9 +318,18 @@ namespace NMediaManager
                 else
                 {
                     auto relPath = dir.relativeFilePath( ii.absolutePath() );
-                    if ( ( relPath != "." ) && ( relPath.indexOf( '/' ) == -1 ) && ( relPath.indexOf( '\\' ) == -1 ) && nameMatch( fi.completeBaseName(), relPath ) )
+                    auto dirs = relPath.split( QRegularExpression( R"([\/\\])" ) );
+                    for ( auto & curr : dirs )
                     {
-                        nameBasedMap[ fi.completeBaseName() ].push_back( ii );
+                        if ( curr.toLower() == "subs" )
+                            continue;
+                        if ( curr.toLower() == "." )
+                            continue;
+                        if ( nameMatch( fi.completeBaseName(), curr ) )
+                        {
+                            nameBasedMap[ fi.completeBaseName() ].push_back( ii );
+                            break;
+                        }
                     }
                 }
             }
