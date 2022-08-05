@@ -29,6 +29,13 @@
     </widget>
    </item>
    <item>
+    <widget class="QCheckBox" name="loadMediaInfo">
+     <property name="text">
+      <string>Load Media Information?</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <spacer name="verticalSpacer_7">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
