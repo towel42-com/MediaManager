@@ -77,7 +77,7 @@ target_link_libraries( ${PROJECT_NAME}
         ${project_pri_DEPS}
 )
 
-DeployQt( MediaManager . INSTALL_ONLY 1 )
+DeployQt( MediaManager . )
 DeploySystem( MediaManager . INSTALL_ONLY 1 )
 DeployOpenSSL( MediaManager . )
 
