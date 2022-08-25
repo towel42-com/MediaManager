@@ -54,7 +54,6 @@ SET( GIFSUPPORT ON )
 SET( BIFSUPPORT ON )
 
 add_subdirectory( SABUtils )
-message( STATUS "MKVUTILS=${MKVUTILS}" )
 
 add_subdirectory( SABUtils/bif)
 add_subdirectory( SABUtils/gif)
