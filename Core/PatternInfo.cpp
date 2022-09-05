@@ -61,6 +61,7 @@ namespace NMediaManager
             retVal = patternToRegExp( "title", retVal, ".*", removeOptional );
             retVal = patternToRegExp( "year", retVal, "((\\d{2}){1,2})", removeOptional );
             retVal = patternToRegExp( "tmdbid", retVal, "\\d+", removeOptional );
+            retVal = patternToRegExp( "show_tmdbid", retVal, "\\d+", removeOptional );
             retVal = patternToRegExp( "season", retVal, "\\d+", removeOptional );
             retVal = patternToRegExp( "episode", retVal, "\\d+", removeOptional );
             retVal = patternToRegExp( "episode_title", retVal, ".*", removeOptional );
@@ -82,7 +83,7 @@ namespace NMediaManager
             {
                 patterns
                     << patternToRegExp( dirPattern(), true )
-                    << patternToRegExp(dirPattern(), false)
+                    << patternToRegExp( dirPattern(), false )
                     << "(.*)\\s\\(((\\d{2}){1,2}\\))\\s(-\\s(.*)\\s)?\\[(tmdbid=\\d+)|(imdbid=tt.*)\\]"
                     ;
             }
