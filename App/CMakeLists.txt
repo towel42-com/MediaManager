@@ -59,10 +59,6 @@ set ( DEBUG_PLUGINPATH
         "$<TARGET_FILE_DIR:bif>/.."
         "$<TARGET_FILE_DIR:gif>/.."
         )
-#get_cmake_property(_variableNames VARIABLES)
-#foreach(_variableName ${_variableNames})
-#        MESSAGE( STATUS "${_variableName}=${${_variableName}}" )
-#endforeach()
         
 set_target_properties( ${PROJECT_NAME} PROPERTIES FOLDER Apps 
                                     VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:MediaManager>" 
@@ -79,7 +75,7 @@ target_link_libraries( ${PROJECT_NAME}
 
 DeployQt( ${PROJECT_NAME} . )
 DeploySystem( ${PROJECT_NAME} . INSTALL_ONLY 1 )
-DeployOpenSSL( MediaManager . )
+DeployOpenSSL( ${PROJECT_NAME} . )
 
 INSTALL( TARGETS ${PROJECT_NAME} RUNTIME DESTINATION . )
 INSTALL( FILES ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.pdb DESTINATION . CONFIGURATIONS Debug RelWithDebInfo )
