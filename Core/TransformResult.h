@@ -155,7 +155,10 @@ namespace NMediaManager
             
             QString tmdbID() const { return fTMDBID; }
             void setTMDBID( const QString & val ) { fTMDBID = val; }
-            
+
+            QString showTMDBID() const { return fShowTMDBID; }
+            void setShowTMDBID( const QString & val ) { fShowTMDBID = val; }
+
             QString seasonTMDBID() const { return fSeasonTMDBID; }
             void setSeasonTMDBID( const QString & val ) { fSeasonTMDBID = val; }
 
@@ -184,6 +187,7 @@ namespace NMediaManager
         private:
             QString fTitle;
             QString fTMDBID;
+            QString fShowTMDBID;
             QString fSeasonTMDBID;
             QString fEpisodeTMDBID;
 

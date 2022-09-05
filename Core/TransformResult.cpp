@@ -355,6 +355,7 @@ namespace NMediaManager
             auto seasonYear = getSeasonStartYear();
             auto episodeYear = getEpisodeAirYear();
             auto tmdbid = tmdbID();
+            auto showTMDBID = this->showTMDBID();
             auto season = this->season();
             auto episode = this->episode();
             auto extraInfo = this->extraInfo();
@@ -367,6 +368,7 @@ namespace NMediaManager
             retVal = replaceCapture( "season_year", retVal, seasonYear );
             retVal = replaceCapture( "episode_year", retVal, episodeYear );
             retVal = replaceCapture( "tmdbid", retVal, tmdbid );
+            retVal = replaceCapture( "show_tmdbid", retVal, showTMDBID );
             retVal = replaceCapture( "season", retVal, QString( "%1" ).arg( season, fileInfo.isDir() ? 1 : 2, QChar( '0' ) ) );
             retVal = replaceCapture( "episode", retVal, QString( "%1" ).arg( episode, fileInfo.isDir() ? 1 : 2, QChar( '0' ) ) );
             retVal = replaceCapture( "episode_title", retVal, episodeTitle );
