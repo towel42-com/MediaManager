@@ -165,6 +165,7 @@ namespace NMediaManager
             int fEpisode{ -1 };
             int fDiskNum{ -1 };
             QString fTMDBID;
+            QString fShowTMDBID;
             std::pair< EMediaType, bool > fMediaType;
             bool fExactMatchOnly{ false };
             bool fSearchByName{ false };

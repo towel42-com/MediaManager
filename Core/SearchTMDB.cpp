@@ -642,7 +642,7 @@ namespace NMediaManager
             fSearchReply.reset();
 
             auto doc = QJsonDocument::fromJson( data );
-            //qDebug().noquote().nospace() << doc.toJson( QJsonDocument::Indented );
+            qDebug().noquote().nospace() << doc.toJson( QJsonDocument::Indented );
             bool found = false;
             if ( doc.object().contains( "results" ) )
             {
@@ -718,7 +718,7 @@ namespace NMediaManager
             fGetTVReply.reset();
 
             auto doc = QJsonDocument::fromJson( data );
-            //qDebug().nospace().noquote() << doc.toJson( QJsonDocument::Indented );
+            qDebug().nospace().noquote() << doc.toJson( QJsonDocument::Indented );
 
             if ( !loadSearchResult( doc.object() ) )
             {
@@ -909,7 +909,10 @@ namespace NMediaManager
             {
                 auto parentPtr = seasonInfo->parent().lock();
                 if ( parentPtr )
+                {
                     seasonInfo->setShowFirstAirDate( parentPtr->getShowFirstAirDate() ); // should go to the parent
+                    seasonInfo->setShowTMDBID( parentPtr->getTMDBID() );
+                }
             }
             seasonInfo->setSeasonStartDate( seasonStartDate );
             seasonInfo->setSubTitle( doc.object().contains( "name" ) ? doc.object()["name"].toString() : QString() );
@@ -963,6 +966,7 @@ namespace NMediaManager
             episodeInfo->setTMDBID( seasonInfo->tmdbID() );
             episodeInfo->setSeasonTMDBID( seasonInfo->seasonTMDBID() );
             episodeInfo->setEpisodeTMDBID( episodeObj.contains( "id" ) ? QString::number( episodeObj["id"].toInt() ) : QString() );
+            episodeInfo->setShowTMDBID( seasonInfo->showTMDBID() );
             episodeInfo->setTitle( seasonInfo->title() );
             episodeInfo->setShowFirstAirDate( seasonInfo->getShowFirstAirDate() );
             episodeInfo->setSeasonStartDate( seasonInfo->getSeasonStartDate() );
