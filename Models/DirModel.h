@@ -37,6 +37,7 @@
 #include <QDate>
 #include <functional>
 #include <optional>
+#include <QFileIconProvider>
 
 namespace NSABUtils
 {
@@ -46,7 +47,6 @@ namespace NSABUtils
 
 class QTreeView;
 class QMediaPlaylist;
-class QFileIconProvider;
 class QDirIterator;
 class QPlainTextEdit;
 class QProcess;
@@ -152,6 +152,13 @@ namespace NMediaManager
             std::unordered_map< QFileDevice::FileTime, QDateTime > fTimeStamps;
         };
 
+        class CIconProvider :public QFileIconProvider
+        {
+        public:
+            virtual QIcon icon( const QFileInfo & info ) const override;
+            bool isNetworkPath( const QFileInfo & info ) const;
+        };
+
         using TItemStatus = std::pair< NPreferences::EItemStatus, QString >;
         class CDirModel : public QStandardItemModel
         {
@@ -197,7 +204,7 @@ namespace NMediaManager
 
             virtual int eventsPerPath() const { return 1; }
 
-            const QFileIconProvider * iconProvider() const { return fIconProvider; }
+            const CIconProvider * iconProvider() const { return fIconProvider; }
             bool showProcessResults( const QString & title, const QString & label, const QMessageBox::Icon & icon, const QDialogButtonBox::StandardButtons & buttons, QWidget * parent ) const;
 
             std::pair<QString, bool> & stdOutRemaining() { return fStdOutRemaining; }
@@ -374,7 +381,7 @@ namespace NMediaManager
             QDir fRootPath;
             QStringList fNameFilter;
 
-            QFileIconProvider * fIconProvider{ nullptr };
+            CIconProvider * fIconProvider{ nullptr };
 
             std::map< QString, QStandardItem * > fPathMapping;
 

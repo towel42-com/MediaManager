@@ -163,7 +163,7 @@ namespace NMediaManager
             QStandardItemModel( parent ),
             fBasePage( page )
         {
-            fIconProvider = new QFileIconProvider();
+            fIconProvider = new CIconProvider();
             fTimer = new QTimer( this );
             fTimer->setInterval( 50 );
             fTimer->setSingleShot( true );
@@ -1840,6 +1840,27 @@ namespace NMediaManager
             endResetModel();
             if ( filesView() )
                 filesView()->expandAll();
+        }
+
+        QIcon CIconProvider::icon( const QFileInfo & info ) const
+        {
+            if ( isNetworkPath( info ) )
+                return {};
+            return QFileIconProvider::icon( info );
+        }
+
+        bool CIconProvider::isNetworkPath( const QFileInfo & info ) const
+        {
+            auto path = info.canonicalFilePath();
+            if ( !path.startsWith( "//" ) )
+                return false;
+
+            auto block = "(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)";
+            auto regExStr = QString( R"((//|\\\\)%1.%1.%1.%1(/|\\))" ).arg( block );
+            auto match = QRegularExpression( regExStr ).match( path );
+            if ( match.hasMatch() && match.capturedStart() == 0 )
+                return true;
+            return false;
         }
     }
 }
