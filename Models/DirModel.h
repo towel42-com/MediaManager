@@ -156,7 +156,6 @@ namespace NMediaManager
         {
         public:
             virtual QIcon icon( const QFileInfo & info ) const override;
-            bool isNetworkPath( const QFileInfo & info ) const;
         };
 
         using TItemStatus = std::pair< NPreferences::EItemStatus, QString >;

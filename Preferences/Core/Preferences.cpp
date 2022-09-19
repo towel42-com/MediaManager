@@ -171,7 +171,7 @@ namespace NMediaManager
                 for ( auto && ii : paths )
                 {
                     QString curr;
-                    if ( ii.startsWith( "//" ) || ii.startsWith( R"(\\)" ) )
+                    if ( NSABUtils::NFileUtils::isIPAddressNetworkPath( ii ) )
                         curr = ii;
                     else
                         curr = NSABUtils::NFileUtils::getCorrectPathCase( ii );
