@@ -90,6 +90,10 @@ namespace NMediaManager
             QString getSeason() const;
             QString getEpisode() const;
 
+            bool isNoItems() const;
+            bool isNoMatch() const;
+            bool isDeleteThis() const;
+
             static bool isNoItems( const QString & text );
             static QString getNoItems();
 
