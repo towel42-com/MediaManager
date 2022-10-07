@@ -32,7 +32,7 @@ namespace NMediaManager
             QString CPreferences::getDefaultOutDirPattern( bool forTV ) const
             {
                 if ( forTV )
-                    return R"(<title>{ (<show_year>)}:<show_year>/Season <season>)";
+                    return R"(<title>{ (<show_year>)}:<show_year>{ [tmdbid=<show_tmdbid>]}:<show_tmdbid>/Season <season>)";
                 else
                     return R"(<title>{ (<year>)}:<year>{ [tmdbid=<tmdbid>]}:<tmdbid>{ - <extra_info>}:<extra_info>)";
             }
@@ -154,6 +154,14 @@ namespace NMediaManager
                         ,R"(FLUX)"
                         ,R"(IMAX)"
                         ,R"(KNiVES)"
+                        ,R"(ARROW)"
+                        ,R"(REMASTER)"
+                        ,R"(KOGi)"
+                        ,R"(UNCUT)"
+                        ,R"(SHOUT)"
+                        ,R"(BAE)"
+                        ,R"(CA)"
+                        ,R"(TRUFFLE)"
                                  } );
                 return defaultValue;
             }
