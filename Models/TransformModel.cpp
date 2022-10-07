@@ -290,7 +290,7 @@ namespace NMediaManager
         {
             auto mediaType = isTVByDefault ? NCore::EMediaType::eTVShow : NCore::EMediaType::eMovie;
             auto transformInfo = getTransformResult( fileInfo, true );
-            if ( transformInfo )
+            if ( transformInfo && !transformInfo->isNoMatch() )
                 mediaType = transformInfo->mediaType();
             return isTVType( mediaType );
         }
