@@ -134,11 +134,11 @@ namespace NMediaManager
                 fIgnoreSkippedPathSettings = new QAction( this );
                 fIgnoreSkippedPathSettings->setObjectName( QString::fromUtf8( "actionIgnoreSkippedPathSettings" ) );
                 fIgnoreSkippedPathSettings->setCheckable( true );
-                fIgnoreSkippedPathSettings->setChecked( NPreferences::NCore::CPreferences::instance()->getIgnorePathNamesToSkip() );
+                fIgnoreSkippedPathSettings->setChecked( NPreferences::NCore::CPreferences::instance()->getIgnorePathNamesToSkip( false ) );
                 fIgnoreSkippedPathSettings->setText( QCoreApplication::translate( "NMediaManager::NUi::CMainWindow", "Ignore Skipped Path Settings?", nullptr ) );
                 connect( fIgnoreSkippedPathSettings, &QAction::triggered, [this]()
                 {
-                    NPreferences::NCore::CPreferences::instance()->setIgnorePathNamesToSkip( fIgnoreSkippedPathSettings->isChecked() );
+                    NPreferences::NCore::CPreferences::instance()->setIgnorePathNamesToSkip( false, fIgnoreSkippedPathSettings->isChecked() );
                 }
                 );
 
@@ -209,7 +209,7 @@ namespace NMediaManager
 
         void CTagsPage::slotMenuAboutToShow()
         {
-            fIgnoreSkippedPathSettings->setChecked( NPreferences::NCore::CPreferences::instance()->getIgnorePathNamesToSkip() );
+            fIgnoreSkippedPathSettings->setChecked( NPreferences::NCore::CPreferences::instance()->getIgnorePathNamesToSkip( false ) );
 
             fVerifyMediaDate->setChecked( NPreferences::NCore::CPreferences::instance()->getVerifyMediaDate() );
             fVerifyMediaTitle->setChecked( NPreferences::NCore::CPreferences::instance()->getVerifyMediaTitle() );
