@@ -318,11 +318,11 @@ namespace NMediaManager
         {
             fTitle = val;
 
-            auto regEx = QRegularExpression( R"((?<prefix>\s*)\:(?<suffix>\s*))" );
+            auto regEx = QRegularExpression( R"((?<prefix>)\s*\:\s*(?<suffix>)\s*)" );
             auto match = regEx.match( fTitle );
             if ( match.hasMatch() )
             {
-                fTitle = fTitle.mid( 0, match.capturedStart() ) + match.captured( "prefix" ) + "-" + match.captured( "suffix" ) + fTitle.mid( match.capturedEnd() );
+                fTitle = fTitle.mid( 0, match.capturedStart() ) + match.captured( "prefix" ) + " - " + match.captured( "suffix" ) + fTitle.mid( match.capturedEnd() );
             }
         }
 
@@ -609,6 +609,11 @@ namespace NMediaManager
             return text == kNoMatch;
         }
 
+        bool CTransformResult::isNoItems() const
+        {
+            return isNoItems( title() );
+        }
+
         QString CTransformResult::getNoMatch()
         {
             return kNoMatch;
@@ -619,9 +624,22 @@ namespace NMediaManager
             return text == kDeleteThis;
         }
 
+        bool CTransformResult::isNoMatch() const
+        {
+            if ( mediaType() == EMediaType::eNotFoundType )
+                return true;
+
+            return isNoMatch( title() );
+        }
+
         QString CTransformResult::getDeleteThis()
         {
             return kDeleteThis;
+        }
+
+        bool CTransformResult::isDeleteThis() const
+        {
+            return isDeleteThis( title() );
         }
 
         bool CTransformResult::isAutoSetText() const
