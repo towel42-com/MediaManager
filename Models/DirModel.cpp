@@ -525,12 +525,12 @@ namespace NMediaManager
             return prevParent;
         }
 
-        bool CDirModel::isSkippedPathName( const QFileInfo & ii, bool allowIgnore ) const
+        bool CDirModel::isSkippedPathName( const QFileInfo & fi, bool allowIgnore ) const
         {
-            if ( allowIgnore && NPreferences::NCore::CPreferences::instance()->getIgnorePathNamesToSkip() )
+            if ( allowIgnore && NPreferences::NCore::CPreferences::instance()->getIgnorePathNamesToSkip( isTransformModel() ) )
                 return false;
 
-            return NPreferences::NCore::CPreferences::instance()->isSkippedPath( ii );
+            return NPreferences::NCore::CPreferences::instance()->isSkippedPath( isTransformModel(), fi );
         }
 
         bool CDirModel::isIgnoredPathName( const QFileInfo & fileInfo, bool allowIgnore ) const

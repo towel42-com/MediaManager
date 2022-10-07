@@ -173,6 +173,7 @@ namespace NMediaManager
             QFileInfo fileInfo( const QModelIndex & idx ) const;
             QString filePath( const QModelIndex & idx ) const;
 
+            virtual bool isTransformModel() const { return false; }
             QUrl url( const QModelIndex & idx ) const; // if the directory contains [tmdbid=XXX] or [imdbid=XXX], if a file, if the parent directory contains it
 
             bool isDir( const QStandardItem * item ) const;
