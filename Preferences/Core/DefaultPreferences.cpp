@@ -21,7 +21,6 @@
 // SOFTWARE.
 
 #include "Preferences.h"
-#include <QTextStream>
 
 namespace NMediaManager
 {
@@ -47,16 +46,15 @@ namespace NMediaManager
 
             QStringList CPreferences::getDefaultCustomPathsToDelete() const
             {
-                static auto defaultValue =
-                    QStringList( {
-                                 } );
+                static auto defaultValue = QStringList();
                 return defaultValue;
             }
 
             QStringList CPreferences::getDefaultKnownStrings() const
             {
                 static auto defaultValue =
-                    QStringList( {
+                    QStringList(
+                    {
                          R"(2160p)"
                         ,R"(1080p)"
                         ,R"(720p)"
@@ -162,69 +160,88 @@ namespace NMediaManager
                         ,R"(BAE)"
                         ,R"(CA)"
                         ,R"(TRUFFLE)"
-                                 } );
+                    } );
                 return defaultValue;
             }
 
             QStringList CPreferences::getDefaultKnownExtendedStrings() const
             {
                 static auto defaultValue =
-                    QStringList( {
+                    QStringList(
+                    {
                          R"(Extended)"
                         ,R"(Directors Cut)"
                         ,R"(Director's Cut)"
                         ,R"(Director)"
                         ,R"(Unrated)"
-                                 } );
+                    } );
                 return defaultValue;
             }
 
             QStringList CPreferences::getDefaultIgnoredPaths() const
             {
                 static auto defaultValue =
-                    QStringList( {
+                    QStringList(
+                    {
                          R"(.*-ignore)"
                         ,R"(sub)"
                         ,R"(subs)"
                         ,R"(season \d+)"
-                                 } );
+                    } );
                 return defaultValue;
             }
 
             QVariantMap CPreferences::getDefaultKnownAbbreviations() const
             {
                 static auto defaultValue =
-                    QVariantMap( {
+                    QVariantMap(
+                    {
                          { R"(Dont)", R"(Don't)" }
                         ,{ R"(NY)", R"(New York)" }
-                                 } );
+                    } );
                 return defaultValue;
             }
 
             QStringList CPreferences::getDefaultKnownHyphenated() const
             {
                 static auto defaultValue =
-                    QStringList( {
+                    QStringList(
+                    {
                          R"(Obi-Wan)"
-                                 } );
+                    } );
                 return defaultValue;
             }
 
-            QStringList CPreferences::getDefaultSkippedPaths() const
+            QStringList CPreferences::getDefaultSkippedPaths( bool forMediaNaming ) const
             {
-                static auto defaultValue =
-                    QStringList( {
-                         R"(.*-ignore)"
-                        ,R"(#recycle)"
-                        ,R"(#recycler)"
-                        ,R"(extra(s)?)"
-                        ,R"(trailer(s)?)"
-                        ,R"(deleted scene(s)?)"
-                        ,R"(interview(s)?)"
-                        ,R"(featurette(s)?)"
-                        ,R"(sample(s)?)"
-                                 } );
-                return defaultValue;
+                if ( forMediaNaming )
+                {
+                    static auto defaultValue =
+                        QStringList(
+                        {
+                             R"(.*-ignore)"
+                            ,R"(#recycle)"
+                            ,R"(#recycler)"
+                            ,R"(extra(s)?)"
+                            ,R"(trailer(s)?)"
+                            ,R"(deleted scene(s)?)"
+                            ,R"(interview(s)?)"
+                            ,R"(featurette(s)?)"
+                            ,R"(sample(s)?)"
+                        } );
+                    return defaultValue;
+                }
+                else
+                {
+                    static auto defaultValue =
+                        QStringList(
+                        {
+                             R"(.*-ignore)"
+                            ,R"(#recycle)"
+                            ,R"(#recycler)"
+                        } );
+                    return defaultValue;
+                }
             }
         }
     }
