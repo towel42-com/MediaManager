@@ -44,20 +44,18 @@ namespace NMediaManager
             {
                 Q_OBJECT
             public:
-                CSkippedPaths( QWidget * parent = nullptr );
+                CSkippedPaths( bool forMediaNaming, QWidget * parent = nullptr );
                 virtual ~CSkippedPaths() override;
 
                 virtual void load() override;
                 virtual void save() override;
-                virtual QStringList pageName() const override
-                {
-                    return QStringList( { "Paths", "Skipped Paths" } );
-                }
+                virtual QStringList pageName() const override;
             public Q_SLOTS:
                 void slotAddSkipPathName();
                 void slotDelSkipPathName();
             private:
                 QStringListModel * fSkipPathNamesModel{ nullptr };
+                bool fForMediaTransform{ false };
                 std::unique_ptr< Ui::CSkippedPaths > fImpl;
             };
         }

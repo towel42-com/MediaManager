@@ -41,8 +41,9 @@ namespace NMediaManager
     {
         namespace NUi
         {
-            CSkippedPaths::CSkippedPaths( QWidget * parent )
+            CSkippedPaths::CSkippedPaths( bool forMediaTransform, QWidget * parent )
                 : CBasePrefPage( parent ),
+                fForMediaTransform( forMediaTransform ),
                 fImpl( new Ui::CSkippedPaths )
             {
                 fImpl->setupUi( this );
@@ -72,15 +73,24 @@ namespace NMediaManager
 
             void CSkippedPaths::load()
             {
-                fSkipPathNamesModel->setStringList( NPreferences::NCore::CPreferences::instance()->getSkippedPaths() );
-                fImpl->ignorePathNamesToSkip->setChecked( !NPreferences::NCore::CPreferences::instance()->getIgnorePathNamesToSkip() );
+                fSkipPathNamesModel->setStringList( NPreferences::NCore::CPreferences::instance()->getSkippedPaths( fForMediaTransform ) );
+                fImpl->ignorePathNamesToSkip->setChecked( !NPreferences::NCore::CPreferences::instance()->getIgnorePathNamesToSkip( fForMediaTransform ) );
             }
 
             void CSkippedPaths::save()
             {
-                NPreferences::NCore::CPreferences::instance()->setSkippedPaths( fSkipPathNamesModel->stringList() );
-                NPreferences::NCore::CPreferences::instance()->setIgnorePathNamesToSkip( !fImpl->ignorePathNamesToSkip->isChecked() );
+                NPreferences::NCore::CPreferences::instance()->setSkippedPaths( fForMediaTransform, fSkipPathNamesModel->stringList() );
+                NPreferences::NCore::CPreferences::instance()->setIgnorePathNamesToSkip( fForMediaTransform, !fImpl->ignorePathNamesToSkip->isChecked() );
             }
+
+            QStringList CSkippedPaths::pageName() const
+            {
+                if ( fForMediaTransform )
+                    return QStringList( { "Paths", "Skipped Paths (Media Transform)" } );
+                else
+                    return QStringList( { "Paths", "Skipped Paths (Media Tagging)" } );
+            }
+
         }
     }
 }
