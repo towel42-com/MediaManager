@@ -605,7 +605,8 @@ namespace NMediaManager
                 looksLikeTVShow( fSearchName, &fSearchName, &seasonStr, &episodeStr, &fSubTitle );
                 fSubTitle = smartTrim( fSubTitle, true );
             }
-            if ( fSearchResult )
+
+            if ( fSearchResult && !fSearchResult->isNoMatch() )
             {
                 episodeStr = fSearchResult->getEpisode();
                 seasonStr = fSearchResult->getSeason();
