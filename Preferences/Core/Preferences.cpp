@@ -290,7 +290,7 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
-                return settings.value( "ExactMatchesOnly", true ).toBool();
+                return settings.value( "ExactMatchesOnly", false ).toBool();
             }
 
             void CPreferences::setLoadMediaInfo( bool value )
