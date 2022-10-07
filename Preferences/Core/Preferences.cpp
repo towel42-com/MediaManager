@@ -660,12 +660,12 @@ namespace NMediaManager
                 return containsValue( pathName, values );
             }
 
-            bool CPreferences::isSkippedPath( const QFileInfo & fileInfo ) const
+            bool CPreferences::isSkippedPath( bool forMediaNaming, const QFileInfo & fileInfo ) const
             {
-                return pathMatches( fileInfo, getSkippedPaths() );
+                return pathMatches( fileInfo, getSkippedPaths( forMediaNaming ) );
             }
 
-            void CPreferences::setSkippedPaths( const QStringList & values )
+            void CPreferences::setSkippedPaths( bool forMediaNaming, const QStringList & values )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eLoadPrefs ) );
@@ -674,30 +674,30 @@ namespace NMediaManager
                 for ( auto && ii : realValues )
                     ii = ii.toLower();
 #endif
-                settings.setValue( "SkippedDirs", realValues );
+                settings.setValue( QString( "SkippedDirs (%1)" ).arg( forMediaNaming ? "Media Transform" : "Media Tagging" ), realValues );
                 emitSigPreferencesChanged( EPreferenceType::eLoadPrefs );
             }
 
-            void CPreferences::setIgnorePathNamesToSkip( bool value )
+            void CPreferences::setIgnorePathNamesToSkip( bool forMediaNaming, bool value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eLoadPrefs ) );
-                settings.setValue( "IgnoreSkipFileNames", value );
+                settings.setValue( QString( "IgnoreSkipFileNames (%1)" ).arg( forMediaNaming ? "Media Transform" : "Media Tagging" ), value );
                 emitSigPreferencesChanged( EPreferenceType::eLoadPrefs );
             }
 
-            bool CPreferences::getIgnorePathNamesToSkip() const
+            bool CPreferences::getIgnorePathNamesToSkip( bool forMediaNaming ) const
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eLoadPrefs ) );
-                return settings.value( "IgnoreSkipFileNames", false ).toBool();
+                return settings.value( QString( "IgnoreSkipFileNames (%1)" ).arg( forMediaNaming ? "Media Transform" : "Media Tagging" ), false ).toBool();
             }
             
-            QStringList CPreferences::getSkippedPaths() const
+            QStringList CPreferences::getSkippedPaths( bool forMediaNaming ) const
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eLoadPrefs ) );
-                return settings.value( "SkippedDirs", getDefaultSkippedPaths() ).toStringList();
+                return settings.value( QString( "SkippedDirs (%1)" ).arg( forMediaNaming ? "Media Transform" : "Media Tagging" ), getDefaultSkippedPaths( forMediaNaming ) ).toStringList();
             }
 
             bool CPreferences::isIgnoredPath( const QFileInfo & fileInfo ) const
@@ -1242,51 +1242,103 @@ namespace NMediaManager
                 }
             }
 
+            QString getIndent( int indent )
+            {
+                return QString( 4 * indent, QChar( ' ' ) );
+            }
+
             void replaceText( const QString & txt, QStringList & curr, const QString & funcName, const QString & boolVariable, const QString & trueValue, const QString & falseValue )
             {
                 QStringList function;
                 function
                     << QString( "QString CPreferences::%1( bool %2 ) const" ).arg( funcName ).arg( boolVariable )
                     << "{"
-                    << QString( "    if ( %2 )" ).arg( boolVariable )
-                    << QString( "        return R\"(%1)\";" ).arg( trueValue )
-                    << QString( "    else" )
-                    << QString( "        return R\"(%1)\";" ).arg( falseValue )
+                    << getIndent( 1 ) + QString( "if ( %2 )" ).arg( boolVariable )
+                    << getIndent( 2 ) + QString( "return R\"(%1)\";" ).arg( trueValue )
+                    << getIndent( 1 ) + QString( "else" )
+                    << getIndent( 2 ) + QString( "return R\"(%1)\";" ).arg( falseValue )
                     << "}"
                     ;
                 for ( auto && ii : function )
                 {
-                    ii = QString( 12, ' ' ) + ii;
+                    ii = getIndent( 3 ) + ii;
                 }
                 return replaceText( txt, curr, function );
             }
 
-            void replaceText( const QString & txt, QStringList & curr, const QString & funcName, const QStringList & newValues, const QString & retValType = "QStringList", bool asString=true )
+            QStringList getListDefValue( const QString & retValType, const QStringList & newValues, bool asString, int indent )
+            {
+                QStringList retVal;
+                retVal << QString( "%1static auto defaultValue =" ).arg( getIndent( indent ) )
+                    ;
+
+                if ( newValues.empty() )
+                {
+                    retVal.back() += QString( " %1();" ).arg( retValType );
+                }
+                else
+                {
+                    retVal
+                        << QString( "%2%1(" ).arg( retValType ).arg( getIndent( indent + 1 ) )
+                        << getIndent( indent + 1 ) + "{"
+                    ;
+
+                    bool first = true;
+                    for ( auto && ii : newValues )
+                    {
+                        auto fmt = asString ? QString( "%3%1R\"(%2)\"" ) : QString( "%3%1%2" );
+                        retVal << fmt.arg( first ? " " : "," ).arg( ii ).arg( getIndent( indent + 2 ) );
+                        first = false;
+                    }
+                    retVal
+                        << QString( "%1} );" ).arg( ( getIndent( indent + 1 ) ) );
+                }
+
+                retVal
+                    << QString( "%1return defaultValue;" ).arg( getIndent( indent ) )
+                    ;
+                return retVal;
+            }
+
+            void replaceText( const QString & txt, QStringList & curr, const QString & funcName, const QString & boolVariable, const QStringList & trueValue, const QStringList & falseValue, const QString & retValType = "QStringList", bool asString = true )
+            {
+                QStringList function;
+                function
+                    << QString( "%3 CPreferences::%1( bool %2 ) const" ).arg( funcName ).arg( boolVariable ).arg( retValType )
+                    << "{"
+                    << getIndent( 1 ) + QString( "if ( %2 )" ).arg( boolVariable )
+                    << getIndent( 1 ) + "{"
+                    << getListDefValue( retValType, trueValue, asString, 2 )
+                    << getIndent( 1 ) + "}"
+                    << getIndent( 1 ) + "else"
+                    << getIndent( 1 ) + "{"
+                    << getListDefValue( retValType, falseValue, asString, 2 )
+                    << getIndent( 1 ) + "}"
+                    << "}"
+                    ;
+                for ( auto && ii : function )
+                {
+                    ii = getIndent( 3 ) + ii;
+                }
+                return replaceText( txt, curr, function );
+            }
+
+            void replaceText( const QString & txt, QStringList & curr, const QString & funcName, const QStringList & newValues, const QString & retValType = "QStringList", bool asString = true )
             {
                 QStringList function;
                 function
                     << QString( "%2 CPreferences::%1() const" ).arg( funcName ).arg( retValType )
                     << "{"
-                    << "    static auto defaultValue = "
-                    << QString( "        %1( {" ).arg( retValType )
                     ;
 
-                bool first = true;
-                for ( auto && ii : newValues )
-                {
-                    auto fmt = asString ? QString( "            %1R\"(%2)\"" ) : QString( "            %1%2" );
-                    function << fmt.arg( first ? " " : "," ).arg( ii );
-                    first = false;
-                }
-
-                function 
-                    << "        } );"
-                    << "    return defaultValue;"
+                function
+                    << getListDefValue( retValType, newValues, asString, 1 )
                     << "}"
                     ;
+
                 for ( auto && ii : function )
                 {
-                    ii = QString( 12, ' ' ) + ii;
+                    ii = getIndent( 3 ) + ii;
                 }
                 return replaceText( txt, curr, function );
             }
@@ -1300,7 +1352,6 @@ namespace NMediaManager
                 }
                 replaceText( txt, curr, funcName, varList, "QVariantMap", false );
             }
-
 
             QString CPreferences::compareValues( const QString & title, const QStringList & defaultValues, const QStringList & currValues ) const
             {
@@ -1384,7 +1435,6 @@ namespace NMediaManager
                     << R"(// SOFTWARE.)"
                     << R"()"
                     << R"(#include "Preferences.h")"
-                    << R"(#include <QTextStream>)"
                     << R"()"
                     << R"(namespace NMediaManager)"
                     << R"({)"
@@ -1424,7 +1474,8 @@ namespace NMediaManager
                     << compareValues( "Movie Out File Pattern", getDefaultOutFilePattern( false ), getMovieOutFilePattern() )
                     << compareValues( "TV Out Dir Pattern", getDefaultOutDirPattern( true ), getTVOutDirPattern() )
                     << compareValues( "TV Out File Pattern", getDefaultOutFilePattern( true ), getTVOutFilePattern() )
-                    << compareValues( "Skipped Paths", getDefaultSkippedPaths(), getSkippedPaths() )
+                    << compareValues( "Skipped Paths (Media Transform)", getDefaultSkippedPaths( true ), getSkippedPaths( true ) )
+                    << compareValues( "Skipped Paths (Media Tagging)", getDefaultSkippedPaths( false ), getSkippedPaths( false ) )
                     << compareValues( "Ignored Paths", getDefaultIgnoredPaths(), getIgnoredPaths() )
                     << compareValues( "Paths to Delete", getDefaultCustomPathsToDelete(), getCustomPathsToDelete() )
                     << compareValues( "Known Strings", getDefaultKnownStrings(), getKnownStrings() )
@@ -1443,6 +1494,10 @@ namespace NMediaManager
             void CPreferences::showValidateDefaults( QWidget * parent, bool showNoChange )
             {
                 auto diffs = validateDefaults();
+                if ( diffs.isEmpty() && !showNoChange )
+                    return;
+
+                bool replace = false;
                 if ( !diffs.isEmpty() )
                 {
                     QMessageBox dlg( parent );
@@ -1451,25 +1506,27 @@ namespace NMediaManager
                     dlg.setText( diffs );
                     dlg.setStandardButtons( QMessageBox::StandardButton::Ok | QMessageBox::StandardButton::Apply );
                     dlg.button( QMessageBox::StandardButton::Apply )->setText( tr( "Copy to Clipboard" ) );
-
-                    if ( dlg.exec() == QMessageBox::Apply )
-                    {
-                        auto newFileText = getDefaultFile();
-                        replaceText( "%DEFAULT_OUT_DIR_PATTERN%", newFileText, "getDefaultOutDirPattern", "forTV", getTVOutDirPattern(), getMovieOutDirPattern() );
-                        replaceText( "%DEFAULT_OUT_FILE_PATTERN%", newFileText, "getDefaultOutFilePattern", "forTV", getTVOutFilePattern(), getMovieOutFilePattern() );
-                        replaceText( "%DEFAULT_CUSTOM_PATHS_TO_DELETE%", newFileText, "getDefaultCustomPathsToDelete", getCustomPathsToDelete() );
-                        replaceText( "%DEFAULT_KNOWN_STRINGS%", newFileText, "getDefaultKnownStrings", getKnownStrings() );
-                        replaceText( "%DEFAULT_KNOWN_EXTENDED_STRINGS%", newFileText, "getDefaultKnownExtendedStrings", getKnownExtendedStrings() );
-                        replaceText( "%DEFAULT_IGNORED_PATHS%", newFileText, "getDefaultIgnoredPaths", getIgnoredPaths() );
-                        replaceText( "%DEFAULT_KNOWN_ABBREVIATIONS%", newFileText, "getDefaultKnownAbbreviations", getKnownAbbreviations() );
-                        replaceText( "%DEFAULT_KNOWN_HYPHENATED%", newFileText, "getDefaultKnownHyphenated", getKnownHyphenated() );
-                        replaceText( "%DEFAULT_SKIPPED_PATHS%", newFileText, "getDefaultSkippedPaths", getSkippedPaths() );
-                        QGuiApplication::clipboard()->setText( newFileText.join( "\n" ) );
-                    }
+                    replace = ( dlg.exec() == QMessageBox::Apply );
                 }
                 else if ( showNoChange )
                 {
-                    QMessageBox::information( parent, tr( "No differences found" ), tr( "No differences found" ) );
+                    replace = QMessageBox::information( parent, tr( "Default Preferences are the Same" ), tr( "The defaults are up to date.\nWould you like to copy the defaults to the Clipboard" ), QMessageBox::Yes, QMessageBox::No ) == QMessageBox::Yes;
+                }
+
+                if ( replace )
+                {
+                    auto newFileText = getDefaultFile();
+                    replaceText( "%DEFAULT_OUT_DIR_PATTERN%", newFileText, "getDefaultOutDirPattern", "forTV", getTVOutDirPattern(), getMovieOutDirPattern() );
+                    replaceText( "%DEFAULT_OUT_FILE_PATTERN%", newFileText, "getDefaultOutFilePattern", "forTV", getTVOutFilePattern(), getMovieOutFilePattern() );
+                    replaceText( "%DEFAULT_CUSTOM_PATHS_TO_DELETE%", newFileText, "getDefaultCustomPathsToDelete", getCustomPathsToDelete() );
+                    replaceText( "%DEFAULT_KNOWN_STRINGS%", newFileText, "getDefaultKnownStrings", getKnownStrings() );
+                    replaceText( "%DEFAULT_KNOWN_EXTENDED_STRINGS%", newFileText, "getDefaultKnownExtendedStrings", getKnownExtendedStrings() );
+                    replaceText( "%DEFAULT_IGNORED_PATHS%", newFileText, "getDefaultIgnoredPaths", getIgnoredPaths() );
+                    replaceText( "%DEFAULT_KNOWN_ABBREVIATIONS%", newFileText, "getDefaultKnownAbbreviations", getKnownAbbreviations() );
+                    replaceText( "%DEFAULT_KNOWN_HYPHENATED%", newFileText, "getDefaultKnownHyphenated", getKnownHyphenated() );
+                    replaceText( "%DEFAULT_SKIPPED_PATHS%", newFileText, "getDefaultSkippedPaths", "forMediaNaming", getSkippedPaths( true ), getSkippedPaths( false ) );
+
+                    QGuiApplication::clipboard()->setText( newFileText.join( "\n" ) );
                 }
             }
         }

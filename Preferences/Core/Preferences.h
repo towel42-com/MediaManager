@@ -107,13 +107,13 @@ namespace NMediaManager
                 void setMovieOutDirPattern( const QString & value );
                 QString getMovieOutDirPattern() const;
 
-                bool isSkippedPath( const QFileInfo & fileInfo ) const;
-                QStringList getDefaultSkippedPaths() const;
-                QStringList getSkippedPaths() const;
-                void setSkippedPaths( const QStringList & value );
+                bool isSkippedPath( bool forMediaNaming, const QFileInfo & fileInfo ) const;
+                QStringList getDefaultSkippedPaths( bool forMediaNaming ) const;
+                QStringList getSkippedPaths( bool forMediaNaming ) const;
+                void setSkippedPaths( bool forMediaNaming, const QStringList & value );
 
-                void setIgnorePathNamesToSkip( bool value );
-                bool getIgnorePathNamesToSkip() const;
+                void setIgnorePathNamesToSkip( bool forMediaNaming, bool value );
+                bool getIgnorePathNamesToSkip( bool forMediaNaming ) const;
 
                 bool isIgnoredPath( const QFileInfo & fileInfo ) const;
                 QStringList getDefaultIgnoredPaths() const;
