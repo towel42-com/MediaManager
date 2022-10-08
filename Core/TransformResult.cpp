@@ -289,7 +289,7 @@ namespace NMediaManager
             retVal.replace( QRegularExpression( regExStr ), "\\1\\2" );
 
             regExStr = R"(\s*\:\s*)";
-            retVal.replace( QRegularExpression( regExStr ), " - " );
+            retVal.replace( QRegularExpression( regExStr ), "- " );
 
             regExStr = R"([\:\<\>\"\|\?\*)";
             if ( !isDir )
@@ -322,7 +322,7 @@ namespace NMediaManager
             auto match = regEx.match( fTitle );
             if ( match.hasMatch() )
             {
-                fTitle = fTitle.mid( 0, match.capturedStart() ) + match.captured( "prefix" ) + " - " + match.captured( "suffix" ) + fTitle.mid( match.capturedEnd() );
+                fTitle = fTitle.mid( 0, match.capturedStart() ) + match.captured( "prefix" ) + "- " + match.captured( "suffix" ) + fTitle.mid( match.capturedEnd() );
             }
         }
 
