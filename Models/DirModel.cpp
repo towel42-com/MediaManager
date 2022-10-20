@@ -469,8 +469,6 @@ namespace NMediaManager
                 //qDebug().noquote().nospace() << "Post Dir A: " << dirInfo.absoluteFilePath() << tree << "AOK? " << aOK;  
                 tree.pop_back();
                 //qDebug().noquote().nospace() << "Post Dir B: " << dirInfo.absoluteFilePath() << tree;
-                if ( filesView() )
-                    resizeColumns();
             };
 
             info.fPostFileFunction = [ this, &tree ]( const QFileInfo & fileInfo, bool aOK )
@@ -649,7 +647,7 @@ namespace NMediaManager
                 auto curr = parent->child( ii );
                 if ( !curr )
                     continue;
-                qDebug() << curr->text() << curr->checkState();
+                //qDebug() << curr->text() << curr->checkState();
                 if ( childState != curr->checkState() )
                 {
                     childState = Qt::PartiallyChecked;
@@ -803,6 +801,7 @@ namespace NMediaManager
 
         bool CDirModel::isMediaFile( const QFileInfo & fileInfo ) const
         {
+            //qDebug() << fileInfo;
             return fileInfo.isFile() && NPreferences::NCore::CPreferences::instance()->isMediaFile( fileInfo );
         }
 
@@ -1487,9 +1486,15 @@ namespace NMediaManager
         {
             auto searchPath = fi;
             QDate retVal;
+
+            if ( searchPath.isFile() )
+            {
+                retVal = getMediaDate( fi.absoluteDir().absolutePath() );
+            }
+
             while ( !retVal.isValid() && !isRootPath( searchPath.absoluteFilePath() ) )
             {
-                auto baseName = searchPath.completeBaseName();
+                auto baseName = searchPath.isDir() ? searchPath.fileName() : searchPath.completeBaseName();
                 if ( !baseName.startsWith( "season", Qt::CaseInsensitive ) )
                 {
                     NCore::SSearchTMDBInfo searchInfo( baseName, {} );
