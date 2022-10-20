@@ -835,9 +835,9 @@ namespace NMediaManager
                 QString retVal = expr;
 
                 retVal = retVal.replace( "<EMPTY>", R"(^$)" );
-                retVal = retVal.replace( "<filename>", fi.fileName() );
-                retVal = retVal.replace( "<basename>", fi.completeBaseName() );
-                retVal = retVal.replace( "<extension>", fi.suffix() );
+                retVal = retVal.replace( "<filename>", QRegularExpression::escape( fi.fileName() ) );
+                retVal = retVal.replace( "<basename>", QRegularExpression::escape( fi.completeBaseName() ) );
+                retVal = retVal.replace( "<extension>", QRegularExpression::escape( fi.suffix() ) );
 
                 if ( date.isValid() )
                 {
