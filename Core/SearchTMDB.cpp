@@ -43,7 +43,7 @@
 #include <QPixmap>
 #include <QDebug>
 
-QDebug operator<<( QDebug debug, const NMediaManager::NCore::CSearchTMDB &searchTMDB )
+QDebug operator<<( QDebug debug, const NMediaManager::NCore::CSearchTMDB & searchTMDB )
 {
     debug.nospace().noquote() << "(" << searchTMDB.toString() << ")";
     return debug;
@@ -53,7 +53,7 @@ namespace NMediaManager
 {
     namespace NCore
     {
-        CSearchTMDB::CSearchTMDB( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::optional< QString > &configuration, QObject *parent )
+        CSearchTMDB::CSearchTMDB( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::optional< QString > & configuration, QObject * parent )
             : QObject( parent ),
             fSearchInfo( searchInfo ),
             fConfiguration( configuration )
@@ -93,11 +93,11 @@ namespace NMediaManager
             fAutoSearchTimer.second = false;
         }
 
-        void CSearchTMDB::addSearch( const QString &filePath, std::shared_ptr< SSearchTMDBInfo > searchInfo )
+        void CSearchTMDB::addSearch( const QString & filePath, std::shared_ptr< SSearchTMDBInfo > searchInfo )
         {
             //qDebug() << "AddSearch: " << filePath << searchInfo->searchName();
 
-            fSearchQueue.emplace_back( filePath, searchInfo);
+            fSearchQueue.emplace_back( filePath, searchInfo );
             startAutoSearchTimer();
 
             //qDebug() << "AddSearch After: SearchTMBD" << *this;
@@ -145,11 +145,11 @@ namespace NMediaManager
             retVal += ") ";
 
             retVal += QString( "QueuedResults( %1 -" ).arg( fQueuedResults.size() );
-            for ( auto &&ii : fQueuedResults )
+            for ( auto && ii : fQueuedResults )
             {
                 retVal += QString( "(%1 - (" ).arg( ii.first );
                 bool first = true;
-                for ( auto &&jj : ii.second )
+                for ( auto && jj : ii.second )
                 {
                     if ( !first )
                         retVal += " ";
@@ -160,7 +160,7 @@ namespace NMediaManager
             retVal += ") ";
 
             retVal += QString( "SearchQueue( %1 -" ).arg( fSearchQueue.size() );
-            for ( auto &&ii : fSearchQueue )
+            for ( auto && ii : fSearchQueue )
             {
                 retVal += QString( "(%1 - %2)" ).arg( ii.first ).arg( ii.second->toString( true ) );
             }
@@ -174,7 +174,7 @@ namespace NMediaManager
             retVal += QString( "StopSearching: %1 SkipImages: %2 " ).arg( fStopSearching ).arg( fSkipImages );;
             //retVal += QString( "BestMatch: %1" ).arg( fResults.first ? fResults.first->toString() : QString() );
             retVal += QString( "Results( %1 -" ).arg( fResults.size() );
-            for ( auto &&ii : fResults )
+            for ( auto && ii : fResults )
             {
                 retVal += QString( "(%1) " ).arg( ii->toString( true ) );
             }
@@ -219,7 +219,7 @@ namespace NMediaManager
             //qDebug() << "slotEncrypted:" << reply << reply->url().toString();
         }
 
-        std::shared_ptr< CNetworkReply > CSearchTMDB::sendRequest( const QNetworkRequest &request, ERequestType requestType )
+        std::shared_ptr< CNetworkReply > CSearchTMDB::sendRequest( const QNetworkRequest & request, ERequestType requestType )
         {
             auto key = CNetworkReply::key( request, requestType );
             qDebug() << "Sending request: Key" << key;
@@ -227,8 +227,8 @@ namespace NMediaManager
             if ( pos != fURLResultsCache.end() )
             {
                 //qDebug().noquote().nospace() << "Cached Result " << NCore::toString( requestType ) << " request:" << (*pos).first;
-                QTimer::singleShot( 0, [ this, requestType, pos ]() { emit sigFakeRequestFinished( requestType, (*pos).first, (*pos).second ); } );
-                return std::make_shared< CNetworkReply >( requestType, (*pos).first, (*pos).second );
+                QTimer::singleShot( 0, [this, requestType, pos]() { emit sigFakeRequestFinished( requestType, ( *pos ).first, ( *pos ).second ); } );
+                return std::make_shared< CNetworkReply >( requestType, ( *pos ).first, ( *pos ).second );
             }
             auto retVal = fManager->get( request );
             //qDebug().noquote().nospace() << "Sending " << ::toString( requestType ) << " request:" << request.url() << "Reply: 0x" << Qt::hex << reinterpret_cast< uint64_t >( retVal );
@@ -237,9 +237,9 @@ namespace NMediaManager
             return std::make_shared< CNetworkReply >( requestType, retVal );
         }
 
-        void CSearchTMDB::addRequestType( QNetworkReply *retVal, ERequestType requestType )
+        void CSearchTMDB::addRequestType( QNetworkReply * retVal, ERequestType requestType )
         {
-            fRequestTypeMap[retVal] = requestType;
+            fRequestTypeMap[ retVal ] = requestType;
         }
 
         void CSearchTMDB::removeRequestType( std::shared_ptr<CNetworkReply> reply )
@@ -251,24 +251,24 @@ namespace NMediaManager
             fRequestTypeMap.erase( pos );
         }
 
-        ERequestType CSearchTMDB::getRequestType( QNetworkReply *reply ) const
+        ERequestType CSearchTMDB::getRequestType( QNetworkReply * reply ) const
         {
             auto pos = fRequestTypeMap.find( reply );
             Q_ASSERT( pos != fRequestTypeMap.end() );
             auto requestType = ERequestType::eUnknownRequest;
             if ( pos != fRequestTypeMap.end() )
             {
-                requestType = (*pos).second;
+                requestType = ( *pos ).second;
             }
             return requestType;
         }
 
-        void CSearchTMDB::slotFakeRequestFinished( ERequestType requestType, const QString &url, const QByteArray &cachedReply )
+        void CSearchTMDB::slotFakeRequestFinished( ERequestType requestType, const QString & url, const QByteArray & cachedReply )
         {
             handleRequestFinished( std::make_shared< CNetworkReply >( requestType, url, cachedReply ) );
         }
 
-        void CSearchTMDB::slotRequestFinished( QNetworkReply *reply )
+        void CSearchTMDB::slotRequestFinished( QNetworkReply * reply )
         {
             handleRequestFinished( std::make_shared< CNetworkReply >( getRequestType( reply ), reply ) );
         }
@@ -414,7 +414,7 @@ namespace NMediaManager
 
         QString CSearchTMDB::getSearchName() const
         {
-            return fSearchInfo ? (fSearchInfo->isTVMedia() ? tr( "TV Show" ) : tr( "Movie" )) : QString();
+            return fSearchInfo ? ( fSearchInfo->isTVMedia() ? tr( "TV Show" ) : tr( "Movie" ) ) : QString();
         }
 
         void CSearchTMDB::checkIfStillSearching()
@@ -466,7 +466,7 @@ namespace NMediaManager
             return false;
         }
 
-        std::list< std::shared_ptr< CTransformResult > > CSearchTMDB::getResult( const QString &path ) const
+        std::list< std::shared_ptr< CTransformResult > > CSearchTMDB::getResult( const QString & path ) const
         {
             auto pos = fQueuedResults.find( path );
             if ( pos == fQueuedResults.end() )
@@ -498,9 +498,9 @@ namespace NMediaManager
             std::list< std::shared_ptr< CTransformResult > > retVal;
             for ( auto && ii = fResults.begin(); ii != fResults.end(); ++ii )
             {
-                if ( (*ii)->isNotFoundResult() )
+                if ( ( *ii )->isNotFoundResult() )
                     continue;
-                if ( !(*ii)->pixmapFinished() )
+                if ( !( *ii )->pixmapFinished() )
                     continue;
                 if ( fRetrievedResults.find( *ii ) != fRetrievedResults.end() )
                     continue;
@@ -566,22 +566,22 @@ namespace NMediaManager
             //qDebug().nospace().noquote() << doc.toJson( QJsonDocument::Indented );
             if ( !doc.object().contains( "images" ) )
                 return false;
-            auto images = doc.object()["images"].toObject();
-            if ( !images.contains( "poster_sizes" ) || !images["poster_sizes"].isArray() )
+            auto images = doc.object()[ "images" ].toObject();
+            if ( !images.contains( "poster_sizes" ) || !images[ "poster_sizes" ].isArray() )
                 return false;
-            auto posterSizes = images["poster_sizes"].toArray();
+            auto posterSizes = images[ "poster_sizes" ].toArray();
 
             QString posterSize = "original";
             //for( int ii = 0; ii < posterSizes.size(); ++ii )
             //{
             //    auto curr = posterSizes[ii].toString();
             //}
-            auto posterURL = images.contains( "secure_base_url" ) ? images["secure_base_url"].toString() : QString();
+            auto posterURL = images.contains( "secure_base_url" ) ? images[ "secure_base_url" ].toString() : QString();
             if ( !posterURL.isEmpty() )
                 fConfiguration = posterURL + posterSize;
             return true;
         }
-        
+
         void CSearchTMDB::slotAutoSearch()
         {
             //qDebug() << "slotAutoSearch";
@@ -604,7 +604,7 @@ namespace NMediaManager
             if ( !fSearchInfo )
             {
                 fCurrentQueuedSearch = fSearchQueue.front();
-                fQueuedResults[fCurrentQueuedSearch.value().first].push_back( std::make_shared< NCore::CTransformResult >( NCore::EMediaType::eNotFoundType ) );
+                fQueuedResults[ fCurrentQueuedSearch.value().first ].push_back( std::make_shared< NCore::CTransformResult >( NCore::EMediaType::eNotFoundType ) );
                 fSearchQueue.pop_front();
                 fSearchInfo = fCurrentQueuedSearch.value().second;
             }
@@ -646,11 +646,11 @@ namespace NMediaManager
             bool found = false;
             if ( doc.object().contains( "results" ) )
             {
-                auto results = doc.object()["results"].toArray();
+                auto results = doc.object()[ "results" ].toArray();
                 auto numResults = results.count();
                 for ( int ii = 0; ii < numResults; ++ii )
                 {
-                    found = loadSearchResult( results[ii].toObject() ) || found;
+                    found = loadSearchResult( results[ ii ].toObject() ) || found;
                 }
             }
 
@@ -700,7 +700,7 @@ namespace NMediaManager
             //qDebug().nospace().noquote() << doc.toJson( QJsonDocument::Indented );
             if ( !loadSearchResult( doc.object() ) )
             {
-                auto foundTMDBID = doc.object().contains( "id" ) ? doc.object()["id"].toInt() : -1;
+                auto foundTMDBID = doc.object().contains( "id" ) ? doc.object()[ "id" ].toInt() : -1;
 
                 fErrorMessage = tr( "Found TMDBID <b>%1</b> did not match searched TMDBID of <b>%2</b>" ).arg( foundTMDBID ).arg( tmdbid );
                 return false;
@@ -722,7 +722,7 @@ namespace NMediaManager
 
             if ( !loadSearchResult( doc.object() ) )
             {
-                auto foundTMDBID = doc.object().contains( "id" ) ? doc.object()["id"].toInt() : -1;
+                auto foundTMDBID = doc.object().contains( "id" ) ? doc.object()[ "id" ].toInt() : -1;
 
                 fErrorMessage = tr( "Found TMDBID <b>%1</b> did not match searched TMDBID of <b>%2</b>" ).arg( foundTMDBID ).arg( tmdbid );
             }
@@ -752,24 +752,24 @@ namespace NMediaManager
             "vote_count": 1591
         }
         */
-        bool CSearchTMDB::loadSearchResult( const QJsonObject &resultItem )
+        bool CSearchTMDB::loadSearchResult( const QJsonObject & resultItem )
         {
             //qDebug().nospace().noquote() << QJsonDocument( resultItem ).toJson( QJsonDocument::Indented );
 
             if ( !fSearchInfo )
                 return false;
 
-            auto tmdbid = resultItem.contains( "id" ) ? resultItem["id"].toInt() : -1;
-            auto desc = resultItem.contains( "overview" ) ? resultItem["overview"].toString() : QString();
+            auto tmdbid = resultItem.contains( "id" ) ? resultItem[ "id" ].toInt() : -1;
+            auto desc = resultItem.contains( "overview" ) ? resultItem[ "overview" ].toString() : QString();
             QString title;
             if ( fSearchInfo->isTVMedia() )
-                title = resultItem.contains( "name" ) ? resultItem["name"].toString() : QString();
+                title = resultItem.contains( "name" ) ? resultItem[ "name" ].toString() : QString();
             else
-                title = resultItem.contains( "title" ) ? resultItem["title"].toString() : QString();
+                title = resultItem.contains( "title" ) ? resultItem[ "title" ].toString() : QString();
             auto releaseDate = resultItem[ "release_date" ].toString();
             auto firstAirDate = resultItem[ "first_air_date" ].toString();
 
-            auto posterPath = resultItem.contains( "poster_path" ) ? resultItem["poster_path"].toString() : QString();
+            auto posterPath = resultItem.contains( "poster_path" ) ? resultItem[ "poster_path" ].toString() : QString();
 
             if ( !fSearchInfo->isMatch( releaseDate, tmdbid, title ) &&
                  !fSearchInfo->isMatch( firstAirDate, tmdbid, title ) )
@@ -785,11 +785,11 @@ namespace NMediaManager
 
             if ( resultItem.contains( "number_of_seasons" ) )
             {
-                searchResult->setSeason( QString( "%1 Season%2" ).arg( resultItem["number_of_seasons"].toInt() ).arg( resultItem["number_of_seasons"].toInt() == 1 ? "" : "s" ) );
+                searchResult->setSeason( QString( "%1 Season%2" ).arg( resultItem[ "number_of_seasons" ].toInt() ).arg( resultItem[ "number_of_seasons" ].toInt() == 1 ? "" : "s" ) );
             }
             if ( resultItem.contains( "number_of_episodes" ) )
             {
-                searchResult->setEpisode( QString( "%1 Episode%2" ).arg( resultItem["number_of_episodes"].toInt() ).arg( resultItem["number_of_episodes"].toInt() == 1 ? "" : "s" ) );
+                searchResult->setEpisode( QString( "%1 Episode%2" ).arg( resultItem[ "number_of_episodes" ].toInt() ).arg( resultItem[ "number_of_episodes" ].toInt() == 1 ? "" : "s" ) );
             }
             if ( !posterPath.isEmpty() && hasConfiguration() && !fSkipImages )
             {
@@ -804,7 +804,7 @@ namespace NMediaManager
                 if ( !fStopSearching )
                 {
                     auto reply = sendRequest( QNetworkRequest( url ), ERequestType::eGetImage );
-                    fImageInfoReplies[reply->key()] = searchResult;
+                    fImageInfoReplies[ reply->key() ] = searchResult;
                     searchResult->setPixmap( path );
                 }
             }
@@ -839,12 +839,12 @@ namespace NMediaManager
             {
                 path += QString( "/season/%1" ).arg( seasonNum );
                 seasonInfo = std::make_shared< CTransformResult >( EMediaType::eTVSeason );
-                seasonInfo->setTitle(showInfo->title());
-                seasonInfo->setTMDBID(showInfo->tmdbID());
-                seasonInfo->setSeason(QString::number( seasonNum ));
+                seasonInfo->setTitle( showInfo->title() );
+                seasonInfo->setTMDBID( showInfo->tmdbID() );
+                seasonInfo->setSeason( QString::number( seasonNum ) );
                 seasonInfo->setSeasonOnly( true );
                 showInfo->addChild( seasonInfo );
-                seasonInfo->setParent(showInfo);
+                seasonInfo->setParent( showInfo );
             }
             url.setPath( path );
 
@@ -856,9 +856,9 @@ namespace NMediaManager
             {
                 auto reply = sendRequest( QNetworkRequest( url ), seasonInfo ? ERequestType::eSeasonInfo : ERequestType::eTVInfo );
                 if ( seasonInfo )
-                    fSeasonInfoReplies.first[reply->key()] = seasonInfo;
+                    fSeasonInfoReplies.first[ reply->key() ] = seasonInfo;
                 else
-                    fTVInfoReplies[reply->key()] = showInfo;
+                    fTVInfoReplies[ reply->key() ] = showInfo;
             }
         }
 
@@ -878,15 +878,15 @@ namespace NMediaManager
             auto doc = QJsonDocument::fromJson( data );
             //qDebug().nospace().noquote() << doc.toJson( QJsonDocument::Indented );
 
-            auto numSeasons = doc.object().contains( "number_of_seasons" ) ? doc.object()["number_of_seasons"].toInt() : -1;
+            auto numSeasons = doc.object().contains( "number_of_seasons" ) ? doc.object()[ "number_of_seasons" ].toInt() : -1;
             //showInfo->fSubTitle = QString( "%1 Season%2" ).arg( numSeasons ).arg( numSeasons != 1 ? "s" : "" );
 
-            auto seasons = doc.object()["seasons"].toArray();
+            auto seasons = doc.object()[ "seasons" ].toArray();
 
-            for ( auto &&ii : seasons )// int ii = 0; ii < seasons.count(); ++ii )
+            for ( auto && ii : seasons )// int ii = 0; ii < seasons.count(); ++ii )
             {
                 //qDebug().nospace().noquote() << QJsonDocument( ii.toObject() ).toJson( QJsonDocument::Indented );
-                searchTVDetails( showInfo, showInfo->tmdbID().toInt(), ii.toObject()["season_number"].toInt() );
+                searchTVDetails( showInfo, showInfo->tmdbID().toInt(), ii.toObject()[ "season_number" ].toInt() );
             }
             return true;
         }
@@ -915,13 +915,13 @@ namespace NMediaManager
                 }
             }
             seasonInfo->setSeasonStartDate( seasonStartDate );
-            seasonInfo->setSubTitle( doc.object().contains( "name" ) ? doc.object()["name"].toString() : QString() );
-            seasonInfo->setSeason( doc.object().contains( "season_number" ) ? QString::number( doc.object()["season_number"].toInt() ) : QString() );
+            seasonInfo->setSubTitle( doc.object().contains( "name" ) ? doc.object()[ "name" ].toString() : QString() );
+            seasonInfo->setSeason( doc.object().contains( "season_number" ) ? QString::number( doc.object()[ "season_number" ].toInt() ) : QString() );
             seasonInfo->setSeasonOnly( true );
 
-            auto episodes = doc.object()["episodes"].toArray();
+            auto episodes = doc.object()[ "episodes" ].toArray();
             seasonInfo->setEpisode( QString( "%1 Episode%2" ).arg( episodes.count() ).arg( episodes.count() == 1 ? "" : "s" ) );
-            seasonInfo->setSeasonTMDBID( doc.object().contains( "id" ) ? QString::number( doc.object()["id"].toInt() ) : QString() );
+            seasonInfo->setSeasonTMDBID( doc.object().contains( "id" ) ? QString::number( doc.object()[ "id" ].toInt() ) : QString() );
 
             // season match
             if ( ( fSearchInfo->episode() == -1 ) && ( fSearchInfo->season() != -1 ) )
@@ -947,16 +947,16 @@ namespace NMediaManager
             return true;
         }
 
-        bool CSearchTMDB::loadEpisodeDetails( const QJsonObject &episodeObj, std::shared_ptr< CTransformResult > seasonInfo )
+        bool CSearchTMDB::loadEpisodeDetails( const QJsonObject & episodeObj, std::shared_ptr< CTransformResult > seasonInfo )
         {
-            auto episodeNumber = episodeObj.contains( "episode_number" ) ? episodeObj["episode_number"].toInt() : -1;
+            auto episodeNumber = episodeObj.contains( "episode_number" ) ? episodeObj[ "episode_number" ].toInt() : -1;
             if ( fSearchInfo->episode() != -1 )
             {
                 if ( fSearchInfo->episode() != episodeNumber )
                     return false;
             }
-            auto episodeName = episodeObj.contains( "name" ) ? episodeObj["name"].toString() : QString();
-            auto overview = episodeObj.contains( "overview" ) ? episodeObj["overview"].toString() : QString();
+            auto episodeName = episodeObj.contains( "name" ) ? episodeObj[ "name" ].toString() : QString();
+            auto overview = episodeObj.contains( "overview" ) ? episodeObj[ "overview" ].toString() : QString();
 
             auto episodeInfo = std::make_shared< CTransformResult >( EMediaType::eTVEpisode );
             episodeInfo->setEpisode( episodeNumber == -1 ? QString() : QString::number( episodeNumber ) );
@@ -965,12 +965,12 @@ namespace NMediaManager
             episodeInfo->setDescription( overview );
             episodeInfo->setTMDBID( seasonInfo->tmdbID() );
             episodeInfo->setSeasonTMDBID( seasonInfo->seasonTMDBID() );
-            episodeInfo->setEpisodeTMDBID( episodeObj.contains( "id" ) ? QString::number( episodeObj["id"].toInt() ) : QString() );
+            episodeInfo->setEpisodeTMDBID( episodeObj.contains( "id" ) ? QString::number( episodeObj[ "id" ].toInt() ) : QString() );
             episodeInfo->setShowTMDBID( seasonInfo->showTMDBID() );
             episodeInfo->setTitle( seasonInfo->title() );
             episodeInfo->setShowFirstAirDate( seasonInfo->getShowFirstAirDate() );
             episodeInfo->setSeasonStartDate( seasonInfo->getSeasonStartDate() );
-            episodeInfo->setEpisodeAirDate( episodeObj["air_date"].toString() );
+            episodeInfo->setEpisodeAirDate( episodeObj[ "air_date" ].toString() );
 
             seasonInfo->addChild( episodeInfo );
             if ( fSearchInfo->episode() != -1 )
@@ -984,7 +984,7 @@ namespace NMediaManager
 
         void CSearchTMDB::addResultToList( std::list< std::shared_ptr< CTransformResult > > & list, std::shared_ptr<CTransformResult> result, std::shared_ptr< SSearchTMDBInfo > searchInfo ) const
         {
-            if ( (list.size() == 1) && (list.front()->isNotFoundResult() ) )
+            if ( ( list.size() == 1 ) && ( list.front()->isNotFoundResult() ) )
             {
                 list.pop_front();
             }
@@ -1002,7 +1002,7 @@ namespace NMediaManager
         {
             if ( fCurrentQueuedSearch.has_value() )
             {
-                addResultToList( fQueuedResults[fCurrentQueuedSearch.value().first], result, fCurrentQueuedSearch.value().second );
+                addResultToList( fQueuedResults[ fCurrentQueuedSearch.value().first ], result, fCurrentQueuedSearch.value().second );
             }
 
             addResultToList( fResults, result, fSearchInfo );
