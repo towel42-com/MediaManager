@@ -33,6 +33,7 @@
 #include <QMenu>
 #include <QTimer>
 #include <QDesktopServices>
+#include <QSortFilterProxyModel>
 
 namespace NMediaManager
 {
@@ -46,10 +47,10 @@ namespace NMediaManager
             fImpl->setupUi( this );
             fProgressDlg = new NSABUtils::CDoubleProgressDlg( this );
             connect( fProgressDlg, &NSABUtils::CDoubleProgressDlg::canceled,
-                     [ this ]()
-            {
-                clearProgressDlg( true );
-            } );
+                     [this]()
+                     {
+                         clearProgressDlg( true );
+                     } );
             fProgressDlg->setMinimumDuration( -1 );
 
             fImpl->filesView->setExpandsOnDoubleClick( false );
@@ -63,19 +64,19 @@ namespace NMediaManager
 
         bool CBasePage::eventFilter( QObject * obj, QEvent * event )
         {
-            if ( (obj == fImpl->log) && (event->type() == QEvent::MouseButtonPress ) )
+            if ( ( obj == fImpl->log ) && ( event->type() == QEvent::MouseButtonPress ) )
             {
                 //qDebug() << event;
-                auto mouseEvent = dynamic_cast<QMouseEvent *>(event);
+                auto mouseEvent = dynamic_cast<QMouseEvent *>( event );
                 if ( mouseEvent->buttons() & Qt::MouseButton::RightButton )
                 {
                     auto menu = fImpl->log->createStandardContextMenu();
                     menu->addSeparator();
                     auto action = menu->addAction( tr( "Clear All" ) );
-                    connect( action, &QAction::triggered, [ this ]()
-                    {
-                        fImpl->log->clear();;
-                    } );
+                    connect( action, &QAction::triggered, [this]()
+                             {
+                                 fImpl->log->clear();;
+                             } );
                     menu->exec( mouseEvent->globalPos() );
                     delete menu;
                     return true;
@@ -208,7 +209,7 @@ namespace NMediaManager
             appendToLog( tr( "Loading Directory: '%1'" ).arg( fDirName ), true );
             appendSeparatorToLog();
             fModel->clear();
-            filesView()->setModel( fModel.get() );
+            filesView()->setModel( getDirModel() );
             setupModel();
             setupProgressDlg( loadTitleName(), loadCancelName(), 1, 1 );
 
@@ -252,15 +253,15 @@ namespace NMediaManager
             if ( fModel )
             {
                 fModel->process( idx,
-                    [ actionName, cancelName, this ]( int count, int eventsPerPath )
-                    {
-                        setupProgressDlg( actionName, cancelName, count, eventsPerPath );
-                    },
-                    [ this ]( bool finalStep, bool canceled )
-                    {
-                        postNonQueuedRun( finalStep, canceled );
-                    },
-                    this );
+                                 [actionName, cancelName, this]( int count, int eventsPerPath )
+                                 {
+                                     setupProgressDlg( actionName, cancelName, count, eventsPerPath );
+                                 },
+                                 [this]( bool finalStep, bool canceled )
+                                 {
+                                     postNonQueuedRun( finalStep, canceled );
+                                 },
+                                     this );
             }
         }
 
@@ -288,21 +289,21 @@ namespace NMediaManager
             return fProgressDlg && fProgressDlg->wasCanceled();
         }
 
-        void CBasePage::slotDoubleClicked(const QModelIndex & idx)
+        void CBasePage::slotDoubleClicked( const QModelIndex & idx )
         {
             auto menu = menuForIndex( idx );
             if ( !menu )
                 return;
 
-            QTimer::singleShot( 0, [ menu ]()
-            {
-                if ( !menu )
-                    return;
-                auto defaultAction = menu->defaultAction();
-                if ( defaultAction )
-                    defaultAction->trigger();
-                delete menu;
-            } );
+            QTimer::singleShot( 0, [menu]()
+                                {
+                                    if ( !menu )
+                                        return;
+                                    auto defaultAction = menu->defaultAction();
+                                    if ( defaultAction )
+                                        defaultAction->trigger();
+                                    delete menu;
+                                } );
         }
 
         QMenu * CBasePage::menuForIndex( const QModelIndex & idx )
@@ -316,10 +317,10 @@ namespace NMediaManager
             if ( idx.isValid() )
             {
                 openLocationAction = retVal->addAction( tr( "Open Location..." ),
-                                                        [ idx, this ]()
-                {
-                    openLocation( idx );
-                } );
+                                                        [idx, this]()
+                                                        {
+                                                            openLocation( idx );
+                                                        } );
 
                 auto url = fModel->url( idx );
                 if ( url.isValid() )
@@ -341,17 +342,17 @@ namespace NMediaManager
             {
                 retVal->addSeparator();
                 retVal->addAction( tr( "Set Tags..." ),
-                                 [ idx, this ]()
-                {
-                    editMediaTags( idx );
-                } );
+                                   [idx, this]()
+                                   {
+                                       editMediaTags( idx );
+                                   } );
                 if ( !fModel->areMediaTagsSameAsAutoSet( idx ) )
                 {
                     retVal->addAction( tr( "Auto Set Tags from File Name..." ),
                                        [idx, this]()
-                    {
-                        fModel->autoSetMediaTags( idx );
-                    } );
+                                       {
+                                           fModel->autoSetMediaTags( idx );
+                                       } );
                 }
             }
 
@@ -379,6 +380,10 @@ namespace NMediaManager
                 return;
 
             auto idx = fImpl->filesView->indexAt( pt );
+            auto model = fImpl->filesView->model();
+            if ( dynamic_cast<QSortFilterProxyModel *>( model ) )
+                idx = dynamic_cast<QSortFilterProxyModel *>( model )->mapToSource( idx );
+
             auto menu = menuForIndex( idx );
             if ( menu )
                 menu->exec( fImpl->filesView->viewport()->mapToGlobal( pt ) );
@@ -408,7 +413,8 @@ namespace NMediaManager
         }
 
         void CBasePage::postProcessLog( const QString & /*string*/ )
-        {}
+        {
+        }
 
         void CBasePage::editMediaTags( const QModelIndex & idx )
         {
@@ -418,6 +424,17 @@ namespace NMediaManager
                 fModel->reloadMediaTags( idx );
             emit sigDialogClosed();
         }
+
+        QVBoxLayout * CBasePage::mainLayout() const
+        {
+            return fImpl->verticalLayout;
+        }
+
+        QAbstractItemModel * CBasePage::getDirModel() const
+        {
+            return fModel.get();
+        }
+
     }
 }
 
