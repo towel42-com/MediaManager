@@ -85,6 +85,12 @@ namespace NMediaManager
                 }
                 if ( !displayOnly )
                 {
+                    if ( progressDlg() )
+                    {
+                        auto fileName = fileInfo( idx ).absoluteFilePath();
+                        progressDlg()->setLabelText( tr( "Processing file '%1'" ).arg( QDir( fRootPath ).relativeFilePath( fileName ) ) );
+                    }
+
                     QString msg;
                     if ( !autoSetMediaTags( idx, &msg ) )
                     {
@@ -94,7 +100,9 @@ namespace NMediaManager
                 }
             }
 
-            return std::make_pair(aOK, myItem);
+            if ( progressDlg() )
+                progressDlg()->setValue( progressDlg()->value() + 1 );
+            return std::make_pair( aOK, myItem );
         }
 
         void CTagsModel::attachTreeNodes( QStandardItem * /*nextParent*/, QStandardItem *& /*prevParent*/, const STreeNode & /*treeNode*/ )
@@ -241,5 +249,37 @@ namespace NMediaManager
             }
             return {};
         }
+
+        CTagsFilterModel::CTagsFilterModel( QObject * parent ) :
+            QSortFilterProxyModel( parent )
+        {
+            setRecursiveFilteringEnabled( true );
+        }
+
+        void CTagsFilterModel::slotSetFilter( const QString & text )
+        {
+            if ( text != fFilter )
+            {
+                auto regEx = QRegularExpression( text, QRegularExpression::CaseInsensitiveOption );
+                if ( fFilter.isEmpty() || regEx.isValid() )
+                {
+                    fFilter = text;
+                    fFilterRegEx = regEx;
+                }
+                invalidateFilter();
+            }
+        }
+
+        bool CTagsFilterModel::filterAcceptsRow( int source_row, const QModelIndex & source_parent ) const
+        {
+            if ( fFilter.isEmpty() || !fFilterRegEx.isValid() )
+                return true;
+
+            auto myIndex = sourceModel()->index( source_row, 0, source_parent );
+            auto data = myIndex.data().toString();
+            auto match = fFilterRegEx.match( data );
+            return match.hasMatch();
+        }
+
     }
 }
