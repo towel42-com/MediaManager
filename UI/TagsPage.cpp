@@ -33,6 +33,11 @@
 #include <QTreeView>
 #include <QCoreApplication>
 #include <QMenu>
+#include <QLabel>
+#include <QLineEdit>
+#include <QHBoxLayout>
+#include <QSpacerItem>
+#include <QSortFilterProxyModel>
 #include <optional>
 
 namespace NMediaManager
@@ -42,6 +47,10 @@ namespace NMediaManager
         CTagsPage::CTagsPage( QWidget * parent )
             : CBasePage( "Tags", parent )
         {
+            fFilter = new QLineEdit;
+            fFilter->setPlaceholderText( tr( "Filter" ) );
+            auto mainLayout = this->mainLayout();
+            mainLayout->insertWidget( 0, fFilter );
         }
 
         CTagsPage::~CTagsPage()
@@ -54,7 +63,7 @@ namespace NMediaManager
             CBasePage::loadSettings();
         }
 
-        NModels::CTagsModel * CTagsPage::model()
+        NModels::CTagsModel * CTagsPage::tagsModel()
         {
             if ( !fModel )
                 return nullptr;
@@ -82,7 +91,18 @@ namespace NMediaManager
 
         NModels::CDirModel * CTagsPage::createDirModel()
         {
-            return new NModels::CTagsModel( this );
+            auto retVal = new NModels::CTagsModel( this );
+
+            fFilterModel = new NModels::CTagsFilterModel( this );
+            fFilterModel->setSourceModel( retVal );
+            connect( fFilter, &QLineEdit::textChanged, fFilterModel, &NModels::CTagsFilterModel::slotSetFilter );
+
+            return retVal;
+        }
+
+        QAbstractItemModel * CTagsPage::getDirModel() const
+        {
+            return fFilterModel;
         }
 
         QString CTagsPage::loadTitleName() const
@@ -224,8 +244,8 @@ namespace NMediaManager
         {
             if ( prefTypes & NPreferences::EPreferenceType::eTagPrefs )
             {
-                if ( model() )
-                    model()->resetStatusCaches();
+                if ( tagsModel() )
+                    tagsModel()->resetStatusCaches();
             }
             CBasePage::slotPreferencesChanged( prefTypes );
         }

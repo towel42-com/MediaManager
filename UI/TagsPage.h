@@ -27,12 +27,14 @@
 
 #include <unordered_map>
 #include <optional>
+class QLineEdit;
 
 namespace NMediaManager
 {
     namespace NModels
     {
         class CTagsModel;
+        class CTagsFilterModel;
     }
 }
 
@@ -45,7 +47,7 @@ namespace NMediaManager
             Q_OBJECT
         public:
             CTagsPage( QWidget *parent = nullptr );
-            ~CTagsPage();
+            ~CTagsPage() override;
 
             virtual bool useSecondaryProgressBar() const override { return false; }
 
@@ -58,6 +60,7 @@ namespace NMediaManager
             virtual QString actionErrorName() const override;
 
             virtual NModels::CDirModel * createDirModel() override;
+            virtual QAbstractItemModel * getDirModel() const override;
             virtual void setupModel() override;
 
             virtual void postLoadFinished( bool canceled ) override;
@@ -74,7 +77,7 @@ namespace NMediaManager
 
         protected:
             virtual void loadSettings() override;
-            NModels::CTagsModel * model();
+            NModels::CTagsModel * tagsModel();
 
             QMenu * fMenu{ nullptr };
             QAction * fIgnoreSkippedPathSettings{ nullptr };
@@ -82,6 +85,10 @@ namespace NMediaManager
             QAction * fVerifyMediaDate{ nullptr };
             QAction * fVerifyMediaComment{ nullptr };
             QAction * fVerifyMediaTags{ nullptr };
+
+            QLineEdit * fFilter{ nullptr };
+
+            NModels::CTagsFilterModel * fFilterModel{ nullptr };
         };
     }
 }
