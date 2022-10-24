@@ -59,6 +59,7 @@ namespace NMediaManager
 
             void setSearchResult( const QModelIndex & idx, std::shared_ptr< NCore::CTransformResult > info, bool applyToChilren, bool forceSet );
             void setSearchResult( QStandardItem * item, std::shared_ptr< NCore::CTransformResult > info, bool applyToChilren, bool forceSet);
+
             void clearSearchResult( const QModelIndex & idx, bool recursive );
 
             bool treatAsTVShow( const QFileInfo & fileInfo, bool defaultValue ) const;
