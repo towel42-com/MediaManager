@@ -81,7 +81,7 @@ namespace NMediaManager
 
             fImpl->searchName->setText( fPrevSearchName = searchInfo->searchName() );
             fImpl->searchSeason->setValue( searchInfo->season() );
-            fImpl->searchEpisode->setValue( searchInfo->episode() );
+            fImpl->searchEpisode->setValue( searchInfo->hasEpisodes() ? searchInfo->episodes().front() : -1 );
             fImpl->searchReleaseYear->setText( searchInfo->releaseDate().second );
             fImpl->searchTMDBID->setText( searchInfo->tmdbIDString() );
             fImpl->byName->setChecked( fSearchTMDB->searchByName() );
@@ -596,7 +596,7 @@ namespace NMediaManager
             searchInfo->setSearchName( fImpl->searchName->text().trimmed() );
             searchInfo->setReleaseDate( fImpl->searchReleaseYear->text().trimmed());
             searchInfo->setSeason( fImpl->searchSeason->value() );
-            searchInfo->setEpisode( fImpl->searchEpisode->value() );
+            searchInfo->setEpisodes( { fImpl->searchEpisode->value() }  );
             searchInfo->setTMDBID( fImpl->searchTMDBID->text().trimmed());
             searchInfo->setMediaType( fImpl->searchForTVShows->isChecked() ? NCore::EMediaType::eTVShow : NCore::EMediaType::eMovie );
             searchInfo->setExactMatchOnly( fImpl->exactMatchesOnly->isChecked() );

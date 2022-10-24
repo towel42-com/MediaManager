@@ -256,7 +256,24 @@ namespace NMediaManager
                     logMsg += tr( "Found %1 matches. Choosing %2." ).arg( results.size() );
                 else
                     logMsg += tr( "Found: %1" );
-                logMsg = logMsg.arg( results.front()->toString( false ) );
+
+                if ( searchInfo->hasEpisodes() )
+                {
+                    QString chosen;
+                    auto episodes = searchInfo->episodes();
+                    auto ii = episodes.begin();
+                    auto jj = results.begin();
+                    for ( ; ( ii != episodes.end() ) && ( jj != results.end() ); ++ii, ++jj )
+                    {
+                        if ( !chosen.isEmpty() )
+                            chosen += ", ";
+                        chosen += (*jj)->toString( false );
+                    }
+
+                    logMsg = logMsg.arg( chosen );
+                }
+                else
+                    logMsg = logMsg.arg( results.front()->toString( false ) );
             }
 
             appendToLog( msg + logMsg, true );
@@ -269,7 +286,20 @@ namespace NMediaManager
                 {
                     auto item = model()->getItemFromPath( path );
                     if ( item )
-                        model()->setSearchResult( item, results.front(), false, false );
+                    {
+                        auto result = results.front();
+                        if ( searchInfo->hasEpisodes() )
+                        {
+                            auto episodes = searchInfo->episodes();
+                            auto ii = episodes.begin();
+                            auto jj = results.begin();
+                            for ( ; ( ii != episodes.end() ) && ( jj != results.end() ); ++ii, ++jj )
+                            {
+                                results.front()->mergeEpisodeResults( *jj );
+                            }
+                        }
+                        model()->setSearchResult( item, result, false, false );
+                    }
                 }
             }
             if ( !searchesRemaining )
