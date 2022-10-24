@@ -203,6 +203,7 @@ namespace NMediaManager
                 return {};
 
             auto mediaDate = getMediaDate( fileInfo );
+            //qDebug() << mediaDate;
 
             QRegularExpression regExp;
             bool validate = false;
