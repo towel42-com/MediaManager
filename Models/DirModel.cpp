@@ -1495,12 +1495,9 @@ namespace NMediaManager
             while ( !retVal.isValid() )
             {
                 auto baseName = searchPath.isDir() ? searchPath.fileName() : searchPath.completeBaseName();
-                if ( !baseName.startsWith( "season", Qt::CaseInsensitive ) )
-                {
-                    NCore::SSearchTMDBInfo searchInfo( baseName, {} );
-                    if ( searchInfo.releaseDateSet() )
-                        retVal = searchInfo.releaseDate().first;
-                }
+                NCore::SSearchTMDBInfo searchInfo( baseName, {} );
+                if ( searchInfo.releaseDateSet() )
+                    retVal = searchInfo.releaseDate().first;
                 if ( isRootPath( searchPath.absoluteFilePath() ) )
                     break;
                 searchPath = searchPath.absolutePath();
