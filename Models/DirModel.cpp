@@ -1492,7 +1492,7 @@ namespace NMediaManager
                 retVal = getMediaDate( fi.absoluteDir().absolutePath() );
             }
 
-            while ( !retVal.isValid() && !isRootPath( searchPath.absoluteFilePath() ) )
+            while ( !retVal.isValid() )
             {
                 auto baseName = searchPath.isDir() ? searchPath.fileName() : searchPath.completeBaseName();
                 if ( !baseName.startsWith( "season", Qt::CaseInsensitive ) )
@@ -1501,6 +1501,8 @@ namespace NMediaManager
                     if ( searchInfo.releaseDateSet() )
                         retVal = searchInfo.releaseDate().first;
                 }
+                if ( isRootPath( searchPath.absoluteFilePath() ) )
+                    break;
                 searchPath = searchPath.absolutePath();
             }
             return retVal;
