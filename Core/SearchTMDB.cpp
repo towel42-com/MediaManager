@@ -35,7 +35,6 @@
 #include <QTimer>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
-#include <QRegularExpression>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
@@ -425,7 +424,7 @@ namespace NMediaManager
                 return;
             if ( fSearchInfo && fSeasonInfoReplies.second.has_value() && !fSeasonInfoReplies.second.value() )
             {
-                fErrorMessage = QString( "Could not find episode '%1' for TV show '%2'" ).arg( fSearchInfo->episode() ).arg( fSearchInfo->searchName() );
+                fErrorMessage = QString( "Could not find episode '%1' for TV show '%2'" ).arg( fSearchInfo->episodeString( false ) ).arg( fSearchInfo->searchName() );
             }
 
             //qDebug() << "After" << *this;
@@ -826,10 +825,10 @@ namespace NMediaManager
             url.setHost( "api.themoviedb.org" );
 
             auto path = QString( "/3/tv/%1" ).arg( tmdbid );
-            bool hasEpisode = fSearchInfo->episode() != -1;
+            bool hasEpisode = fSearchInfo->hasEpisodes();
             if ( seasonNum == -1 )
                 seasonNum = fSearchInfo->season();
-            if ( seasonNum == -1 && fSearchInfo->episode() != -1 )
+            if ( seasonNum == -1 && fSearchInfo->hasEpisodes() )
             {
                 seasonNum = 1;
                 fSearchInfo->setSeason( 1 );
@@ -924,22 +923,31 @@ namespace NMediaManager
             seasonInfo->setSeasonTMDBID( doc.object().contains( "id" ) ? QString::number( doc.object()[ "id" ].toInt() ) : QString() );
 
             // season match
-            if ( ( fSearchInfo->episode() == -1 ) && ( fSearchInfo->season() != -1 ) )
+            if ( !fSearchInfo->hasEpisodes() && ( fSearchInfo->season() != -1 ) )
             {
                 addResult( seasonInfo );
             }
 
-            bool episodeFound = false;
-            if ( fSearchInfo->episode() != -1 )
+            auto searchEpisodes = fSearchInfo->episodes();
+            bool anEpisodeNotFound = false;
+            for ( auto && ii : searchEpisodes )
             {
-                for ( auto && ii : episodes )
+                bool episodeFound = false;
+                for ( auto && jj : episodes )
                 {
-                    episodeFound = loadEpisodeDetails( ii.toObject(), seasonInfo ) || episodeFound;
-                    if ( episodeFound )
+                    if ( loadEpisodeDetails( ii, jj.toObject(), seasonInfo ) )
+                    {
+                        episodeFound = true;
                         break;
+                    }
+                }
+                if ( !episodeFound )
+                {
+                    anEpisodeNotFound = true;
+                    break;
                 }
             }
-            if ( episodeFound || ( fSearchInfo->episode() == -1 ) )
+            if ( !anEpisodeNotFound || !fSearchInfo->hasEpisodes() )
                 fSeasonInfoReplies.second = true;
             else if ( !fSeasonInfoReplies.second.has_value() )
                 fSeasonInfoReplies.second = false;
@@ -947,14 +955,16 @@ namespace NMediaManager
             return true;
         }
 
-        bool CSearchTMDB::loadEpisodeDetails( const QJsonObject & episodeObj, std::shared_ptr< CTransformResult > seasonInfo )
+        bool CSearchTMDB::loadEpisodeDetails( int episodeNum, const QJsonObject & episodeObj, std::shared_ptr< CTransformResult > seasonInfo )
         {
             auto episodeNumber = episodeObj.contains( "episode_number" ) ? episodeObj[ "episode_number" ].toInt() : -1;
-            if ( fSearchInfo->episode() != -1 )
-            {
-                if ( fSearchInfo->episode() != episodeNumber )
-                    return false;
-            }
+
+            if ( episodeNumber == -1 )
+                return false;
+
+            if ( episodeNum != episodeNumber )
+                return false;
+
             auto episodeName = episodeObj.contains( "name" ) ? episodeObj[ "name" ].toString() : QString();
             auto overview = episodeObj.contains( "overview" ) ? episodeObj[ "overview" ].toString() : QString();
 
@@ -973,7 +983,7 @@ namespace NMediaManager
             episodeInfo->setEpisodeAirDate( episodeObj[ "air_date" ].toString() );
 
             seasonInfo->addChild( episodeInfo );
-            if ( fSearchInfo->episode() != -1 )
+            if ( fSearchInfo->hasEpisodes() )
             {
                 addResult( episodeInfo );
                 return true;

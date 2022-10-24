@@ -67,6 +67,8 @@ namespace NMediaManager
         public:
             CTransformResult( EMediaType type );
 
+            void mergeEpisodeResults( const std::shared_ptr< CTransformResult > & rhs );
+
             bool isTVShow() const { return mediaType() != EMediaType::eMovie; } // tvshow, season or episode are all not movie
             bool isDeleteResult() const { return mediaType() == EMediaType::eDeleteFileType; } // tvshow, season or episode are all not movie
             bool isNotFoundResult() const { return mediaType() == EMediaType::eNotFoundType; } // search not found
@@ -214,6 +216,7 @@ namespace NMediaManager
 
             std::weak_ptr < CTransformResult > fParent;
             std::list< std::shared_ptr< CTransformResult > > fChildren;
+            std::list< std::shared_ptr< CTransformResult > > fExtraEpisodes;
         private:
             bool isBetterTitleMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr<CTransformResult> rhs ) const;
             bool isBetterSeasonMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr< CTransformResult > rhs ) const;
