@@ -841,7 +841,7 @@ namespace NMediaManager
 
                 if ( date.isValid() )
                 {
-                    retVal = retVal.replace( "<year>", date.toString( "(yy|yyyy)" ) );
+                    retVal = retVal.replace( "<year>", date.toString( "(yyyy)" ) );
                     retVal = retVal.replace( "<month>", date.toString( "(M|MM|MMM|MMMM)" ) );
                     retVal = retVal.replace( "<day>", date.toString( "(d|dd|ddd|dddd)" ) );
 
