@@ -25,6 +25,8 @@
 
 #include "DirModel.h"
 #include "Core/PatternInfo.h"
+#include <QSortFilterProxyModel>
+#include <QRegularExpression>
 
 namespace NSABUtils
 {
@@ -78,6 +80,22 @@ namespace NMediaManager
             int fCommentColumn{ -1 };
             int fLastColumn{ -1 };
         };
+
+
+        class CTagsFilterModel : public QSortFilterProxyModel
+        {
+            Q_OBJECT;
+        public:
+            CTagsFilterModel( QObject * parent );
+            virtual bool filterAcceptsRow( int source_row, const QModelIndex & source_parent ) const override;
+
+        public Q_SLOTS:
+            void slotSetFilter( const QString & text );
+        private:
+            QString fFilter;
+            QRegularExpression fFilterRegEx;
+        };
+
     }
 }
 #endif // 

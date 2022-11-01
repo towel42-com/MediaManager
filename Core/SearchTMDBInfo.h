@@ -96,8 +96,11 @@ namespace NMediaManager
 
             int season() const { return fSeason; }
             void setSeason( int value ) { fSeason = value; }
-            int episode() const { return fEpisode; }
-            void setEpisode( int value ) { fEpisode = value; }
+
+            bool hasEpisodes() const { return !fEpisodes.empty(); }
+            QString episodeString( bool forDebug ) const;
+            std::list< int > episodes() const { return fEpisodes; }
+            void setEpisodes( const std::list< int > & value ) { fEpisodes = value; fEpisodes.sort(); }
 
             QString getExtendedInfo() const { return fFoundExtendedInfo; }
             QString toString( bool forDebug ) const;
@@ -139,9 +142,11 @@ namespace NMediaManager
 
             bool isSeasonMatch( int seasonToMatch ) const;
             bool isSeasonMatch( const QString & seasonToMatch ) const;
-            bool isEpisodeMatch( int episodeToMatch ) const;
+            bool isEpisodeMatch( const std::list< int > & episodeMatch ) const;
             bool isEpisodeMatch( const QString & episodeToMatch ) const;
         private:
+            std::list< int > episodesFromString( const QString & episodeStr, bool & aOK ) const;
+
             QStringList getSearchStrings() const;
 
             bool isMatchingDate( const std::pair< QDate, QString > & releaseDate ) const;
@@ -162,9 +167,10 @@ namespace NMediaManager
             std::pair< QDate, QString > fReleaseDate;
             std::optional< int > fPageNumber;
             int fSeason{ -1 };
-            int fEpisode{ -1 };
+            std::list< int > fEpisodes;
             int fDiskNum{ -1 };
             QString fTMDBID;
+            QString fShowTMDBID;
             std::pair< EMediaType, bool > fMediaType;
             bool fExactMatchOnly{ false };
             bool fSearchByName{ false };

@@ -24,6 +24,8 @@
 #define _BASEPAGE_H
 
 #include <QWidget>
+class QVBoxLayout;
+class QAbstractItemModel;
 #include "Preferences/Core/Preferences.h"
 namespace NSABUtils
 {
@@ -84,6 +86,8 @@ namespace NMediaManager
             virtual bool eventFilter( QObject * obj, QEvent * event ) override;
 
             void editMediaTags( const QModelIndex & idx );
+
+            QVBoxLayout * mainLayout() const;
         public Q_SLOTS:
             void slotLoadFinished( bool canceled );
             void slotProcessingStarted();
@@ -107,6 +111,7 @@ namespace NMediaManager
             
             virtual QString getPageName() const final { return fPageName; }
             virtual NModels::CDirModel * createDirModel() = 0;
+            virtual QAbstractItemModel * getDirModel() const;
             virtual bool useSecondaryProgressBar() const { return false; }
             virtual QString secondaryProgressLabel() const;
 

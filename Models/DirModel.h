@@ -37,6 +37,7 @@
 #include <QDate>
 #include <functional>
 #include <optional>
+#include <QFileIconProvider>
 
 namespace NSABUtils
 {
@@ -46,7 +47,6 @@ namespace NSABUtils
 
 class QTreeView;
 class QMediaPlaylist;
-class QFileIconProvider;
 class QDirIterator;
 class QPlainTextEdit;
 class QProcess;
@@ -102,7 +102,7 @@ namespace NMediaManager
         {
         public:
             CDirModelItem( const QString & text, EType type );
-            virtual int type() const override { return static_cast< int >( fType ); }
+            virtual int type() const override { return static_cast<int>( fType ); }
             virtual bool operator<( const QStandardItem & rhs ) const override;
 
             std::optional< QString > getCompareValue() const;
@@ -116,7 +116,8 @@ namespace NMediaManager
             STreeNode( const QFileInfo & file, const CDirModel * model, bool isRoot );
 
             ~STreeNode()
-            {}
+            {
+            }
 
             QFileInfo fileInfo() const { return fFileInfo; }
             QString name() const;
@@ -152,6 +153,12 @@ namespace NMediaManager
             std::unordered_map< QFileDevice::FileTime, QDateTime > fTimeStamps;
         };
 
+        class CIconProvider :public QFileIconProvider
+        {
+        public:
+            virtual QIcon icon( const QFileInfo & info ) const override;
+        };
+
         using TItemStatus = std::pair< NPreferences::EItemStatus, QString >;
         class CDirModel : public QStandardItemModel
         {
@@ -167,6 +174,7 @@ namespace NMediaManager
             QFileInfo fileInfo( const QModelIndex & idx ) const;
             QString filePath( const QModelIndex & idx ) const;
 
+            virtual bool isTransformModel() const { return false; }
             QUrl url( const QModelIndex & idx ) const; // if the directory contains [tmdbid=XXX] or [imdbid=XXX], if a file, if the parent directory contains it
 
             bool isDir( const QStandardItem * item ) const;
@@ -176,7 +184,7 @@ namespace NMediaManager
             QStandardItem * getPathItemFromIndex( const QModelIndex & idx ) const;
             QStandardItem * getItemFromPath( const QFileInfo & fi ) const;
 
-            virtual QVariant data(const QModelIndex & idx, int role) const final;
+            virtual QVariant data( const QModelIndex & idx, int role ) const final;
 
             bool process( const QModelIndex & idx, const std::function< void( int count, int eventsPerPath ) > & startProgress, const std::function< void( bool finalStep, bool canceled ) > & endProgress, QWidget * parent );
 
@@ -189,15 +197,15 @@ namespace NMediaManager
 
             bool isMediaFile( const QStandardItem * item ) const;
             bool isMediaFile( const QModelIndex & fi ) const;
-            bool isMediaFile(const QFileInfo & fi) const;
+            bool isMediaFile( const QFileInfo & fi ) const;
 
             bool isSubtitleFile( const QStandardItem * item, bool * isLangFileFormat = nullptr ) const;
             bool isSubtitleFile( const QModelIndex & idx, bool * isLangFileFormat = nullptr ) const;
-            bool isSubtitleFile(const QFileInfo & fileInfo, bool * isLangFileFormat) const;
+            bool isSubtitleFile( const QFileInfo & fileInfo, bool * isLangFileFormat ) const;
 
             virtual int eventsPerPath() const { return 1; }
 
-            const QFileIconProvider * iconProvider() const { return fIconProvider; }
+            const CIconProvider * iconProvider() const { return fIconProvider; }
             bool showProcessResults( const QString & title, const QString & label, const QMessageBox::Icon & icon, const QDialogButtonBox::StandardButtons & buttons, QWidget * parent ) const;
 
             std::pair<QString, bool> & stdOutRemaining() { return fStdOutRemaining; }
@@ -210,21 +218,21 @@ namespace NMediaManager
 
             bool canShowMediaInfo() const;
             virtual std::unordered_map< NSABUtils::EMediaTags, QString > getMediaTags( const QFileInfo & fi, const std::list< NSABUtils::EMediaTags > & tags = {} ) const;
-            virtual void reloadMediaTags(const QModelIndex & idx);
-            virtual void reloadMediaTags(const QModelIndex & idx, bool force);
+            virtual void reloadMediaTags( const QModelIndex & idx );
+            virtual void reloadMediaTags( const QModelIndex & idx, bool force );
             virtual bool autoSetMediaTags( const QModelIndex & idx, QString * msg = nullptr ) final;
             virtual bool areMediaTagsSameAsAutoSet( const QModelIndex & idx ) const final;
 
-            bool setMediaTags( const QString & fileName, QString title, QString year, QString comment, QString * msg = nullptr, bool ignoreIsMediaFile=false ) const;
+            bool setMediaTags( const QString & fileName, QString title, QString year, QString comment, QString * msg = nullptr, bool ignoreIsMediaFile = false ) const;
             bool setMediaTag( const QString & filename, const std::pair< NSABUtils::EMediaTags, QString > & tagData, QString * msg = nullptr ) const; //pair => tag, value
 
-            virtual void updatePath( const QModelIndex & idx, const QString & oldPath, const QString & newPath) final;
-            virtual void updateFile(const QModelIndex &idx, const QString & oldFile, const QString & newFile);
-            virtual void updateDir(const QModelIndex & idx, const QDir & oldDir, const QDir & newDir);
+            virtual void updatePath( const QModelIndex & idx, const QString & oldPath, const QString & newPath ) final;
+            virtual void updateFile( const QModelIndex & idx, const QString & oldFile, const QString & newFile );
+            virtual void updateDir( const QModelIndex & idx, const QDir & oldDir, const QDir & newDir );
 
             bool isRootPath( const QString & path ) const;
             bool isRootPath( const QFileInfo & fileInfo ) const;
-            bool isRootPath(const QModelIndex & index ) const;
+            bool isRootPath( const QModelIndex & index ) const;
 
             virtual void resetStatusCaches();
         Q_SIGNALS:
@@ -245,7 +253,7 @@ namespace NMediaManager
             void slotProcessStarted();
             void slotProcesssStateChanged( QProcess::ProcessState newState );
             void slotProgressCanceled();
-            virtual void slotDataChanged(const QModelIndex & start, const QModelIndex & end, const QVector<int> &roles);
+            virtual void slotDataChanged( const QModelIndex & start, const QModelIndex & end, const QVector<int> & roles );
 
         protected:
             virtual bool isTitleSameAsAutoSet( const QModelIndex & idx, QString * msg = nullptr ) const;
@@ -253,26 +261,26 @@ namespace NMediaManager
             virtual bool isCommentSameAsAutoSet( const QModelIndex & idx, QString * msg = nullptr ) const;
             bool isTagSameAsAutoSet( const QModelIndex & idx, QString * msg, int location, const QString & tagName, const std::function< QString( const QModelIndex & idx ) > & reference ) const;
 
-            virtual QVariant getItemBackground(const QModelIndex & idx) const final;
-            virtual QVariant getItemForeground(const QModelIndex & idx) const final;
-            virtual QVariant getToolTip(const QModelIndex & idx) const  final;
-            virtual QVariant getPathDecoration(const QModelIndex & idx, const QVariant & baseDecoration) const final;
+            virtual QVariant getItemBackground( const QModelIndex & idx ) const final;
+            virtual QVariant getItemForeground( const QModelIndex & idx ) const final;
+            virtual QVariant getToolTip( const QModelIndex & idx ) const  final;
+            virtual QVariant getPathDecoration( const QModelIndex & idx, const QVariant & baseDecoration ) const final;
 
             virtual bool canComputeStatus() const;
-            virtual std::optional< TItemStatus > getIndexStatus(const QModelIndex & idx) const final; // checks the item then the path status
+            virtual std::optional< TItemStatus > getIndexStatus( const QModelIndex & idx ) const final; // checks the item then the path status
 
             virtual std::optional<TItemStatus> getRowStatus( const QModelIndex & idx ) const;
-            virtual std::optional< TItemStatus > getItemStatus(const QModelIndex & idx) const final;
-            virtual std::optional< TItemStatus > computeItemStatus(const QModelIndex & idx) const;
+            virtual std::optional< TItemStatus > getItemStatus( const QModelIndex & idx ) const final;
+            virtual std::optional< TItemStatus > computeItemStatus( const QModelIndex & idx ) const;
             virtual std::optional< TItemStatus > computeItemStatus( QStandardItem * item ) const final;
-            virtual std::optional< TItemStatus > getPathStatus(const QFileInfo & fi) const final;
-            virtual std::optional< TItemStatus > computePathStatus(const QFileInfo & fi) const;
+            virtual std::optional< TItemStatus > getPathStatus( const QFileInfo & fi ) const final;
+            virtual std::optional< TItemStatus > computePathStatus( const QFileInfo & fi ) const;
 
             virtual void clearItemStatusCache( const QModelIndex & idx ) const; // const due to possible (often) calls in ::data
             virtual void clearPathStatusCache( const QFileInfo & fi ) const;
             virtual void clearPathStatusCache( const QString & path ) const;
 
-            virtual QString getMediaYear(const QFileInfo & fi) const final;
+            virtual QString getMediaYear( const QFileInfo & fi ) const final;
             virtual QDate getMediaDate( const QFileInfo & fi ) const;
             bool progressCanceled() const;
 
@@ -289,7 +297,7 @@ namespace NMediaManager
             virtual int getMediaDateLoc() const;
             virtual int getMediaCommentLoc() const;
             virtual std::list<SDirNodeItem > addAdditionalItems( const QFileInfo & fileInfo ) const;
-            virtual std::list<SDirNodeItem> getMediaInfoItems(  const QFileInfo & fileInfo, int firstColumn ) const;
+            virtual std::list<SDirNodeItem> getMediaInfoItems( const QFileInfo & fileInfo, int firstColumn ) const;
 
             virtual void setupNewItem( const SDirNodeItem & nodeItem, const QStandardItem * nameItem, QStandardItem * item ) const;;
             virtual QStringList headers() const;
@@ -374,7 +382,7 @@ namespace NMediaManager
             QDir fRootPath;
             QStringList fNameFilter;
 
-            QFileIconProvider * fIconProvider{ nullptr };
+            CIconProvider * fIconProvider{ nullptr };
 
             std::map< QString, QStandardItem * > fPathMapping;
 

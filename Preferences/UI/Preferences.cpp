@@ -122,7 +122,8 @@ namespace NMediaManager
                 addPage( new CPathsToDelete );
                 addPage( new CRemoveFromPaths );
                 addPage( new CKnownHyphenated );
-                addPage( new CSkippedPaths );
+                addPage( new CSkippedPaths( true ) );
+                addPage( new CSkippedPaths( false ) );
                 addPage( new CIgnoredPaths );
                 addPage( new CSearchSettings );
                 addPage( new CTransformationSettings );

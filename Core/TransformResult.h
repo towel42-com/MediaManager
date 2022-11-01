@@ -67,6 +67,8 @@ namespace NMediaManager
         public:
             CTransformResult( EMediaType type );
 
+            void mergeEpisodeResults( const std::shared_ptr< CTransformResult > & rhs );
+
             bool isTVShow() const { return mediaType() != EMediaType::eMovie; } // tvshow, season or episode are all not movie
             bool isDeleteResult() const { return mediaType() == EMediaType::eDeleteFileType; } // tvshow, season or episode are all not movie
             bool isNotFoundResult() const { return mediaType() == EMediaType::eNotFoundType; } // search not found
@@ -89,6 +91,10 @@ namespace NMediaManager
             void setSeasonOnly( bool value ) { fSeasonOnly = value; }
             QString getSeason() const;
             QString getEpisode() const;
+
+            bool isNoItems() const;
+            bool isNoMatch() const;
+            bool isDeleteThis() const;
 
             static bool isNoItems( const QString & text );
             static QString getNoItems();
@@ -155,7 +161,10 @@ namespace NMediaManager
             
             QString tmdbID() const { return fTMDBID; }
             void setTMDBID( const QString & val ) { fTMDBID = val; }
-            
+
+            QString showTMDBID() const { return fShowTMDBID; }
+            void setShowTMDBID( const QString & val ) { fShowTMDBID = val; }
+
             QString seasonTMDBID() const { return fSeasonTMDBID; }
             void setSeasonTMDBID( const QString & val ) { fSeasonTMDBID = val; }
 
@@ -184,6 +193,7 @@ namespace NMediaManager
         private:
             QString fTitle;
             QString fTMDBID;
+            QString fShowTMDBID;
             QString fSeasonTMDBID;
             QString fEpisodeTMDBID;
 
@@ -206,6 +216,7 @@ namespace NMediaManager
 
             std::weak_ptr < CTransformResult > fParent;
             std::list< std::shared_ptr< CTransformResult > > fChildren;
+            std::list< std::shared_ptr< CTransformResult > > fExtraEpisodes;
         private:
             bool isBetterTitleMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr<CTransformResult> rhs ) const;
             bool isBetterSeasonMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr< CTransformResult > rhs ) const;

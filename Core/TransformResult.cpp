@@ -26,6 +26,7 @@
 
 #include "SABUtils/StringUtils.h"
 #include "SABUtils/QtUtils.h"
+#include "SABUtils/utils.h"
 
 #include <QRegularExpression>
 #include <QFileInfo>
@@ -38,6 +39,20 @@ namespace NMediaManager
             fMediaType( type )
         {
 
+        }
+
+        void CTransformResult::mergeEpisodeResults( const std::shared_ptr< CTransformResult > & rhs )
+        {
+            if ( isTVShow() != rhs->isTVShow() )
+                return;
+            if ( fShowTMDBID != rhs->fShowTMDBID )
+                return;
+            if ( fSeasonTMDBID != rhs->fSeasonTMDBID )
+                return;
+            if ( fEpisode == rhs->fEpisode )
+                return;
+
+            fExtraEpisodes.push_back( rhs );
         }
 
         QString CTransformResult::getTitle() const
@@ -198,7 +213,11 @@ namespace NMediaManager
 
         QString CTransformResult::getSubTitle() const
         {
-            return NSABUtils::NStringUtils::transformTitle( subTitle() );
+            auto subTitles = QStringList( { subTitle() } );
+            for ( auto && ii : fExtraEpisodes )
+                subTitles << ii->subTitle();
+
+            return NSABUtils::NStringUtils::transformTitle( subTitles.join( "-" ) );
         }
 
         QString CTransformResult::getTMDBID() const
@@ -228,7 +247,31 @@ namespace NMediaManager
                 return {};
             if ( mediaType() != EMediaType::eTVEpisode )
                 return {};
-            return season();
+            std::list< int > episodes;
+            episodes.push_back( episode().toInt() );
+            for ( auto && ii : fExtraEpisodes )
+                episodes.push_back( ii->episode().toInt() );
+
+            auto groupedEpisodes = NSABUtils::group( episodes );
+            QStringList episodeList;
+            for ( auto && ii : groupedEpisodes )
+            {
+                if ( ii.size() == 1 )
+                {
+                    episodeList << QString( "E%1" ).arg( ii.front(), 2, 10, QChar( '0' ) );
+                }
+                else
+                {
+                    auto curr = QString( "E%1%3E%2" ).arg( ii.front(), 2, 10, QChar( '0' ) ).arg( ii.back(), 2, 10, QChar( '0' ) );
+                    curr = curr.arg( ( std::abs( ii.back() - ii.front() ) == 1 ) ? "" : "-" );
+                    episodeList << curr;
+                }
+            }
+
+            auto retVal = episodeList.join( "," );
+            if ( retVal.startsWith( 'E' ) )
+                retVal = retVal.mid( 1 );
+            return retVal;
         }
 
                 // do not include <> in the capture name
@@ -289,7 +332,7 @@ namespace NMediaManager
             retVal.replace( QRegularExpression( regExStr ), "\\1\\2" );
 
             regExStr = R"(\s*\:\s*)";
-            retVal.replace( QRegularExpression( regExStr ), " - " );
+            retVal.replace( QRegularExpression( regExStr ), "- " );
 
             regExStr = R"([\:\<\>\"\|\?\*)";
             if ( !isDir )
@@ -318,11 +361,11 @@ namespace NMediaManager
         {
             fTitle = val;
 
-            auto regEx = QRegularExpression( R"((?<prefix>\s*)\:(?<suffix>\s*))" );
+            auto regEx = QRegularExpression( R"((?<prefix>)\s*\:\s*(?<suffix>)\s*)" );
             auto match = regEx.match( fTitle );
             if ( match.hasMatch() )
             {
-                fTitle = fTitle.mid( 0, match.capturedStart() ) + match.captured( "prefix" ) + "-" + match.captured( "suffix" ) + fTitle.mid( match.capturedEnd() );
+                fTitle = fTitle.mid( 0, match.capturedStart() ) + match.captured( "prefix" ) + "- " + match.captured( "suffix" ) + fTitle.mid( match.capturedEnd() );
             }
         }
 
@@ -355,10 +398,11 @@ namespace NMediaManager
             auto seasonYear = getSeasonStartYear();
             auto episodeYear = getEpisodeAirYear();
             auto tmdbid = tmdbID();
+            auto showTMDBID = this->showTMDBID();
             auto season = this->season();
-            auto episode = this->episode();
+            auto episode = this->getEpisode();
             auto extraInfo = this->extraInfo();
-            auto episodeTitle = subTitle();
+            auto episodeTitle = getSubTitle();
 
             QString retVal = fileInfo.isDir() ? patternInfo.dirPattern() : patternInfo.filePattern();
             retVal = replaceCapture( "title", retVal, title );
@@ -367,8 +411,9 @@ namespace NMediaManager
             retVal = replaceCapture( "season_year", retVal, seasonYear );
             retVal = replaceCapture( "episode_year", retVal, episodeYear );
             retVal = replaceCapture( "tmdbid", retVal, tmdbid );
+            retVal = replaceCapture( "show_tmdbid", retVal, showTMDBID );
             retVal = replaceCapture( "season", retVal, QString( "%1" ).arg( season, fileInfo.isDir() ? 1 : 2, QChar( '0' ) ) );
-            retVal = replaceCapture( "episode", retVal, QString( "%1" ).arg( episode, fileInfo.isDir() ? 1 : 2, QChar( '0' ) ) );
+            retVal = replaceCapture( "episode", retVal, episode );
             retVal = replaceCapture( "episode_title", retVal, episodeTitle );
             retVal = replaceCapture( "extra_info", retVal, extraInfo );
 
@@ -532,7 +577,7 @@ namespace NMediaManager
             if ( isBetterSeasonMatch( searchInfo, rhs ) )
                 return true;
 
-            if ( searchInfo->episode() != -1 )
+            if ( !searchInfo->hasEpisodes() )
             {
                 if ( episode() != rhs->episode() )
                 {
@@ -607,6 +652,11 @@ namespace NMediaManager
             return text == kNoMatch;
         }
 
+        bool CTransformResult::isNoItems() const
+        {
+            return isNoItems( title() );
+        }
+
         QString CTransformResult::getNoMatch()
         {
             return kNoMatch;
@@ -617,9 +667,22 @@ namespace NMediaManager
             return text == kDeleteThis;
         }
 
+        bool CTransformResult::isNoMatch() const
+        {
+            if ( mediaType() == EMediaType::eNotFoundType )
+                return true;
+
+            return isNoMatch( title() );
+        }
+
         QString CTransformResult::getDeleteThis()
         {
             return kDeleteThis;
+        }
+
+        bool CTransformResult::isDeleteThis() const
+        {
+            return isDeleteThis( title() );
         }
 
         bool CTransformResult::isAutoSetText() const

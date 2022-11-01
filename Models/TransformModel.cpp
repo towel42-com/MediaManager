@@ -290,7 +290,7 @@ namespace NMediaManager
         {
             auto mediaType = isTVByDefault ? NCore::EMediaType::eTVShow : NCore::EMediaType::eMovie;
             auto transformInfo = getTransformResult( fileInfo, true );
-            if ( transformInfo )
+            if ( transformInfo && !transformInfo->isNoMatch() )
                 mediaType = transformInfo->mediaType();
             return isTVType( mediaType );
         }
@@ -365,7 +365,7 @@ namespace NMediaManager
         void CTransformModel::setSearchResult( QStandardItem * item, std::shared_ptr< NCore::CTransformResult > searchResult, bool applyToChildren, bool forceSet)
         {
             auto idx = indexFromItem( item );
-            setSearchResult( idx, searchResult, applyToChildren, forceSet);
+            setSearchResult( idx, searchResult, applyToChildren, forceSet );
         }
 
         void CTransformModel::setSearchResult( const QModelIndex & idx, std::shared_ptr< NCore::CTransformResult > searchResult, bool applyToChildren, bool forceSet )
@@ -383,6 +383,7 @@ namespace NMediaManager
                     fTransformResultMap.erase( fi.absoluteFilePath() );
                 else
                     fTransformResultMap[fi.absoluteFilePath()] = searchResult;
+
                 if ( isDir( idx ) )
                     fDirMapping.erase( fi.absoluteFilePath() );
                 else

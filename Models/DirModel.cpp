@@ -163,7 +163,7 @@ namespace NMediaManager
             QStandardItemModel( parent ),
             fBasePage( page )
         {
-            fIconProvider = new QFileIconProvider();
+            fIconProvider = new CIconProvider();
             fTimer = new QTimer( this );
             fTimer->setInterval( 50 );
             fTimer->setSingleShot( true );
@@ -469,8 +469,6 @@ namespace NMediaManager
                 //qDebug().noquote().nospace() << "Post Dir A: " << dirInfo.absoluteFilePath() << tree << "AOK? " << aOK;  
                 tree.pop_back();
                 //qDebug().noquote().nospace() << "Post Dir B: " << dirInfo.absoluteFilePath() << tree;
-                if ( filesView() )
-                    resizeColumns();
             };
 
             info.fPostFileFunction = [ this, &tree ]( const QFileInfo & fileInfo, bool aOK )
@@ -525,12 +523,12 @@ namespace NMediaManager
             return prevParent;
         }
 
-        bool CDirModel::isSkippedPathName( const QFileInfo & ii, bool allowIgnore ) const
+        bool CDirModel::isSkippedPathName( const QFileInfo & fi, bool allowIgnore ) const
         {
-            if ( allowIgnore && NPreferences::NCore::CPreferences::instance()->getIgnorePathNamesToSkip() )
+            if ( allowIgnore && NPreferences::NCore::CPreferences::instance()->getIgnorePathNamesToSkip( isTransformModel() ) )
                 return false;
 
-            return NPreferences::NCore::CPreferences::instance()->isSkippedPath( ii );
+            return NPreferences::NCore::CPreferences::instance()->isSkippedPath( isTransformModel(), fi );
         }
 
         bool CDirModel::isIgnoredPathName( const QFileInfo & fileInfo, bool allowIgnore ) const
@@ -649,7 +647,7 @@ namespace NMediaManager
                 auto curr = parent->child( ii );
                 if ( !curr )
                     continue;
-                qDebug() << curr->text() << curr->checkState();
+                //qDebug() << curr->text() << curr->checkState();
                 if ( childState != curr->checkState() )
                 {
                     childState = Qt::PartiallyChecked;
@@ -803,6 +801,7 @@ namespace NMediaManager
 
         bool CDirModel::isMediaFile( const QFileInfo & fileInfo ) const
         {
+            //qDebug() << fileInfo;
             return fileInfo.isFile() && NPreferences::NCore::CPreferences::instance()->isMediaFile( fileInfo );
         }
 
@@ -1487,15 +1486,20 @@ namespace NMediaManager
         {
             auto searchPath = fi;
             QDate retVal;
-            while ( !retVal.isValid() && !isRootPath( searchPath.absoluteFilePath() ) )
+
+            if ( searchPath.isFile() )
             {
-                auto baseName = searchPath.completeBaseName();
-                if ( !baseName.startsWith( "season", Qt::CaseInsensitive ) )
-                {
-                    NCore::SSearchTMDBInfo searchInfo( baseName, {} );
-                    if ( searchInfo.releaseDateSet() )
-                        retVal = searchInfo.releaseDate().first;
-                }
+                retVal = getMediaDate( fi.absoluteDir().absolutePath() );
+            }
+
+            while ( !retVal.isValid() )
+            {
+                auto baseName = searchPath.isDir() ? searchPath.fileName() : searchPath.completeBaseName();
+                NCore::SSearchTMDBInfo searchInfo( baseName, {} );
+                if ( searchInfo.releaseDateSet() )
+                    retVal = searchInfo.releaseDate().first;
+                if ( isRootPath( searchPath.absoluteFilePath() ) )
+                    break;
                 searchPath = searchPath.absolutePath();
             }
             return retVal;
@@ -1840,6 +1844,13 @@ namespace NMediaManager
             endResetModel();
             if ( filesView() )
                 filesView()->expandAll();
+        }
+
+        QIcon CIconProvider::icon( const QFileInfo & info ) const
+        {
+            if ( NSABUtils::NFileUtils::isIPAddressNetworkPath( info ) )
+                return {};
+            return QFileIconProvider::icon( info );
         }
     }
 }
