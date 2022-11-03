@@ -204,8 +204,11 @@ namespace NMediaManager
             fImpl->menuView->addAction( tabDef->fViewAction );
 
             bool isVisible = NPreferences::NCore::CPreferences::instance()->getPageVisible( tabDef->fName );
+#if QT_VERSION >= QT_VERSION_CHECK( 5,15, 0 )
             fImpl->tabWidget->setTabVisible( tabDef->fTabIndex, isVisible );
-
+#else
+            fImpl->tabWidget->setTabEnabled( tabDef->fTabIndex, isVisible );
+#endif
             auto menu = tabDef->fPage->menu();
             tabDef->fToolbar = tabDef->fPage->toolBar();
 
@@ -526,7 +529,11 @@ namespace NMediaManager
         void STabDef::setVisiblePerPrefs()
         {
             auto shouldBeVisible = NPreferences::NCore::CPreferences::instance()->getPageVisible( fName );
+#if QT_VERSION >= QT_VERSION_CHECK( 5,15, 0 )
             fTabWidget->setTabVisible( fTabIndex, shouldBeVisible );
+#else
+            fTabWidget->setTabEnabled( fTabIndex, shouldBeVisible );
+#endif
         }
     }
 }

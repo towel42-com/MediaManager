@@ -775,7 +775,7 @@ namespace NMediaManager
 
         QStringList  SSearchTMDBInfo::getSearchStrings() const
         {
-            return fSearchName.split( QRegularExpression( R"([\s\.])" ), TSkipEmptyParts );
+            return fSearchName.split( QRegularExpression( R"([\s\.])" ), NSABUtils::NStringUtils::TSkipEmptyParts );
         }
 
         std::list< int > SSearchTMDBInfo::episodesFromString( const QString & episodeStr, bool & aOK ) const

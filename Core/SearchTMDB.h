@@ -23,6 +23,7 @@
 #ifndef _SEARCHTMDB_H
 #define _SEARCHTMDB_H
 
+#include "SABUtils/HashUtils.h"
 #include "NetworkReply.h"
 
 #include <QObject>
@@ -46,6 +47,7 @@ class QJsonObject;
 class QTreeWidgetItem;
 class CButtonEnabler;
 class QNetworkRequest;
+class QTimer;
 
 namespace NMediaManager
 {

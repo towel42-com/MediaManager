@@ -20,8 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "ui_BasePage.h"
 #include "BasePage.h"
+#include "ui_BasePage.h"
 
 #include "Preferences/Core/Preferences.h"
 #include "Models/DirModel.h"

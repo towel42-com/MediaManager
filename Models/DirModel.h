@@ -27,6 +27,7 @@
 
 #include <QStandardItemModel>
 #include <QFileInfo> // filedevice
+#include "SABUtils/HashUtils.h"
 #include <unordered_set>
 #include <optional>
 #include <QProcess> // qprocess enums

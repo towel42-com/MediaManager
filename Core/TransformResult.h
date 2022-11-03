@@ -28,7 +28,7 @@
 #include <memory>
 #include <list>
 #include <QDate>
-
+#include <functional>
 class QFileInfo;
 
 namespace NMediaManager

@@ -30,6 +30,7 @@
 
 #include "SABUtils/ButtonEnabler.h"
 #include "SABUtils/QtUtils.h"
+#include "SABUtils/StringUtils.h"
 
 #include <QTimer>
 #include <QDebug>
@@ -564,7 +565,7 @@ namespace NMediaManager
         {
             if (fPrevSearchName.startsWith( fImpl->searchName->text() ) )
             {
-                auto tmp = fPrevSearchName.mid(fImpl->searchName->text().length()).split(QRegularExpression("\\W"),Qt::SkipEmptyParts);
+                auto tmp = fPrevSearchName.mid(fImpl->searchName->text().length()).split(QRegularExpression("\\W"), NSABUtils::NStringUtils::TSkipEmptyParts );
                 if (!tmp.isEmpty())
                 {
                     auto origWords = tmp;
