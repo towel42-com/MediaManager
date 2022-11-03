@@ -70,7 +70,6 @@ INSTALL( FILES License.txt DESTINATION . )
 INSTALL( FILES ReleaseNotes.txt DESTINATION . )
 
 include( InstallerInfo.cmake )
-
 include( CPack )
 
 
