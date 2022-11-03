@@ -25,6 +25,7 @@ find_package(CreateVersion REQUIRED)
 
 GetGitInfo(${CMAKE_SOURCE_DIR} GIT_VERSION_INFO)
 STRING(TIMESTAMP BUILD_DATE "%m/%d/%Y")
+STRING(TIMESTAMP BUILD_YEAR "%Y")
 
 SET( MAJOR_VERSION    0.0 )
 SET( MINOR_VERSION    25 )
@@ -34,8 +35,8 @@ SET( HOMEPAGE         "www.towel42.com" )
 SET( PRODUCT_HOMEPAGE "github.com/towel42-com/MediaManager" )
 SET( EMAIL            "support@towel42.com" )
 
-CreateVersion( ${CMAKE_SOURCE_DIR} 
-	MAJOR ${MAJOR_VERSION} 
+CreateVersion( ${CMAKE_SOURCE_DIR} VERSION_FILE
+    MAJOR ${MAJOR_VERSION} 
     MINOR ${MINOR_VERSION} 
     PATCH ${GIT_VERSION_INFO_REV}
     DIFF  ${GIT_VERSION_INFO_DIFF}
