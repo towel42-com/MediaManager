@@ -23,6 +23,7 @@
 set(qtproject_SRCS
     BIFViewerPage.cpp
     BasePage.cpp
+    GenerateBIFPage.cpp
     MainWindow.cpp
     MakeMKVPage.cpp
     MergeSRTPage.cpp
@@ -35,6 +36,7 @@ set(qtproject_SRCS
 set(qtproject_H
     BIFViewerPage.h
     BasePage.h
+    GenerateBIFPage.h
     MainWindow.h
     MakeMKVPage.h
     MergeSRTPage.h
