@@ -50,7 +50,7 @@ namespace NMediaManager
             Q_OBJECT
         public:
             CTransformPage( QWidget *parent = nullptr );
-            ~CTransformPage();
+            virtual ~CTransformPage() override;
 
             virtual bool useSecondaryProgressBar() const override { return false; }
 

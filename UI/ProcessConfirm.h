@@ -41,7 +41,7 @@ namespace NMediaManager
 
         public:
             CProcessConfirm( const QString &title, const QString &label, QWidget *parent = nullptr );
-            ~CProcessConfirm();
+            virtual ~CProcessConfirm() override;
 
             void setTitle( const QString &title );
             void setLabel( const QString &label );

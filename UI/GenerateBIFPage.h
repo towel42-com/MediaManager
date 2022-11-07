@@ -20,36 +20,24 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef _TAGSPAGE_H
-#define _TAGSPAGE_H
+#ifndef _GENERATEBIFPAGE_H
+#define _GENERATEBIFPAGE_H
 
 #include "BasePage.h"
-
-#include <unordered_map>
-#include <optional>
-class QLineEdit;
-
-namespace NMediaManager
-{
-    namespace NModels
-    {
-        class CTagsModel;
-        class CTagsFilterModel;
-    }
-}
 
 namespace NMediaManager
 {
     namespace NUi
     {
-        class CTagsPage : public CBasePage
+        class CGenerateBIFPage : public CBasePage
         {
             Q_OBJECT
         public:
-            CTagsPage( QWidget *parent = nullptr );
-            virtual ~CTagsPage() override;
+            CGenerateBIFPage( QWidget *parent = nullptr );
+            virtual ~CGenerateBIFPage() override;
 
-            virtual bool useSecondaryProgressBar() const override { return false; }
+            virtual bool useSecondaryProgressBar() const override { return true; }
+            virtual QString secondaryProgressLabel() const override;
 
             virtual QString loadTitleName() const override;
             virtual QString loadCancelName() const override;
@@ -60,35 +48,13 @@ namespace NMediaManager
             virtual QString actionErrorName() const override;
 
             virtual NModels::CDirModel * createDirModel() override;
-            virtual QAbstractItemModel * getDirModel() const override;
-            virtual void setupModel() override;
 
-            virtual void postLoadFinished( bool canceled ) override;
-            virtual void postNonQueuedRun( bool finalStep, bool canceled ) override;
+            virtual void postProcessLog( const QString & string ) override;
 
-            virtual bool extendContextMenu( QMenu * menu, const QModelIndex & idx ) override;
-
-            virtual QMenu * menu() override;
         Q_SIGNALS:
         public Q_SLOTS:
         protected Q_SLOTS:
-            void slotMenuAboutToShow();
-            void slotPreferencesChanged( NPreferences::EPreferenceTypes prefTypes );
-
         protected:
-            virtual void loadSettings() override;
-            NModels::CTagsModel * tagsModel();
-
-            QMenu * fMenu{ nullptr };
-            QAction * fIgnoreSkippedPathSettings{ nullptr };
-            QAction * fVerifyMediaTitle{ nullptr };
-            QAction * fVerifyMediaDate{ nullptr };
-            QAction * fVerifyMediaComment{ nullptr };
-            QAction * fVerifyMediaTags{ nullptr };
-
-            QLineEdit * fFilter{ nullptr };
-
-            NModels::CTagsFilterModel * fFilterModel{ nullptr };
         };
     }
 }

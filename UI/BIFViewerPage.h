@@ -62,7 +62,7 @@ namespace NMediaManager
             Q_OBJECT
         public:
             CBIFViewerPage( QWidget *parent = nullptr );
-            ~CBIFViewerPage();
+            virtual ~CBIFViewerPage() override;
 
             virtual void setActive( bool isActive ) override;
             bool setFileName( NSABUtils::CDelayComboBox * comboBox, const QString &fileName, bool andExecute );

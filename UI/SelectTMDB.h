@@ -63,8 +63,7 @@ namespace NMediaManager
             };
 
             CSelectTMDB( const QString &searchText, std::shared_ptr< NCore::CTransformResult > searchResult, QWidget *parent = nullptr );
-
-            ~CSelectTMDB();
+            virtual ~CSelectTMDB() override;
 
             std::shared_ptr< NCore::CTransformResult > getSearchResult() const;
 

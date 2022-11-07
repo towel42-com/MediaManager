@@ -39,7 +39,7 @@ namespace NMediaManager
             Q_OBJECT
         public:
             CMergeSRTPage( QWidget *parent = nullptr );
-            ~CMergeSRTPage();
+            virtual ~CMergeSRTPage() override;
 
             virtual bool useSecondaryProgressBar() const override { return true; }
             virtual QString secondaryProgressLabel() const override;

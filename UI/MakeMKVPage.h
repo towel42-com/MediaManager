@@ -20,8 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef _MAKEMKV_H
-#define _MAKEMKV_H
+#ifndef _MAKEMKVPAGE_H
+#define _MAKEMKVPAGE_H
 
 #include "BasePage.h"
 
@@ -34,7 +34,7 @@ namespace NMediaManager
             Q_OBJECT
         public:
             CMakeMKVPage( QWidget *parent = nullptr );
-            ~CMakeMKVPage();
+            virtual ~CMakeMKVPage() override;
 
             virtual bool useSecondaryProgressBar() const override { return true; }
             virtual QString secondaryProgressLabel() const override;
