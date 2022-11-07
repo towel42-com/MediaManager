@@ -50,7 +50,7 @@ namespace NMediaManager
             CTransformModel( NUi::CBasePage * page, QObject * parent = nullptr );
             virtual ~CTransformModel() override;
 
-            virtual bool isTransformModel() const { return true; }
+            virtual bool ignoreExtrasOnSearch() const { return true; }
 
             virtual bool setData(const QModelIndex & idx, const QVariant & value, int role) override;
 

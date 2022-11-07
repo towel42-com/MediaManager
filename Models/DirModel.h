@@ -26,6 +26,7 @@
 #include "DirNodeItem.h"
 
 #include <QStandardItemModel>
+class QTemporaryDir;
 #include <QFileInfo> // filedevice
 #include "SABUtils/HashUtils.h"
 #include <unordered_set>
@@ -144,6 +145,7 @@ namespace NMediaManager
             SProcessInfo() {}
             void cleanup( CDirModel * model, bool aOK );
 
+            bool fBackupOrig{ true };
             bool fSetMKVTagsOnSuccess{ false };
             QString fCmd;
             QStringList fArgs;
@@ -151,6 +153,10 @@ namespace NMediaManager
             QString fOldName;
             QStringList fAncillary;
             QString fNewName;
+            int fMaximum{ 0 };
+
+            std::function< bool( const SProcessInfo * processInfo, QString & msg ) > fPostProcess;
+            std::shared_ptr< QTemporaryDir > fTempDir;
             std::unordered_map< QFileDevice::FileTime, QDateTime > fTimeStamps;
         };
 
@@ -175,7 +181,7 @@ namespace NMediaManager
             QFileInfo fileInfo( const QModelIndex & idx ) const;
             QString filePath( const QModelIndex & idx ) const;
 
-            virtual bool isTransformModel() const { return false; }
+            virtual bool ignoreExtrasOnSearch() const { return false; }
             QUrl url( const QModelIndex & idx ) const; // if the directory contains [tmdbid=XXX] or [imdbid=XXX], if a file, if the parent directory contains it
 
             bool isDir( const QStandardItem * item ) const;
@@ -322,8 +328,11 @@ namespace NMediaManager
             virtual bool usesQueuedProcessing() const = 0;
 
             // model overrides during iteration
-            virtual void postFileFunction( bool aOK, const QFileInfo & fileInfo ) = 0;
+            virtual bool preDirFunction( const QFileInfo & /*dirInfo*/ ) { return true; };
+            virtual void postDirFunction( bool /*aOK*/, const QFileInfo & /*dirInfo*/, TParentTree & /*parentTree*/ ) {};
+
             virtual bool preFileFunction( const QFileInfo & fileInfo, std::unordered_set<QString> & alreadyAdded, TParentTree & tree ) = 0;
+            virtual void postFileFunction( bool aOK, const QFileInfo & fileInfo ) = 0;
 
             virtual void attachTreeNodes( QStandardItem * nextParent, QStandardItem *& prevParent, const STreeNode & treeNode ) = 0;
 

@@ -224,12 +224,14 @@ namespace NMediaManager
 
             if ( progressDlg() )
             {
-                progressDlg()->setRange( 0, 10 );
                 progressDlg()->setLabelText( tr( "Computing number of Files under '%1'" ).arg( fRootPath.absolutePath() ) );
                 qApp->processEvents();
                 auto numFiles = computeNumberOfFiles( rootFI ).second;
                 if ( !progressCanceled() )
+                {
+                    progressDlg()->setValue( 0 );
                     progressDlg()->setRange( 0, numFiles );
+                }
             }
             if ( progressCanceled() )
             {
@@ -385,9 +387,6 @@ namespace NMediaManager
 
         std::pair< uint64_t, uint64_t > CDirModel::computeNumberOfFiles( const QFileInfo & fileInfo ) const
         {
-            if ( progressDlg() )
-                progressDlg()->setRange( 0, 0 );
-
             uint64_t numDirs = 0;
             uint64_t numFiles = 0;
             SIterateInfo info;
@@ -396,6 +395,14 @@ namespace NMediaManager
                 if ( isSkippedPathName( dirInfo ) )
                     return false;
                 numDirs++;
+                if ( progressDlg() )
+                {
+                    auto currMax = progressDlg()->primaryMax();
+
+                    progressDlg()->setPrimaryMaximum( currMax + 1 );
+                    if ( currMax > 10 )
+                        progressDlg()->setPrimaryValue( currMax - 10 );
+                }
                 return true;
             };
             info.fPreFileFunction = [ &numFiles ]( const QFileInfo & /*file*/ )
@@ -420,6 +427,9 @@ namespace NMediaManager
             info.fPreDirFunction = [ this, &tree ]( const QFileInfo & dirInfo )
             {
                 //qDebug().noquote().nospace() << "Pre Directory A: " << dirInfo.absoluteFilePath() << tree;
+
+                if ( !preDirFunction( dirInfo ) )
+                    return false;
 
                 auto row = getItemRow( dirInfo );
                 tree.push_back( std::move( row ) );
@@ -464,8 +474,7 @@ namespace NMediaManager
 
             info.fPostDirFunction = [ this, &tree ]( const QFileInfo & dirInfo, bool aOK )
             {
-                (void)dirInfo;
-                (void)aOK;
+                postDirFunction( aOK, dirInfo, tree );
                 //qDebug().noquote().nospace() << "Post Dir A: " << dirInfo.absoluteFilePath() << tree << "AOK? " << aOK;  
                 tree.pop_back();
                 //qDebug().noquote().nospace() << "Post Dir B: " << dirInfo.absoluteFilePath() << tree;
@@ -525,10 +534,10 @@ namespace NMediaManager
 
         bool CDirModel::isSkippedPathName( const QFileInfo & fi, bool allowIgnore ) const
         {
-            if ( allowIgnore && NPreferences::NCore::CPreferences::instance()->getIgnorePathNamesToSkip( isTransformModel() ) )
+            if ( allowIgnore && NPreferences::NCore::CPreferences::instance()->getIgnorePathNamesToSkip( ignoreExtrasOnSearch() ) )
                 return false;
 
-            return NPreferences::NCore::CPreferences::instance()->isSkippedPath( isTransformModel(), fi );
+            return NPreferences::NCore::CPreferences::instance()->isSkippedPath( ignoreExtrasOnSearch(), fi );
         }
 
         bool CDirModel::isIgnoredPathName( const QFileInfo & fileInfo, bool allowIgnore ) const
@@ -1306,6 +1315,8 @@ namespace NMediaManager
             if ( progressDlg() )
             {
                 progressDlg()->setLabelText( getProgressLabel( curr ) );
+                if ( curr.fMaximum != 0 )
+                    progressDlg()->setSecondaryMaximum( curr.fMaximum );
             }
             if ( log() )
             {
@@ -1435,6 +1446,14 @@ namespace NMediaManager
             if ( fOldName.isEmpty() || fNewName.isEmpty() )
                 return;
 
+            if ( aOK && fPostProcess )
+            {
+                QString msg;
+                aOK = fPostProcess( this, msg );
+                if ( !aOK )
+                    CDirModel::appendError( fItem, QObject::tr( "%1: FAILED TO CREATE BIF- %2" ).arg( model->getDispName( fNewName ) ).arg( msg ) );
+            }
+
             if ( !aOK )
             {
                 QFile::remove( fNewName );
@@ -1448,12 +1467,15 @@ namespace NMediaManager
                 return;
             }
 
-            auto backupName = fOldName + ".bak";
-            if ( !QFile::rename( fOldName, backupName ) )
+            if ( fBackupOrig )
             {
-                CDirModel::appendError( fItem, QObject::tr( "%1: FAILED TO MOVE ITEM TO %2" ).arg( model->getDispName( fOldName ) ).arg( model->getDispName( backupName ) ) );
-                model->fProcessResults.first = false;
-                return;
+                auto backupName = fOldName + ".bak";
+                if ( !QFile::rename( fOldName, backupName ) )
+                {
+                    CDirModel::appendError( fItem, QObject::tr( "%1: FAILED TO MOVE ITEM TO %2" ).arg( model->getDispName( fOldName ) ).arg( model->getDispName( backupName ) ) );
+                    model->fProcessResults.first = false;
+                    return;
+                }
             }
 
             QString msg;
@@ -1467,7 +1489,7 @@ namespace NMediaManager
             QStringList msgs;
             if ( !model->postExtProcess( *this, msgs ) )
             {
-                CDirModel::appendError( fItem, QObject::tr( "%1: FAILED TO MOVE ITEM TO %2" ).arg( model->getDispName( fNewName ) ).arg( model->getDispName( fOldName ) ) );
+                CDirModel::appendError( fItem, QObject::tr( "%1: FAILED TO Post Process ITEM TO %2 - %3" ).arg( model->getDispName( fNewName ) ).arg( model->getDispName( fOldName ).arg( msgs.join( "\n" ) ) ) );
                 model->fProcessResults.first = false;
             }
 

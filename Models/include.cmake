@@ -23,6 +23,7 @@
 set(qtproject_SRCS
     DirModel.cpp
     DirNodeItem.cpp
+    GenerateBIFModel.cpp
     MergeSRTModel.cpp
     MakeMKVModel.cpp
     TagsModel.cpp
@@ -31,6 +32,7 @@ set(qtproject_SRCS
 
 set(qtproject_H
     DirModel.h
+    GenerateBIFModel.h
     MergeSRTModel.h
     MakeMKVModel.h
     TagsModel.h
