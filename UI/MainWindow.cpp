@@ -26,6 +26,7 @@
 #include "TransformPage.h"
 #include "TagsPage.h"
 #include "BIFViewerPage.h"
+#include "GenerateBIFPage.h"
 
 #include "ui_MainWindow.h"
 
@@ -228,6 +229,7 @@ namespace NMediaManager
             addPage( std::make_shared< STabDef >( new CMergeSRTPage( nullptr ), tr( "Merge SRT" ), QString::fromUtf8( ":/cc.png" ), fImpl->tabWidget ) );
             addPage( std::make_shared< STabDef >( new CTransformPage( nullptr ), tr( "Media Namer" ), QString::fromUtf8( ":/rename.png" ), fImpl->tabWidget ) );
             addPage( std::make_shared< STabDef >( new CTagsPage( nullptr ), tr( "Media Tags" ), QString::fromUtf8( ":/tag.png" ), fImpl->tabWidget ) );
+            addPage( std::make_shared< STabDef >( new CGenerateBIFPage( nullptr ), tr( "Generate Thumbnails" ), QString::fromUtf8( ":/roku.png" ), fImpl->tabWidget ) );
             auto bifPage = addPage( std::make_shared< STabDef >( new CBIFViewerPage( nullptr ), tr( "BIF Viewer" ), QString::fromUtf8( ":/roku.png" ), fImpl->tabWidget ) );
 
             connect( fImpl->fileName, &NSABUtils::CDelayComboBox::sigEditTextChangedAfterDelay, dynamic_cast<CBIFViewerPage*>( bifPage->fPage ), &CBIFViewerPage::slotFileChanged );
