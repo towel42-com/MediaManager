@@ -251,7 +251,7 @@ namespace NMediaManager
                     int titleNum = -1;
                     if ( NCore::SSearchTMDBInfo::isRippedFromMKV( name, &titleNum ) )
                     {
-                        retVal[titleNum] = childIndex.data( NModels::ECustomRoles::eFullPathRole ).toString();
+                        retVal[titleNum] = childIndex.data( NModels::ECustomRoles::eAbsFilePath ).toString();
                     }
                 }
             }
@@ -264,7 +264,7 @@ namespace NMediaManager
             if ( !idx.isValid() )
                 return {};
 
-            auto path = idx.data( ECustomRoles::eFullPathRole ).toString();
+            auto path = idx.data( ECustomRoles::eAbsFilePath ).toString();
             auto pos = fDiskRipSearchMap.find( path );
             if ( pos != fDiskRipSearchMap.end() )
                 return (*pos).second;
@@ -275,7 +275,7 @@ namespace NMediaManager
             auto nm = index( idx.row(), EColumns::eTransformName, idx.parent() ).data().toString();
             if ( NCore::CTransformResult::isAutoSetText( nm ) || nm.isEmpty() )
             {
-                nm = index( idx.row(), NModels::EColumns::eFSName, idx.parent() ).data( ECustomRoles::eFullPathRole ).toString();
+                nm = index( idx.row(), NModels::EColumns::eFSName, idx.parent() ).data( ECustomRoles::eAbsFilePath ).toString();
                 nm = nm.isEmpty() ? QString() : (QFileInfo( nm ).isDir() ? QFileInfo( nm ).fileName() : QFileInfo( nm ).completeBaseName());
             }
             else if (!nm.isEmpty() && QFileInfo(path).isFile())
@@ -715,7 +715,7 @@ namespace NMediaManager
             if ( !item || !transformedItem )
                 return;
 
-            auto path = item->data( ECustomRoles::eFullPathRole ).toString();
+            auto path = item->data( ECustomRoles::eAbsFilePath ).toString();
             auto fileInfo = QFileInfo( path );
 
 
@@ -909,7 +909,7 @@ namespace NMediaManager
 
         bool CTransformModel::canAutoSearch( const QModelIndex & index, bool recursive) const
         {
-            auto path = index.data( ECustomRoles::eFullPathRole ).toString();
+            auto path = index.data( ECustomRoles::eAbsFilePath ).toString();
             if ( path.isEmpty() )
                 return false;
             return canAutoSearch( QFileInfo( path ), recursive );

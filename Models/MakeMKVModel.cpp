@@ -49,7 +49,7 @@ namespace NMediaManager
 
             SProcessInfo processInfo;
             processInfo.fSetMKVTagsOnSuccess = true;
-            processInfo.fOldName = item->data( ECustomRoles::eFullPathRole ).toString();
+            processInfo.fOldName = item->data( ECustomRoles::eAbsFilePath ).toString();
             auto fi = QFileInfo( processInfo.fOldName );
             processInfo.fNewName = fi.absoluteDir().absoluteFilePath( fi.completeBaseName() + ".mkv" );
             processInfo.fItem = new QStandardItem( QString( "Convert '%1' => '%2'" ).arg( getDispName( processInfo.fOldName ) ).arg( getDispName( processInfo.fNewName ) ) );

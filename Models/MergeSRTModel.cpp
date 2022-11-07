@@ -65,7 +65,7 @@ namespace NMediaManager
                     continue;
                 }
 
-                if ( NPreferences::NCore::CPreferences::instance()->isMediaFile( child->data( ECustomRoles::eFullPathRole ).toString() ) )
+                if ( NPreferences::NCore::CPreferences::instance()->isMediaFile( child->data( ECustomRoles::eAbsFilePath ).toString() ) )
                     retVal << child;
             }
             return retVal;
@@ -84,7 +84,7 @@ namespace NMediaManager
                 if (child->data(ECustomRoles::eIsDir).toBool())
                     continue;
 
-                auto fullPath = child->data(ECustomRoles::eFullPathRole).toString();
+                auto fullPath = child->data(ECustomRoles::eAbsFilePath).toString();
                 if (QFileInfo(fullPath).suffix() != ext)
                     continue;
                 retVal.push_back(child);
@@ -104,7 +104,7 @@ namespace NMediaManager
             std::unordered_set< QString > uniqueSRTFiles;
             for ( auto && ii : srtFiles )
             {
-                auto fullPath = ii->data(ECustomRoles::eFullPathRole).toString();
+                auto fullPath = ii->data(ECustomRoles::eAbsFilePath).toString();
                 bool isLangFormat;
                 if ( !isSubtitleFile(fullPath, &isLangFormat) )
                     continue;
@@ -133,8 +133,8 @@ namespace NMediaManager
                     std::sort( ii.second.begin(), ii.second.end(),
                                [ ]( const QStandardItem * lhs, const QStandardItem * rhs )
                     {
-                        auto lhsFI = QFileInfo( lhs->data( ECustomRoles::eFullPathRole ).toString() );
-                        auto rhsFI = QFileInfo( rhs->data( ECustomRoles::eFullPathRole ).toString() );
+                        auto lhsFI = QFileInfo( lhs->data( ECustomRoles::eAbsFilePath ).toString() );
+                        auto rhsFI = QFileInfo( rhs->data( ECustomRoles::eAbsFilePath ).toString() );
 
                         return lhsFI.size() < rhsFI.size();
                     } );
@@ -186,14 +186,14 @@ namespace NMediaManager
             std::unordered_map< QString, QStandardItem * > subMap;
             for (auto && ii : subFiles)
             {
-                auto baseName = QFileInfo( ii->data(ECustomRoles::eFullPathRole).toString() ).completeBaseName();
+                auto baseName = QFileInfo( ii->data(ECustomRoles::eAbsFilePath).toString() ).completeBaseName();
                 subMap[baseName] = ii;
             }
 
             std::list< std::pair< QStandardItem *, QStandardItem * > > retVal;
             for (auto && ii : idxFiles)
             {
-                auto baseName = QFileInfo(ii->data(ECustomRoles::eFullPathRole).toString()).completeBaseName();
+                auto baseName = QFileInfo(ii->data(ECustomRoles::eAbsFilePath).toString()).completeBaseName();
                 auto pos = subMap.find(baseName);
                 if (pos == subMap.end())
                     continue;
@@ -374,7 +374,7 @@ namespace NMediaManager
             {
                 auto idxItem = new QStandardItem( tr( "IDX File: %1 - SUB File: %2" ).arg( ii.first->text() ).arg( ii.second->text() ) );
                 processInfo.fItem->appendRow(idxItem);
-                auto path = ii.first->data(ECustomRoles::eFullPathRole).toString();
+                auto path = ii.first->data(ECustomRoles::eAbsFilePath).toString();
                 auto langInfo = NCore::SLanguageInfo(QFileInfo(path));
                 allLangInfos.emplace_back( std::make_pair(ii, langInfo ));
                 auto langs = langInfo.allLanguageInfos();
@@ -455,8 +455,8 @@ namespace NMediaManager
                 {
                     if (!aOK)
                         break;
-                    aOK = aOK && checkProcessItemExists(ii.first->data(ECustomRoles::eFullPathRole).toString(), processInfo.fItem);
-                    aOK = aOK && checkProcessItemExists(ii.second->data(ECustomRoles::eFullPathRole).toString(), processInfo.fItem);
+                    aOK = aOK && checkProcessItemExists(ii.first->data(ECustomRoles::eAbsFilePath).toString(), processInfo.fItem);
+                    aOK = aOK && checkProcessItemExists(ii.second->data(ECustomRoles::eAbsFilePath).toString(), processInfo.fItem);
                 }
 
                  //aOK = the MKV and SRT exist and the cmd is an executable
@@ -479,8 +479,8 @@ namespace NMediaManager
                 {
                     int nextTrack = 1;
                     std::list< NCore::SMultLangInfo > orderByIdx;
-                    auto currIDX = langInfo.first.first->data(ECustomRoles::eFullPathRole).toString();
-                    auto currSUB = langInfo.first.second->data(ECustomRoles::eFullPathRole).toString();
+                    auto currIDX = langInfo.first.first->data(ECustomRoles::eAbsFilePath).toString();
+                    auto currSUB = langInfo.first.second->data(ECustomRoles::eAbsFilePath).toString();
                     auto langs = langInfo.second.allLanguageInfos();
                     for (auto && ii : langs)
                     {
@@ -587,7 +587,7 @@ namespace NMediaManager
                         break;
                     for (auto && jj : ii.second)
                     {
-                        aOK = aOK && checkProcessItemExists(jj->data(ECustomRoles::eFullPathRole).toString(), processInfo.fItem);
+                        aOK = aOK && checkProcessItemExists(jj->data(ECustomRoles::eAbsFilePath).toString(), processInfo.fItem);
                     }
                 }
                 // aOK = the MKV and SRT exist and the cmd is an executable
@@ -611,7 +611,7 @@ namespace NMediaManager
                     {
                         //qDebug() << jj->text();
                         auto langItem = getItem(jj, EColumns::eLanguage);
-                        auto srtFile = jj->data(ECustomRoles::eFullPathRole).toString();
+                        auto srtFile = jj->data(ECustomRoles::eAbsFilePath).toString();
                         processInfo.fArgs
                             << "--language"
                             << "0:" + langItem->data(ECustomRoles::eISOCodeRole).toString()
@@ -643,7 +643,7 @@ namespace NMediaManager
             QStandardItem * myItem = nullptr;
             fFirstProcess = true;
 
-            auto path = item->data( ECustomRoles::eFullPathRole ).toString();
+            auto path = item->data( ECustomRoles::eAbsFilePath ).toString();
             qDebug() << path;
 
             auto srtFiles = getChildSRTFiles( item, false );
@@ -726,7 +726,7 @@ namespace NMediaManager
         {
             if ( (nodeItem.fType == EColumns::eLanguage) && (item->text().isEmpty()) )
             {
-                auto path = nameItem->data(ECustomRoles::eFullPathRole).toString();
+                auto path = nameItem->data(ECustomRoles::eAbsFilePath).toString();
                 if ( isSubtitleFile( path ) )
                     item->setBackground( Qt::red );
             }
@@ -768,7 +768,7 @@ namespace NMediaManager
                     if ( item->data( ECustomRoles::eIsDir ).toBool() )
                         return true;
 
-                    auto path = item->data( ECustomRoles::eFullPathRole ).toString();
+                    auto path = item->data( ECustomRoles::eAbsFilePath ).toString();
                     if (isSubFile)
                     {
                         return NPreferences::NCore::CPreferences::instance()->isMediaFile( path );

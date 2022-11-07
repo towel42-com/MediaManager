@@ -77,7 +77,7 @@ namespace NMediaManager
 
         enum ECustomRoles
         {
-            eFullPathRole = Qt::UserRole + 1,
+            eAbsFilePath = Qt::UserRole + 1,
             eIsDir,
             eIsRoot,
             eIsTVShowRole,

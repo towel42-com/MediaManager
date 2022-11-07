@@ -219,10 +219,12 @@ namespace NMediaManager
 
             preLoad();
 
-            QFileInfo rootFI( fRootPath.absolutePath() );
+            qDebug() << fRootPath;
+            QFileInfo rootFI( fRootPath.path() );
 
             if ( progressDlg() )
             {
+                progressDlg()->setRange( 0, 10 );
                 progressDlg()->setLabelText( tr( "Computing number of Files under '%1'" ).arg( fRootPath.absolutePath() ) );
                 qApp->processEvents();
                 auto numFiles = computeNumberOfFiles( rootFI ).second;
@@ -334,9 +336,7 @@ namespace NMediaManager
 
         void CDirModel::iterateEveryFile( const QFileInfo & fileInfo, const SIterateInfo & iterInfo, std::optional< QDateTime > & lastUpdateUI ) const
         {
-            if ( !fileInfo.exists() )
-                return;
-
+            qDebug() << fileInfo;
             if ( progressCanceled() )
                 return;
 
@@ -373,7 +373,7 @@ namespace NMediaManager
                 if ( iterInfo.fPostDirFunction )
                     iterInfo.fPostDirFunction( fileInfo, true );
             }
-            else
+            else if ( fileInfo.isFile() )
             {
                 bool aOK = true;
                 if ( iterInfo.fPreFileFunction )
@@ -515,7 +515,7 @@ namespace NMediaManager
                     ii.fLoaded = true;
                 }
                 prevParent = nextParent;
-                fPathMapping[nextParent->data( ECustomRoles::eFullPathRole ).toString()] = nextParent;
+                fPathMapping[nextParent->data( ECustomRoles::eAbsFilePath ).toString()] = nextParent;
 
                 if ( filesView() && prevParent )
                     filesView()->setExpanded( prevParent->index(), true );
@@ -552,9 +552,13 @@ namespace NMediaManager
             //qDebug() << fileInfo.absoluteFilePath() << isRoot;
             QString name;
 
-            auto nameItem = SDirNodeItem( isRoot ? QDir::toNativeSeparators( fileInfo.canonicalFilePath() ) : fModel->getTreeNodeName( fileInfo ), EColumns::eFSName );
+            auto path = QDir::toNativeSeparators( fileInfo.absoluteFilePath() );
+            if ( !NSABUtils::NFileUtils::isIPAddressNetworkPath( fileInfo ) )
+                path = QDir::toNativeSeparators( fileInfo.canonicalFilePath() );
+
+            auto nameItem = SDirNodeItem( isRoot ? path : fModel->getTreeNodeName( fileInfo ), EColumns::eFSName );
             nameItem.fIcon = model->iconProvider()->icon( fileInfo );
-            nameItem.setData( fileInfo.absoluteFilePath(), ECustomRoles::eFullPathRole );
+            nameItem.setData( fileInfo.absoluteFilePath(), ECustomRoles::eAbsFilePath );
             nameItem.setData( fileInfo.isDir(), ECustomRoles::eIsDir );
             nameItem.fEditable = std::make_pair( EType::ePath, static_cast< NSABUtils::EMediaTags >( -1 ) );
             nameItem.fCheckable = { true, false, Qt::CheckState::Checked };
@@ -723,7 +727,7 @@ namespace NMediaManager
             auto baseItem = getItem( item, NModels::EColumns::eFSName );
             if ( !baseItem )
                 return QFileInfo();
-            auto path = baseItem->data( ECustomRoles::eFullPathRole ).toString();
+            auto path = baseItem->data( ECustomRoles::eAbsFilePath ).toString();
             return QFileInfo( path );
         }
 
@@ -734,12 +738,20 @@ namespace NMediaManager
 
         bool CDirModel::isDir( const QStandardItem * item ) const
         {
-            return fileInfo( item ).isDir();
+            auto baseItem = getItem( item, NModels::EColumns::eFSName );
+            if ( !baseItem )
+                return false;
+
+            return baseItem->data( ECustomRoles::eIsDir ).toBool();
         }
 
         QString CDirModel::filePath( const QStandardItem * item ) const
         {
-            return fileInfo( item ).absoluteFilePath();
+            auto baseItem = getItem( item, NModels::EColumns::eFSName );
+            if ( !baseItem )
+                return {};
+
+            return baseItem->data( ECustomRoles::eAbsFilePath ).toString();
         }
 
         QString CDirModel::filePath( const QModelIndex & idx ) const
@@ -830,7 +842,7 @@ namespace NMediaManager
             if ( !item || (item == invisibleRootItem()) )
                 return {};
             if ( item->data( ECustomRoles::eIsRoot ).toBool() )
-                return item->data( ECustomRoles::eFullPathRole ).toString();
+                return item->data( ECustomRoles::eAbsFilePath ).toString();
 
             auto parentDir = computeTransformPath( item->parent(), false );
             if ( NCore::CTransformResult::isDeleteThis( parentDir ) )
@@ -870,8 +882,6 @@ namespace NMediaManager
         {
             return getTreeNodeName( QFileInfo( path ) );
         }
-
-
 
         void CDirModel::appendError( QStandardItem * parent, const QString & msg )
         {
@@ -1617,7 +1627,7 @@ namespace NMediaManager
         void CDirModel::updateFile( const QModelIndex & idx, const QString & /*oldPath*/, const QString & newPath )
         {
             auto nameIndex = index( idx.row(), EColumns::eFSName, idx.parent() );
-            setData( nameIndex, newPath, ECustomRoles::eFullPathRole );
+            setData( nameIndex, newPath, ECustomRoles::eAbsFilePath );
             auto item = itemFromIndex( nameIndex );
             fPathMapping[newPath] = item;
         }
@@ -1625,7 +1635,7 @@ namespace NMediaManager
         void CDirModel::updateDir( const QModelIndex & idx, const QDir & oldDir, const QDir & newDir )
         {
             auto nameIndex = index( idx.row(), EColumns::eFSName, idx.parent() );
-            setData( nameIndex, newDir.absolutePath(), ECustomRoles::eFullPathRole );
+            setData( nameIndex, newDir.absolutePath(), ECustomRoles::eAbsFilePath );
             auto item = itemFromIndex( nameIndex );
             fPathMapping[newDir.absolutePath()] = item;
 
@@ -1633,7 +1643,7 @@ namespace NMediaManager
             for ( int ii = 0; ii < numRows; ++ii )
             {
                 auto childIdx = index( ii, EColumns::eFSName, idx );
-                auto fileName = QFileInfo( data( childIdx, ECustomRoles::eFullPathRole ).toString() ).fileName();
+                auto fileName = QFileInfo( data( childIdx, ECustomRoles::eAbsFilePath ).toString() ).fileName();
 
                 auto oldPath = oldDir.absoluteFilePath( fileName );
                 auto newPath = newDir.absoluteFilePath( fileName );

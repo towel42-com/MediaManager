@@ -171,9 +171,9 @@ namespace NMediaManager
             auto parentName = model()->getSearchName( index );
 
             auto name = model()->getSearchName( index );
-            if ( NPreferences::NCore::CPreferences::instance()->isPathToDelete( index.data( NModels::ECustomRoles::eFullPathRole ).toString() ) )
+            if ( NPreferences::NCore::CPreferences::instance()->isPathToDelete( index.data( NModels::ECustomRoles::eAbsFilePath ).toString() ) )
             {
-                appendToLog( QString( "Deleting file '%1'" ).arg( index.data( NModels::ECustomRoles::eFullPathRole ).toString() ), true );
+                appendToLog( QString( "Deleting file '%1'" ).arg( index.data( NModels::ECustomRoles::eAbsFilePath ).toString() ), true );
                 model()->setDeleteItem( index );
             }
             else
@@ -371,7 +371,7 @@ namespace NMediaManager
             auto titleInfo = model()->getTransformResult( idx, true );
 
             auto isDir = baseIdx.data( NModels::ECustomRoles::eIsDir ).toBool();
-            auto fullPath = baseIdx.data( NModels::ECustomRoles::eFullPathRole ).toString();
+            auto fullPath = baseIdx.data( NModels::ECustomRoles::eAbsFilePath ).toString();
             bool isTVShow = baseIdx.data( NModels::ECustomRoles::eIsTVShowRole ).toBool();
             auto nm = model()->getSearchName( idx );
 
