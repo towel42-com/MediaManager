@@ -20,10 +20,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "MakeMKVPage.h"
+#include "GenerateBIFPage.h"
 
 #include "Preferences/Core/Preferences.h"
-#include "Models/MakeMKVModel.h"
+#include "Models/GenerateBIFModel.h"
 #include "SABUtils/DoubleProgressDlg.h"
 
 #include <QRegularExpression>
@@ -32,60 +32,60 @@ namespace NMediaManager
 {
     namespace NUi
     {
-        CMakeMKVPage::CMakeMKVPage( QWidget * parent )
-            : CBasePage( "Make MKV", parent )
+        CGenerateBIFPage::CGenerateBIFPage( QWidget * parent )
+            : CBasePage( "Generate Thumbnails", parent )
         {
         }
 
-        CMakeMKVPage::~CMakeMKVPage()
+        CGenerateBIFPage::~CGenerateBIFPage()
         {
         }
 
-        NModels::CDirModel * CMakeMKVPage::createDirModel()
+        NModels::CDirModel * CGenerateBIFPage::createDirModel()
         {
-            return new NModels::CMakeMKVModel( this );
+            return new NModels::CGenerateBIFModel( this );
         }
 
-        QStringList CMakeMKVPage::dirModelFilter() const
+        QStringList CGenerateBIFPage::dirModelFilter() const
         {
-            return NPreferences::NCore::CPreferences::instance()->getNonMKVMediaExtensions();
+            return QStringList() << "*.mkv";
         }
 
-        QString CMakeMKVPage::secondaryProgressLabel() const
+        QString CGenerateBIFPage::secondaryProgressLabel() const
         {
             return tr( "Current (seconds):" );
         }
 
-        QString CMakeMKVPage::loadTitleName() const
+        QString CGenerateBIFPage::loadTitleName() const
         {
             return tr( "Finding Files" );
         }
 
-        QString CMakeMKVPage::loadCancelName() const
+        QString CGenerateBIFPage::loadCancelName() const
         {
             return tr( "Cancel" );
         }
 
-        QString CMakeMKVPage::actionTitleName() const
+        QString CGenerateBIFPage::actionTitleName() const
         {
-            return tr( "Creating MKV..." );
+            return tr( "Generating Thumbnail files..." );
         }
 
-        QString CMakeMKVPage::actionCancelName() const
+        QString CGenerateBIFPage::actionCancelName() const
         {
-            return tr( "Abort Creating MKV" );
+            return tr( "Abort Generating Thumbnail files" );
         }
 
-        QString CMakeMKVPage::actionErrorName() const
+        QString CGenerateBIFPage::actionErrorName() const
         {
-            return tr( "Error while Creating MKV:" );
+            return tr( "Error while Generating Thumbnail files:" );
         }
 
-        void CMakeMKVPage::postProcessLog( const QString & string )
+        void CGenerateBIFPage::postProcessLog( const QString & string )
         {
+            // Skip-Option - Write output: pkt_pts_time:2570 pkt_dts_time:2570 input_pts_time:2570.2
             // time=00:00:00.00
-            auto regEx = QRegularExpression( "[Tt]ime\\=\\s*(?<hours>\\d{2}):(?<mins>\\d{2}):(?<secs>\\d{2})" );
-
+            auto regEx = QRegularExpression( R"(pkt_pts_[Tt]ime\:(?<secs>\d+))" );
             auto pos = string.lastIndexOf( regEx );
             if ( pos == -1 )
                 return;
@@ -94,33 +94,14 @@ namespace NMediaManager
             if ( !match.hasMatch() )
                 return;
 
-            auto hours = match.captured( "hours" );
-            auto mins = match.captured( "mins" );
             auto secs = match.captured( "secs" );
-
             int numSeconds = 0;
-            if ( !hours.isEmpty() )
-            {
-                bool aOK;
-                int curr = hours.toInt( &aOK );
-                if ( aOK )
-                    numSeconds += curr * 60 * 60;
-            }
-            
-            if ( !mins.isEmpty() )
-            {
-                bool aOK;
-                int curr = mins.toInt( &aOK );
-                if ( aOK )
-                    numSeconds += curr * 60;
-            }
-
             if ( !secs.isEmpty() )
             {
                 bool aOK;
                 int curr = secs.toInt( &aOK );
                 if ( aOK )
-                    numSeconds += curr;
+                    numSeconds = curr;
             }
         
             fProgressDlg->setSecondaryValue( numSeconds );

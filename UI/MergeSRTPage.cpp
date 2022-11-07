@@ -47,13 +47,14 @@ namespace NMediaManager
         void CMergeSRTPage::postProcessLog( const QString & string )
         {
             auto regEx = QRegularExpression( "[Pp]rogress\\:\\s*(?<percent>\\d+)\\%" );
-            auto match = regEx.match( string );
-            QString percent;
-            while ( match.hasMatch() )
-            {
-                percent = match.captured( "percent" );
-                match = regEx.match( string, match.capturedEnd( "percent" ) + 1 );
-            }
+            auto pos = string.lastIndexOf( regEx );
+            if ( pos == -1 )
+                return;
+
+            auto match = regEx.match( string, pos );
+            if ( !match.hasMatch() )
+                return;
+            auto percent = match.captured( "percent" );
             if ( !percent.isEmpty() )
             {
                 bool aOK = false;
