@@ -613,7 +613,7 @@ namespace NMediaManager
                 settings.setValue( "KnownHyphenated", value );
                 emitSigPreferencesChanged( EPreferenceType::eTransformPrefs );
             }
-            
+
             QStringList CPreferences::getKnownHyphenated() const
             {
                 QSettings settings;
@@ -692,7 +692,7 @@ namespace NMediaManager
                 settings.beginGroup( toString( EPreferenceType::eLoadPrefs ) );
                 return settings.value( QString( "IgnoreSkipFileNames (%1)" ).arg( forMediaNaming ? "Media Transform" : "Media Tagging" ), false ).toBool();
             }
-            
+
             QStringList CPreferences::getSkippedPaths( bool forMediaNaming ) const
             {
                 QSettings settings;
@@ -1013,6 +1013,25 @@ namespace NMediaManager
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eExtToolsPrefs ) );
                 auto retVal = settings.value( "FFMpegEXE", QString() ).toString();
+
+                auto fi = QFileInfo( retVal );
+                bool aOK = !retVal.isEmpty() && fi.isExecutable();
+                return aOK ? retVal : QString();
+            }
+
+            void CPreferences::setBIFToolEXE( const QString & value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eExtToolsPrefs ) );
+                settings.setValue( "BIFToolEXE", value );
+                emitSigPreferencesChanged( EPreferenceType::eExtToolsPrefs );
+            }
+
+            QString CPreferences::getBIFToolEXE() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eExtToolsPrefs ) );
+                auto retVal = settings.value( "BIFToolEXE", QString() ).toString();
 
                 auto fi = QFileInfo( retVal );
                 bool aOK = !retVal.isEmpty() && fi.isExecutable();

@@ -223,10 +223,14 @@ namespace NMediaManager
                             ,R"(#recycle)"
                             ,R"(#recycler)"
                             ,R"(extra(s)?)"
-                            ,R"(trailer(s)?)"
+                            ,R"(special(s)?)"
+                            ,R"(short(s)?)"
+                            ,R"(scene(s)?)"
+                            ,R"(featurette(s)?)"
+                            ,R"(behind the scene(s)?)"
                             ,R"(deleted scene(s)?)"
                             ,R"(interview(s)?)"
-                            ,R"(featurette(s)?)"
+                            ,R"(trailer(s)?)"
                             ,R"(sample(s)?)"
                         } );
                     return defaultValue;
