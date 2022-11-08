@@ -1019,25 +1019,6 @@ namespace NMediaManager
                 return aOK ? retVal : QString();
             }
 
-            void CPreferences::setBIFToolEXE( const QString & value )
-            {
-                QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eExtToolsPrefs ) );
-                settings.setValue( "BIFToolEXE", value );
-                emitSigPreferencesChanged( EPreferenceType::eExtToolsPrefs );
-            }
-
-            QString CPreferences::getBIFToolEXE() const
-            {
-                QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eExtToolsPrefs ) );
-                auto retVal = settings.value( "BIFToolEXE", QString() ).toString();
-
-                auto fi = QFileInfo( retVal );
-                bool aOK = !retVal.isEmpty() && fi.isExecutable();
-                return aOK ? retVal : QString();
-            }
-
             /// ////////////////////////////////////////////////////////
             /// BIF Options
             /// ////////////////////////////////////////////////////////
@@ -1300,7 +1281,7 @@ namespace NMediaManager
                     retVal
                         << QString( "%2%1(" ).arg( retValType ).arg( getIndent( indent + 1 ) )
                         << getIndent( indent + 1 ) + "{"
-                    ;
+                        ;
 
                     bool first = true;
                     for ( auto && ii : newValues )

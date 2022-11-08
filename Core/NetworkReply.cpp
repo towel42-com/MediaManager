@@ -61,7 +61,7 @@ namespace NMediaManager
         {
         }
 
-        CNetworkReply::CNetworkReply( ERequestType requestType, QNetworkReply *reply ) :
+        CNetworkReply::CNetworkReply( ERequestType requestType, QNetworkReply * reply ) :
             fRequestType( requestType ),
             fReply( reply )
         {
@@ -69,7 +69,7 @@ namespace NMediaManager
             fURLPathKey = key( reply->url(), requestType, fTMDBID );
         }
 
-        CNetworkReply::CNetworkReply( ERequestType requestType, const QString &urlPathKey, const QByteArray &data ) :
+        CNetworkReply::CNetworkReply( ERequestType requestType, const QString & urlPathKey, const QByteArray & data ) :
             fRequestType( requestType ),
             fURLPathKey( urlPathKey ),
             fCachedData( data )
@@ -87,7 +87,7 @@ namespace NMediaManager
             auto tmp = key.split( "__" );
             if ( tmp.length() != 3 )
                 return QString();
-            return tmp[2];
+            return tmp[ 2 ];
         }
 
         QString CNetworkReply::tmdbFromUrl( const QUrl & url )
@@ -103,7 +103,7 @@ namespace NMediaManager
         }
 
 
-        QString CNetworkReply::key( const QUrl &url, ERequestType type, const QString & tmdb )
+        QString CNetworkReply::key( const QUrl & url, ERequestType type, const QString & tmdb )
         {
             return NCore::toString( type ) + "__" + url.toString( QUrl::PrettyDecoded | QUrl::RemoveScheme | QUrl::RemoveAuthority ) + "__" + tmdb;
         }
@@ -113,7 +113,7 @@ namespace NMediaManager
             return key( request.url(), type, tmdb );
         }
 
-        QString CNetworkReply::key( const QNetworkRequest & request, ERequestType type)
+        QString CNetworkReply::key( const QNetworkRequest & request, ERequestType type )
         {
             return key( request.url(), type, tmdbFromUrl( request.url() ) );
         }
@@ -143,14 +143,14 @@ namespace NMediaManager
             return isReply( otherReply.get() );
         }
 
-        bool CNetworkReply::isReply( const CNetworkReply *otherReply ) const
+        bool CNetworkReply::isReply( const CNetworkReply * otherReply ) const
         {
             if ( !otherReply )
                 return false;
             return *this == *otherReply;
         }
 
-        bool CNetworkReply::operator==( const CNetworkReply &otherReply ) const
+        bool CNetworkReply::operator==( const CNetworkReply & otherReply ) const
         {
             if ( fReply == otherReply.fReply )
                 return true;
@@ -168,7 +168,7 @@ namespace NMediaManager
         {
             auto h1 = std::hash<ERequestType>()( fRequestType );
             auto h2 = std::hash<QString>()( fURLPathKey );
-            auto h3 = std::hash<QString>()(fTMDBID);
+            auto h3 = std::hash<QString>()( fTMDBID );
             return NSABUtils::HashCombine( { h1, h2, h3 } ); // as a key, it only depends on the URL and type
         }
 

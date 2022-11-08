@@ -53,7 +53,7 @@ namespace NMediaManager
         {
             Q_OBJECT
         public:
-            CBasePage( const QString & pageName, QWidget *parent = nullptr );
+            CBasePage( const QString & pageName, QWidget * parent = nullptr );
             virtual ~CBasePage() override;
 
             virtual void load( const QString & dirName );
@@ -108,7 +108,7 @@ namespace NMediaManager
         protected:
             virtual QMenu * menuForIndex( const QModelIndex & idx ) final;
             virtual void openLocation( const QModelIndex & idx ) final;
-            
+
             virtual QString getPageName() const final { return fPageName; }
             virtual NModels::CDirModel * createDirModel() = 0;
             virtual QAbstractItemModel * getDirModel() const;
@@ -127,7 +127,7 @@ namespace NMediaManager
             virtual void postLoadFinished( bool /*canceled*/ ) {}
             virtual void setupModel();
 
-            void setupProgressDlg( const QString & title, const QString & cancelButtonText, int max, int eventsPerPath=1);
+            void setupProgressDlg( const QString & title, const QString & cancelButtonText, int max, int eventsPerPath = 1 );
             void clearProgressDlg( bool canceled );
 
             virtual void loadSettings();
@@ -137,7 +137,7 @@ namespace NMediaManager
             QString fDirName;
 
             bool fIsActive{ false };
-            
+
             NSABUtils::CDoubleProgressDlg * fProgressDlg{ nullptr };
             std::unique_ptr< NModels::CDirModel > fModel;
             std::unique_ptr< Ui::CBasePage > fImpl;

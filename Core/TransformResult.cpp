@@ -717,14 +717,14 @@ namespace NMediaManager
 
         bool isTVType( EMediaType infoType )
         {
-            switch(infoType)
+            switch ( infoType )
             {
-            case EMediaType::eTVEpisode:
-            case EMediaType::eTVSeason:
-            case EMediaType::eTVShow:
-                return true;
-            default:
-                return false;
+                case EMediaType::eTVEpisode:
+                case EMediaType::eTVSeason:
+                case EMediaType::eTVShow:
+                    return true;
+                default:
+                    return false;
             }
         }
     }

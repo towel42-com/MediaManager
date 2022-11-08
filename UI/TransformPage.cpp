@@ -42,7 +42,7 @@ namespace NMediaManager
 {
     namespace NUi
     {
-        CTransformPage::CTransformPage( QWidget *parent )
+        CTransformPage::CTransformPage( QWidget * parent )
             : CBasePage( "Transform", parent )
         {
             fSearchTMDB = new NCore::CSearchTMDB( nullptr, std::optional<QString>(), this );
@@ -65,7 +65,7 @@ namespace NMediaManager
             if ( !fModel )
                 return nullptr;
 
-            return dynamic_cast<NModels::CTransformModel *>(fModel.get());
+            return dynamic_cast<NModels::CTransformModel *>( fModel.get() );
         }
 
         void CTransformPage::postNonQueuedRun( bool finalStep, bool canceled )
@@ -84,19 +84,19 @@ namespace NMediaManager
 
             auto nm = nameIdx.data().toString();
             auto action = menu->addAction( tr( "Search for '%1'..." ).arg( nm ),
-                [ nameIdx, this ]()
-                {
-                    manualSearch( nameIdx );
-                } );
+                                           [nameIdx, this]()
+                                           {
+                                               manualSearch( nameIdx );
+                                           } );
             menu->setDefaultAction( action );
 
             if ( model()->canAutoSearch( nameIdx, false ) )
             {
                 action = menu->addAction( tr( "Auto-Search for '%1'" ).arg( nm ),
-                    [ nameIdx, this ]()
-                    {
-                        autoSearchForNewNames( nameIdx, false, {} );
-                    } );
+                                          [nameIdx, this]()
+                                          {
+                                              autoSearchForNewNames( nameIdx, false, {} );
+                                          } );
             }
             menu->addSeparator();
 
@@ -104,30 +104,30 @@ namespace NMediaManager
             if ( searchResult )
             {
                 menu->addAction( tr( "Clear Search Result" ),
-                    [ nameIdx, this ]()
-                    {
-                        model()->clearSearchResult( nameIdx, false );
-                    } );
+                                 [nameIdx, this]()
+                                 {
+                                     model()->clearSearchResult( nameIdx, false );
+                                 } );
                 if ( model()->rowCount( nameIdx ) )
                 {
                     menu->addAction( tr( "Clear Search Result (Including Children)" ),
-                        [ nameIdx, this ]()
-                        {
-                            model()->clearSearchResult( nameIdx, true );
-                        } );
+                                     [nameIdx, this]()
+                                     {
+                                         model()->clearSearchResult( nameIdx, true );
+                                     } );
 
                     menu->addAction( tr( "Apply Search Results to Children" ),
-                        [ nameIdx, searchResult, this]()
-                        {
-                            model()->setSearchResult(nameIdx, searchResult, true, true);
-                        });
+                                     [nameIdx, searchResult, this]()
+                                     {
+                                         model()->setSearchResult( nameIdx, searchResult, true, true );
+                                     } );
                 }
                 menu->addSeparator();
-                menu->addAction(tr("Transform Item..."),
-                    [ nameIdx, this ]()
-                    {
-                        run( nameIdx );
-                    } );
+                menu->addAction( tr( "Transform Item..." ),
+                                 [nameIdx, this]()
+                                 {
+                                     run( nameIdx );
+                                 } );
             }
             return true;
         }
@@ -148,8 +148,8 @@ namespace NMediaManager
 
             model()->computeEpisodesForDiskNumbers();
 
-            model()->setInAutoSearch(true);
-            if (filesView())
+            model()->setInAutoSearch( true );
+            if ( filesView() )
                 filesView()->expandAll();
 
             auto rootIdx = model()->index( 0, 0 );
@@ -178,9 +178,9 @@ namespace NMediaManager
             }
             else
             {
-                if (model()->canAutoSearch(index, false))
+                if ( model()->canAutoSearch( index, false ) )
                 {
-                    auto path = model()->filePath(index);
+                    auto path = model()->filePath( index );
                     auto titleInfo = model()->getTransformResult( index, false );
                     auto searchInfo = std::make_shared< NCore::SSearchTMDBInfo >( name, titleInfo );
                     searchInfo->setExactMatchOnly( NPreferences::NCore::CPreferences::instance()->getExactMatchesOnly() );
@@ -200,7 +200,7 @@ namespace NMediaManager
             auto rowCount = model()->rowCount( index );
             for ( int ii = 0; searchChildren && ( ii < rowCount ); ++ii )
             {
-                if (progressCanceled())
+                if ( progressCanceled() )
                 {
                     fSearchTMDB->clearSearchCache();
                     break;
@@ -211,7 +211,7 @@ namespace NMediaManager
             return retVal;
         }
 
-        void CTransformPage::slotAutoSearchFinished( const QString &path, NCore::SSearchTMDBInfo * searchInfo, bool searchesRemaining )
+        void CTransformPage::slotAutoSearchFinished( const QString & path, NCore::SSearchTMDBInfo * searchInfo, bool searchesRemaining )
         {
             auto results = fSearchTMDB->getResult( path );
             bool notFound = ( results.size() == 1 ) && results.front()->isNotFoundResult();
@@ -223,7 +223,7 @@ namespace NMediaManager
                 if ( index.isValid() )
                 {
                     auto currMediaType = searchInfo->mediaType();
-                    auto newMediaType = (currMediaType == NCore::EMediaType::eMovie) ? NCore::EMediaType::eTVShow : NCore::EMediaType::eMovie;
+                    auto newMediaType = ( currMediaType == NCore::EMediaType::eMovie ) ? NCore::EMediaType::eTVShow : NCore::EMediaType::eMovie;
                     autoSearchForNewNames( index, false, newMediaType );
                     searchesRemaining = true;
                     fProgressDlg->setMaximum( fProgressDlg->primaryMax() + 1 );
@@ -267,7 +267,7 @@ namespace NMediaManager
                     {
                         if ( !chosen.isEmpty() )
                             chosen += ", ";
-                        chosen += (*jj)->toString( false );
+                        chosen += ( *jj )->toString( false );
                     }
 
                     logMsg = logMsg.arg( chosen );
@@ -306,7 +306,7 @@ namespace NMediaManager
             {
                 emit sigLoadFinished( false );
                 emit sigStopStayAwake();
-                if (filesView())
+                if ( filesView() )
                     filesView()->expandAll();
             }
         }
@@ -495,11 +495,11 @@ namespace NMediaManager
         {
             fTreatAsTVShowByDefaultAction->setChecked( NPreferences::NCore::CPreferences::instance()->getTreatAsTVShowByDefault() );
             fExactMatchesOnlyAction->setChecked( NPreferences::NCore::CPreferences::instance()->getExactMatchesOnly() );
-            fDeleteEXE->setChecked(NPreferences::NCore::CPreferences::instance()->deleteEXE());
-            fDeleteTXT->setChecked(NPreferences::NCore::CPreferences::instance()->deleteTXT());
-            fDeleteBAK->setChecked(NPreferences::NCore::CPreferences::instance()->deleteBAK());
-            fDeleteNFO->setChecked(NPreferences::NCore::CPreferences::instance()->deleteNFO());
-            fDeleteCustom->setChecked(NPreferences::NCore::CPreferences::instance()->deleteCustom());
+            fDeleteEXE->setChecked( NPreferences::NCore::CPreferences::instance()->deleteEXE() );
+            fDeleteTXT->setChecked( NPreferences::NCore::CPreferences::instance()->deleteTXT() );
+            fDeleteBAK->setChecked( NPreferences::NCore::CPreferences::instance()->deleteBAK() );
+            fDeleteNFO->setChecked( NPreferences::NCore::CPreferences::instance()->deleteNFO() );
+            fDeleteCustom->setChecked( NPreferences::NCore::CPreferences::instance()->deleteCustom() );
         }
 
         void CTransformPage::slotPreferencesChanged( NPreferences::EPreferenceTypes prefTypes )

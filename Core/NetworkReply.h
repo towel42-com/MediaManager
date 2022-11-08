@@ -86,7 +86,7 @@ namespace NMediaManager
         private:
             static QString tmdbFromUrl( const QUrl & url );
             static QString tmdbFromKey( const QString & key );
-            ERequestType fRequestType { ERequestType::eUnknownRequest };
+            ERequestType fRequestType{ ERequestType::eUnknownRequest };
             QNetworkReply * fReply{ nullptr };
             QString fURLPathKey;
             QString fTMDBID;

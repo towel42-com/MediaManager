@@ -37,10 +37,10 @@ namespace NMediaManager
         struct SLanguageInfo;
         struct SMultLangInfo
         {
-            SMultLangInfo(std::shared_ptr< SLanguageInfo > lang, int index, int size) :
-                fLanguage(lang),
-                fIndex(index),
-                fSize(size)
+            SMultLangInfo( std::shared_ptr< SLanguageInfo > lang, int index, int size ) :
+                fLanguage( lang ),
+                fIndex( index ),
+                fSize( size )
             {
             }
             std::shared_ptr< SLanguageInfo > fLanguage;
@@ -51,12 +51,12 @@ namespace NMediaManager
         struct SLanguageInfo
         {
             SLanguageInfo();
-            SLanguageInfo(const QFileInfo & path);
+            SLanguageInfo( const QFileInfo & path );
             SLanguageInfo( const QString & path );
-            SLanguageInfo(const QString & isoCode, const QString & country);
+            SLanguageInfo( const QString & isoCode, const QString & country );
 
-            static SLanguageInfo fromIDXFile(const QString & path);
-            static SLanguageInfo fromIDXFile(const QFileInfo & path);
+            static SLanguageInfo fromIDXFile( const QString & path );
+            static SLanguageInfo fromIDXFile( const QFileInfo & path );
 
             bool isNameBasedLangFile() const; // if the filename wasnt of the form XX_Language.srt, but rather basename-xx_yy.srt or basename.xx.srt
             QString baseName() const; // when the path sent in is a name based lang file, return basename from above
@@ -82,8 +82,8 @@ namespace NMediaManager
             bool usingDefault() const { return fUsingDefault; }
             bool knownLanguage() const { return !usingDefault(); }
             static QString prettyPrintISOCode( const QString & isoCode );
-            bool operator==(const SLanguageInfo & rhs) const;
-            bool operator!=(const SLanguageInfo & rhs) const { return !operator==(rhs); }
+            bool operator==( const SLanguageInfo & rhs ) const;
+            bool operator!=( const SLanguageInfo & rhs ) const { return !operator==( rhs ); }
         private:
             bool isKnownLanguage( const QString & lang ) const;
             void computeLanguages( const QFileInfo & fi );
@@ -111,7 +111,7 @@ namespace NMediaManager
             static std::unordered_map< QString, std::pair< QString, QString > > sNameToCodeMap;
         };
 
-        Q_DECLARE_METATYPE(SLanguageInfo);
+        Q_DECLARE_METATYPE( SLanguageInfo );
     }
 }
 QDebug operator<<( QDebug debug, const NMediaManager::NCore::SLanguageInfo & info );

@@ -55,7 +55,7 @@ namespace NMediaManager
 
             static bool hasDiskNumber( QString & searchString, int & diskNum, std::shared_ptr< CTransformResult > searchResult );
             static EMediaType looksLikeTVShow( const QString & searchString, QString * titleStr, QString * seasonStr = nullptr, QString * episodeStr = nullptr, QString * extraStr = nullptr );
-            static bool isRippedFromMKV( const QString & name, int * titleNum=nullptr );
+            static bool isRippedFromMKV( const QString & name, int * titleNum = nullptr );
             static bool isRippedFromMKV( const QFileInfo & fi, int * titleNum = nullptr );
 
             void updateSearchCriteria( bool updateSearchBy );
@@ -127,7 +127,7 @@ namespace NMediaManager
             template< typename T >
             bool isMatch( const std::pair< QDate, QString > & releaseDate, const T & tmdbid, const QString & name, EMediaType mediaType, const T & season, const T & episode ) const
             {
-                bool retVal = isMatch( releaseDate, tmdbid, name ) && (fMediaType.first == mediaType);
+                bool retVal = isMatch( releaseDate, tmdbid, name ) && ( fMediaType.first == mediaType );
 
                 if ( isTVMedia() && retVal )
                     retVal = retVal && isSeasonMatch( season ) && isEpisodeMatch( episode );

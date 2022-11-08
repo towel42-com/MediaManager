@@ -54,7 +54,7 @@ namespace NMediaManager
 {
     namespace NUi
     {
-        CBIFViewerPage::CBIFViewerPage( QWidget *parent )
+        CBIFViewerPage::CBIFViewerPage( QWidget * parent )
             : CBasePage( "BIF Viewer", parent ),
             fImpl( new Ui::CBIFViewerPage )
         {
@@ -65,11 +65,11 @@ namespace NMediaManager
             CBasePage::fImpl.reset();
 
             fImpl->setupUi( this );
-            fBIFScrollBar = new NSABUtils::CImageScrollBar(Qt::Vertical);
+            fBIFScrollBar = new NSABUtils::CImageScrollBar( Qt::Vertical );
             fImpl->bifImages->setVerticalScrollBar( fBIFScrollBar );
-            fBIFScrollBar->setRange(0, 0);
-            QObject::connect(fBIFScrollBar, SIGNAL(actionTriggered(int)), fImpl->bifImages, SLOT(verticalScrollbarAction(int)));
-            QObject::connect(fBIFScrollBar, SIGNAL(valueChanged(int)), fImpl->bifImages, SLOT(verticalScrollbarValueChanged(int)));
+            fBIFScrollBar->setRange( 0, 0 );
+            QObject::connect( fBIFScrollBar, SIGNAL( actionTriggered( int ) ), fImpl->bifImages, SLOT( verticalScrollbarAction( int ) ) );
+            QObject::connect( fBIFScrollBar, SIGNAL( valueChanged( int ) ), fImpl->bifImages, SLOT( verticalScrollbarValueChanged( int ) ) );
 
             clear();
 
@@ -109,12 +109,12 @@ namespace NMediaManager
                     fImpl->bifViewerVSplitter->setSizes( QList< int >() << 100 << 100 );
 
                 fImpl->bifViewerHSplitter->setSizes( QList< int >() << 100 << 0 );
-                setButtonsLayout( static_cast<NSABUtils::NBIF::EButtonsLayout>( settings.value( "bifPlayerButtonLayout", static_cast<int>(NSABUtils::NBIF::EButtonsLayout::eTogglePlayPause ) ).toInt() ) );
+                setButtonsLayout( static_cast<NSABUtils::NBIF::EButtonsLayout>( settings.value( "bifPlayerButtonLayout", static_cast<int>( NSABUtils::NBIF::EButtonsLayout::eTogglePlayPause ) ).toInt() ) );
             }
 
             fImpl->bifWidget->setSpeedMultiplier( NPreferences::NCore::CPreferences::instance()->bifPlayerSpeedMultiplier() );
             fImpl->bifWidget->setNumFramesToSkip( NPreferences::NCore::CPreferences::instance()->bifNumFramesToSkip() );
-            fImpl->bifWidget->setPlayCount(NPreferences::NCore::CPreferences::instance()->bifLoopCount());
+            fImpl->bifWidget->setPlayCount( NPreferences::NCore::CPreferences::instance()->bifLoopCount() );
             fImpl->bifWidget->setGIFFlipImage( NPreferences::NCore::CPreferences::instance()->gifFlipImage() );
             fImpl->bifWidget->setGIFDitherImage( NPreferences::NCore::CPreferences::instance()->gifDitherImage() );
             fImpl->bifWidget->setGIFLoopCount( NPreferences::NCore::CPreferences::instance()->gifLoopCount() );
@@ -131,7 +131,7 @@ namespace NMediaManager
 
             NPreferences::NCore::CPreferences::instance()->setBIFPlayerSpeedMultiplier( fImpl->bifWidget->playerSpeedMultiplier() );
             NPreferences::NCore::CPreferences::instance()->setBIFNumFramesToSkip( fImpl->bifWidget->numFramesToSkip() );
-            NPreferences::NCore::CPreferences::instance()->setBIFLoopCount(fImpl->bifWidget->playCount());
+            NPreferences::NCore::CPreferences::instance()->setBIFLoopCount( fImpl->bifWidget->playCount() );
             NPreferences::NCore::CPreferences::instance()->setGIFFlipImage( fImpl->bifWidget->gifFlipImage() );
             NPreferences::NCore::CPreferences::instance()->setGIFDitherImage( fImpl->bifWidget->gifDitherImage() );
             NPreferences::NCore::CPreferences::instance()->setGIFLoopCount( fImpl->bifWidget->gifLoopCount() );
@@ -150,7 +150,7 @@ namespace NMediaManager
             return QWidget::eventFilter( obj, event );
         }
 
-        QToolBar *CBIFViewerPage::toolBar()
+        QToolBar * CBIFViewerPage::toolBar()
         {
             return fImpl->bifWidget->toolBar();
         }
@@ -170,7 +170,7 @@ namespace NMediaManager
         {
             auto windowSize = 1.0 * fImpl->bifImages->size().width();
             auto itemSize = 1.0 * fImpl->bifImages->iconSize().width();
-            itemSize += 16.0; 
+            itemSize += 16.0;
 
             auto num = std::floor( windowSize / itemSize );
 
@@ -206,19 +206,19 @@ namespace NMediaManager
             if ( !isActive )
                 fImpl->bifWidget->slotPause();
             else
-                fileNameChanged();
+                fileNameChanged( isActive );
 
             fImpl->bifWidget->setActive( isActive );
         }
 
         void CBIFViewerPage::slotFileFinishedEditing( const QString & text )
         {
-            fileNameChanged( dynamic_cast<NSABUtils::CDelayComboBox * >( sender() ), text, true );
+            fileNameChanged( dynamic_cast<NSABUtils::CDelayComboBox *>( sender() ), text, true );
         }
 
         void CBIFViewerPage::slotFileChanged( const QString & text )
         {
-            fileNameChanged( dynamic_cast<NSABUtils::CDelayComboBox *>(sender()), text, false );
+            fileNameChanged( dynamic_cast<NSABUtils::CDelayComboBox *>( sender() ), text, false );
         }
 
         void CBIFViewerPage::fileNameChanged( NSABUtils::CDelayComboBox * comboBox, const QString & text, bool andExecute )
@@ -238,7 +238,7 @@ namespace NMediaManager
             return tr( "BIF Files (*.bif);;All Files (*.*)" );
         }
 
-        bool CBIFViewerPage::setFileName( NSABUtils::CDelayComboBox * comboBox, const QString &fileName, bool andExecute )
+        bool CBIFViewerPage::setFileName( NSABUtils::CDelayComboBox * comboBox, const QString & fileName, bool andExecute )
         {
             if ( fileName.isEmpty() )
                 return true;
@@ -251,13 +251,13 @@ namespace NMediaManager
             }
 
             fFileName = fileName;
-            fileNameChanged();
+            fileNameChanged( andExecute );
             if ( andExecute )
                 fImpl->bifWidget->slotPlay();
             return true;
         }
 
-        void CBIFViewerPage::fileNameChanged()
+        void CBIFViewerPage::fileNameChanged( bool andLoad )
         {
             NSABUtils::CAutoWaitCursor awc;
             if ( !outOfDate() )
@@ -275,7 +275,7 @@ namespace NMediaManager
 
             slotResize();
 
-            fBIF = fImpl->bifWidget->setFileName(fFileName);
+            fBIF = fImpl->bifWidget->setFileName( fFileName, andLoad );
             if ( !fImpl->bifWidget->isValid() )
             {
                 auto msg = fBIF ? tr( "Could not load BIF File: %1" ).arg( fBIF->errorString() ) : tr( "Could not load BIF File" );
@@ -293,15 +293,15 @@ namespace NMediaManager
 
             fImpl->bifFileValues->clear();
             new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "Magic Number" ) << tr( "00-07" ) << QString() << fBIF->magicNumber() );
-            new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "Version" ) << tr( "08-11" ) << QString::number( std::get< 2 >( fBIF->version() ) ) << std::get< 1 >( fBIF->version() ) );
-            new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "Number of BIF Images" ) << tr( "12-15" ) << QString::number( std::get< 2 >( fBIF->numImages() ) ) << std::get< 1 >( fBIF->numImages() ) );
-            new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "milliseconds/Frame" ) << tr( "16-19" ) << QString( "%1s (%2ms)" ).arg(NSABUtils::CTimeString( std::get< 2 >( fBIF->tsMultiplier() ) ).toString( "ss.zzz" ) ).arg( std::get< 2 >( fBIF->tsMultiplier() ) ) << std::get< 1 >( fBIF->tsMultiplier() ) );
+            new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "Version" ) << tr( "08-11" ) << QString::number( fBIF->version().fValue ) << fBIF->version().fPrettyPrint );
+            new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "Number of BIF Images" ) << tr( "12-15" ) << QString::number( fBIF->numImages().fValue ) << fBIF->numImages().fPrettyPrint );
+            new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "milliseconds/Frame" ) << tr( "16-19" ) << QString( "%1s (%2ms)" ).arg( NSABUtils::CTimeString( fBIF->tsMultiplier().fValue ).toString( "ss.zzz" ) ).arg( fBIF->tsMultiplier().fValue ) << fBIF->tsMultiplier().fPrettyPrint );
             new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "Reserved" ) << tr( "20-64" ) << QString() << fBIF->reserved() );
 
             formatBIFTable();
 
             fBIFModel->setBIFFile( fBIF );
-            fBIFScrollBar->setBIFFile(fBIF);
+            fBIFScrollBar->setBIFFile( fBIF );
         }
 
         bool CBIFViewerPage::canLoad() const
@@ -327,7 +327,7 @@ namespace NMediaManager
             fImpl->bifImages->setModel( fBIFModel );
         }
 
-        void CBIFViewerPage::setButtonsLayout(NSABUtils::NBIF::EButtonsLayout layout )
+        void CBIFViewerPage::setButtonsLayout( NSABUtils::NBIF::EButtonsLayout layout )
         {
             fImpl->bifWidget->setButtonsLayout( layout );
         }
@@ -337,36 +337,36 @@ namespace NMediaManager
             return fImpl->bifWidget->buttonsLayout();
         }
 
-        QAction *CBIFViewerPage::actionSkipBackward()
+        QAction * CBIFViewerPage::actionSkipBackward()
         {
             return fImpl->bifWidget->actionSkipBackward();
         }
-        
-        QAction *CBIFViewerPage::actionPrev() 
-        { 
-            return fImpl->bifWidget->actionPrev(); 
+
+        QAction * CBIFViewerPage::actionPrev()
+        {
+            return fImpl->bifWidget->actionPrev();
         }
-        
-        QAction *CBIFViewerPage::actionTogglePlayPause( std::optional< bool > asPlayButton )
+
+        QAction * CBIFViewerPage::actionTogglePlayPause( std::optional< bool > asPlayButton )
         {
             return fImpl->bifWidget->actionTogglePlayPause( asPlayButton );
         }
 
-        QAction *CBIFViewerPage::actionPause() 
-        { 
-            return fImpl->bifWidget->actionPause(); 
+        QAction * CBIFViewerPage::actionPause()
+        {
+            return fImpl->bifWidget->actionPause();
         }
-        QAction *CBIFViewerPage::actionPlay()
+        QAction * CBIFViewerPage::actionPlay()
         {
             return fImpl->bifWidget->actionPlay();
         }
 
-        QAction *CBIFViewerPage::actionNext()
+        QAction * CBIFViewerPage::actionNext()
         {
             return fImpl->bifWidget->actionNext();
         }
 
-        QAction *CBIFViewerPage::actionSkipForward()
+        QAction * CBIFViewerPage::actionSkipForward()
         {
             return fImpl->bifWidget->actionSkipForward();
         }

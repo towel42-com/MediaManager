@@ -53,7 +53,7 @@ namespace NMediaManager
         {
         }
 
-        std::pair< bool, QStandardItem * > CTagsModel::processItem(const QStandardItem * item, bool displayOnly)
+        std::pair< bool, QStandardItem * > CTagsModel::processItem( const QStandardItem * item, bool displayOnly )
         {
             auto fi = fileInfo( item );
             if ( !isMediaFile( fi ) )
@@ -138,7 +138,7 @@ namespace NMediaManager
             return CDirModel::headers() << NPreferences::NCore::CPreferences::instance()->getEnabledTagsForDisplay();
         }
 
-        std::list< SDirNodeItem > CTagsModel::addAdditionalItems(const QFileInfo & fileInfo) const
+        std::list< SDirNodeItem > CTagsModel::addAdditionalItems( const QFileInfo & fileInfo ) const
         {
             if ( showMediaItems() && canShowMediaInfo() )
                 return {};
@@ -157,7 +157,7 @@ namespace NMediaManager
                 auto pos = mediaInfo.find( ii );
                 if ( pos != mediaInfo.end() )
                 {
-                    value = (*pos).second;
+                    value = ( *pos ).second;
                 }
 
                 retVal.emplace_back( value, colNum++ );
@@ -170,19 +170,19 @@ namespace NMediaManager
             return retVal;
         }
 
-        void CTagsModel::reloadMediaTags(const QModelIndex & idx)
+        void CTagsModel::reloadMediaTags( const QModelIndex & idx )
         {
             if ( !canShowMediaInfo() )
                 return;
 
-            CDirModel::reloadMediaTags(idx, true);
+            CDirModel::reloadMediaTags( idx, true );
         }
 
-        void CTagsModel::postFileFunction(bool /*aOK*/, const QFileInfo & /*fileInfo*/)
+        void CTagsModel::postFileFunction( bool /*aOK*/, const QFileInfo & /*fileInfo*/ )
         {
         }
 
-        bool CTagsModel::preFileFunction(const QFileInfo & /*fileInfo*/, std::unordered_set<QString> & /*alreadyAdded*/, TParentTree & /*tree*/)
+        bool CTagsModel::preFileFunction( const QFileInfo & /*fileInfo*/, std::unordered_set<QString> & /*alreadyAdded*/, TParentTree & /*tree*/ )
         {
             return true;
         }

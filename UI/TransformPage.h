@@ -49,7 +49,7 @@ namespace NMediaManager
         {
             Q_OBJECT
         public:
-            CTransformPage( QWidget *parent = nullptr );
+            CTransformPage( QWidget * parent = nullptr );
             virtual ~CTransformPage() override;
 
             virtual bool useSecondaryProgressBar() const override { return false; }
@@ -78,13 +78,13 @@ namespace NMediaManager
             void slotAutoSearchFinished( const QString & path, NCore::SSearchTMDBInfo * searchInfo, bool searchesRemaining );
             void slotMenuAboutToShow();
             virtual void slotPreferencesChanged( NPreferences::EPreferenceTypes prefTypes ) override;
-                
+
         protected:
             void manualSearch( const QModelIndex & idx );
 
             virtual void loadSettings() override;
             bool autoSearchForNewNames( const QModelIndex & rootIdx, bool searchChildren, std::optional< NCore::EMediaType > mediaType );
-            
+
             NModels::CTransformModel * model();
 
             NCore::CSearchTMDB * fSearchTMDB{ nullptr };

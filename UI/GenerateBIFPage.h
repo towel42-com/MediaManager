@@ -33,7 +33,7 @@ namespace NMediaManager
         {
             Q_OBJECT
         public:
-            CGenerateBIFPage( QWidget *parent = nullptr );
+            CGenerateBIFPage( QWidget * parent = nullptr );
             virtual ~CGenerateBIFPage() override;
 
             virtual bool useSecondaryProgressBar() const override { return true; }

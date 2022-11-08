@@ -43,38 +43,38 @@ namespace NMediaManager
 
         }
 
-        SLanguageInfo::SLanguageInfo( const QFileInfo &fi ) :
+        SLanguageInfo::SLanguageInfo( const QFileInfo & fi ) :
             SLanguageInfo( fi.completeBaseName() )
         {
-            if (fi.suffix() == "idx")
-                *this = fromIDXFile(fi);
+            if ( fi.suffix() == "idx" )
+                *this = fromIDXFile( fi );
         }
 
-        SLanguageInfo::SLanguageInfo( const QString &fileName ) :
+        SLanguageInfo::SLanguageInfo( const QString & fileName ) :
             fFileName( fileName )
         {
             computeLanguage();
         }
 
-        SLanguageInfo::SLanguageInfo(const QString &isoCode, const QString & country )
+        SLanguageInfo::SLanguageInfo( const QString & isoCode, const QString & country )
         {
             auto language = isoCode;
-            if ( !country.isEmpty() && !country.startsWith("_") )
+            if ( !country.isEmpty() && !country.startsWith( "_" ) )
                 language += "_";
             language += country;
-            computeLanguage(language);
+            computeLanguage( language );
         }
 
-        SLanguageInfo SLanguageInfo::fromIDXFile(const QString & path)
+        SLanguageInfo SLanguageInfo::fromIDXFile( const QString & path )
         {
             return std::move( fromIDXFile( QFileInfo( path ) ) );
         }
 
-        SLanguageInfo SLanguageInfo::fromIDXFile(const QFileInfo & fileInfo)
+        SLanguageInfo SLanguageInfo::fromIDXFile( const QFileInfo & fileInfo )
         {
-            Q_ASSERT(fileInfo.suffix() == "idx");
+            Q_ASSERT( fileInfo.suffix() == "idx" );
             SLanguageInfo langInfo( fileInfo.completeBaseName() );
-            langInfo.computeLanguages(fileInfo);
+            langInfo.computeLanguages( fileInfo );
             return langInfo;
         }
 
@@ -115,14 +115,14 @@ namespace NMediaManager
         {
             std::unordered_set< QString > handled;
             QStringList tmp;
-            for (auto && ii : fMultiLanguageList)
+            for ( auto && ii : fMultiLanguageList )
             {
                 tmp << ii.first;
             }
-            return tmp.join(", ");
+            return tmp.join( ", " );
         }
 
-        void SLanguageInfo::setDefaultISOCode(const QString & value) // default is "en_us"
+        void SLanguageInfo::setDefaultISOCode( const QString & value ) // default is "en_us"
         {
             if ( isKnownLanguage( value ) )
             {
@@ -385,19 +385,19 @@ namespace NMediaManager
         {
             if ( sPrimToSecondaryMap.empty() )
             {
-                sLangMap["Hin"] = ( *sLangMap.find( "hi-IN" ) ).second;
-                sLangMap["May"] = ( *sLangMap.find( "ms-MY" ) ).second;
-                sLangMap["Nor"] = ( *sLangMap.find( "nb-NO" ) ).second;
-                sLangMap["Tam"] = ( *sLangMap.find( "ta-IN" ) ).second;
-                sLangMap["Tel"] = ( *sLangMap.find( "te-IN" ) ).second;
-                sLangMap["Eng"] = ( *sLangMap.find( "en-US" ) ).second;
-                sLangMap["no"] =  (*sLangMap.find("nb")).second;
+                sLangMap[ "Hin" ] = ( *sLangMap.find( "hi-IN" ) ).second;
+                sLangMap[ "May" ] = ( *sLangMap.find( "ms-MY" ) ).second;
+                sLangMap[ "Nor" ] = ( *sLangMap.find( "nb-NO" ) ).second;
+                sLangMap[ "Tam" ] = ( *sLangMap.find( "ta-IN" ) ).second;
+                sLangMap[ "Tel" ] = ( *sLangMap.find( "te-IN" ) ).second;
+                sLangMap[ "Eng" ] = ( *sLangMap.find( "en-US" ) ).second;
+                sLangMap[ "no" ] = ( *sLangMap.find( "nb" ) ).second;
                 sLangMap[ "slo" ] = ( *sLangMap.find( "sl-SI" ) ).second;
 
-                for (auto &&ii : sLangMap)
+                for ( auto && ii : sLangMap )
                 {
-                    sLangMap[ii.first.toLower()] = ii.second;
-                    sLangMap[ii.first.toLower().replace( "-", "_" )] = ii.second;
+                    sLangMap[ ii.first.toLower() ] = ii.second;
+                    sLangMap[ ii.first.toLower().replace( "-", "_" ) ] = ii.second;
 
                     auto code = ii.first;
 
@@ -405,17 +405,17 @@ namespace NMediaManager
                     auto secondary = ii.second.second;
 
                     if ( secondary.isEmpty() )
-                        sNameToCodeMap[prim.toLower()] = std::make_pair( prim, code );
+                        sNameToCodeMap[ prim.toLower() ] = std::make_pair( prim, code );
                     else
                     {
-                        sPrimToSecondaryMap[prim.toLower()].first = prim;
-                        sPrimToSecondaryMap[prim.toLower()].second.insert( secondary );
+                        sPrimToSecondaryMap[ prim.toLower() ].first = prim;
+                        sPrimToSecondaryMap[ prim.toLower() ].second.insert( secondary );
                     }
                 }
             }
         }
 
-        bool SLanguageInfo::isKnownLanguage( const QString &lang ) const
+        bool SLanguageInfo::isKnownLanguage( const QString & lang ) const
         {
             setupMaps();
             if ( sLangMap.find( lang.toLower() ) != sLangMap.end() )
@@ -425,85 +425,85 @@ namespace NMediaManager
             return false;
         }
 
-        bool SLanguageInfo::isLangFileFormat( const QFileInfo &fi )
+        bool SLanguageInfo::isLangFileFormat( const QFileInfo & fi )
         {
             auto fn = fi.completeBaseName();
             auto regExp = QRegularExpression( "\\d+_\\S+" );
             return regExp.match( fn ).hasMatch();
         }
 
-        QString SLanguageInfo::prettyPrintISOCode( const QString &isoCode )
+        QString SLanguageInfo::prettyPrintISOCode( const QString & isoCode )
         {
             auto tmp = isoCode.split( QRegularExpression( "_|-" ), NSABUtils::NStringUtils::TSkipEmptyParts );
             if ( tmp.length() > 1 )
-                tmp[1] = tmp[1].toUpper();
+                tmp[ 1 ] = tmp[ 1 ].toUpper();
             return tmp.join( "_" );
         }
 
-        bool SLanguageInfo::operator==(const SLanguageInfo & rhs) const
+        bool SLanguageInfo::operator==( const SLanguageInfo & rhs ) const
         {
             bool retVal =
-                (fFileName == rhs.fFileName)
-                && (fBaseName == rhs.fBaseName)
-                && (fISOCode == rhs.fISOCode)
-                && (fLanguage == rhs.fLanguage)
-                && (fCountry == rhs.fCountry)
-                && (fIsForced == rhs.fIsForced)
-                && (fIsSDH == rhs.fIsSDH)
-                && (fUsingDefault == rhs.fUsingDefault)
+                ( fFileName == rhs.fFileName )
+                && ( fBaseName == rhs.fBaseName )
+                && ( fISOCode == rhs.fISOCode )
+                && ( fLanguage == rhs.fLanguage )
+                && ( fCountry == rhs.fCountry )
+                && ( fIsForced == rhs.fIsForced )
+                && ( fIsSDH == rhs.fIsSDH )
+                && ( fUsingDefault == rhs.fUsingDefault )
                 ;
-            if (!retVal)
+            if ( !retVal )
                 return false;
-            if (fMultiLanguageList.size() != rhs.fMultiLanguageList.size())
+            if ( fMultiLanguageList.size() != rhs.fMultiLanguageList.size() )
                 return false;
             auto ii = fMultiLanguageList.begin();
             auto jj = rhs.fMultiLanguageList.begin();
-            for (; (ii != fMultiLanguageList.end()) && (jj != rhs.fMultiLanguageList.end()); ++ii, ++jj)
+            for ( ; ( ii != fMultiLanguageList.end() ) && ( jj != rhs.fMultiLanguageList.end() ); ++ii, ++jj )
             {
-                auto && kk = (*ii).first;
-                auto && ll = (*jj).first;
-                
-                if (kk != ll)
+                auto && kk = ( *ii ).first;
+                auto && ll = ( *jj ).first;
+
+                if ( kk != ll )
                     return false;
             }
             return true;
         }
 
-        void SLanguageInfo::computeLanguages(const QFileInfo & fi)
+        void SLanguageInfo::computeLanguages( const QFileInfo & fi )
         {
             setupMaps();
 
-            if (fi.suffix() != "idx")
+            if ( fi.suffix() != "idx" )
                 return;
-            QFile file(fi.absoluteFilePath());
-            file.open(QFile::ReadOnly | QFile::Text);
-            if (!file.isOpen())
+            QFile file( fi.absoluteFilePath() );
+            file.open( QFile::ReadOnly | QFile::Text );
+            if ( !file.isOpen() )
                 return;
-            
+
             auto regExStr = R"(^id\:\s?(?<isocode>[A-Za-z]{2})(?<country>_[A-Za-z]{2}(\d+)?)?,\s?index\:\s?(?<index>\d+)\s?$)";
             auto regExp = QRegularExpression( regExStr, QRegularExpression::CaseInsensitiveOption );
 
             regExStr = R"(^timestamp\:)";
-            auto tsRegExp = QRegularExpression(regExStr, QRegularExpression::CaseInsensitiveOption);
+            auto tsRegExp = QRegularExpression( regExStr, QRegularExpression::CaseInsensitiveOption );
 
             std::list< SMultLangInfo > languages;
 
-            QTextStream ts(&file);
+            QTextStream ts( &file );
             QString currLine;
             int lineNum = 0;
             int currSubTitleLines = 0;
-            while (ts.readLineInto(&currLine))
+            while ( ts.readLineInto( &currLine ) )
             {
                 lineNum++;
                 if ( !languages.empty() )
                 {
-                    if (tsRegExp.match(currLine).hasMatch())
+                    if ( tsRegExp.match( currLine ).hasMatch() )
                     {
                         currSubTitleLines++;
                     }
                 }
-                auto match = regExp.match(currLine);
-                if (match.hasMatch())
+                auto match = regExp.match( currLine );
+                if ( match.hasMatch() )
                 {
                     if ( !languages.empty() )
                     {
@@ -511,13 +511,13 @@ namespace NMediaManager
                     }
 
                     currSubTitleLines = 0;
-                    auto isoCode = match.captured("isocode");
-                    auto country = match.captured("country");
-                    int index = match.captured("index").toInt();
+                    auto isoCode = match.captured( "isocode" );
+                    auto country = match.captured( "country" );
+                    int index = match.captured( "index" ).toInt();
 
-                    auto currLanguage = std::make_shared< SLanguageInfo >(isoCode, country);
-                    if (!currLanguage->usingDefault())
-                        languages.emplace_back(SMultLangInfo(currLanguage, index, -1));
+                    auto currLanguage = std::make_shared< SLanguageInfo >( isoCode, country );
+                    if ( !currLanguage->usingDefault() )
+                        languages.emplace_back( SMultLangInfo( currLanguage, index, -1 ) );
                 }
             }
 
@@ -526,21 +526,21 @@ namespace NMediaManager
                 languages.back().fSize = currSubTitleLines;
             }
 
-            for (auto && ii : languages)
+            for ( auto && ii : languages )
             {
                 auto dispName = ii.fLanguage->displayName();
-                fMultiLanguageList[dispName].emplace_back(ii);
+                fMultiLanguageList[ dispName ].emplace_back( ii );
             }
-            for (auto && ii : fMultiLanguageList)
+            for ( auto && ii : fMultiLanguageList )
             {
                 std::sort( ii.second.begin(), ii.second.end(),
-                    [](const SMultLangInfo & lhs, const SMultLangInfo & rhs)
-                    {
-                        if (lhs.fLanguage->isoCode() != rhs.fLanguage->isoCode())
-                            return lhs.fLanguage->isoCode() < lhs.fLanguage->isoCode();
+                           []( const SMultLangInfo & lhs, const SMultLangInfo & rhs )
+                           {
+                               if ( lhs.fLanguage->isoCode() != rhs.fLanguage->isoCode() )
+                                   return lhs.fLanguage->isoCode() < lhs.fLanguage->isoCode();
 
-                        return lhs.fSize < rhs.fSize;
-                    });
+                               return lhs.fSize < rhs.fSize;
+                           } );
             }
         }
 
@@ -555,11 +555,11 @@ namespace NMediaManager
 
             auto regExpStr = R"((?<num>\d+)_(?<langname>\S+))";
             auto regExp1 = QRegularExpression( regExpStr );
-            Q_ASSERT(regExp1.isValid());
+            Q_ASSERT( regExp1.isValid() );
 
             regExpStr = R"((?<filename>[^<>:"\/\\|?*]+)\.(((?<isocode>[A-Za-z]{2})(?<country>_[A-Za-z]{2}(\d+)?)?$)|(?<langname>[A-Za-z]{2,3}$)))";
             auto regExp2 = QRegularExpression( regExpStr );
-            Q_ASSERT(regExp2.isValid());
+            Q_ASSERT( regExp2.isValid() );
 
             QRegularExpressionMatch match1;
             QRegularExpressionMatch match2;
@@ -573,16 +573,16 @@ namespace NMediaManager
             }
             else if ( ( match2 = regExp2.match( fFileName ) ).hasMatch() )
             {
-                fBaseName = match2.captured("filename");
-                if (match2.captured("langname").isEmpty())
+                fBaseName = match2.captured( "filename" );
+                if ( match2.captured( "langname" ).isEmpty() )
                 {
-                    langName = match2.captured("isocode");
-                    auto country = match2.captured("country");
-                    if (!country.isEmpty())
+                    langName = match2.captured( "isocode" );
+                    auto country = match2.captured( "country" );
+                    if ( !country.isEmpty() )
                         langName += country;
                 }
                 else
-                    langName = match2.captured("langname");
+                    langName = match2.captured( "langname" );
             }
             else
             {
@@ -598,7 +598,7 @@ namespace NMediaManager
             std::tie( fLanguage, fCountry, fISOCode, fUsingDefault ) = computeLanguageInt( langName );
         }
 
-        std::tuple< QString, QString, QString, bool > SLanguageInfo::computeLanguageInt( const QString &langName )
+        std::tuple< QString, QString, QString, bool > SLanguageInfo::computeLanguageInt( const QString & langName )
         {
             setupMaps();
 
@@ -631,7 +631,7 @@ namespace NMediaManager
                 usingDefault = true;
             }
 
-            if (    ( isoCode.toLower() == sDefaultISOCode.left( 2 ) ) 
+            if ( ( isoCode.toLower() == sDefaultISOCode.left( 2 ) )
                  && ( isoCode.length() != 2 )
                  && country.isEmpty() )
             {

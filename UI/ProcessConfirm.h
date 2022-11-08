@@ -40,17 +40,17 @@ namespace NMediaManager
             Q_OBJECT
 
         public:
-            CProcessConfirm( const QString &title, const QString &label, QWidget *parent = nullptr );
+            CProcessConfirm( const QString & title, const QString & label, QWidget * parent = nullptr );
             virtual ~CProcessConfirm() override;
 
-            void setTitle( const QString &title );
-            void setLabel( const QString &label );
+            void setTitle( const QString & title );
+            void setLabel( const QString & label );
 
-            void setModel( QAbstractItemModel *model );
-            void setIconLabel( const QMessageBox::Icon &icon );
+            void setModel( QAbstractItemModel * model );
+            void setIconLabel( const QMessageBox::Icon & icon );
             void setButtons( QDialogButtonBox::StandardButtons buttons );
         private Q_SLOTS:
-            void slotButtonClicked( QAbstractButton *btn );
+            void slotButtonClicked( QAbstractButton * btn );
 
         private:
             std::unique_ptr< Ui::CProcessConfirm > fImpl;

@@ -74,7 +74,8 @@ namespace NMediaManager
         public:
             CCompleterFileSystemModel( QObject * parent = nullptr ) :
                 QFileSystemModel( parent )
-            {}
+            {
+            }
 
             QVariant data( const QModelIndex & index, int role = Qt::DisplayRole ) const override
             {
@@ -98,7 +99,7 @@ namespace NMediaManager
             bool nativeEventFilter( const QByteArray & eventType, void * message, long * result ) override
             {
 #ifdef Q_OS_WINDOWS
-                (void)result;
+                ( void )result;
                 if ( eventType == "windows_generic_MSG" )
                 {
                     auto msg = static_cast<MSG *>( message );
@@ -232,7 +233,7 @@ namespace NMediaManager
             addPage( std::make_shared< STabDef >( new CGenerateBIFPage( nullptr ), tr( "Generate Thumbnails" ), QString::fromUtf8( ":/roku.png" ), fImpl->tabWidget ) );
             auto bifPage = addPage( std::make_shared< STabDef >( new CBIFViewerPage( nullptr ), tr( "BIF Viewer" ), QString::fromUtf8( ":/roku.png" ), fImpl->tabWidget ) );
 
-            connect( fImpl->fileName, &NSABUtils::CDelayComboBox::sigEditTextChangedAfterDelay, dynamic_cast<CBIFViewerPage*>( bifPage->fPage ), &CBIFViewerPage::slotFileChanged );
+            connect( fImpl->fileName, &NSABUtils::CDelayComboBox::sigEditTextChangedAfterDelay, dynamic_cast<CBIFViewerPage *>( bifPage->fPage ), &CBIFViewerPage::slotFileChanged );
             connect( fImpl->fileName->lineEdit(), &NSABUtils::CDelayLineEdit::sigFinishedEditingAfterDelay, dynamic_cast<CBIFViewerPage *>( bifPage->fPage ), &CBIFViewerPage::slotFileFinishedEditing );
 
         }
@@ -266,7 +267,7 @@ namespace NMediaManager
             auto basePage = getCurrentBasePage();
             if ( basePage )
                 return basePage->isFileBased();
-            
+
             return false;
         }
 
@@ -278,7 +279,7 @@ namespace NMediaManager
 
             return false;
         }
-        
+
         bool CMainWindow::setBIFFileName( const QString & name )
         {
             QSettings settings;
@@ -337,6 +338,7 @@ namespace NMediaManager
 
             fImpl->fileNameLabel->setVisible( isActivePageFileBased() );
             fImpl->fileName->setVisible( isActivePageFileBased() );
+            fImpl->actionLoad->setVisible( isActivePageDirBased() );
 
             if ( isActivePageFileBased() )
                 fImpl->actionOpen->setText( tr( "Open File..." ) );
@@ -399,7 +401,7 @@ namespace NMediaManager
         {
             if ( isActivePageFileBased() )
             {
-                auto prev = fImpl->fileName->isOK() ? fImpl->fileName->currentText() : QString();
+                auto prev = fImpl->fileName->currentText();
                 auto fileName = QFileDialog::getOpenFileName( this, tr( "Select File:" ), prev, getCurrentBasePage()->selectFileFilter() );
                 if ( !fileName.isEmpty() )
                     fImpl->fileName->setCurrentText( fileName );
@@ -518,10 +520,10 @@ namespace NMediaManager
             fViewAction->setChecked( NPreferences::NCore::CPreferences::instance()->getPageVisible( fName ) );
 
             QObject::connect( fViewAction, &QAction::triggered,
-                     [name]( bool checked )
-                     {
-                         NPreferences::NCore::CPreferences::instance()->setPageVisible( name, checked );
-                     }
+                              [name]( bool checked )
+                              {
+                                  NPreferences::NCore::CPreferences::instance()->setPageVisible( name, checked );
+                              }
             );
 
             fTabIndex = fTabWidget->addTab( fTab, fIcon, fName );

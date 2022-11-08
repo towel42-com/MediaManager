@@ -103,7 +103,7 @@ namespace NMediaManager
                 if ( aOK )
                     numSeconds = curr;
             }
-        
+
             fProgressDlg->setSecondaryValue( numSeconds );
         }
     }

@@ -46,7 +46,7 @@ namespace NMediaManager
         {
             Q_OBJECT
         public:
-            CTagsPage( QWidget *parent = nullptr );
+            CTagsPage( QWidget * parent = nullptr );
             virtual ~CTagsPage() override;
 
             virtual bool useSecondaryProgressBar() const override { return false; }

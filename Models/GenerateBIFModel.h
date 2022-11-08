@@ -37,12 +37,12 @@ namespace NMediaManager
             {
                 eMediaColumnLoc = NModels::EColumns::eFirstCustomColumn,
             };
-            
+
             CGenerateBIFModel( NUi::CBasePage * page, QObject * parent = nullptr );
             virtual ~CGenerateBIFModel() override;
 
         private:
-            virtual bool ignoreExtrasOnSearch() const { return true; }
+            virtual bool ignoreExtrasOnSearch() const override { return false; }
 
             virtual std::pair< bool, QStandardItem * > processItem( const QStandardItem * item, bool displayOnly ) override;
             virtual bool showMediaItems() const override { return false; };
@@ -50,8 +50,8 @@ namespace NMediaManager
             virtual QStringList headers() const override;
             virtual QString getProgressLabel( const SProcessInfo & processInfo ) const override;
             virtual void postLoad( QTreeView * /*treeView*/ ) override;
-            virtual void preLoad(QTreeView * /*treeView*/) override;
-            virtual void postProcess(bool /*displayOnly*/) override;
+            virtual void preLoad( QTreeView * /*treeView*/ ) override;
+            virtual void postProcess( bool /*displayOnly*/ ) override;
 
             virtual void postFileFunction( bool /*aOK*/, const QFileInfo & /*fileInfo*/ ) override;;
             virtual bool preFileFunction( const QFileInfo & /*fileInfo*/, std::unordered_set<QString> & /*alreadyAdded*/, TParentTree & /*tree*/ ) override;

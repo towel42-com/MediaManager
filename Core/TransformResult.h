@@ -155,10 +155,10 @@ namespace NMediaManager
 
             QString description() const { return fDescription; }
             void setDescription( const QString & val ) { fDescription = val; }
-            
+
             QString title() const { return fTitle; }
             void setTitle( const QString & val );
-            
+
             QString tmdbID() const { return fTMDBID; }
             void setTMDBID( const QString & val ) { fTMDBID = val; }
 
@@ -173,16 +173,16 @@ namespace NMediaManager
 
             QString extraInfo() const { return fExtraInfo; }
             void setExtraInfo( const QString & val ) { fExtraInfo = val; }
-            
+
             QString season() const { return fSeason; }
             void setSeason( const QString & val ) { fSeason = val; }
-            
+
             QString episode() const { return fEpisode; }
             void setEpisode( const QString & val ) { fEpisode = val; }
-            
+
             QString subTitle() const { return fSubTitle; }
             void setSubTitle( const QString & val ) { fSubTitle = val; }
-            
+
             QPixmap pixmap() const { return fPixmap; }
             void setPixmap( const QPixmap & val ) { fPixmap = val; }
             void setPixmapPath( const QString & path ) { fPixmapPath = path; }

@@ -57,16 +57,12 @@ namespace NMediaManager
                 void slotSelectMKVMergeExe();
                 void slotSelectMKVPropEditExe();
                 void slotSelectFFMpegExe();
-                void slotSelectBIFToolExe();
 
                 void slotFFToolChanged();
                 void slotMKVNixToolChanged();
-                void slotBIFToolChanged();
             private:
                 void mkvnixToolChanged( QLineEdit * le );
                 void fftoolToolChanged( QLineEdit * le );
-                void bifToolChanged( QLineEdit * le );
-
 
                 void updateOtherTool( QObject * sender, const std::pair< QLineEdit *, QString > & lhs, const std::pair< QLineEdit *, QString > & rhs );
                 std::unique_ptr< Ui::CExternalTools > fImpl;

@@ -33,7 +33,7 @@ namespace NMediaManager
 {
     namespace NUi
     {
-        CProcessConfirm::CProcessConfirm( const QString &title, const QString &label, QWidget *parent ) :
+        CProcessConfirm::CProcessConfirm( const QString & title, const QString & label, QWidget * parent ) :
             QDialog( parent ),
             fImpl( new Ui::CProcessConfirm )
         {
@@ -62,17 +62,17 @@ namespace NMediaManager
         {
         }
 
-        void CProcessConfirm::setTitle( const QString &text )
+        void CProcessConfirm::setTitle( const QString & text )
         {
             setWindowTitle( text );
         }
 
-        void CProcessConfirm::setLabel( const QString &text )
+        void CProcessConfirm::setLabel( const QString & text )
         {
             fImpl->label->setText( text );
         }
 
-        void CProcessConfirm::setModel( QAbstractItemModel *model )
+        void CProcessConfirm::setModel( QAbstractItemModel * model )
         {
             fImpl->transformations->setModel( model );
             NSABUtils::expandAll( fImpl->transformations );
@@ -83,7 +83,7 @@ namespace NMediaManager
             }
         }
 
-        void CProcessConfirm::setIconLabel( const QMessageBox::Icon &icon )
+        void CProcessConfirm::setIconLabel( const QMessageBox::Icon & icon )
         {
             fImpl->iconLabel->setVisible( true );
             auto pm = QMessageBox::standardIcon( icon );
@@ -98,7 +98,7 @@ namespace NMediaManager
             fImpl->buttonBox->setStandardButtons( buttons );
         }
 
-        void CProcessConfirm::slotButtonClicked( QAbstractButton *btn )
+        void CProcessConfirm::slotButtonClicked( QAbstractButton * btn )
         {
             if ( ( fImpl->buttonBox->buttonRole( btn ) == QDialogButtonBox::ApplyRole ) || ( fImpl->buttonBox->buttonRole( btn ) == QDialogButtonBox::YesRole ) )
             {

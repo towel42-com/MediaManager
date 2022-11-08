@@ -32,6 +32,10 @@
 #include <QDebug>
 #include <QTemporaryDir>
 
+#ifndef NDEBUG
+#define DEBUG_TEMP_DIR
+#endif
+
 namespace NMediaManager
 {
     namespace NModels
@@ -80,9 +84,14 @@ namespace NMediaManager
                 aOK = aOK && checkProcessItemExists( processInfo.fOldName, processInfo.fItem );
                 processInfo.fTimeStamps = NSABUtils::NFileUtils::timeStamps( processInfo.fOldName );
 
+#ifndef DEBUG_TEMP_DIR
                 processInfo.fTempDir = std::make_shared< QTemporaryDir >();
                 processInfo.fTempDir->setAutoRemove( true );
+#else
+                processInfo.fTempDir = std::make_shared< QTemporaryDir >( QFileInfo( processInfo.fOldName ).absoluteDir().absoluteFilePath( "./TempDir-XXXXXX" ) );
+                processInfo.fTempDir->setAutoRemove( false );
                 qDebug() << processInfo.fTempDir->path();
+#endif
 // eg -f matroska -threads 1 -skip_interval 10 -copyts -i file:"/volume2/video/Movies/Westworld (1973) [tmdbid=2362]/Westworld.mkv" -an -sn -vf "scale=w=320:h=133" -vsync cfr -r 0.1 -f image2 "/var/packages/EmbyServer/var/cache/temp/112d22a09fea457eaea27c4b0c88f790/img_%05d.jpg"
                 processInfo.fArgs = QStringList()
                     << "-f" << "matroska"
@@ -114,9 +123,11 @@ namespace NMediaManager
                         msg = "Temporary directory does not exist";
                         return false;
                     }
-                    if ( !NSABUtils::NBIF::CFile::createBIF( dir, 10000, processInfo->fNewName, NPreferences::NCore::CPreferences::instance()->getBIFToolEXE(), msg ) )
+
+                    auto bifFile = NSABUtils::NBIF::CFile( dir, "img_*.jpg", 10000, msg );
+                    if ( !bifFile.isValid() )
                         return false;
-                    return true;
+                    return bifFile.save( processInfo->fNewName, msg );
                 };
 
                 fProcessQueue.push_back( processInfo );

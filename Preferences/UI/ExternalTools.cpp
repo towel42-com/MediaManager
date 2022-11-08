@@ -56,37 +56,17 @@ namespace NMediaManager
                 fImpl->ffmpegExe->setCheckIsExecutable( true );
 
 
-                connect( fImpl->btnSelectBIFToolExe, &QToolButton::clicked, this, &CExternalTools::slotSelectBIFToolExe );
-                fImpl->bifToolExe->setCheckExists( true );
-                fImpl->bifToolExe->setCheckIsFile( true );
-                fImpl->bifToolExe->setCheckIsExecutable( true );
-
                 connect( fImpl->ffmpegExe, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CExternalTools::slotFFToolChanged );
                 connect( fImpl->mkvMergeExe, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CExternalTools::slotMKVNixToolChanged );
                 connect( fImpl->mkvPropEditExe, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CExternalTools::slotMKVNixToolChanged );
-                connect( fImpl->bifToolExe, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CExternalTools::slotBIFToolChanged );
 
                 fftoolToolChanged( fImpl->ffmpegExe );
                 mkvnixToolChanged( fImpl->mkvMergeExe );
                 mkvnixToolChanged( fImpl->mkvPropEditExe );
-                bifToolChanged( fImpl->bifToolExe );
             }
 
             CExternalTools::~CExternalTools()
             {
-            }
-
-            void CExternalTools::slotSelectBIFToolExe()
-            {
-                auto exe = QFileDialog::getOpenFileName( this, tr( "Select biftool Executable:" ), fImpl->bifToolExe->text(), "biftool Executable (biftool.exe);;All Executables (*.exe);;All Files (*.*)" );
-                if ( !exe.isEmpty() && !QFileInfo( exe ).isExecutable() )
-                {
-                    QMessageBox::critical( this, "Not an Executable", tr( "The file '%1' is not an executable" ).arg( exe ) );
-                    return;
-                }
-
-                if ( !exe.isEmpty() )
-                    fImpl->bifToolExe->setText( exe );
             }
 
             void CExternalTools::slotSelectMKVMergeExe()
@@ -164,11 +144,6 @@ namespace NMediaManager
                     otherLE->setText( otherEXE );
             }
 
-            void CExternalTools::slotBIFToolChanged()
-            {
-                bifToolChanged( dynamic_cast<QLineEdit *>( sender() ) );
-            }
-
             void CExternalTools::slotMKVNixToolChanged()
             {
                 mkvnixToolChanged( dynamic_cast<QLineEdit *>( sender() ) );
@@ -189,17 +164,11 @@ namespace NMediaManager
                 //updateOtherTool( le, { fImpl->ffprobeExe, "ffprobe" }, { fImpl->ffmpegExe, "ffmpeg" } );
             }
 
-            void CExternalTools::bifToolChanged( QLineEdit * /*le*/ )
-            {
-                //updateOtherTool( le, { fImpl->ffprobeExe, "ffprobe" }, { fImpl->ffmpegExe, "ffmpeg" } );
-            }
-
             void CExternalTools::load()
             {
                 fImpl->mkvMergeExe->setText( NPreferences::NCore::CPreferences::instance()->getMKVMergeEXE() );
                 fImpl->mkvPropEditExe->setText( NPreferences::NCore::CPreferences::instance()->getMKVPropEditEXE() );
                 fImpl->ffmpegExe->setText( NPreferences::NCore::CPreferences::instance()->getFFMpegEXE() );
-                fImpl->bifToolExe->setText( NPreferences::NCore::CPreferences::instance()->getBIFToolEXE() );
             }
 
             void CExternalTools::save()
@@ -207,7 +176,6 @@ namespace NMediaManager
                 NPreferences::NCore::CPreferences::instance()->setMKVMergeEXE( fImpl->mkvMergeExe->text() );
                 NPreferences::NCore::CPreferences::instance()->setMKVPropEditEXE( fImpl->mkvPropEditExe->text() );
                 NPreferences::NCore::CPreferences::instance()->setFFMpegEXE( fImpl->ffmpegExe->text() );
-                NPreferences::NCore::CPreferences::instance()->setBIFToolEXE( fImpl->bifToolExe->text() );
             }
         }
     }

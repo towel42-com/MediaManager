@@ -33,7 +33,7 @@ class QTabWidget;
 #include <tuple>
 #include "Preferences/Core/Preferences.h"
 
-namespace NSABUtils 
+namespace NSABUtils
 {
     class CStayAwake;
     class CBackgroundFileCheck;
@@ -70,10 +70,10 @@ namespace NMediaManager
         {
             Q_OBJECT
         public:
-            CMainWindow( QWidget *parent = nullptr );
+            CMainWindow( QWidget * parent = nullptr );
             virtual ~CMainWindow() override;
 
-            bool setBIFFileName( const QString &name );
+            bool setBIFFileName( const QString & name );
             bool titleBarClicked( const QPoint & pt ) const;
         public Q_SLOTS:
             virtual void slotOpen();
@@ -102,7 +102,7 @@ namespace NMediaManager
             std::shared_ptr< STabDef > addPage( std::shared_ptr< STabDef > & tabDef );
 
             CBasePage * getCurrentBasePage() const;
-   
+
             bool isActivePageFileBased() const;
             bool isActivePageDirBased() const;
 

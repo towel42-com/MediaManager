@@ -62,7 +62,7 @@ namespace NMediaManager
                 eEpisode
             };
 
-            CSelectTMDB( const QString &searchText, std::shared_ptr< NCore::CTransformResult > searchResult, QWidget *parent = nullptr );
+            CSelectTMDB( const QString & searchText, std::shared_ptr< NCore::CTransformResult > searchResult, QWidget * parent = nullptr );
             virtual ~CSelectTMDB() override;
 
             std::shared_ptr< NCore::CTransformResult > getSearchResult() const;
@@ -92,9 +92,9 @@ namespace NMediaManager
             void countResults( QTreeWidgetItem * parent, std::tuple< int, int, int > & count );
             QTreeWidgetItem * getFirstSelected() const;
 
-            bool isMatchingItem( QTreeWidgetItem *item ) const;
-            QTreeWidgetItem *getSingleMatchingItem( QTreeWidgetItem *parentItem ) const;
-            std::list < QTreeWidgetItem * > getMatchingItems( QTreeWidgetItem *parentItem ) const;
+            bool isMatchingItem( QTreeWidgetItem * item ) const;
+            QTreeWidgetItem * getSingleMatchingItem( QTreeWidgetItem * parentItem ) const;
+            std::list < QTreeWidgetItem * > getMatchingItems( QTreeWidgetItem * parentItem ) const;
 
             void updateEnabled();
             void updateByName( bool init );
@@ -106,13 +106,13 @@ namespace NMediaManager
             std::shared_ptr< NCore::SSearchTMDBInfo > getSearchInfo();
             void resetHeader();
 
-            void loadResults( std::shared_ptr< NCore::CTransformResult > item, QTreeWidgetItem *parent );
-            void deleteParent( QTreeWidgetItem *item );
+            void loadResults( std::shared_ptr< NCore::CTransformResult > item, QTreeWidgetItem * parent );
+            void deleteParent( QTreeWidgetItem * item );
 
             std::unique_ptr< Ui::CSelectTMDB > fImpl;
 
-            NSABUtils::CButtonEnabler *fButtonEnabler{ nullptr };
-            NCore::CSearchTMDB *fSearchTMDB{ nullptr };
+            NSABUtils::CButtonEnabler * fButtonEnabler{ nullptr };
+            NCore::CSearchTMDB * fSearchTMDB{ nullptr };
             std::shared_ptr< NCore::SSearchTMDBInfo > fSearchInfo;
 
             bool fPartialResults{ false };

@@ -106,7 +106,7 @@ namespace NMediaManager
                 if ( aOK )
                     numSeconds += curr * 60 * 60;
             }
-            
+
             if ( !mins.isEmpty() )
             {
                 bool aOK;
@@ -122,7 +122,7 @@ namespace NMediaManager
                 if ( aOK )
                     numSeconds += curr;
             }
-        
+
             fProgressDlg->setSecondaryValue( numSeconds );
         }
     }

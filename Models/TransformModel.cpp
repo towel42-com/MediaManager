@@ -52,7 +52,8 @@ namespace NMediaManager
         }
 
         CTransformModel::~CTransformModel()
-        {}
+        {
+        }
 
         bool CTransformModel::setData( const QModelIndex & idx, const QVariant & value, int role )
         {
@@ -68,7 +69,7 @@ namespace NMediaManager
             return CDirModel::setData( idx, value, role );
         }
 
-        bool CTransformModel::isValidName(const QFileInfo & fi, std::optional< bool > isTVShow ) const
+        bool CTransformModel::isValidName( const QFileInfo & fi, std::optional< bool > isTVShow ) const
         {
             return isValidName( fi.fileName(), fi.isDir(), isTVShow );
         }
@@ -86,8 +87,8 @@ namespace NMediaManager
             bool defaultAsTVShow = isTVShow.has_value() ? isTVShow.value() : this->isChecked( path, EColumns::eIsTVShow );
 
             bool asTVShow = treatAsTVShow( path, defaultAsTVShow );
-            if ( (!asTVShow && fMoviePatterns.isValidName( path, isDir ))
-                 || (asTVShow && fTVPatterns.isValidName( path, isDir )) )
+            if ( ( !asTVShow && fMoviePatterns.isValidName( path, isDir ) )
+                 || ( asTVShow && fTVPatterns.isValidName( path, isDir ) ) )
                 return true;
 
             return false;
@@ -102,21 +103,21 @@ namespace NMediaManager
 
         void CTransformModel::slotTVOutputDirPatternChanged( const QString & outPattern )
         {
-            fTVPatterns.setDirPattern(outPattern);
+            fTVPatterns.setDirPattern( outPattern );
             // need to emit datachanged on column 4 for all known indexes
             transformPatternChanged();
         }
 
         void CTransformModel::slotMovieOutputFilePatternChanged( const QString & outPattern )
         {
-            fMoviePatterns.setFilePattern(outPattern);
+            fMoviePatterns.setFilePattern( outPattern );
             // need to emit datachanged on column 4 for all known indexes
             transformPatternChanged();
         }
 
         void CTransformModel::slotMovieOutputDirPatternChanged( const QString & outPattern )
         {
-            fMoviePatterns.setDirPattern(outPattern);
+            fMoviePatterns.setDirPattern( outPattern );
             // need to emit datachanged on column 4 for all known indexes
             transformPatternChanged();
         }
@@ -136,7 +137,7 @@ namespace NMediaManager
             auto pos = fileInfo.isDir() ? fDirMapping.find( filePath ) : fFileMapping.find( filePath );
             auto retVal = std::make_pair( false, QString() );
 
-            if ( pos == (fileInfo.isDir() ? fDirMapping.end() : fFileMapping.end()) )
+            if ( pos == ( fileInfo.isDir() ? fDirMapping.end() : fFileMapping.end() ) )
             {
                 QString fn = fileInfo.fileName();
                 if ( !fileInfo.isDir() )
@@ -147,7 +148,7 @@ namespace NMediaManager
                 auto transformInfo = getTransformResult( filePath, false );
                 if ( !transformInfo )
                 {
-                    if (isValidName(fileInfo) || isIgnoredPathName(fileInfo))
+                    if ( isValidName( fileInfo ) || isIgnoredPathName( fileInfo ) )
                     {
                         retVal.first = true;
                         retVal.second = QString();
@@ -173,13 +174,13 @@ namespace NMediaManager
                 }
 
                 if ( fileInfo.isDir() )
-                    fDirMapping[filePath] = retVal;
+                    fDirMapping[ filePath ] = retVal;
                 else
-                    fFileMapping[filePath] = retVal;
-                clearPathStatusCache(filePath);
+                    fFileMapping[ filePath ] = retVal;
+                clearPathStatusCache( filePath );
             }
             else
-                retVal = (*pos).second;
+                retVal = ( *pos ).second;
 
             return retVal;
         }
@@ -208,7 +209,7 @@ namespace NMediaManager
                             searchName = title + " - " + searchName;
                         //qDebug() << kk.second << " = " << searchName;
                         episodeNum++;
-                        fDiskRipSearchMap[kk.second] = searchName;
+                        fDiskRipSearchMap[ kk.second ] = searchName;
                     }
                 }
             }
@@ -226,7 +227,7 @@ namespace NMediaManager
                 auto childPaths = getDiskTitles( parentIdx );
                 if ( !childPaths.empty() )
                 {
-                    retVal[name][diskNumber] = childPaths;
+                    retVal[ name ][ diskNumber ] = childPaths;
                 }
             }
 
@@ -251,7 +252,7 @@ namespace NMediaManager
                     int titleNum = -1;
                     if ( NCore::SSearchTMDBInfo::isRippedFromMKV( name, &titleNum ) )
                     {
-                        retVal[titleNum] = childIndex.data( NModels::ECustomRoles::eAbsFilePath ).toString();
+                        retVal[ titleNum ] = childIndex.data( NModels::ECustomRoles::eAbsFilePath ).toString();
                     }
                 }
             }
@@ -267,7 +268,7 @@ namespace NMediaManager
             auto path = idx.data( ECustomRoles::eAbsFilePath ).toString();
             auto pos = fDiskRipSearchMap.find( path );
             if ( pos != fDiskRipSearchMap.end() )
-                return (*pos).second;
+                return ( *pos ).second;
 
             if ( NCore::SSearchTMDBInfo::isRippedFromMKV( fileInfo( idx ) ) )
                 return getSearchName( idx.parent() );
@@ -276,13 +277,13 @@ namespace NMediaManager
             if ( NCore::CTransformResult::isAutoSetText( nm ) || nm.isEmpty() )
             {
                 nm = index( idx.row(), NModels::EColumns::eFSName, idx.parent() ).data( ECustomRoles::eAbsFilePath ).toString();
-                nm = nm.isEmpty() ? QString() : (QFileInfo( nm ).isDir() ? QFileInfo( nm ).fileName() : QFileInfo( nm ).completeBaseName());
+                nm = nm.isEmpty() ? QString() : ( QFileInfo( nm ).isDir() ? QFileInfo( nm ).fileName() : QFileInfo( nm ).completeBaseName() );
             }
-            else if (!nm.isEmpty() && QFileInfo(path).isFile())
+            else if ( !nm.isEmpty() && QFileInfo( path ).isFile() )
             {
-                nm = QFileInfo(nm).completeBaseName();
+                nm = QFileInfo( nm ).completeBaseName();
             }
-            
+
             return nm;
         }
 
@@ -344,7 +345,7 @@ namespace NMediaManager
 
         }
 
-        void CTransformModel::setInAutoSearch(bool val, bool reset )
+        void CTransformModel::setInAutoSearch( bool val, bool reset )
         {
             beginResetModel();
             if ( reset )
@@ -356,13 +357,13 @@ namespace NMediaManager
                 filesView()->expandAll();
         }
 
-        void CTransformModel::setDeleteItem(const QModelIndex & idx)
+        void CTransformModel::setDeleteItem( const QModelIndex & idx )
         {
-            auto searchResult = std::make_shared< NCore::CTransformResult >( NCore::EMediaType::eDeleteFileType);
-            setSearchResult(idx, searchResult, false, true);
+            auto searchResult = std::make_shared< NCore::CTransformResult >( NCore::EMediaType::eDeleteFileType );
+            setSearchResult( idx, searchResult, false, true );
         }
 
-        void CTransformModel::setSearchResult( QStandardItem * item, std::shared_ptr< NCore::CTransformResult > searchResult, bool applyToChildren, bool forceSet)
+        void CTransformModel::setSearchResult( QStandardItem * item, std::shared_ptr< NCore::CTransformResult > searchResult, bool applyToChildren, bool forceSet )
         {
             auto idx = indexFromItem( item );
             setSearchResult( idx, searchResult, applyToChildren, forceSet );
@@ -382,7 +383,7 @@ namespace NMediaManager
                 if ( !searchResult )
                     fTransformResultMap.erase( fi.absoluteFilePath() );
                 else
-                    fTransformResultMap[fi.absoluteFilePath()] = searchResult;
+                    fTransformResultMap[ fi.absoluteFilePath() ] = searchResult;
 
                 if ( isDir( idx ) )
                     fDirMapping.erase( fi.absoluteFilePath() );
@@ -450,7 +451,7 @@ namespace NMediaManager
                             progressDlg()->setLabelText( tr( "Renaming '%1' => '%2'" ).arg( getDispName( oldName ) ).arg( getDispName( newName ) ) );
                     }
 
-                    bool dirAlreadyExisted = (oldFileInfo.exists() && oldFileInfo.isDir() && newFileInfo.exists() && newFileInfo.isDir());
+                    bool dirAlreadyExisted = ( oldFileInfo.exists() && oldFileInfo.isDir() && newFileInfo.exists() && newFileInfo.isDir() );
                     if ( dirAlreadyExisted )
                     {
                         // new directory already exists, do move everything from old to new
@@ -497,12 +498,12 @@ namespace NMediaManager
                             {
                                 auto parentDir = oldFileInfo.absoluteDir();
                                 auto pathToDelete = oldFileInfo.absoluteFilePath();
-                                auto file = QFile(pathToDelete);
+                                auto file = QFile( pathToDelete );
                                 aOK = file.remove();
-                                if ( !aOK ) 
+                                if ( !aOK )
                                     errorMsg = file.errorString();
-                                auto peerFiles = parentDir.entryInfoList( QStringList() << "*" << "*.*", QDir::NoDotAndDotDot | QDir::Files);
-                                if (aOK && peerFiles.isEmpty())
+                                auto peerFiles = parentDir.entryInfoList( QStringList() << "*" << "*.*", QDir::NoDotAndDotDot | QDir::Files );
+                                if ( aOK && peerFiles.isEmpty() )
                                 {
                                     oldName = parentDir.absolutePath();
                                     aOK = parentDir.removeRecursively();
@@ -527,7 +528,7 @@ namespace NMediaManager
                             if ( transFormItem )
                             {
                                 auto mySubPath = transFormItem->text();
-                                if ( (mySubPath.indexOf( "/" ) != -1) || (mySubPath.indexOf( "\\" ) != -1) )
+                                if ( ( mySubPath.indexOf( "/" ) != -1 ) || ( mySubPath.indexOf( "\\" ) != -1 ) )
                                 {
                                     auto pos = mySubPath.lastIndexOf( QRegularExpression( R"([\/\\])" ) );
                                     auto myParentPath = mySubPath.left( pos );
@@ -549,18 +550,18 @@ namespace NMediaManager
                             QString errorMsg;
                             if ( parentPathOK )
                             {
-                                if (newFileInfo.exists() && newFileInfo.isFile() && oldFileInfo.isFile() && newFileInfo != oldFileInfo )
+                                if ( newFileInfo.exists() && newFileInfo.isFile() && oldFileInfo.isFile() && newFileInfo != oldFileInfo )
                                 {
-                                    if (NSABUtils::NFileUtils::CFileCompare(oldFileInfo, newFileInfo).compare())
+                                    if ( NSABUtils::NFileUtils::CFileCompare( oldFileInfo, newFileInfo ).compare() )
                                     {
-                                        aOK = QFile(oldName).remove();
-                                        if (!aOK)
-                                            errorMsg = QString("Destination file '%1' exists and is identical to the new '%2' file, but the old file can not be deleted").arg(oldName).arg(newName);
+                                        aOK = QFile( oldName ).remove();
+                                        if ( !aOK )
+                                            errorMsg = QString( "Destination file '%1' exists and is identical to the new '%2' file, but the old file can not be deleted" ).arg( oldName ).arg( newName );
                                     }
                                     else
                                     {
                                         aOK = false;
-                                        errorMsg = QString("Destination file Exists - Old Size: %1 New Size: %2").arg(NSABUtils::NFileUtils::byteSizeString(oldName, false)).arg(NSABUtils::NFileUtils::byteSizeString(newName, false));
+                                        errorMsg = QString( "Destination file Exists - Old Size: %1 New Size: %2" ).arg( NSABUtils::NFileUtils::byteSizeString( oldName, false ) ).arg( NSABUtils::NFileUtils::byteSizeString( newName, false ) );
                                     }
                                 }
                                 else
@@ -702,7 +703,7 @@ namespace NMediaManager
             {
                 auto idx = item->index();
 
-                auto baseIdx = (idx.column() == NModels::EColumns::eFSName) ? idx : idx.model()->index( idx.row(), NModels::EColumns::eFSName, idx.parent() );
+                auto baseIdx = ( idx.column() == NModels::EColumns::eFSName ) ? idx : idx.model()->index( idx.row(), NModels::EColumns::eFSName, idx.parent() );
                 auto baseItem = this->itemFromIndex( baseIdx );
 
                 auto transformedItem = getTransformItem( baseItem );
@@ -721,8 +722,8 @@ namespace NMediaManager
 
             auto transformInfo = transformItem( fileInfo );
             auto currText = item->text();
-            transformedItem->setText(QString());
-            if ( !transformInfo.first || (currText != transformInfo.second) )
+            transformedItem->setText( QString() );
+            if ( !transformInfo.first || ( currText != transformInfo.second ) )
             {
                 if ( transformedItem->text() != transformInfo.second )
                     transformedItem->setText( transformInfo.second );
@@ -775,9 +776,9 @@ namespace NMediaManager
             return retVal;
         }
 
-        std::optional< TItemStatus > CTransformModel::computeItemStatus( const QModelIndex & idx) const
+        std::optional< TItemStatus > CTransformModel::computeItemStatus( const QModelIndex & idx ) const
         {
-            if (isRootPath(idx))
+            if ( isRootPath( idx ) )
                 return {};
 
             if ( idx.column() != EColumns::eTransformName )
@@ -786,10 +787,10 @@ namespace NMediaManager
             auto fileInfo = this->fileInfo( idx );
             TItemStatus retVal = { NPreferences::EItemStatus::eOK, QString() };
             auto path = fileInfo.absoluteFilePath();
-        
-            if (isIgnoredPathName(fileInfo) && !NPreferences::NCore::CPreferences::instance()->isSubtitleFile(fileInfo))
+
+            if ( isIgnoredPathName( fileInfo ) && !NPreferences::NCore::CPreferences::instance()->isSubtitleFile( fileInfo ) )
                 retVal.first = NPreferences::EItemStatus::eOK;
-            else if ( fileInfo.isDir() || isMediaFile(fileInfo))
+            else if ( fileInfo.isDir() || isMediaFile( fileInfo ) )
             {
                 retVal.first = itemSearchOK( idx, &retVal.second ) ? NPreferences::EItemStatus::eOK : NPreferences::EItemStatus::eError;
             }
@@ -849,12 +850,12 @@ namespace NMediaManager
 
         void CTransformModel::postLoad( QTreeView * treeView )
         {
-            CDirModel::postLoad(treeView);
+            CDirModel::postLoad( treeView );
         }
 
-        void CTransformModel::preLoad(QTreeView * treeView)
+        void CTransformModel::preLoad( QTreeView * treeView )
         {
-            CDirModel::preLoad(treeView);
+            CDirModel::preLoad( treeView );
         }
 
         void CTransformModel::attachTreeNodes( QStandardItem * nextParent, QStandardItem *& prevParent, const STreeNode & ii )
@@ -862,9 +863,9 @@ namespace NMediaManager
             bool isTVShow = nextParent->data( eIsTVShowRole ).toBool();
             bool isParentTVShow = prevParent->data( eIsTVShowRole ).toBool();
 
-            if ( !isTVShow && (isTVShow != isParentTVShow) )
+            if ( !isTVShow && ( isTVShow != isParentTVShow ) )
             {
-                setChecked( ii.item( static_cast< NModels::EColumns >( EColumns::eIsTVShow ) ), isParentTVShow );
+                setChecked( ii.item( static_cast<NModels::EColumns>( EColumns::eIsTVShow ) ), isParentTVShow );
                 nextParent->setData( isParentTVShow, eIsTVShowRole );
             }
         }
@@ -878,7 +879,7 @@ namespace NMediaManager
         {
             auto transformItem = transformParentsOnly ? nullptr : getTransformItem( item );
             auto myName = transformItem ? transformItem->text() : QString();
-            if ( myName.isEmpty() || (NCore::CTransformResult::isNoItems( myName )) || (NCore::CTransformResult::isNoMatch( myName )) )
+            if ( myName.isEmpty() || ( NCore::CTransformResult::isNoItems( myName ) ) || ( NCore::CTransformResult::isNoMatch( myName ) ) )
             {
                 myName = item->text();
             }
@@ -890,7 +891,7 @@ namespace NMediaManager
 
         }
 
-        bool CTransformModel::preFileFunction(const QFileInfo & /*fileInfo*/, std::unordered_set<QString> & /*alreadyAdded*/, TParentTree & /*tree*/)
+        bool CTransformModel::preFileFunction( const QFileInfo & /*fileInfo*/, std::unordered_set<QString> & /*alreadyAdded*/, TParentTree & /*tree*/ )
         {
             return true;
         }
@@ -907,7 +908,7 @@ namespace NMediaManager
             return CDirModel::setMediaTags( fileName, title, year, QString(), &msg );
         }
 
-        bool CTransformModel::canAutoSearch( const QModelIndex & index, bool recursive) const
+        bool CTransformModel::canAutoSearch( const QModelIndex & index, bool recursive ) const
         {
             auto path = index.data( ECustomRoles::eAbsFilePath ).toString();
             if ( path.isEmpty() )
@@ -915,7 +916,7 @@ namespace NMediaManager
             return canAutoSearch( QFileInfo( path ), recursive );
         }
 
-        bool CTransformModel::canAutoSearch( const QFileInfo & fileInfo, bool recursive) const
+        bool CTransformModel::canAutoSearch( const QFileInfo & fileInfo, bool recursive ) const
         {
             if ( isIgnoredPathName( fileInfo, false ) || isSkippedPathName( fileInfo, false ) )
                 return false;
@@ -924,7 +925,7 @@ namespace NMediaManager
             if ( NPreferences::NCore::CPreferences::instance()->isSubtitleFile( fileInfo, &isLangFormat ) && !isLangFormat )
                 return false;
 
-            if (fileInfo.isFile() && !isMediaFile(fileInfo))
+            if ( fileInfo.isFile() && !isMediaFile( fileInfo ) )
                 return false;
 
             if ( !fileInfo.isDir() )
@@ -935,7 +936,7 @@ namespace NMediaManager
             for ( auto && ii : files )
             {
                 //qDebug() << ii.absoluteFilePath();
-                if (!recursive && ii.isDir())
+                if ( !recursive && ii.isDir() )
                     continue;
                 if ( canAutoSearch( ii, recursive ) )
                 {
@@ -975,13 +976,13 @@ namespace NMediaManager
 
             auto pos = fTransformResultMap.find( path );
             if ( pos != fTransformResultMap.end() )
-                return (*pos).second;
+                return ( *pos ).second;
 
             if ( !checkParents )
                 return {};
 
             if ( isRootPath( fi.absoluteFilePath() ) )
-                 return {};
+                return {};
 
             auto regExStr = R"(^([A-Z]\:(\\|\/)|(\/))$)";
             auto regEx = QRegularExpression( regExStr, QRegularExpression::CaseInsensitiveOption );
@@ -992,41 +993,41 @@ namespace NMediaManager
             return getTransformResult( fi.absolutePath(), true );
         }
 
-        void CTransformModel::updateFile(const QModelIndex &idx, const QString & oldFile, const QString & newFile)
+        void CTransformModel::updateFile( const QModelIndex & idx, const QString & oldFile, const QString & newFile )
         {
-            CDirModel::updateFile(idx, oldFile, newFile);
-            auto pos = fFileMapping.find(oldFile);
-            if (pos != fFileMapping.end())
+            CDirModel::updateFile( idx, oldFile, newFile );
+            auto pos = fFileMapping.find( oldFile );
+            if ( pos != fFileMapping.end() )
             {
-                fFileMapping[newFile] = (*pos).second;
-                fFileMapping.erase(pos);
+                fFileMapping[ newFile ] = ( *pos ).second;
+                fFileMapping.erase( pos );
             }
-            
-            auto pos2 = fTransformResultMap.find(oldFile);
-            if (pos2 != fTransformResultMap.end())
+
+            auto pos2 = fTransformResultMap.find( oldFile );
+            if ( pos2 != fTransformResultMap.end() )
             {
-                fTransformResultMap[newFile] = (*pos2).second;
-                fTransformResultMap.erase(pos2);
+                fTransformResultMap[ newFile ] = ( *pos2 ).second;
+                fTransformResultMap.erase( pos2 );
             }
             fDiskRipSearchMap.clear();
             computeEpisodesForDiskNumbers();
         }
 
-        void CTransformModel::updateDir(const QModelIndex & idx, const QDir & oldDir, const QDir & newDir)
+        void CTransformModel::updateDir( const QModelIndex & idx, const QDir & oldDir, const QDir & newDir )
         {
-            CDirModel::updateDir(idx, oldDir, newDir);
-            auto pos = fDirMapping.find(oldDir.absolutePath());
-            if (pos != fDirMapping.end())
+            CDirModel::updateDir( idx, oldDir, newDir );
+            auto pos = fDirMapping.find( oldDir.absolutePath() );
+            if ( pos != fDirMapping.end() )
             {
-                fDirMapping[newDir.absolutePath()] = (*pos).second;
-                fDirMapping.erase(pos);
+                fDirMapping[ newDir.absolutePath() ] = ( *pos ).second;
+                fDirMapping.erase( pos );
             }
 
-            auto pos2 = fTransformResultMap.find(oldDir.absolutePath());
-            if (pos2 != fTransformResultMap.end())
+            auto pos2 = fTransformResultMap.find( oldDir.absolutePath() );
+            if ( pos2 != fTransformResultMap.end() )
             {
-                fTransformResultMap[newDir.absolutePath()] = (*pos2).second;
-                fTransformResultMap.erase(pos2);
+                fTransformResultMap[ newDir.absolutePath() ] = ( *pos2 ).second;
+                fTransformResultMap.erase( pos2 );
             }
         }
 

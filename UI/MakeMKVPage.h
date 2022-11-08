@@ -33,7 +33,7 @@ namespace NMediaManager
         {
             Q_OBJECT
         public:
-            CMakeMKVPage( QWidget *parent = nullptr );
+            CMakeMKVPage( QWidget * parent = nullptr );
             virtual ~CMakeMKVPage() override;
 
             virtual bool useSecondaryProgressBar() const override { return true; }

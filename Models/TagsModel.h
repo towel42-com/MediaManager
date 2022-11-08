@@ -55,12 +55,12 @@ namespace NMediaManager
             virtual int firstMediaItemColumn() const override { return fFirstColumn; }
             virtual int lastMediaItemColumn() const override { return fLastColumn; }
             virtual QStringList headers() const override;
-            virtual std::pair< bool, QStandardItem * > processItem(const QStandardItem * item, bool displayOnly) override;
+            virtual std::pair< bool, QStandardItem * > processItem( const QStandardItem * item, bool displayOnly ) override;
             virtual void attachTreeNodes( QStandardItem * nextParent, QStandardItem *& prevParent, const STreeNode & treeNode ) override;;
             virtual bool usesQueuedProcessing() const override { return false; }
-            virtual void postFileFunction(bool /*aOK*/, const QFileInfo & /*fileInfo*/) override;
-            virtual bool preFileFunction(const QFileInfo & /*fileInfo*/, std::unordered_set<QString> & /*alreadyAdded*/, TParentTree & /*tree*/) override;
-            virtual std::optional< TItemStatus > computeItemStatus(const QModelIndex & idx ) const override;
+            virtual void postFileFunction( bool /*aOK*/, const QFileInfo & /*fileInfo*/ ) override;
+            virtual bool preFileFunction( const QFileInfo & /*fileInfo*/, std::unordered_set<QString> & /*alreadyAdded*/, TParentTree & /*tree*/ ) override;
+            virtual std::optional< TItemStatus > computeItemStatus( const QModelIndex & idx ) const override;
 
             virtual bool showMediaItemsContextMenu() const override { return true; };
 
@@ -69,8 +69,8 @@ namespace NMediaManager
             virtual int getMediaLengthLoc() const override { return fLengthColumn; }
             virtual int getMediaDateLoc() const override { return fDateColumn; }
             virtual int getMediaCommentLoc() const override { return fCommentColumn; }
-            virtual void reloadMediaTags(const QModelIndex & idx) override;
-            virtual std::list< SDirNodeItem > addAdditionalItems(const QFileInfo & fileInfo) const override;
+            virtual void reloadMediaTags( const QModelIndex & idx ) override;
+            virtual std::list< SDirNodeItem > addAdditionalItems( const QFileInfo & fileInfo ) const override;
 
             std::list< NSABUtils::EMediaTags > fTagsBeingShown;
             int fFirstColumn{ -1 };

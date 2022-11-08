@@ -40,7 +40,7 @@ namespace NMediaManager
 
         SDirNodeItem::SDirNodeItem( const QString & text, int nodeType ) :
             fText( text ),
-            fType( static_cast<EColumns>(nodeType) ),
+            fType( static_cast<EColumns>( nodeType ) ),
             fMediaType( NCore::EMediaType::eUnknownType )
         {
 
@@ -48,7 +48,7 @@ namespace NMediaManager
 
         void SDirNodeItem::setData( const QVariant & value, int role )
         {
-            fRoles.emplace_back( value, role);
+            fRoles.emplace_back( value, role );
         }
 
         QStandardItem * SDirNodeItem::createStandardItem() const

@@ -42,7 +42,7 @@ namespace NMediaManager
 {
     namespace NUi
     {
-        CSelectTMDB::CSelectTMDB( const QString &text, std::shared_ptr< NCore::CTransformResult > searchResult, QWidget *parent )
+        CSelectTMDB::CSelectTMDB( const QString & text, std::shared_ptr< NCore::CTransformResult > searchResult, QWidget * parent )
             : QDialog( parent ),
             fImpl( new Ui::CSelectTMDB )
         {
@@ -70,7 +70,7 @@ namespace NMediaManager
             QObject::connect( fImpl->results->selectionModel(), &QItemSelectionModel::selectionChanged, this, &CSelectTMDB::slotItemChanged );
 
             connect();
- 
+
             QTimer::singleShot( 0, this, &CSelectTMDB::slotSearchCriteriaChanged );
         }
 
@@ -78,7 +78,7 @@ namespace NMediaManager
         {
             disconnect();
 
-            fImpl->resultExtraInfo->setText(searchInfo->getExtendedInfo());
+            fImpl->resultExtraInfo->setText( searchInfo->getExtendedInfo() );
 
             fImpl->searchName->setText( fPrevSearchName = searchInfo->searchName() );
             fImpl->searchSeason->setValue( searchInfo->season() );
@@ -165,7 +165,7 @@ namespace NMediaManager
         const QString apiKeyV3 = "7c58ff37c9fadd56c51dae3a97339378";
         const QString apiKeyV4 = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI3YzU4ZmYzN2M5ZmFkZDU2YzUxZGFlM2E5NzMzOTM3OCIsInN1YiI6IjVmYTAzMzJiNjM1MDEzMDAzMTViZjg2NyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.MBAzJIxvsRm54kgPKcfixxtfbg2bdNGDHKnEt15Nuac";
 
-        void CSelectTMDB::deleteParent( QTreeWidgetItem *item )
+        void CSelectTMDB::deleteParent( QTreeWidgetItem * item )
         {
             if ( !item )
                 return;
@@ -315,7 +315,7 @@ namespace NMediaManager
             QTimer::singleShot( 100, this, &CSelectTMDB::slotLoadNextResult );
         }
 
-        bool CSelectTMDB::isMatchingItem( QTreeWidgetItem *item ) const
+        bool CSelectTMDB::isMatchingItem( QTreeWidgetItem * item ) const
         {
             if ( !fSearchInfo )
                 return false;
@@ -327,7 +327,7 @@ namespace NMediaManager
         }
 
         // childless items OR if its a season search, and its a season node
-        std::list < QTreeWidgetItem * > CSelectTMDB::getMatchingItems( QTreeWidgetItem *parentItem ) const
+        std::list < QTreeWidgetItem * > CSelectTMDB::getMatchingItems( QTreeWidgetItem * parentItem ) const
         {
             std::list < QTreeWidgetItem * > retVal;
 
@@ -345,13 +345,13 @@ namespace NMediaManager
             return retVal;
         }
 
-        QTreeWidgetItem *CSelectTMDB::getSingleMatchingItem( QTreeWidgetItem *parentItem ) const
+        QTreeWidgetItem * CSelectTMDB::getSingleMatchingItem( QTreeWidgetItem * parentItem ) const
         {
             auto children = getMatchingItems( parentItem );
             if ( children.empty() )
                 return nullptr;
-            QTreeWidgetItem *retVal = nullptr;
-            for ( auto &&ii : children )
+            QTreeWidgetItem * retVal = nullptr;
+            for ( auto && ii : children )
             {
                 if ( ii && ii->isSelected() )
                 {
@@ -363,7 +363,7 @@ namespace NMediaManager
             return retVal;
         }
 
-        void CSelectTMDB::loadResults( std::shared_ptr< NCore::CTransformResult > info, QTreeWidgetItem *parent )
+        void CSelectTMDB::loadResults( std::shared_ptr< NCore::CTransformResult > info, QTreeWidgetItem * parent )
         {
             if ( fStopLoading )
                 return;
@@ -480,7 +480,7 @@ namespace NMediaManager
             }
         }
 
-        QTreeWidgetItem *CSelectTMDB::getFirstSelected() const
+        QTreeWidgetItem * CSelectTMDB::getFirstSelected() const
         {
             auto selected = fImpl->results->selectedItems();
             if ( selected.empty() )
@@ -563,20 +563,20 @@ namespace NMediaManager
 
         void CSelectTMDB::slotSearchTextChanged()
         {
-            if (fPrevSearchName.startsWith( fImpl->searchName->text() ) )
+            if ( fPrevSearchName.startsWith( fImpl->searchName->text() ) )
             {
-                auto tmp = fPrevSearchName.mid(fImpl->searchName->text().length()).split(QRegularExpression("\\W"), NSABUtils::NStringUtils::TSkipEmptyParts );
-                if (!tmp.isEmpty())
+                auto tmp = fPrevSearchName.mid( fImpl->searchName->text().length() ).split( QRegularExpression( "\\W" ), NSABUtils::NStringUtils::TSkipEmptyParts );
+                if ( !tmp.isEmpty() )
                 {
                     auto origWords = tmp;
-                    for (auto && curr : tmp)
+                    for ( auto && curr : tmp )
                     {
-                        curr = QString("<li>%1</li>").arg(curr);
+                        curr = QString( "<li>%1</li>" ).arg( curr );
                     }
-                    auto msg = tr("Words you removed: <ul>%1</ul>").arg(tmp.join(""));
-                    if (QMessageBox::question(this, tr("Would you like to add these words to the known words list?"), msg, QMessageBox::StandardButton::Yes, QMessageBox::StandardButton::No) == QMessageBox::StandardButton::Yes)
+                    auto msg = tr( "Words you removed: <ul>%1</ul>" ).arg( tmp.join( "" ) );
+                    if ( QMessageBox::question( this, tr( "Would you like to add these words to the known words list?" ), msg, QMessageBox::StandardButton::Yes, QMessageBox::StandardButton::No ) == QMessageBox::StandardButton::Yes )
                     {
-                        NPreferences::NCore::CPreferences::instance()->addKnownStrings(origWords);
+                        NPreferences::NCore::CPreferences::instance()->addKnownStrings( origWords );
                     }
                 }
             }
@@ -595,10 +595,10 @@ namespace NMediaManager
             auto searchInfo = getSearchInfo();
 
             searchInfo->setSearchName( fImpl->searchName->text().trimmed() );
-            searchInfo->setReleaseDate( fImpl->searchReleaseYear->text().trimmed());
+            searchInfo->setReleaseDate( fImpl->searchReleaseYear->text().trimmed() );
             searchInfo->setSeason( fImpl->searchSeason->value() );
-            searchInfo->setEpisodes( { fImpl->searchEpisode->value() }  );
-            searchInfo->setTMDBID( fImpl->searchTMDBID->text().trimmed());
+            searchInfo->setEpisodes( { fImpl->searchEpisode->value() } );
+            searchInfo->setTMDBID( fImpl->searchTMDBID->text().trimmed() );
             searchInfo->setMediaType( fImpl->searchForTVShows->isChecked() ? NCore::EMediaType::eTVShow : NCore::EMediaType::eMovie );
             searchInfo->setExactMatchOnly( fImpl->exactMatchesOnly->isChecked() );
             searchInfo->setSearchByName( fImpl->byName->isChecked() );
