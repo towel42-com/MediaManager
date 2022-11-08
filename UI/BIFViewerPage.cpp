@@ -206,7 +206,7 @@ namespace NMediaManager
             if ( !isActive )
                 fImpl->bifWidget->slotPause();
             else
-                fileNameChanged( isActive );
+                fileNameChanged();
 
             fImpl->bifWidget->setActive( isActive );
         }
@@ -251,13 +251,13 @@ namespace NMediaManager
             }
 
             fFileName = fileName;
-            fileNameChanged( andExecute );
+            fileNameChanged();
             if ( andExecute )
                 fImpl->bifWidget->slotPlay();
             return true;
         }
 
-        void CBIFViewerPage::fileNameChanged( bool andLoad )
+        void CBIFViewerPage::fileNameChanged()
         {
             NSABUtils::CAutoWaitCursor awc;
             if ( !outOfDate() )
@@ -275,7 +275,7 @@ namespace NMediaManager
 
             slotResize();
 
-            fBIF = fImpl->bifWidget->setFileName( fFileName, andLoad );
+            fBIF = fImpl->bifWidget->setFileName( fFileName );
             if ( !fImpl->bifWidget->isValid() )
             {
                 auto msg = fBIF ? tr( "Could not load BIF File: %1" ).arg( fBIF->errorString() ) : tr( "Could not load BIF File" );

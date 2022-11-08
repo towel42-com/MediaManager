@@ -108,7 +108,7 @@ namespace NMediaManager
 
             bool outOfDate() const;
             void fileNameChanged( NSABUtils::CDelayComboBox * comboBox, const QString & text, bool andExecute );
-            void fileNameChanged( bool andExecute );
+            void fileNameChanged();
             bool canLoad() const;
             virtual void load() override;
             void clear();
