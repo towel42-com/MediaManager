@@ -181,19 +181,49 @@ namespace NMediaManager
                 if ( model()->canAutoSearch( index, false ) )
                 {
                     auto path = model()->filePath( index );
-                    auto titleInfo = model()->getTransformResult( index, false );
-                    auto searchInfo = std::make_shared< NCore::SSearchTMDBInfo >( name, titleInfo );
-                    searchInfo->setExactMatchOnly( NPreferences::NCore::CPreferences::instance()->getExactMatchesOnly() );
-                    if ( mediaType.has_value() )
-                        searchInfo->setMediaType( mediaType.value() );
+                    bool search = true;
+                    std::optional< NCore::EMediaType > forcedMediaType;
+                    auto searchIndex = index;
+                    if ( index.data( NModels::ECustomRoles::eIsSeasonDirRole ).toBool() )
+                    {
+                        if ( !index.data( NModels::ECustomRoles::eIsSeasonDirCorrectRole ).toBool() )
+                        {
+                            auto child = model()->findSearchableChild( index );
+                            if ( child.isValid() )
+                            {
+                                searchIndex = child;
+                                name = model()->getSearchName( searchIndex );
+                                auto mediaType = model()->searchForMediaType( searchIndex );
+                                if ( !isTVType( mediaType ) )
+                                    search = false;
+                                else
+                                    forcedMediaType = mediaType;
+                            }
+                            else
+                                search = false;
+                        }
+                        else
+                            search = false;
+                    }
+                    if ( search )
+                    {
+                        auto titleInfo = model()->getTransformResult( searchIndex, false );
+                        auto searchInfo = std::make_shared< NCore::SSearchTMDBInfo >( name, titleInfo );
+                        if ( forcedMediaType.has_value() )
+                            searchInfo->setMediaType( forcedMediaType.value() );
 
-                    auto msg = tr( "Adding Background Search for '%1'" ).arg( QDir( fDirName ).relativeFilePath( path ) );
-                    appendToLog( msg + QString( "\n\t%1\n" ).arg( searchInfo->toString( false ) ), true );
-                    fProgressDlg->setLabelText( msg );
-                    fProgressDlg->setValue( fProgressDlg->value() + 1 );
-                    qApp->processEvents();
+                        searchInfo->setExactMatchOnly( NPreferences::NCore::CPreferences::instance()->getExactMatchesOnly() );
+                        if ( mediaType.has_value() )
+                            searchInfo->setMediaType( mediaType.value() );
 
-                    fSearchTMDB->addSearch( path, searchInfo );
+                        auto msg = tr( "Adding Background Search for '%1'" ).arg( QDir( fDirName ).relativeFilePath( path ) );
+                        appendToLog( msg + QString( "\n\t%1\n" ).arg( searchInfo->toString( false ) ), true );
+                        fProgressDlg->setLabelText( msg );
+                        fProgressDlg->setValue( fProgressDlg->value() + 1 );
+                        qApp->processEvents();
+
+                        fSearchTMDB->addSearch( path, searchInfo );
+                    }
                     retVal = true;
                 }
             }
@@ -358,7 +388,7 @@ namespace NMediaManager
         void CTransformPage::setupModel()
         {
             model()->slotTVOutputFilePatternChanged( NPreferences::NCore::CPreferences::instance()->getTVOutFilePattern() );
-            model()->slotTVOutputDirPatternChanged( NPreferences::NCore::CPreferences::instance()->getTVOutDirPattern() );
+            model()->slotTVOutputDirPatternChanged( NPreferences::NCore::CPreferences::instance()->getTVOutDirPattern( true ) );
             model()->slotMovieOutputFilePatternChanged( NPreferences::NCore::CPreferences::instance()->getMovieOutFilePattern() );
             model()->slotMovieOutputDirPatternChanged( NPreferences::NCore::CPreferences::instance()->getMovieOutDirPattern() );
 
