@@ -61,6 +61,7 @@ namespace NMediaManager
         };
         QString toEnumString( EMediaType infoType );
         bool isTVType( EMediaType infoType );
+        bool isMovieType( EMediaType infoType );
 
         class CTransformResult
         {
