@@ -53,7 +53,7 @@ namespace NMediaManager
             virtual void preLoad( QTreeView * /*treeView*/ ) override;
             virtual void postProcess( bool /*displayOnly*/ ) override;
 
-            virtual void postFileFunction( bool /*aOK*/, const QFileInfo & /*fileInfo*/ ) override;;
+            virtual void postFileFunction( bool /*aOK*/, const QFileInfo & /*fileInfo*/, TParentTree & /*tree*/ ) override;;
             virtual bool preFileFunction( const QFileInfo & /*fileInfo*/, std::unordered_set<QString> & /*alreadyAdded*/, TParentTree & /*tree*/ ) override;
 
             virtual void postDirFunction( bool aOK, const QFileInfo & dirInfo, TParentTree & parentTree ) override;

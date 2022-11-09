@@ -122,7 +122,7 @@ namespace NMediaManager
                 progressDlg()->setValue( 0 );
         }
 
-        void CMakeMKVModel::postFileFunction( bool /*aOK*/, const QFileInfo & /*fileInfo*/ )
+        void CMakeMKVModel::postFileFunction( bool /*aOK*/, const QFileInfo & /*fileInfo*/, TParentTree & /*tree*/ )
         {
 
         }

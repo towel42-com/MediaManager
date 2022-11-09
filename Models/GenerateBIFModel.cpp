@@ -164,7 +164,7 @@ namespace NMediaManager
                 progressDlg()->setValue( 0 );
         }
 
-        void CGenerateBIFModel::postFileFunction( bool /*aOK*/, const QFileInfo & /*fileInfo*/ )
+        void CGenerateBIFModel::postFileFunction( bool /*aOK*/, const QFileInfo & /*fileInfo*/, TParentTree & /*tree*/ )
         {
 
         }

@@ -178,7 +178,7 @@ namespace NMediaManager
             CDirModel::reloadMediaTags( idx, true );
         }
 
-        void CTagsModel::postFileFunction( bool /*aOK*/, const QFileInfo & /*fileInfo*/ )
+        void CTagsModel::postFileFunction( bool /*aOK*/, const QFileInfo & /*fileInfo*/, TParentTree & /*tree*/ )
         {
         }
 

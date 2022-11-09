@@ -820,7 +820,7 @@ namespace NMediaManager
             return false;
         }
 
-        void CMergeSRTModel::postFileFunction( bool aOK, const QFileInfo & fileInfo )
+        void CMergeSRTModel::postFileFunction( bool aOK, const QFileInfo & fileInfo, TParentTree & /*tree*/ )
         {
             if ( aOK && NPreferences::NCore::CPreferences::instance()->isMediaFile( fileInfo ) )
             {

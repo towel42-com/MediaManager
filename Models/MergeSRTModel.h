@@ -62,7 +62,7 @@ namespace NMediaManager
             virtual int computeNumberOfItems() const override;
 
             virtual bool preFileFunction( const QFileInfo & fileInfo, std::unordered_set<QString> & alreadyAdded, TParentTree & tree ) override;
-            virtual void postFileFunction( bool aOK, const QFileInfo & fileInfo ) override;
+            virtual void postFileFunction( bool aOK, const QFileInfo & fileInfo, TParentTree & /*tree*/ ) override;
 
             virtual void postProcess( bool /*displayOnly*/ ) override;
             virtual bool postExtProcess( const SProcessInfo & info, QStringList & msgList ) override;
