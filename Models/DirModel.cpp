@@ -727,6 +727,16 @@ namespace NMediaManager
                 if ( item && item->data( ECustomRoles::eYesNoCheckableOnly ).toBool() )
                     return ( item->checkState() == Qt::CheckState::Checked ) ? "Yes" : "No";
             }
+            else if ( role == ECustomRoles::eIsSeasonDirRole )
+            {
+                return isSeasonDir( idx );
+            }
+            else if ( role == ECustomRoles::eIsSeasonDirCorrectRole )
+            {
+                bool isNameOK = false;
+                bool aOK = isSeasonDir( idx, &isNameOK );
+                return aOK && isNameOK;
+            }
             return QStandardItemModel::data( idx, role );
         }
 
@@ -847,6 +857,27 @@ namespace NMediaManager
             return item->text();
         }
 
+        QString CDirModel::computeMergedPath( const QString & parentDir, const QString & myName ) const
+        {
+            auto mySplit = myName.split( QRegularExpression( R"(\\|/)" ) );
+            auto leafName = mySplit.back();
+            mySplit.pop_back();
+            auto myDir = mySplit.join( "/" );
+            if ( myDir.endsWith( "/" ) )
+                myDir = myDir.left( myDir.length() - 1 );
+
+            auto parentPath = parentDir;
+            parentPath = parentPath.replace( "\\", "/" );
+            if ( parentPath.endsWith( "/" ) )
+                parentPath = parentPath.left( parentPath.length() - 1 );
+
+            if ( !parentPath.endsWith( myDir ) )
+                parentPath = QDir( parentPath ).absoluteFilePath( myDir );
+
+            auto retVal = QDir( parentPath ).absoluteFilePath( leafName );
+            return retVal;
+        }
+
         QString CDirModel::computeTransformPath( const QStandardItem * item, bool transformParentsOnly ) const
         {
             if ( !item || ( item == invisibleRootItem() ) )
@@ -866,8 +897,7 @@ namespace NMediaManager
             if ( NCore::CTransformResult::isDeleteThis( myName ) )
                 return myName;
 
-            auto retVal = QDir( parentDir ).absoluteFilePath( myName );
-            return retVal;
+            return computeMergedPath( parentDir, myName );
         }
 
         QString CDirModel::getDispName( const QString & absPath ) const
@@ -1878,6 +1908,30 @@ namespace NMediaManager
             endResetModel();
             if ( filesView() )
                 filesView()->expandAll();
+        }
+
+        bool CDirModel::isSeasonDir( const QModelIndex & origIdx, bool * isNameOK ) const
+        {
+            if ( isRootPath( origIdx ) )
+                return false;
+            QModelIndex idx = origIdx;
+            if ( origIdx.column() != NModels::EColumns::eFSName )
+            {
+                idx = origIdx.model()->index( origIdx.row(), NModels::EColumns::eFSName, origIdx.parent() );
+            }
+            auto fileInfo = this->fileInfo( idx );
+            auto baseName = fileInfo.baseName();
+            if ( fileInfo.isDir() && baseName.startsWith( "season", Qt::CaseInsensitive ) )
+            {
+                QRegularExpression regExp1( R"(Season\s+\d+\s+\(\d{4}\))" );
+                QRegularExpression regExp2( R"(Season\s+\d+)" );
+                auto match1 = regExp1.match( baseName );
+                auto match2 = regExp2.match( baseName );
+                if ( isNameOK )
+                    *isNameOK = match1.hasMatch() && ( match1.capturedLength() == baseName.length() );
+                return ( match1.hasMatch() && ( match1.capturedLength() == baseName.length() ) ) || ( match2.hasMatch() && ( match2.capturedLength() == baseName.length() ) );
+            }
+            return false;
         }
 
         QIcon CIconProvider::icon( const QFileInfo & info ) const

@@ -91,7 +91,9 @@ namespace NMediaManager
             eNewName,
             eIsErrorNode,
             eMediaTagTypeRole,
-            eYesNoCheckableOnly
+            eYesNoCheckableOnly,
+            eIsSeasonDirRole,
+            eIsSeasonDirCorrectRole
         };
 
         enum class EType
@@ -242,6 +244,8 @@ namespace NMediaManager
             bool isRootPath( const QModelIndex & index ) const;
 
             virtual void resetStatusCaches();
+
+            bool isSeasonDir( const QModelIndex & origIdx, bool * isNameOK = nullptr ) const;
         Q_SIGNALS:
             void sigDirLoadFinished( bool canceled );
             void sigProcessesFinished( bool status, bool showProcessResults, bool cancelled, bool reloadModel );
@@ -338,6 +342,8 @@ namespace NMediaManager
 
             virtual QString computeTransformPath( const QStandardItem * item, bool parentsOnly ) const final;
             virtual QString getMyTransformedName( const QStandardItem * item, bool parentsOnly ) const;
+            virtual QString computeMergedPath( const QString & parentDir, const QString & myName ) const;
+
 
             void processFinished( const QString & msg, bool withError );
 

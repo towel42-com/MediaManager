@@ -345,6 +345,56 @@ namespace NMediaManager
 
         }
 
+        NCore::EMediaType CTransformModel::searchForMediaType( const QModelIndex & idx ) const
+        {
+            auto name = getSearchName( idx );
+            auto retVal = NCore::SSearchTMDBInfo::looksLikeTVShow( name, nullptr, nullptr, nullptr, false );
+            if ( !isTVType( retVal ) && !isMovieType( retVal ) )
+            {
+                auto child = index( 0, 0, idx );
+                if ( child.isValid() )
+                {
+                    retVal = searchForMediaType( child );
+                    if ( isTVType( retVal ) || isMovieType( retVal ) )
+                        return retVal;
+                }
+                child = index( 1, 0, idx );
+                if ( child.isValid() )
+                {
+                    retVal = searchForMediaType( child );
+                    if ( isTVType( retVal ) || isMovieType( retVal ) )
+                        return retVal;
+                }
+                auto parent = idx.parent();
+                if ( parent.isValid() && !isRootPath( parent ) )
+                {
+                    retVal = searchForMediaType( parent );
+                    if ( isTVType( retVal ) || isMovieType( retVal ) )
+                        return retVal;
+                }
+            }
+            return retVal;
+        }
+
+        QModelIndex CTransformModel::findSearchableChild( const QModelIndex & idx ) const
+        {
+            if ( !idx.isValid() )
+                return {};
+
+            QModelIndex nextIdx;
+            if ( isDir( idx ) )
+            {
+                nextIdx = idx.model()->index( 0, 0, idx );
+            }
+            else
+            {
+                if ( !idx.data().toString().contains( "E00", Qt::CaseInsensitive ) )
+                    return idx;
+                nextIdx = index( idx.row() + 1, 0, idx.parent() );
+            }
+            return findSearchableChild( nextIdx );
+        }
+
         void CTransformModel::setInAutoSearch( bool val, bool reset )
         {
             beginResetModel();
@@ -530,11 +580,15 @@ namespace NMediaManager
                                 auto mySubPath = transFormItem->text();
                                 if ( ( mySubPath.indexOf( "/" ) != -1 ) || ( mySubPath.indexOf( "\\" ) != -1 ) )
                                 {
-                                    auto pos = mySubPath.lastIndexOf( QRegularExpression( R"([\/\\])" ) );
-                                    auto myParentPath = mySubPath.left( pos );
-
                                     auto parentPath = computeTransformPath( item->parent(), false );
-                                    parentPathOK = QDir( parentPath ).mkpath( myParentPath );
+                                    mySubPath = computeMergedPath( parentPath, mySubPath );
+
+                                    auto mySplit = mySubPath.split( "/" );
+                                    auto leafName = mySplit.back();
+                                    mySplit.pop_back();
+
+                                    auto myParentPath = mySplit.join( "/" );
+                                    parentPathOK = QDir( myParentPath ).mkpath( "." );
                                     if ( !parentPathOK )
                                     {
                                         appendError( myItem, tr( "'%1' => '%2' : FAILED TO MAKE PARENT DIRECTORY PATH" ).arg( oldName ).arg( newName ) );
@@ -732,7 +786,7 @@ namespace NMediaManager
 
         bool CTransformModel::canComputeStatus() const
         {
-            return !autoSearchFinished() && CDirModel::canComputeStatus();
+            return autoSearchFinished() && CDirModel::canComputeStatus();
         }
 
         QDate CTransformModel::getMediaDate( const QFileInfo & fi ) const
@@ -767,6 +821,8 @@ namespace NMediaManager
                     retVal = false;
                     msgs << tr( "Could not properly transform item" );
                 }
+                else
+                    msgs << transformInfo.second;
             }
             if ( msg )
             {
@@ -788,12 +844,32 @@ namespace NMediaManager
             TItemStatus retVal = { NPreferences::EItemStatus::eOK, QString() };
             auto path = fileInfo.absoluteFilePath();
 
-            if ( isIgnoredPathName( fileInfo ) && !NPreferences::NCore::CPreferences::instance()->isSubtitleFile( fileInfo ) )
+            std::function< TItemStatus( const QModelIndex & idx ) > statusFunc =
+                [this, fileInfo]( const QModelIndex & idx ) -> TItemStatus
+            {
+                TItemStatus retVal = { NPreferences::EItemStatus::eOK, QString() };
+                if ( idx.model()->index( idx.row(), 0, idx.parent() ).data( Qt::CheckStateRole ).toInt() == Qt::CheckState::Unchecked )
+                    return retVal;
+                auto searchOK = itemSearchOK( idx, &retVal.second );
+                if ( !searchOK )
+                    retVal.first = NPreferences::EItemStatus::eError;
+                else if ( !retVal.second.isEmpty() && ( retVal.second != fileInfo.fileName() ) )
+                    retVal.first = NPreferences::EItemStatus::eWarning;
+                else
+                {
+                    retVal.first = NPreferences::EItemStatus::eOK;
+                    retVal.second.clear();
+                }
+                return retVal;
+            };
+
+            bool nameOK=false;
+            if ( isSeasonDir( idx, &nameOK ) && !nameOK )
+                retVal = statusFunc( idx );
+            else if ( isIgnoredPathName( fileInfo ) && !NPreferences::NCore::CPreferences::instance()->isSubtitleFile( fileInfo ) )
                 retVal.first = NPreferences::EItemStatus::eOK;
             else if ( fileInfo.isDir() || isMediaFile( fileInfo ) )
-            {
-                retVal.first = itemSearchOK( idx, &retVal.second ) ? NPreferences::EItemStatus::eOK : NPreferences::EItemStatus::eError;
-            }
+                retVal = statusFunc( idx );
 
             return retVal;
         }

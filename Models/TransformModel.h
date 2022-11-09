@@ -81,6 +81,10 @@ namespace NMediaManager
 
             virtual void processPostAutoSearch();
 
+            NCore::EMediaType searchForMediaType( const QModelIndex & idx ) const;
+            QModelIndex findSearchableChild( const QModelIndex & idx ) const;
+
+
             std::shared_ptr< NCore::CTransformResult > getTransformResult( QStandardItem * item, bool checkParents ) const;
             std::shared_ptr< NCore::CTransformResult > getTransformResult( const QModelIndex & idx, bool checkParents ) const;
             std::shared_ptr< NCore::CTransformResult > getTransformResult( const QString & path, bool checkParents ) const;
@@ -103,8 +107,6 @@ namespace NMediaManager
             virtual std::list< SDirNodeItem > addAdditionalItems( const QFileInfo & fileInfo ) const override;
             virtual bool showMediaItems() const override { return true; };
             virtual int firstMediaItemColumn() const override { return EColumns::eMediaColumnLoc; }
-
-            std::pair< bool, QString > transformCorrect( const QModelIndex & idx ) const;
 
             virtual void setupNewItem( const SDirNodeItem & nodeItem, const QStandardItem * nameItem, QStandardItem * item ) const override;
             virtual QStringList headers() const override;
