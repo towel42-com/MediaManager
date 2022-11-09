@@ -193,7 +193,7 @@ namespace NMediaManager
             return retVal;
         }
 
-        EMediaType SSearchTMDBInfo::looksLikeTVShow( const QString & searchString, QString * titleStr, QString * seasonStr, QString * episodeStr, QString * extraStr )
+        EMediaType SSearchTMDBInfo::looksLikeTVShow( const QString & searchString, QString * titleStr, QString * seasonStr, QString * episodeStr, QString * extraStr, bool movieOnUnknown )
         {
             QString localRetVal = searchString;
 
@@ -315,7 +315,7 @@ namespace NMediaManager
 
             if ( titleStr )
                 *titleStr = localRetVal;
-            if ( retVal == EMediaType::eUnknownType )
+            if ( movieOnUnknown && ( retVal == EMediaType::eUnknownType ) )
                 retVal = EMediaType::eMovie;
             return retVal;
         }
