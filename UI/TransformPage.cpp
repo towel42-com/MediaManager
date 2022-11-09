@@ -182,9 +182,11 @@ namespace NMediaManager
                 {
                     auto path = model()->filePath( index );
                     bool search = true;
+                    if ( NPreferences::NCore::CPreferences::instance()->getOnlyTransformDirectories() && !model()->fileInfo( index ).isDir() )
+                        search = false;
                     std::optional< NCore::EMediaType > forcedMediaType;
                     auto searchIndex = index;
-                    if ( index.data( NModels::ECustomRoles::eIsSeasonDirRole ).toBool() )
+                    if ( search && index.data( NModels::ECustomRoles::eIsSeasonDirRole ).toBool() )
                     {
                         if ( !index.data( NModels::ECustomRoles::eIsSeasonDirCorrectRole ).toBool() )
                         {
@@ -205,6 +207,7 @@ namespace NMediaManager
                         else
                             search = false;
                     }
+
                     if ( search )
                     {
                         auto titleInfo = model()->getTransformResult( searchIndex, false );
