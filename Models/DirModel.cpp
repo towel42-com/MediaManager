@@ -386,7 +386,7 @@ namespace NMediaManager
             }
         }
 
-        std::pair< uint64_t, uint64_t > CDirModel::computeNumberOfFiles( const QFileInfo & fileInfo ) const
+        std::pair< uint64_t, uint64_t > CDirModel::computeNumberOfFiles( const QFileInfo & fileInfo )
         {
             uint64_t numDirs = 0;
             uint64_t numFiles = 0;
@@ -406,9 +406,18 @@ namespace NMediaManager
                 }
                 return true;
             };
-            info.fPreFileFunction = [&numFiles]( const QFileInfo & /*file*/ )
+
+            TParentTree tree;
+            std::unordered_set< QString > alreadyAdded;
+            info.fPreFileFunction = [this, &tree, &alreadyAdded, &numFiles]( const QFileInfo & fileInfo )
             {
-                numFiles++;
+                if ( isSkippedPathName( fileInfo ) )
+                    return false;
+
+                // need to be children of file
+                auto attachFile = preFileFunction( fileInfo, alreadyAdded, tree );
+                if ( attachFile )
+                    numFiles++;
                 return false;
             };
             std::optional< QDateTime > lastUpdate;
@@ -464,12 +473,12 @@ namespace NMediaManager
                 if ( attachFile )
                 {
                     attachTreeNodes( tree );
+                    if ( progressDlg() )
+                        progressDlg()->setValue( progressDlg()->value() + 1 );
                 }
 
                 //qDebug().noquote().nospace() << "Pre File B: " << fileInfo.absoluteFilePath() << tree;
 
-                if ( progressDlg() )
-                    progressDlg()->setValue( progressDlg()->value() + 1 );
                 return true;
             };
 
@@ -484,9 +493,9 @@ namespace NMediaManager
             info.fPostFileFunction = [this, &tree]( const QFileInfo & fileInfo, bool aOK )
             {
                 //qDebug() << fileInfo.absoluteFilePath();
-                postFileFunction( aOK, fileInfo );
+                postFileFunction( aOK, fileInfo, tree );
 
-                //qDebug().noquote().nospace() << "Post File A: " << dirInfo.absoluteFilePath() << tree << "AOK? " << aOK;
+                //qDebug().noquote().nospace() << "Post File A: " << fileInfo.absoluteFilePath() << tree << "AOK? " << aOK;
                 while ( tree.back().fIsFile )
                     tree.pop_back();
                 //qDebug().noquote().nospace() << "Post File B: " << dirInfo.absoluteFilePath() << tree;
@@ -1881,11 +1890,7 @@ namespace NMediaManager
             if ( pos == fItemStatusCache.end() )
                 return;
 
-            auto pos2 = ( *pos ).second.find( idx.column() );
-            if ( pos2 == ( *pos ).second.end() )
-                return;
-
-            ( *pos ).second.erase( pos2 );
+            fItemStatusCache.erase( pos );
         }
 
         void CDirModel::clearPathStatusCache( const QFileInfo & fi ) const

@@ -385,14 +385,26 @@ namespace NMediaManager
             if ( isDir( idx ) )
             {
                 nextIdx = idx.model()->index( 0, 0, idx );
+                auto retVal = findSearchableChild( nextIdx );
+                while ( nextIdx.isValid() && !retVal.isValid() )
+                {
+                    nextIdx = idx.model()->index( nextIdx.row() + 1, 0, idx );
+                    retVal = findSearchableChild( nextIdx );
+                }
+                return retVal;
             }
             else
             {
-                if ( !idx.data().toString().contains( "E00", Qt::CaseInsensitive ) )
+                if ( isSearchableFile( idx.data().toString() ) )
                     return idx;
                 nextIdx = index( idx.row() + 1, 0, idx.parent() );
+                return findSearchableChild( nextIdx );
             }
-            return findSearchableChild( nextIdx );
+        }
+
+        bool CTransformModel::isSearchableFile( const QString & fileName ) const
+        {
+            return !fileName.contains( "E00", Qt::CaseInsensitive );
         }
 
         void CTransformModel::setInAutoSearch( bool val, bool reset )
@@ -473,10 +485,18 @@ namespace NMediaManager
         {
             QStandardItem * myItem = nullptr;
             bool aOK = true;
-            auto oldName = computeTransformPath( item, true );
-            auto newName = computeTransformPath( item, false );
+            bool processItem = !NPreferences::NCore::CPreferences::instance()->getOnlyTransformDirectories() || isDir( item );
 
-            if ( oldName != newName )
+            QString oldName;
+            QString newName;
+            if ( processItem )
+            {
+                oldName = computeTransformPath( item, true );
+                newName = computeTransformPath( item, false );
+                processItem = processItem && ( oldName != newName );
+            }
+
+            if ( processItem )
             {
                 QFileInfo oldFileInfo( oldName );
                 QFileInfo newFileInfo( newName );
@@ -850,6 +870,9 @@ namespace NMediaManager
                 TItemStatus retVal = { NPreferences::EItemStatus::eOK, QString() };
                 if ( idx.model()->index( idx.row(), 0, idx.parent() ).data( Qt::CheckStateRole ).toInt() == Qt::CheckState::Unchecked )
                     return retVal;
+                if ( NPreferences::NCore::CPreferences::instance()->getOnlyTransformDirectories() && !fileInfo.isDir() )
+                    return retVal;
+
                 auto searchOK = itemSearchOK( idx, &retVal.second );
                 if ( !searchOK )
                     retVal.first = NPreferences::EItemStatus::eError;
@@ -962,14 +985,45 @@ namespace NMediaManager
             return myName;
         }
 
-        void CTransformModel::postFileFunction( bool /*aOK*/, const QFileInfo & /*fileInfo*/ )
+        void CTransformModel::postDirFunction( bool aOK, const QFileInfo & /*dirInfo*/, TParentTree & parentTree )
         {
+            if ( !NPreferences::NCore::CPreferences::instance()->getOnlyTransformDirectories() )
+                return;
 
+            if ( !aOK )
+                return;
+
+            CDirModel::attachTreeNodes( parentTree );
         }
 
-        bool CTransformModel::preFileFunction( const QFileInfo & /*fileInfo*/, std::unordered_set<QString> & /*alreadyAdded*/, TParentTree & /*tree*/ )
+        void CTransformModel::postFileFunction( bool /*aOK*/, const QFileInfo & /*fileInfo*/, TParentTree & tree )
         {
-            return true;
+            if ( tree.empty() )
+                return;
+
+            auto item = tree.back().rootItem( true );
+            if ( !item )
+                return;
+            auto parent = item->parent();
+            if ( !parent )
+                return;
+            filesView()->setRowHidden( 0, parent->index(), true );
+        }
+
+        bool CTransformModel::preFileFunction( const QFileInfo & fileInfo, std::unordered_set<QString> & alreadyAdded, TParentTree & /*tree*/ )
+        {
+            if ( !NPreferences::NCore::CPreferences::instance()->getOnlyTransformDirectories() )
+                return true;
+            if ( isSearchableFile( fileInfo.fileName() ) )
+            {
+                auto pos = alreadyAdded.find( fileInfo.absolutePath() );
+                if ( pos != alreadyAdded.end() )
+                    return false;
+
+                alreadyAdded.insert( fileInfo.absolutePath() );
+                return true;
+            }
+            return false;
         }
 
         bool CTransformModel::setMediaTags( const QString & fileName, std::shared_ptr< NCore::CTransformResult > & searchResults, QString & msg ) const

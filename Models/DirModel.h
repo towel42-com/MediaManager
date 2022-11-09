@@ -336,7 +336,7 @@ namespace NMediaManager
             virtual void postDirFunction( bool /*aOK*/, const QFileInfo & /*dirInfo*/, TParentTree & /*parentTree*/ ) {};
 
             virtual bool preFileFunction( const QFileInfo & fileInfo, std::unordered_set<QString> & alreadyAdded, TParentTree & tree ) = 0;
-            virtual void postFileFunction( bool aOK, const QFileInfo & fileInfo ) = 0;
+            virtual void postFileFunction( bool aOK, const QFileInfo & fileInfo, TParentTree & tree ) = 0;
 
             virtual void attachTreeNodes( QStandardItem * nextParent, QStandardItem *& prevParent, const STreeNode & treeNode ) = 0;
 
@@ -359,7 +359,7 @@ namespace NMediaManager
             };
 
             void iterateEveryFile( const QFileInfo & fileInfo, const SIterateInfo & iterInfo, std::optional< QDateTime > & lastUpdateUI ) const;
-            std::pair< uint64_t, uint64_t > computeNumberOfFiles( const QFileInfo & fileInfo ) const;
+            std::pair< uint64_t, uint64_t > computeNumberOfFiles( const QFileInfo & fileInfo );
             void loadFileInfo( const QFileInfo & info );
 
             std::unique_ptr< QDirIterator > getDirIteratorForPath( const QFileInfo & fileInfo ) const;

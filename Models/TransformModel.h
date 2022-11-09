@@ -84,6 +84,8 @@ namespace NMediaManager
             NCore::EMediaType searchForMediaType( const QModelIndex & idx ) const;
             QModelIndex findSearchableChild( const QModelIndex & idx ) const;
 
+            bool isSearchableFile( const QString & fileName ) const;
+
 
             std::shared_ptr< NCore::CTransformResult > getTransformResult( QStandardItem * item, bool checkParents ) const;
             std::shared_ptr< NCore::CTransformResult > getTransformResult( const QModelIndex & idx, bool checkParents ) const;
@@ -119,8 +121,9 @@ namespace NMediaManager
             QString getMyTransformedName( const QStandardItem * item, bool transformParentsOnly ) const override;
 
             // model overrides during iteration
-            virtual void postFileFunction( bool /*aOK*/, const QFileInfo & /*fileInfo*/ ) override;
+            virtual void postFileFunction( bool /*aOK*/, const QFileInfo & /*fileInfo*/, TParentTree & /*tree*/ ) override;
             virtual bool preFileFunction( const QFileInfo & /*fileInfo*/, std::unordered_set<QString> & /*alreadyAdded*/, TParentTree & /*tree*/ ) override;
+            virtual void CTransformModel::postDirFunction( bool aOK, const QFileInfo & dirInfo, TParentTree & parentTree ) override;
 
             virtual bool usesQueuedProcessing() const override { return false; }
 
