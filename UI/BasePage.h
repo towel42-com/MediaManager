@@ -59,6 +59,8 @@ namespace NMediaManager
             virtual void load( const QString & dirName );
             virtual void load();
 
+            void clearDirModel();
+
             virtual void run( const QModelIndex & idx );
             virtual bool canRun() const;
 

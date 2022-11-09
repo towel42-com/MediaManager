@@ -208,7 +208,8 @@ namespace NMediaManager
             appendSeparatorToLog();
             appendToLog( tr( "Loading Directory: '%1'" ).arg( fDirName ), true );
             appendSeparatorToLog();
-            fModel->clear();
+            clearDirModel();
+
             filesView()->setModel( getDirModel() );
             setupModel();
             setupProgressDlg( loadTitleName(), loadCancelName(), 1, 1 );
@@ -433,6 +434,12 @@ namespace NMediaManager
         QAbstractItemModel * CBasePage::getDirModel() const
         {
             return fModel.get();
+        }
+
+        void CBasePage::clearDirModel()
+        {
+            if ( fModel )
+                fModel->clear();
         }
 
     }
