@@ -95,6 +95,9 @@ namespace NMediaManager
                 void setLoadMediaInfo( bool value );
                 bool getLoadMediaInfo() const;
 
+                void setOnlyTransformDirectories( bool value );
+                bool getOnlyTransformDirectories() const;
+
                 void setSeasonOutDirPattern( const QString & value );
                 QString getSeasonOutDirPattern() const;
                     

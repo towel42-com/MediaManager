@@ -309,6 +309,21 @@ namespace NMediaManager
                 return settings.value( "LoadMediaInfo", true ).toBool();
             }
 
+            void CPreferences::setOnlyTransformDirectories( bool value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                return settings.setValue( "OnlyLoadDirectories", value );
+                emitSigPreferencesChanged( EPreferenceType::eTransformPrefs );
+            }
+
+            bool CPreferences::getOnlyTransformDirectories() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                return settings.value( "OnlyLoadDirectories", false ).toBool();
+            }
+
             void CPreferences::setTVOutFilePattern( const QString & value )
             {
                 QSettings settings;

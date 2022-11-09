@@ -58,6 +58,7 @@ namespace NMediaManager
                 fImpl->treatAsTVShowByDefault->setChecked( NPreferences::NCore::CPreferences::instance()->getTreatAsTVShowByDefault() );
                 fImpl->exactMatchesOnly->setChecked( NPreferences::NCore::CPreferences::instance()->getExactMatchesOnly() );
                 fImpl->loadMediaInfo->setChecked( NPreferences::NCore::CPreferences::instance()->getLoadMediaInfo() );
+                fImpl->onlyTransformDirectories->setChecked( NPreferences::NCore::CPreferences::instance()->getOnlyTransformDirectories() );
             }
 
             void CTransformationSettings::save()
@@ -65,6 +66,7 @@ namespace NMediaManager
                 NPreferences::NCore::CPreferences::instance()->setTreatAsTVShowByDefault( fImpl->treatAsTVShowByDefault->isChecked() );
                 NPreferences::NCore::CPreferences::instance()->setExactMatchesOnly( fImpl->exactMatchesOnly->isChecked() );
                 NPreferences::NCore::CPreferences::instance()->setLoadMediaInfo( fImpl->loadMediaInfo->isChecked() );
+                NPreferences::NCore::CPreferences::instance()->setOnlyTransformDirectories( fImpl->onlyTransformDirectories->isChecked() );
             }
         }
     }
