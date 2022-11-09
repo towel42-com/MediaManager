@@ -727,5 +727,11 @@ namespace NMediaManager
                     return false;
             }
         }
+
+        bool isMovieType( EMediaType infoType )
+        {
+            return infoType == EMediaType::eMovie;
+        }
+
     }
 }
