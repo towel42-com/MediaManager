@@ -28,10 +28,15 @@ namespace NMediaManager
     {
         namespace NCore
         {
+            QString CPreferences::getDefaultSeasonDirPattern() const
+            {
+                return R"(Season <season>{ (<season_year>)}:<season_year>)";
+            }
+
             QString CPreferences::getDefaultOutDirPattern( bool forTV ) const
             {
                 if ( forTV )
-                    return R"(<title>{ (<show_year>)}:<show_year>{ [tmdbid=<show_tmdbid>]}:<show_tmdbid>/Season <season>)";
+                    return R"(<title>{ (<show_year>)}:<show_year>{ [tmdbid=<show_tmdbid>]}:<show_tmdbid>/<season_dir>)";
                 else
                     return R"(<title>{ (<year>)}:<year>{ [tmdbid=<tmdbid>]}:<tmdbid>{ - <extra_info>}:<extra_info>)";
             }
@@ -160,6 +165,16 @@ namespace NMediaManager
                         ,R"(BAE)"
                         ,R"(CA)"
                         ,R"(TRUFFLE)"
+                        ,R"(RUSTED)"
+                        ,R"(PCOK)"
+                        ,R"(WAKEUP)"
+                        ,R"(DV)"
+                        ,R"(MKV)"
+                        ,R"(DVSUX)"
+                        ,R"(UMBRELLA)"
+                        ,R"(iNTERNAL)"
+                        ,R"(PEGASUS)"
+                        ,R"(ROKU)"
                     } );
                 return defaultValue;
             }
@@ -186,7 +201,7 @@ namespace NMediaManager
                          R"(.*-ignore)"
                         ,R"(sub)"
                         ,R"(subs)"
-                        ,R"(season \d+)"
+                        ,R"(season \d+ \(\d{4}\))"
                     } );
                 return defaultValue;
             }

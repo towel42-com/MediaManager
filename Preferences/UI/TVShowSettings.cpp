@@ -54,12 +54,14 @@ namespace NMediaManager
 
             void CTVShowSettings::load()
             {
+                fImpl->seasonOutDirPattern->setText( NPreferences::NCore::CPreferences::instance()->getSeasonOutDirPattern() );
                 fImpl->tvOutFilePattern->setText( NPreferences::NCore::CPreferences::instance()->getTVOutFilePattern() );
-                fImpl->tvOutDirPattern->setText( NPreferences::NCore::CPreferences::instance()->getTVOutDirPattern() );
+                fImpl->tvOutDirPattern->setText( NPreferences::NCore::CPreferences::instance()->getTVOutDirPattern( false ) );
             }
 
             void CTVShowSettings::save()
             {
+                NPreferences::NCore::CPreferences::instance()->setSeasonOutDirPattern( fImpl->seasonOutDirPattern->text() );
                 NPreferences::NCore::CPreferences::instance()->setTVOutFilePattern( fImpl->tvOutFilePattern->text() );
                 NPreferences::NCore::CPreferences::instance()->setTVOutDirPattern( fImpl->tvOutDirPattern->text() );
             }

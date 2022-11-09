@@ -40,6 +40,7 @@
 #include <QClipboard>
 #include <QGuiApplication>
 #include <QPushButton>
+#include <QLabel>
 
 #include <optional>
 #include <unordered_set>
@@ -326,6 +327,24 @@ namespace NMediaManager
                 return settings.value( "OutFilePattern", getDefaultOutFilePattern( true ) ).toString();
             }
 
+            void CPreferences::setSeasonOutDirPattern( const QString & value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.beginGroup( "ForTV" );
+                settings.setValue( "SeasonDirPattern", value );
+                emitSigPreferencesChanged( EPreferenceType::eTransformPrefs );
+            }
+
+            QString CPreferences::getSeasonOutDirPattern() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.beginGroup( "ForTV" );
+
+                return settings.value( "SeasonDirPattern", getDefaultSeasonDirPattern() ).toString();
+            }
+
             void CPreferences::setTVOutDirPattern( const QString & value )
             {
                 QSettings settings;
@@ -335,13 +354,16 @@ namespace NMediaManager
                 emitSigPreferencesChanged( EPreferenceType::eTransformPrefs );
             }
 
-            QString CPreferences::getTVOutDirPattern() const
+            QString CPreferences::getTVOutDirPattern( bool expandSeasonDir ) const
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
                 settings.beginGroup( "ForTV" );
 
-                return settings.value( "OutDirPattern", getDefaultOutDirPattern( true ) ).toString();
+                auto retVal = settings.value( "OutDirPattern", getDefaultOutDirPattern( true ) ).toString();
+                if ( expandSeasonDir )
+                    retVal = retVal.replace( "<season_dir>", getSeasonOutDirPattern() );
+                return retVal;
             }
 
             void CPreferences::setMovieOutFilePattern( const QString & value )
@@ -1266,6 +1288,22 @@ namespace NMediaManager
                 return replaceText( txt, curr, function );
             }
 
+            void replaceText( const QString & txt, QStringList & curr, const QString & funcName, const QString & value )
+            {
+                QStringList function;
+                function
+                    << QString( "QString CPreferences::%1() const" ).arg( funcName )
+                    << "{"
+                    << getIndent( 1 ) + QString( "return R\"(%1)\";" ).arg( value )
+                    << "}"
+                    ;
+                for ( auto && ii : function )
+                {
+                    ii = getIndent( 3 ) + ii;
+                }
+                return replaceText( txt, curr, function );
+            }
+
             QStringList getListDefValue( const QString & retValType, const QStringList & newValues, bool asString, int indent )
             {
                 QStringList retVal;
@@ -1364,7 +1402,7 @@ namespace NMediaManager
                 {
                     if ( defaultValues[ ii ] != currValues[ ii ] )
                     {
-                        items << QString( "%1 != %2" ).arg( defaultValues[ ii ] ).arg( currValues[ ii ] );
+                        items<< QString( "%1 != %2" ).arg( defaultValues[ ii ] ).arg( currValues[ ii ] );
                     }
                 }
 
@@ -1379,7 +1417,7 @@ namespace NMediaManager
                     items << QString( "%1 not in defaults" ).arg( currValues[ ii ] );
                 }
 
-                if ( items.isEmpty() )
+                if ( items.empty() )
                     return {};
 
                 for ( auto && ii : items )
@@ -1387,7 +1425,7 @@ namespace NMediaManager
                     ii = "<li>" + ii.toHtmlEscaped() + "</li>";
                 }
 
-                auto retVal = QString( "<li>%1\n<ul>\n%2\n</ul>\n</li>\n" ).arg( title ).arg( items.join( "\n" ) );
+                auto retVal = QString( "<li>%1\n<ul>%2</ul>\n</li>\n" ).arg( title ).arg( items.join( "\n" ) );;
                 return retVal;
             }
 
@@ -1442,6 +1480,8 @@ namespace NMediaManager
                     << R"(    {)"
                     << R"(        namespace NCore)"
                     << R"(        {)"
+                    << "%DEFAULT_SEASON_DIR_PATTERN%"
+                    << R"()"
                     << "%DEFAULT_OUT_DIR_PATTERN%"
                     << R"()"
                     << "%DEFAULT_OUT_FILE_PATTERN%"
@@ -1472,7 +1512,8 @@ namespace NMediaManager
                     QStringList()
                     << compareValues( "Movie Out Dir Pattern", getDefaultOutDirPattern( false ), getMovieOutDirPattern() )
                     << compareValues( "Movie Out File Pattern", getDefaultOutFilePattern( false ), getMovieOutFilePattern() )
-                    << compareValues( "TV Out Dir Pattern", getDefaultOutDirPattern( true ), getTVOutDirPattern() )
+                    << compareValues( "Season Out Dir Pattern", getDefaultSeasonDirPattern(), getSeasonOutDirPattern() )
+                    << compareValues( "TV Out Dir Pattern", getDefaultOutDirPattern( true ), getTVOutDirPattern( false ) )
                     << compareValues( "TV Out File Pattern", getDefaultOutFilePattern( true ), getTVOutFilePattern() )
                     << compareValues( "Skipped Paths (Media Transform)", getDefaultSkippedPaths( true ), getSkippedPaths( true ) )
                     << compareValues( "Skipped Paths (Media Tagging)", getDefaultSkippedPaths( false ), getSkippedPaths( false ) )
@@ -1487,7 +1528,7 @@ namespace NMediaManager
 
                 QString retVal;
                 if ( !items.isEmpty() )
-                    retVal = QString( "<p>Difference in Settings:\n<ul>\n%2\n</ul>\n</p>" ).arg( items.join( "\n" ) );
+                    retVal = QString( "<style>p{ white-space:nowrap }</style>\n<p>Difference in Settings:\n<ul>\n%2\n</ul>\n</p>" ).arg( items.join( "\n" ) );
                 return retVal;
             }
 
@@ -1516,7 +1557,8 @@ namespace NMediaManager
                 if ( replace )
                 {
                     auto newFileText = getDefaultFile();
-                    replaceText( "%DEFAULT_OUT_DIR_PATTERN%", newFileText, "getDefaultOutDirPattern", "forTV", getTVOutDirPattern(), getMovieOutDirPattern() );
+                    replaceText( "%DEFAULT_SEASON_DIR_PATTERN%", newFileText, "getDefaultSeasonDirPattern", getSeasonOutDirPattern() );
+                    replaceText( "%DEFAULT_OUT_DIR_PATTERN%", newFileText, "getDefaultOutDirPattern", "forTV", getTVOutDirPattern( false ), getMovieOutDirPattern() );
                     replaceText( "%DEFAULT_OUT_FILE_PATTERN%", newFileText, "getDefaultOutFilePattern", "forTV", getTVOutFilePattern(), getMovieOutFilePattern() );
                     replaceText( "%DEFAULT_CUSTOM_PATHS_TO_DELETE%", newFileText, "getDefaultCustomPathsToDelete", getCustomPathsToDelete() );
                     replaceText( "%DEFAULT_KNOWN_STRINGS%", newFileText, "getDefaultKnownStrings", getKnownStrings() );

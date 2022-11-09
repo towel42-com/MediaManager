@@ -95,11 +95,14 @@ namespace NMediaManager
                 void setLoadMediaInfo( bool value );
                 bool getLoadMediaInfo() const;
 
+                void setSeasonOutDirPattern( const QString & value );
+                QString getSeasonOutDirPattern() const;
+                    
                 void setTVOutFilePattern( const QString & value );
                 QString getTVOutFilePattern() const;
 
                 void setTVOutDirPattern( const QString & value );
-                QString getTVOutDirPattern() const;
+                QString getTVOutDirPattern( bool expandSeasonDir ) const;
 
                 void setMovieOutFilePattern( const QString & value );
                 QString getMovieOutFilePattern() const;
@@ -268,6 +271,7 @@ namespace NMediaManager
                 bool pathMatches( const QFileInfo & fileInfo, const QStringList & values ) const;
                 bool containsValue( const QString & value, const QStringList & values ) const;
                 //QString getDefaultInPattern( bool forTV ) const;
+                QString getDefaultSeasonDirPattern() const;
                 QString getDefaultOutDirPattern( bool forTV ) const;
                 QString getDefaultOutFilePattern( bool forTV ) const;
                 QTimer * fPrefChangeTimer{ nullptr };
