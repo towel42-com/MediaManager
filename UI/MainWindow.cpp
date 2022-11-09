@@ -399,20 +399,29 @@ namespace NMediaManager
 
         void CMainWindow::slotOpen()
         {
+            bool changed = false;
             if ( isActivePageFileBased() )
             {
                 auto prev = fImpl->fileName->currentText();
                 auto fileName = QFileDialog::getOpenFileName( this, tr( "Select File:" ), prev, getCurrentBasePage()->selectFileFilter() );
                 if ( !fileName.isEmpty() )
+                {
                     fImpl->fileName->setCurrentText( fileName );
+                    changed = true;
+                }
             }
             else if ( isActivePageDirBased() )
             {
                 auto prev = fImpl->directory->isOK() ? fImpl->directory->currentText() : QString();
                 auto dir = QFileDialog::getExistingDirectory( this, tr( "Select Directory:" ), prev );
                 if ( !dir.isEmpty() )
+                {
                     fImpl->directory->setCurrentText( dir );
+                    changed = true;
+                }
             }
+            if ( changed )
+                slotLoad();
         }
 
         void CMainWindow::slotPreferences()
@@ -422,6 +431,13 @@ namespace NMediaManager
             {
                 slotQueuedPrefChange();
             }
+        }
+
+        void CMainWindow::clearDirModel()
+        {
+            auto basePage = getCurrentBasePage();
+            if ( basePage )
+                return basePage->clearDirModel();
         }
 
         bool CMainWindow::canRun() const
