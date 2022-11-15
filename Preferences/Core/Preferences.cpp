@@ -1056,6 +1056,25 @@ namespace NMediaManager
                 return aOK ? retVal : QString();
             }
 
+            void CPreferences::setFFProbeEXE( const QString & value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eExtToolsPrefs ) );
+                settings.setValue( "FFProbeEXE", value );
+                emitSigPreferencesChanged( EPreferenceType::eExtToolsPrefs );
+            }
+
+            QString CPreferences::getFFProbeEXE() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eExtToolsPrefs ) );
+                auto retVal = settings.value( "FFProbeEXE", QString() ).toString();
+
+                auto fi = QFileInfo( retVal );
+                bool aOK = !retVal.isEmpty() && fi.isExecutable();
+                return aOK ? retVal : QString();
+            }
+
             /// ////////////////////////////////////////////////////////
             /// BIF Options
             /// ////////////////////////////////////////////////////////
@@ -1108,6 +1127,37 @@ namespace NMediaManager
                 return retVal;
             }
 
+            int CPreferences::imageInterval() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eBIFPrefs ) );
+                return settings.value( "ImageInterval", 10 ).toInt();
+            }
+
+            void CPreferences::setImageInterval( int value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eBIFPrefs ) );
+                settings.setValue( "ImageInterval", value );
+                emitSigPreferencesChanged( EPreferenceType::eBIFPrefs );
+            }
+
+            bool CPreferences::keepTempDir() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eBIFPrefs ) );
+                return settings.value( "KeepTempDir", false ).toBool();
+            }
+
+            void CPreferences::setKeepTempDir( bool value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eBIFPrefs ) );
+                settings.setValue( "KeepTempDir", value );
+                emitSigPreferencesChanged( EPreferenceType::eBIFPrefs );
+            }
+
+
             /// ////////////////////////////////////////////////////////
             /// GIF Options
             /// ////////////////////////////////////////////////////////
@@ -1154,7 +1204,7 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eGIFPrefs ) );
-                return settings.value( "LoopCount", true ).toInt();
+                return settings.value( "LoopCount", -1 ).toInt();
             }
 
             void CPreferences::setGIFStartFrame( int startFrame )
@@ -1169,7 +1219,7 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eGIFPrefs ) );
-                return settings.value( "StartFrame", true ).toInt();
+                return settings.value( "StartFrame", 0 ).toInt();
             }
 
             void CPreferences::setGIFEndFrame( int endFrame )
@@ -1199,7 +1249,7 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eGIFPrefs ) );
-                return settings.value( "Delay", true ).toInt();
+                return settings.value( "Delay", 10 ).toInt();
             }
 
             bool CPreferences::isMediaFile( const QFileInfo & fi ) const

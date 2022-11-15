@@ -219,6 +219,9 @@ namespace NMediaManager
                 void setFFMpegEXE( const QString & value );
                 QString getFFMpegEXE() const;
 
+                void setFFProbeEXE( const QString & value );
+                QString getFFProbeEXE() const;
+
                 void setBIFToolEXE( const QString & value );
                 QString getBIFToolEXE() const;
 
@@ -260,6 +263,13 @@ namespace NMediaManager
 
                 int getNumSearchPages() const;
                 void setNumSearchPages( int numpages );
+
+                int imageInterval() const;
+                void setImageInterval( int value );
+
+                bool keepTempDir() const;
+                void setKeepTempDir( bool value );
+
             Q_SIGNALS:
                 void sigPreferencesChanged( EPreferenceTypes prefType );
             private:
