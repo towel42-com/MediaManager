@@ -39,6 +39,7 @@
 #include "TransformationSettings.h"
 #include "TagAnalysisSettings.h"
 #include "TVShowSettings.h"
+#include "BIFGeneration.h"
 
 #include <QSettings>
 #include <QPushButton>
@@ -130,6 +131,7 @@ namespace NMediaManager
                 addPage( new CMovieSettings );
                 addPage( new CTVShowSettings );
                 addPage( new CTagAnalysisSettings );
+                addPage( new CBIFGeneration );
             }
 
             void CPreferences::addPage( CBasePrefPage * page )

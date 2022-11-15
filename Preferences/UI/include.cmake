@@ -22,6 +22,7 @@
 
 set(qtproject_SRCS
     BasePrefPage.cpp
+    BIFGeneration.cpp
     ExtendedInfo.cpp
     Extensions.cpp
     ExternalTools.cpp
@@ -41,6 +42,7 @@ set(qtproject_SRCS
 
 set(qtproject_H
     BasePrefPage.h
+    BIFGeneration.h
     ExtendedInfo.h
     Extensions.h
     ExternalTools.h
@@ -62,6 +64,7 @@ set(project_H
 )
 
 set(qtproject_UIS
+    BIFGeneration.ui
     ExtendedInfo.ui
     Extensions.ui
     ExternalTools.ui
