@@ -399,9 +399,10 @@ namespace NMediaManager
 
                 if ( progressDlg() )
                 {
+                    progressDlg()->setPrimaryValue( numDirs );
+
                     int childDirs = 0;
 
-                    auto tmp = QDir( dirInfo.absoluteFilePath() ).entryInfoList( QStringList(), QDir::AllDirs | QDir::NoDotAndDotDot | QDir::Readable );
                     auto iter = QDirIterator( dirInfo.absoluteFilePath(), QStringList() << "*" << "*.*", QDir::AllDirs | QDir::NoDotAndDotDot | QDir::Readable );
                     int currMax = progressDlg()->primaryMax();
                     while ( iter.hasNext() )
@@ -410,7 +411,6 @@ namespace NMediaManager
                         iter.next();
                     }
 
-                    progressDlg()->setPrimaryValue( numDirs );
                 }
                 return true;
             };
