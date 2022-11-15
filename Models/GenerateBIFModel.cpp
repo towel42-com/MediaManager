@@ -84,19 +84,25 @@ namespace NMediaManager
                 aOK = aOK && checkProcessItemExists( processInfo.fOldName, processInfo.fItem );
                 processInfo.fTimeStamps = NSABUtils::NFileUtils::timeStamps( processInfo.fOldName );
 
-#ifndef DEBUG_TEMP_DIR
-                processInfo.fTempDir = std::make_shared< QTemporaryDir >();
-                processInfo.fTempDir->setAutoRemove( true );
-#else
-                processInfo.fTempDir = std::make_shared< QTemporaryDir >( QFileInfo( processInfo.fOldName ).absoluteDir().absoluteFilePath( "./TempDir-XXXXXX" ) );
-                processInfo.fTempDir->setAutoRemove( false );
+                if ( NPreferences::NCore::CPreferences::instance()->keepTempDir() )
+                {
+                    processInfo.fTempDir = std::make_shared< QTemporaryDir >();
+                    processInfo.fTempDir->setAutoRemove( true );
+                }
+                else
+                {
+                    processInfo.fTempDir = std::make_shared< QTemporaryDir >( QFileInfo( processInfo.fOldName ).absoluteDir().absoluteFilePath( "./TempDir-XXXXXX" ) );
+                    processInfo.fTempDir->setAutoRemove( false );
+                }
                 qDebug() << processInfo.fTempDir->path();
-#endif
+
 // eg -f matroska -threads 1 -skip_interval 10 -copyts -i file:"/volume2/video/Movies/Westworld (1973) [tmdbid=2362]/Westworld.mkv" -an -sn -vf "scale=w=320:h=133" -vsync cfr -r 0.1 -f image2 "/var/packages/EmbyServer/var/cache/temp/112d22a09fea457eaea27c4b0c88f790/img_%05d.jpg"
                 processInfo.fArgs = QStringList()
                     << "-f" << "matroska"
-                    << "-threads" << "1"
-                    << "-skip_interval" << "10"
+                    << "-threads" << "1";
+                processInfo.fArgs << "-skip_interval" << QString::number( NPreferences::NCore::CPreferences::instance()->imageInterval() );
+                
+                processInfo.fArgs
                     << "-copyts"
                     << "-i"
                     << processInfo.fOldName
@@ -124,7 +130,7 @@ namespace NMediaManager
                         return false;
                     }
 
-                    auto bifFile = NSABUtils::NBIF::CFile( dir, "img_*.jpg", 10000, msg );
+                    auto bifFile = NSABUtils::NBIF::CFile( dir, "img_*.jpg", NPreferences::NCore::CPreferences::instance()->imageInterval() * 1000, msg );
                     if ( !bifFile.isValid() )
                         return false;
                     return bifFile.save( processInfo->fNewName, msg );
