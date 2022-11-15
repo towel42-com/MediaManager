@@ -396,13 +396,21 @@ namespace NMediaManager
                 if ( isSkippedPathName( dirInfo ) )
                     return false;
                 numDirs++;
+
                 if ( progressDlg() )
                 {
-                    auto currMax = progressDlg()->primaryMax();
+                    int childDirs = 0;
 
-                    progressDlg()->setPrimaryMaximum( currMax + 1 );
-                    if ( currMax > 10 )
-                        progressDlg()->setPrimaryValue( currMax - 10 );
+                    auto tmp = QDir( dirInfo.absoluteFilePath() ).entryInfoList( QStringList(), QDir::AllDirs | QDir::NoDotAndDotDot | QDir::Readable );
+                    auto iter = QDirIterator( dirInfo.absoluteFilePath(), QStringList() << "*" << "*.*", QDir::AllDirs | QDir::NoDotAndDotDot | QDir::Readable );
+                    int currMax = progressDlg()->primaryMax();
+                    while ( iter.hasNext() )
+                    {
+                        progressDlg()->setPrimaryMaximum( ++currMax );
+                        iter.next();
+                    }
+
+                    progressDlg()->setPrimaryValue( numDirs );
                 }
                 return true;
             };
@@ -1470,7 +1478,7 @@ namespace NMediaManager
                 return;
 
             auto msg = tr( "Running Finished: %1 Exit Code: %2" ).arg( statusString( exitStatus ) ).arg( exitCode );
-            processFinished( msg, ( exitStatus != QProcess::NormalExit ) );
+            processFinished( msg, ( exitCode != 0 ) || ( exitStatus != QProcess::NormalExit ) );
         }
 
         void CDirModel::slotProcessStarted()
