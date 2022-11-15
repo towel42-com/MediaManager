@@ -231,7 +231,7 @@ namespace NMediaManager
             addPage( std::make_shared< STabDef >( new CTransformPage( nullptr ), tr( "Media Namer" ), QString::fromUtf8( ":/rename.png" ), fImpl->tabWidget ) );
             addPage( std::make_shared< STabDef >( new CTagsPage( nullptr ), tr( "Media Tags" ), QString::fromUtf8( ":/tag.png" ), fImpl->tabWidget ) );
             addPage( std::make_shared< STabDef >( new CGenerateBIFPage( nullptr ), tr( "Generate Thumbnails" ), QString::fromUtf8( ":/roku.png" ), fImpl->tabWidget ) );
-            auto bifPage = addPage( std::make_shared< STabDef >( new CBIFViewerPage( nullptr ), tr( "BIF Viewer" ), QString::fromUtf8( ":/roku.png" ), fImpl->tabWidget ) );
+            auto bifPage = addPage( std::make_shared< STabDef >( new CBIFViewerPage( nullptr ), tr( "Thumbnail Viewer" ), QString::fromUtf8( ":/roku.png" ), fImpl->tabWidget ) );
 
             connect( fImpl->fileName, &NSABUtils::CDelayComboBox::sigEditTextChangedAfterDelay, dynamic_cast<CBIFViewerPage *>( bifPage->fPage ), &CBIFViewerPage::slotFileChanged );
             connect( fImpl->fileName->lineEdit(), &NSABUtils::CDelayLineEdit::sigFinishedEditingAfterDelay, dynamic_cast<CBIFViewerPage *>( bifPage->fPage ), &CBIFViewerPage::slotFileFinishedEditing );
