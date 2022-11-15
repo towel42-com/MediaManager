@@ -55,7 +55,7 @@ namespace NMediaManager
     namespace NUi
     {
         CBIFViewerPage::CBIFViewerPage( QWidget * parent )
-            : CBasePage( "BIF Viewer", parent ),
+            : CBasePage( "Thumbnail Viewer", parent ),
             fImpl( new Ui::CBIFViewerPage )
         {
             CBasePage::fImpl.reset();
@@ -283,10 +283,10 @@ namespace NMediaManager
                 fBIF.reset();
                 return;
             }
-            load();
+            load( false );
         }
 
-        void CBIFViewerPage::load()
+        void CBIFViewerPage::load( bool /*postRun*/ )
         {
             if ( !fBIF )
                 return;

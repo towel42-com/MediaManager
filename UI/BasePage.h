@@ -57,7 +57,7 @@ namespace NMediaManager
             virtual ~CBasePage() override;
 
             virtual void load( const QString & dirName );
-            virtual void load();
+            virtual void load( bool postRun );
 
             void clearDirModel();
 

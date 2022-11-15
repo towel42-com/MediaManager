@@ -189,14 +189,15 @@ namespace NMediaManager
         void CBasePage::load( const QString & dirName )
         {
             fDirName = dirName;
-            load();
+            load( false );
         }
 
-        void CBasePage::load()
+        void CBasePage::load( bool postRun )
         {
             if ( !fImpl )
                 return;
-            fImpl->log->clear();
+            if ( !postRun )
+                fImpl->log->clear();
             if ( !fModel )
             {
                 fModel.reset( createDirModel() );
@@ -242,7 +243,7 @@ namespace NMediaManager
                 fModel->showProcessResults( actionErrorName(), tr( "Issues:" ), QMessageBox::Critical, QDialogButtonBox::Ok, this );
             }
             if ( !canceled && reloadModel )
-                load();
+                load( true );
             emit sigStopStayAwake();
         }
 

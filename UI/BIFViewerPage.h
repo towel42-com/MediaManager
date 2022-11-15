@@ -110,7 +110,7 @@ namespace NMediaManager
             void fileNameChanged( NSABUtils::CDelayComboBox * comboBox, const QString & text, bool andExecute );
             void fileNameChanged();
             bool canLoad() const;
-            virtual void load() override;
+            virtual void load( bool postRun ) override;
             void clear();
             void formatBIFTable();
             void loadSettings( bool init );

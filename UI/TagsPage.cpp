@@ -75,7 +75,7 @@ namespace NMediaManager
         {
             emit sigStopStayAwake();
             if ( finalStep && !canceled )
-                load();
+                load( true );
         }
 
         bool CTagsPage::extendContextMenu( QMenu * /*menu*/, const QModelIndex & idx )
