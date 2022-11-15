@@ -295,7 +295,7 @@ namespace NMediaManager
             new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "Magic Number" ) << tr( "00-07" ) << QString() << fBIF->magicNumber() );
             new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "Version" ) << tr( "08-11" ) << QString::number( fBIF->version().fValue ) << fBIF->version().fPrettyPrint );
             new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "Number of BIF Images" ) << tr( "12-15" ) << QString::number( fBIF->numImages().fValue ) << fBIF->numImages().fPrettyPrint );
-            new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "milliseconds/Frame" ) << tr( "16-19" ) << QString( "%1s (%2ms)" ).arg( NSABUtils::CTimeString( fBIF->tsMultiplier().fValue ).toString( "ss.zzz" ) ).arg( fBIF->tsMultiplier().fValue ) << fBIF->tsMultiplier().fPrettyPrint );
+            new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "milliseconds/Frame" ) << tr( "16-19" ) << QString( "%1s (%2ms)" ).arg( NSABUtils::CTimeString( fBIF->timePerFrame().fValue ).toString( "ss.zzz" ) ).arg( fBIF->timePerFrame().fValue ) << fBIF->timePerFrame().fPrettyPrint );
             new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "Reserved" ) << tr( "20-64" ) << QString() << fBIF->reserved() );
 
             formatBIFTable();
