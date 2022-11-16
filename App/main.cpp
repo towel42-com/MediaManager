@@ -85,10 +85,10 @@ int main( int argc, char ** argv )
     QApplication::setAttribute( Qt::AA_EnableHighDpiScaling );
     QApplication::setAttribute( Qt::AA_UseHighDpiPixmaps );
     QApplication appl( argc, argv );
-    appl.setApplicationName( QString::fromStdString( NVersion::APP_NAME ) );
-    appl.setApplicationVersion( QString::fromStdString( NVersion::getVersionString( true ) ) );
-    appl.setOrganizationName( QString::fromStdString( NVersion::VENDOR ) );
-    appl.setOrganizationDomain( QString::fromStdString( NVersion::HOMEPAGE ) );
+    appl.setApplicationName( NVersion::APP_NAME );
+    appl.setApplicationVersion( NVersion::getVersionString( true ) );
+    appl.setOrganizationName( NVersion::VENDOR );
+    appl.setOrganizationDomain( NVersion::HOMEPAGE );
 
     qInstallMessageHandler( myMessageOutput );
 
@@ -110,7 +110,7 @@ int main( int argc, char ** argv )
         }
     }
     NMediaManager::NUi::CMainWindow mainWindow;
-    mainWindow.setWindowTitle( QString::fromStdString( NVersion::getWindowTitle() ) );
+    mainWindow.setWindowTitle( NVersion::getWindowTitle() );
     mainWindow.show();
     if ( !bifName.isEmpty() && !mainWindow.setBIFFileName( bifName ) )
         return -1;
