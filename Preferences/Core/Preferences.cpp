@@ -143,14 +143,6 @@ namespace NMediaManager
                 return settings.value( QString( "PageVisible-%1" ).arg( pageName ), true ).toBool();
             }
 
-            void CPreferences::setDirectories( const QStringList & dir )
-            {
-                QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
-                settings.setValue( "Directories", dir );
-                emitSigPreferencesChanged( EPreferenceType::eSystemPrefs );
-            }
-
             int CPreferences::getNumSearchPages() const
             {
                 QSettings settings;
@@ -182,6 +174,14 @@ namespace NMediaManager
                 }
                 retVal.removeDuplicates();
                 return retVal;
+            }
+
+            void CPreferences::setDirectories( const QStringList & dir )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
+                settings.setValue( "Directories", dir );
+                emitSigPreferencesChanged( EPreferenceType::eSystemPrefs );
             }
 
             QStringList CPreferences::getDirectories() const
