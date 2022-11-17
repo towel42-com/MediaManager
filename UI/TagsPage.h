@@ -66,8 +66,6 @@ namespace NMediaManager
             virtual void postLoadFinished( bool canceled ) override;
             virtual void postNonQueuedRun( bool finalStep, bool canceled ) override;
 
-            virtual bool extendContextMenu( QMenu * menu, const QModelIndex & idx ) override;
-
             virtual QMenu * menu() override;
         Q_SIGNALS:
         public Q_SLOTS:

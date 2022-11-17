@@ -78,13 +78,6 @@ namespace NMediaManager
                 load( true );
         }
 
-        bool CTagsPage::extendContextMenu( QMenu * /*menu*/, const QModelIndex & idx )
-        {
-            if ( !idx.isValid() )
-                return false;
-
-            return true;
-        }
         void CTagsPage::postLoadFinished( bool /*canceled*/ )
         {
         }
