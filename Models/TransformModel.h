@@ -129,6 +129,8 @@ namespace NMediaManager
 
             virtual std::pair< bool, QStandardItem * > processItem( const QStandardItem * item, bool displayOnly ) override;
 
+            void updateTransformResults( const QString & newName, const QString & oldName );
+
             QStandardItem * getTransformItem( const QStandardItem * item ) const;
 
             bool setMediaTags( const QString & fileName, std::shared_ptr< NCore::CTransformResult > & searchResults, QString & msg ) const;

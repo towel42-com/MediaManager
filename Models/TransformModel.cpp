@@ -644,6 +644,10 @@ namespace NMediaManager
                                     aOK = fi.rename( newName );
                                     if ( !aOK )
                                         errorMsg = fi.errorString();
+                                    else
+                                    {
+                                        updateTransformResults( newName, oldName );
+                                    }
                                 }
                             }
                             else
@@ -1123,6 +1127,22 @@ namespace NMediaManager
             return getTransformResult( fi.absolutePath(), true );
         }
 
+        void CTransformModel::updateTransformResults( const QString & newName, const QString & oldName )
+        {
+            if ( !QFileInfo( newName ).isDir() )
+                return;
+            for ( auto && ii : fTransformResultMap )
+            {
+                if ( ii.first.startsWith( oldName ) )
+                {
+                    auto newKey = ii.first;
+                    newKey.replace( oldName, newName );
+                    fTransformResultMap[ newKey ] = ii.second;
+                }
+            }
+        }
+
+
         void CTransformModel::updateFile( const QModelIndex & idx, const QString & oldFile, const QString & newFile )
         {
             CDirModel::updateFile( idx, oldFile, newFile );
@@ -1160,6 +1180,5 @@ namespace NMediaManager
                 fTransformResultMap.erase( pos2 );
             }
         }
-
     }
 }
