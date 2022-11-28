@@ -184,6 +184,8 @@ namespace NMediaManager
                 void setMediaExtensions( const QStringList & value );
                 QStringList getMediaExtensions() const;
 
+                QString defaultMediaExtensions() const;
+
                 void setSubtitleExtensions( const QString & value );
                 void setSubtitleExtensions( const QStringList & value );
                 QStringList getSubtitleExtensions() const;

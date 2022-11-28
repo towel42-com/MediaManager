@@ -229,9 +229,48 @@ namespace NMediaManager
 
             QStringList  CPreferences::getMediaExtensions() const
             {
+                auto defaultValues = defaultMediaExtensions();
+
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
-                return settings.value( "MediaExtensions", QString( "*.mkv;*.mp4;*.avi;*.mov;*.wmv;*.mpg;*.mpg2" ) ).toString().toLower().split( ";" );
+                return settings.value( "MediaExtensions", defaultValues ).toString().toLower().split( ";" );
+            }
+
+            QString CPreferences::defaultMediaExtensions() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
+
+                auto defaultValues = QString( "*.mkv;*.mp4;*.avi;*.mov;*.wmv;*.mpg;*.mpg2" );
+                if ( !settings.contains( "MediaExtensions" ) )
+                {
+                    QStringList videoExtensions;
+                    QSettings classes( "HKEY_CLASSES_ROOT", QSettings::NativeFormat );
+                    auto groups = classes.childGroups();
+                    for ( auto && group : groups )
+                    {
+                        classes.beginGroup( group );
+                        QString type;
+                        if ( classes.contains( "Content Type" ) )
+                        {
+                            type = classes.value( "Content Type" ).toString();
+                        }
+                        else if ( classes.contains( "PerceivedType" ) )
+                        {
+                            type = classes.value( "PerceivedType" ).toString();
+                        }
+                        if ( type.toLower().startsWith( "video" ) )
+                        {
+                            if ( !group.startsWith( "*" ) )
+                                group = "*" + group;
+                            videoExtensions << group;
+                        }
+                        classes.endGroup();
+                    }
+                    defaultValues = videoExtensions.join( ";" );
+                    settings.setValue( "MediaExtensions", defaultValues );
+                }
+                return defaultValues;
             }
 
             QStringList  CPreferences::getNonMKVMediaExtensions() const
