@@ -46,6 +46,11 @@ namespace NMediaManager
         {
         }
 
+        QStringList CMergeSRTModel::dirModelFilter() const
+        {
+            return QStringList() << "*.mkv";
+        }
+
         QList< QStandardItem * > CMergeSRTModel::getChildMKVFiles( const QStandardItem * item, bool goBelowDirs ) const
         {
             if ( !item )

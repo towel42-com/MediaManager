@@ -42,6 +42,8 @@ namespace NMediaManager
             virtual ~CGenerateBIFModel() override;
 
         private:
+            virtual QStringList dirModelFilter() const override;
+
             virtual bool ignoreExtrasOnSearch() const override { return false; }
 
             virtual std::pair< bool, QStandardItem * > processItem( const QStandardItem * item, bool displayOnly ) override;

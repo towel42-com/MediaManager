@@ -39,9 +39,11 @@ namespace NMediaManager
             };
 
             CMakeMKVModel( NUi::CBasePage * page, QObject * parent = nullptr );
-            ~CMakeMKVModel();
+            virtual ~CMakeMKVModel() override;
 
         private:
+            virtual QStringList dirModelFilter() const override;
+
             virtual std::pair< bool, QStandardItem * > processItem( const QStandardItem * item, bool displayOnly ) override;
             virtual bool showMediaItems() const override { return true; };
             virtual int firstMediaItemColumn() const override { return EColumns::eMediaColumnLoc; }

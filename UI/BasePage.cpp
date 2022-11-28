@@ -221,7 +221,6 @@ namespace NMediaManager
 
         void CBasePage::setupModel()
         {
-            fModel->setNameFilters( dirModelFilter() );
             fModel->setRootPath( fDirName );
         }
 

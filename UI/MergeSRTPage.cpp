@@ -64,11 +64,6 @@ namespace NMediaManager
             }
         }
 
-        QStringList CMergeSRTPage::dirModelFilter() const
-        {
-            return QStringList() << "*.mkv";
-        }
-
         QString CMergeSRTPage::secondaryProgressLabel() const
         {
             return tr( "Current Movie:" );

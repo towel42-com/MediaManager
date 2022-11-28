@@ -197,7 +197,8 @@ namespace NMediaManager
 
             bool process( const QModelIndex & idx, const std::function< void( int count, int eventsPerPath ) > & startProgress, const std::function< void( bool finalStep, bool canceled ) > & endProgress, QWidget * parent );
 
-            void setNameFilters( const QStringList & filters );
+            virtual QStringList dirModelFilter() const = 0;
+
             void reloadModel();
             void setRootPath( const QString & path );
             QDir rootPath() const { return fRootPath; }
@@ -396,7 +397,6 @@ namespace NMediaManager
             void addProcessError( const QString & msg );
 
             QDir fRootPath;
-            QStringList fNameFilter;
 
             CIconProvider * fIconProvider{ nullptr };
 

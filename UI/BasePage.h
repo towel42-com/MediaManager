@@ -117,8 +117,6 @@ namespace NMediaManager
             virtual bool useSecondaryProgressBar() const { return false; }
             virtual QString secondaryProgressLabel() const;
 
-            virtual QStringList dirModelFilter() const = 0;
-
             virtual QString loadTitleName() const = 0;
             virtual QString loadCancelName() const = 0;
 

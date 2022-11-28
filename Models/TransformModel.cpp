@@ -55,6 +55,13 @@ namespace NMediaManager
         {
         }
 
+        QStringList CTransformModel::dirModelFilter() const
+        {
+            auto retVal = NPreferences::NCore::CPreferences::instance()->getMediaExtensions() << NPreferences::NCore::CPreferences::instance()->getSubtitleExtensions();
+            retVal << NPreferences::NCore::CPreferences::instance()->getExtensionsToDelete();
+            return retVal;
+        }
+
         bool CTransformModel::setData( const QModelIndex & idx, const QVariant & value, int role )
         {
             if ( ( role == Qt::CheckStateRole ) && ( idx.column() == EColumns::eIsTVShow ) )

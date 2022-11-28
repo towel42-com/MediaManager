@@ -49,6 +49,11 @@ namespace NMediaManager
         {
         }
 
+        QStringList CGenerateBIFModel::dirModelFilter() const
+        {
+            return QStringList() << "*.mkv";
+        }
+
         std::pair< bool, QStandardItem * > CGenerateBIFModel::processItem( const QStandardItem * item, bool displayOnly )
         {
             if ( item->data( ECustomRoles::eIsDir ).toBool() )

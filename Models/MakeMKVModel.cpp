@@ -42,6 +42,11 @@ namespace NMediaManager
         {
         }
 
+        QStringList CMakeMKVModel::dirModelFilter() const
+        {
+            return NPreferences::NCore::CPreferences::instance()->getNonMKVMediaExtensions();
+        }
+
         std::pair< bool, QStandardItem * > CMakeMKVModel::processItem( const QStandardItem * item, bool displayOnly )
         {
             if ( item->data( ECustomRoles::eIsDir ).toBool() )

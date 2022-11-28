@@ -190,12 +190,6 @@ namespace NMediaManager
             reloadModel();
         }
 
-        void CDirModel::setNameFilters( const QStringList & filters )
-        {
-            fNameFilter = filters;
-            reloadModel();
-        }
-
         void CDirModel::reloadModel()
         {
             fTimer->stop();
@@ -333,7 +327,7 @@ namespace NMediaManager
 
         std::unique_ptr< QDirIterator > CDirModel::getDirIteratorForPath( const QFileInfo & fileInfo ) const
         {
-            auto retVal = std::make_unique< QDirIterator >( fileInfo.absoluteFilePath(), fNameFilter, QDir::AllDirs | QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Readable );
+            auto retVal = std::make_unique< QDirIterator >( fileInfo.absoluteFilePath(), dirModelFilter(), QDir::AllDirs | QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Readable );
             return std::move( retVal );
         }
 

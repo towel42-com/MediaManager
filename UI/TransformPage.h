@@ -56,7 +56,6 @@ namespace NMediaManager
 
             virtual QString loadTitleName() const override;
             virtual QString loadCancelName() const override;
-            virtual QStringList dirModelFilter() const override;
 
             virtual QString actionTitleName() const override;
             virtual QString actionCancelName() const override;

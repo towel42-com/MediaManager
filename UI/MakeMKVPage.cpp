@@ -46,11 +46,6 @@ namespace NMediaManager
             return new NModels::CMakeMKVModel( this );
         }
 
-        QStringList CMakeMKVPage::dirModelFilter() const
-        {
-            return NPreferences::NCore::CPreferences::instance()->getNonMKVMediaExtensions();
-        }
-
         QString CMakeMKVPage::secondaryProgressLabel() const
         {
             return tr( "Current (seconds):" );

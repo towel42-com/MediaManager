@@ -45,6 +45,7 @@ namespace NMediaManager
             virtual ~CMergeSRTModel() override;
 
         private:
+            virtual QStringList dirModelFilter() const override;
             bool isNameBasedMatch( const QFileInfo & mkvFile, const QFileInfo & srtFile ) const;
             bool nameMatch( const QString & mkvBaseName, const QString & subtitleFile ) const;
 

@@ -99,6 +99,8 @@ namespace NMediaManager
             void slotMovieOutputDirPatternChanged( const QString & outPattern );
             void slotMovieOutputFilePatternChanged( const QString & outPattern );
         private:
+            virtual QStringList dirModelFilter() const override;
+
             virtual bool isTVShow( const QModelIndex & idx ) const override;
             virtual QDate getMediaDate( const QFileInfo & fi ) const override;
 

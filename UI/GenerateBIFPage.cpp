@@ -46,11 +46,6 @@ namespace NMediaManager
             return new NModels::CGenerateBIFModel( this );
         }
 
-        QStringList CGenerateBIFPage::dirModelFilter() const
-        {
-            return QStringList() << "*.mkv";
-        }
-
         QString CGenerateBIFPage::secondaryProgressLabel() const
         {
             return tr( "Current (seconds):" );

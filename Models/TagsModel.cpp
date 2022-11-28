@@ -53,6 +53,12 @@ namespace NMediaManager
         {
         }
 
+        QStringList CTagsModel::dirModelFilter() const
+        {
+            auto retVal = NPreferences::NCore::CPreferences::instance()->getMediaExtensions();
+            return retVal;
+        }
+
         std::pair< bool, QStandardItem * > CTagsModel::processItem( const QStandardItem * item, bool displayOnly )
         {
             auto fi = fileInfo( item );

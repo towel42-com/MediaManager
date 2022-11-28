@@ -51,6 +51,8 @@ namespace NMediaManager
 
         public Q_SLOTS:
         private:
+            virtual QStringList dirModelFilter() const override;
+
             virtual void preLoad( QTreeView * treeView ) override;
             virtual int firstMediaItemColumn() const override { return fFirstColumn; }
             virtual int lastMediaItemColumn() const override { return fLastColumn; }

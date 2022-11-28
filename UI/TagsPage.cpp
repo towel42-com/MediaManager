@@ -123,13 +123,6 @@ namespace NMediaManager
             return tr( "Error while Setting Tags:" );
         }
 
-
-        QStringList CTagsPage::dirModelFilter() const
-        {
-            auto retVal = NPreferences::NCore::CPreferences::instance()->getMediaExtensions();
-            return retVal;
-        }
-
         void CTagsPage::setupModel()
         {
             CBasePage::setupModel();
