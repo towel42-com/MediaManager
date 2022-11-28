@@ -175,6 +175,9 @@ namespace NMediaManager
                         ,R"(iNTERNAL)"
                         ,R"(PEGASUS)"
                         ,R"(ROKU)"
+                        ,R"(APEX)"
+                        ,R"(DUAL)"
+                        ,R"(EddieSmurfy)"
                     } );
                 return defaultValue;
             }
