@@ -23,6 +23,7 @@
 #ifndef __UI_EXTENSIONS_H
 #define __UI_EXTENSIONS_H
 
+class QListWidget;
 #include "BasePrefPage.h"
 namespace NMediaManager
 {
@@ -36,9 +37,11 @@ namespace NMediaManager
                 Q_OBJECT
             public:
                 CExtensions( QWidget * parent = nullptr );
+
                 virtual ~CExtensions() override;
 
                 virtual void load() override;
+
                 virtual void save() override;
                 virtual QStringList pageName() const override
                 {
@@ -46,6 +49,11 @@ namespace NMediaManager
                 }
             public Q_SLOTS:
             private:
+                void loadExtensions( QListWidget * listWidget, QStringList & videoExtensions );
+                QStringList getExtensions( QListWidget * listWidget );
+                void addExtension( const QString & title, const QString & label, QListWidget * listWidget );
+                void delExtension( QListWidget * listWidget );
+
                 std::unique_ptr< Ui::CExtensions > fImpl;
             };
         }
