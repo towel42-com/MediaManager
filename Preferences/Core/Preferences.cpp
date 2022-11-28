@@ -214,7 +214,7 @@ namespace NMediaManager
             }
 
 
-            void CPreferences::setMediaExtensions( const QString & value )
+            void CPreferences::setMediaExtensions( const QStringList & value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
@@ -222,29 +222,29 @@ namespace NMediaManager
                 emitSigPreferencesChanged( EPreferenceType::eSystemPrefs );
             }
 
-            void CPreferences::setMediaExtensions( const QStringList & value )
+            void CPreferences::setMediaExtensions( const QString & value )
             {
-                setMediaExtensions( value.join( ";" ) );
+                setMediaExtensions( value.toLower().split( ";" ) );
             }
 
-            QStringList  CPreferences::getMediaExtensions() const
-            {
-                auto defaultValues = defaultMediaExtensions();
-
-                QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
-                return settings.value( "MediaExtensions", defaultValues ).toString().toLower().split( ";" );
-            }
-
-            QString CPreferences::defaultMediaExtensions() const
+            QStringList  CPreferences::getVideoExtensions() const
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
+                auto retVal = settings.value( "MediaExtensions", defaultVideoExtensions( false ) ).toStringList();
+                for ( auto && ii : retVal )
+                    ii = ii.toLower();
+                return retVal;
+            }
 
-                auto defaultValues = QString( "*.mkv;*.mp4;*.avi;*.mov;*.wmv;*.mpg;*.mpg2" );
-                if ( !settings.contains( "MediaExtensions" ) )
+            QStringList CPreferences::defaultVideoExtensions( bool forceReset )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
+
+                auto videoExtensions = QStringList() << ".mkv" << ".mp4" << ".avi" << ".mov" << ".wmv" << ".mpg" << ".mpg2";
+                if ( forceReset || !settings.contains( "MediaExtensions" ) )
                 {
-                    QStringList videoExtensions;
                     QSettings classes( "HKEY_CLASSES_ROOT", QSettings::NativeFormat );
                     auto groups = classes.childGroups();
                     for ( auto && group : groups )
@@ -259,23 +259,31 @@ namespace NMediaManager
                         {
                             type = classes.value( "PerceivedType" ).toString();
                         }
+                        else if ( group.toLower().startsWith( "vlc." ) && classes.value( "Default" ).toString().toLower().contains( "video" ) )
+                        {
+                            group = group.mid( 3 );
+                            type = "video";
+                        }
+
                         if ( type.toLower().startsWith( "video" ) )
                         {
-                            if ( !group.startsWith( "*" ) )
-                                group = "*" + group;
-                            videoExtensions << group;
+                            videoExtensions << group.toLower();
                         }
                         classes.endGroup();
                     }
-                    defaultValues = videoExtensions.join( ";" );
-                    settings.setValue( "MediaExtensions", defaultValues );
+                    videoExtensions.removeDuplicates();
+                    for ( auto && ii : videoExtensions )
+                    {
+                        ii = "*" + ii;
+                    }
+                    settings.setValue( "MediaExtensions", videoExtensions );
                 }
-                return defaultValues;
+                return videoExtensions;
             }
 
             QStringList  CPreferences::getNonMKVMediaExtensions() const
             {
-                auto retVal = getMediaExtensions();
+                auto retVal = getVideoExtensions();
                 retVal.removeAll( "*.mkv" );
                 return retVal;
             }
@@ -1296,7 +1304,7 @@ namespace NMediaManager
                 if ( !fi.isFile() )
                     return false;
 
-                auto suffixes = getMediaExtensions();
+                auto suffixes = getVideoExtensions();
                 for ( auto && ii : suffixes )
                 {
                     auto pos = ii.lastIndexOf( '.' );
