@@ -46,6 +46,7 @@
 #include "SABUtils/StayAwake.h"
 #include "SABUtils/BackgroundFileCheck.h"
 #include "SABUtils/SelectFileUrl.h"
+#include "SABUtils/uiUtils.h"
 
 #include <QSettings>
 #include <QFileInfo>
