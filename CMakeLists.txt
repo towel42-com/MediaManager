@@ -51,6 +51,7 @@ option( gtest_force_shared_crt "Use shared ( DLL ) run-time lib even when Google
 set_property( GLOBAL PROPERTY USE_FOLDERS ON )
 
 file( REAL_PATH ~/bin/MediaManager CMAKE_INSTALL_PREFIX EXPAND_TILDE)
+MESSAGE( STATUS "Installing to ${CMAKE_INSTALL_PREFIX}" )
 
 SET( SABUTILS_DLL ON )
 SET( MKVUTILS ON )
