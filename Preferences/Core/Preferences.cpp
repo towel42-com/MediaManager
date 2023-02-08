@@ -41,6 +41,7 @@
 #include <QGuiApplication>
 #include <QPushButton>
 #include <QLabel>
+#include <QImageReader>
 
 #include <optional>
 #include <unordered_set>
@@ -524,6 +525,32 @@ namespace NMediaManager
                 return settings.value( "DeleteBAK", true ).toBool();
             }
 
+            void CPreferences::setDeleteImages( bool value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.setValue( "DeleteImages", value );
+                emitSigPreferencesChanged( EPreferenceType::eTransformPrefs );
+            }
+
+            bool CPreferences::deleteImages() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                return settings.value( "DeleteImages", true ).toBool();
+            }
+
+            QStringList CPreferences::imageExtensions() const
+            {
+                auto imageFormats = QImageReader::supportedImageFormats();
+
+                QStringList retVal;
+                for ( auto && ii : imageFormats )
+                    retVal << "*." + ii;
+
+                return retVal;
+            }
+
             void CPreferences::setDeleteTXT( bool value )
             {
                 QSettings settings;
@@ -566,6 +593,8 @@ namespace NMediaManager
                     retVal << "*.nfo";
                 if ( deleteTXT() )
                     retVal << "*.txt";
+                if ( deleteImages() )
+                    retVal << imageExtensions();
                 if ( deleteCustom() )
                     retVal << getCustomPathsToDelete();
                 return retVal;
@@ -1416,6 +1445,41 @@ namespace NMediaManager
                 return replaceText( txt, curr, function );
             }
 
+            void replaceText( const QString & txt, QStringList & curr, const QString & funcName, const char * value )
+            {
+                QStringList function;
+                function
+                    << QString( "bool CPreferences::%1() const" ).arg( funcName )
+                    << "{"
+                    << getIndent( 1 ) + QString( "return %1;" ).arg( value )
+                    << "}"
+                    ;
+                for ( auto && ii : function )
+                {
+                    ii = getIndent( 3 ) + ii;
+                }
+                return replaceText( txt, curr, function );
+            }
+           
+
+            template <typename T>
+            void replaceText( const QString & txt, QStringList & curr, const QString & funcName, T value )
+            {
+                static_assert( std::is_same<bool, T>::value, "not bool" );
+                QStringList function;
+                function
+                    << QString( "bool CPreferences::%1() const" ).arg( funcName )
+                    << "{"
+                    << getIndent( 1 ) + QString( "return %1;" ).arg( value ? "true" : "false" )
+                    << "}"
+                    ;
+                for ( auto && ii : function )
+                {
+                    ii = getIndent( 3 ) + ii;
+                }
+                return replaceText( txt, curr, function );
+            }
+
             QStringList getListDefValue( const QString & retValType, const QStringList & newValues, bool asString, int indent )
             {
                 QStringList retVal;
@@ -1559,6 +1623,15 @@ namespace NMediaManager
                 return compareValues( title, QStringList() << defaultValues, QStringList() << currValues );
             }
 
+            QString CPreferences::compareValues( const QString & title, bool defaultValue, bool currValue ) const
+            {
+                if ( defaultValue == currValue )
+                    return {};
+
+                auto retVal = QString( "<li>%1\n<ul>Default is %2, current setting is %3</ul>\n</li>\n" ).arg( title ).arg( defaultValue ? "true" : "false" ).arg( currValue ? "true" : "false" );
+                return retVal;
+            }
+
             QStringList CPreferences::getDefaultFile() const
             {
                 auto retVal = QStringList()
@@ -1600,6 +1673,16 @@ namespace NMediaManager
                     << R"()"
                     << "%DEFAULT_CUSTOM_PATHS_TO_DELETE%"
                     << R"()"
+                    << "%DEFAULT_DELETE_CUSTOM%"
+                    << R"()"
+                    << "%DEFAULT_DELETE_EXE%"
+                    << R"()"
+                    << "%DEFAULT_DELETE_NFO%"
+                    << R"()"
+                    << "%DEFAULT_DELETE_BAK%"
+                    << R"()"
+                    << "%DEFAULT_DELETE_IMAGES%"
+                    << R"()"
                     << "%DEFAULT_KNOWN_STRINGS%"
                     << R"()"
                     << "%DEFAULT_KNOWN_EXTENDED_STRINGS%"
@@ -1631,6 +1714,13 @@ namespace NMediaManager
                     << compareValues( "Skipped Paths (Media Tagging)", getDefaultSkippedPaths( false ), getSkippedPaths( false ) )
                     << compareValues( "Ignored Paths", getDefaultIgnoredPaths(), getIgnoredPaths() )
                     << compareValues( "Paths to Delete", getDefaultCustomPathsToDelete(), getCustomPathsToDelete() )
+
+                    << compareValues( "Delete Custom", getDefaultDeleteCustom(), deleteCustom() )
+                    << compareValues( "Delete Executables", getDefaultDeleteEXE(), deleteEXE() )
+                    << compareValues( "Delete NFO Files", getDefaultDeleteNFO(), deleteNFO() )
+                    << compareValues( "Delete BAK Files", getDefaultDeleteBAK(), deleteBAK() )
+                    << compareValues( "Delete Images", getDefaultDeleteImages(), deleteImages() )
+
                     << compareValues( "Known Strings", getDefaultKnownStrings(), getKnownStrings() )
                     << compareValues( "Known Extended Strings", getDefaultKnownExtendedStrings(), getKnownExtendedStrings() )
                     << compareValues( "Known Abbreviations", getDefaultKnownAbbreviations(), getKnownAbbreviations() )
@@ -1673,6 +1763,11 @@ namespace NMediaManager
                     replaceText( "%DEFAULT_OUT_DIR_PATTERN%", newFileText, "getDefaultOutDirPattern", "forTV", getTVOutDirPattern( false ), getMovieOutDirPattern() );
                     replaceText( "%DEFAULT_OUT_FILE_PATTERN%", newFileText, "getDefaultOutFilePattern", "forTV", getTVOutFilePattern(), getMovieOutFilePattern() );
                     replaceText( "%DEFAULT_CUSTOM_PATHS_TO_DELETE%", newFileText, "getDefaultCustomPathsToDelete", getCustomPathsToDelete() );
+                    replaceText( "%DEFAULT_DELETE_CUSTOM%", newFileText, "getDefaultDeleteCustom", "!getDefaultCustomPathsToDelete().isEmpty()" );
+                    replaceText( "%DEFAULT_DELETE_EXE%", newFileText, "getDefaultDeleteEXE", deleteEXE() );
+                    replaceText( "%DEFAULT_DELETE_NFO%", newFileText, "getDefaultDeleteNFO", deleteNFO() );
+                    replaceText( "%DEFAULT_DELETE_BAK%", newFileText, "getDefaultDeleteBAK", deleteBAK() );
+                    replaceText( "%DEFAULT_DELETE_IMAGES%", newFileText, "getDefaultDeleteImages", deleteImages() );
                     replaceText( "%DEFAULT_KNOWN_STRINGS%", newFileText, "getDefaultKnownStrings", getKnownStrings() );
                     replaceText( "%DEFAULT_KNOWN_EXTENDED_STRINGS%", newFileText, "getDefaultKnownExtendedStrings", getKnownExtendedStrings() );
                     replaceText( "%DEFAULT_IGNORED_PATHS%", newFileText, "getDefaultIgnoredPaths", getIgnoredPaths() );

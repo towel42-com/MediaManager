@@ -162,17 +162,27 @@ namespace NMediaManager
                 QStringList getCustomPathsToDelete() const;
                 void setCustomPathsToDelete( const QStringList & paths );
 
+                bool getDefaultDeleteCustom() const;
                 bool deleteCustom() const;
                 void setDeleteCustom( bool deleteCustom );
 
+                bool getDefaultDeleteEXE() const;
                 bool deleteEXE() const;
                 void setDeleteEXE( bool deleteEXEs );
 
+                bool getDefaultDeleteNFO() const;
                 bool deleteNFO() const;
                 void setDeleteNFO( bool deleteNFO );
 
+                bool getDefaultDeleteBAK() const;
                 bool deleteBAK() const;
                 void setDeleteBAK( bool deleteBAK );
+
+                bool getDefaultDeleteImages() const;
+                bool deleteImages() const;
+                void setDeleteImages( bool deleteImages );
+
+                QStringList imageExtensions() const;
 
                 bool deleteTXT() const;
                 void setDeleteTXT( bool deleteTXT );
@@ -278,6 +288,7 @@ namespace NMediaManager
                 QStringList getDefaultFile() const;
                 QString compareValues( const QString & title, const QStringList & defaultValues, const QStringList & currValues ) const;
                 QString compareValues( const QString & title, const QString & defaultValues, const QString & currValues ) const;
+                QString compareValues( const QString & title, bool defaultValue, bool currValue ) const;
                 QString compareValues( const QString & title, const QVariantMap & defaultValues, const QVariantMap & currValues ) const;
                 QStringList variantMapToStringList( const QVariantMap & data ) const;
 

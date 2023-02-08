@@ -55,6 +55,31 @@ namespace NMediaManager
                 return defaultValue;
             }
 
+            bool CPreferences::getDefaultDeleteCustom() const
+            {
+                return !getDefaultCustomPathsToDelete().isEmpty();
+            }
+
+            bool CPreferences::getDefaultDeleteEXE() const
+            {
+                return true;
+            }
+
+            bool CPreferences::getDefaultDeleteNFO() const
+            {
+                return true;
+            }
+
+            bool CPreferences::getDefaultDeleteBAK() const
+            {
+                return true;
+            }
+
+            bool CPreferences::getDefaultDeleteImages() const
+            {
+                return true;
+            }
+
             QStringList CPreferences::getDefaultKnownStrings() const
             {
                 static auto defaultValue =
@@ -178,6 +203,8 @@ namespace NMediaManager
                         ,R"(APEX)"
                         ,R"(DUAL)"
                         ,R"(EddieSmurfy)"
+                        ,R"(SURCODE)"
+                        ,R"(4K)"
                     } );
                 return defaultValue;
             }

@@ -43,6 +43,13 @@
     </widget>
    </item>
    <item>
+    <widget class="QCheckBox" name="deleteImages">
+     <property name="text">
+      <string>Delete Images (*.jpg *.png)?</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QGroupBox" name="deleteCustom">
      <property name="title">
       <string>Custom Paths to Delete</string>
@@ -106,6 +113,8 @@
   <tabstop>deleteTXT</tabstop>
   <tabstop>deleteNFO</tabstop>
   <tabstop>deleteBAK</tabstop>
+  <tabstop>deleteImages</tabstop>
+  <tabstop>deleteCustom</tabstop>
   <tabstop>pathsToDelete</tabstop>
   <tabstop>btnAddPathToDelete</tabstop>
   <tabstop>btnDelPathToDelete</tabstop>

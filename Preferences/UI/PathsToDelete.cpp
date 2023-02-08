@@ -71,7 +71,12 @@ namespace NMediaManager
                 fImpl->deleteTXT->setChecked( NPreferences::NCore::CPreferences::instance()->deleteTXT() );
                 fImpl->deleteNFO->setChecked( NPreferences::NCore::CPreferences::instance()->deleteNFO() );
                 fImpl->deleteBAK->setChecked( NPreferences::NCore::CPreferences::instance()->deleteBAK() );
+                fImpl->deleteImages->setChecked( NPreferences::NCore::CPreferences::instance()->deleteImages() );
                 fImpl->deleteCustom->setChecked( NPreferences::NCore::CPreferences::instance()->deleteCustom() );
+
+                auto formats = NPreferences::NCore::CPreferences::instance()->imageExtensions();
+
+                fImpl->deleteImages->setText( tr( "Delete Images (%1)?" ).arg( formats.join( " " ) ) );
             }
 
             void CPathsToDelete::save()
@@ -81,6 +86,7 @@ namespace NMediaManager
                 NPreferences::NCore::CPreferences::instance()->setDeleteTXT( fImpl->deleteTXT->isChecked() );
                 NPreferences::NCore::CPreferences::instance()->setDeleteNFO( fImpl->deleteNFO->isChecked() );
                 NPreferences::NCore::CPreferences::instance()->setDeleteBAK( fImpl->deleteBAK->isChecked() );
+                NPreferences::NCore::CPreferences::instance()->setDeleteImages( fImpl->deleteImages->isChecked() );
                 NPreferences::NCore::CPreferences::instance()->setDeleteCustom( fImpl->deleteCustom->isChecked() );
             }
         }
