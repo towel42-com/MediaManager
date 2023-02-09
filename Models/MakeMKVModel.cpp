@@ -56,10 +56,10 @@ namespace NMediaManager
             processInfo.fSetMKVTagsOnSuccess = true;
             processInfo.fOldName = item->data( ECustomRoles::eAbsFilePath ).toString();
             auto fi = QFileInfo( processInfo.fOldName );
-            processInfo.fNewName = fi.absoluteDir().absoluteFilePath( fi.completeBaseName() + ".mkv" );
-            processInfo.fItem = new QStandardItem( QString( "Convert '%1' => '%2'" ).arg( getDispName( processInfo.fOldName ) ).arg( getDispName( processInfo.fNewName ) ) );
+            processInfo.fNewNames << fi.absoluteDir().absoluteFilePath( fi.completeBaseName() + ".mkv" );
+            processInfo.fItem = new QStandardItem( QString( "Convert '%1' => '%2'" ).arg( getDispName( processInfo.fOldName ) ).arg( getDispName( processInfo.fNewNames.front() ) ) );
             processInfo.fItem->setData( processInfo.fOldName, ECustomRoles::eOldName );
-            processInfo.fItem->setData( processInfo.fNewName, ECustomRoles::eNewName );
+            processInfo.fItem->setData( processInfo.fNewNames, ECustomRoles::eNewName );
 
             bool aOK = true;
             QStandardItem * myItem = nullptr;
@@ -90,7 +90,7 @@ namespace NMediaManager
                     << processInfo.fOldName
                     << "-c:v" << "copy"
                     << "-c:a" << "copy"
-                    << processInfo.fNewName;
+                    << processInfo.fNewNames;
                 fProcessQueue.push_back( processInfo );
                 QTimer::singleShot( 0, this, &CDirModel::slotRunNextProcessInQueue );
             }
@@ -100,7 +100,7 @@ namespace NMediaManager
 
         QString CMakeMKVModel::getProgressLabel( const SProcessInfo & processInfo ) const
         {
-            auto retVal = QString( "Converting to MKV<ul><li>%1</li>to<li>%2</li></ul>" ).arg( getDispName( processInfo.fOldName ) ).arg( getDispName( processInfo.fNewName ) );
+            auto retVal = QString( "Converting to MKV<ul><li>%1</li>to<li>%2</li></ul>" ).arg( getDispName( processInfo.fOldName ) ).arg( getDispName( processInfo.fNewNames.front() ) );
             return retVal;
         }
 

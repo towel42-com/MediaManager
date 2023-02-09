@@ -154,7 +154,7 @@ namespace NMediaManager
             QStandardItem * fItem{ nullptr };
             QString fOldName;
             QStringList fAncillary;
-            QString fNewName;
+            QStringList fNewNames;
             int fMaximum{ 0 };
 
             std::function< bool( const SProcessInfo * processInfo, QString & msg ) > fPostProcess;

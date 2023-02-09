@@ -45,12 +45,26 @@ namespace NMediaManager
             void CBIFGeneration::load()
             {
                 fImpl->imageInterval->setValue( NPreferences::NCore::CPreferences::instance()->imageInterval() );
+                fImpl->imageOriginalSize->setChecked( NPreferences::NCore::CPreferences::instance()->imageOriginalSize() );
+                fImpl->byImageWidth->setChecked( NPreferences::NCore::CPreferences::instance()->byImageWidth() );
+                fImpl->imageWidth->setValue( NPreferences::NCore::CPreferences::instance()->imageWidth() );
+                fImpl->byImageHeight->setChecked( NPreferences::NCore::CPreferences::instance()->byImageHeight() );
+                fImpl->imageHeight->setValue( NPreferences::NCore::CPreferences::instance()->imageHeight() );
+                fImpl->generateGIF->setChecked( NPreferences::NCore::CPreferences::instance()->generateGIF() );
+                fImpl->generateBIF->setChecked( NPreferences::NCore::CPreferences::instance()->generateBIF() );
                 fImpl->keepTempDir->setChecked( NPreferences::NCore::CPreferences::instance()->keepTempDir() );
             }
 
             void CBIFGeneration::save()
             {
                 NPreferences::NCore::CPreferences::instance()->setImageInterval( fImpl->imageInterval->value() );
+                NPreferences::NCore::CPreferences::instance()->setImageOriginalSize( fImpl->imageOriginalSize->isChecked() );
+                NPreferences::NCore::CPreferences::instance()->setByImageWidth( fImpl->byImageWidth->isChecked() );
+                NPreferences::NCore::CPreferences::instance()->setImageWidth( fImpl->imageWidth->value() );
+                NPreferences::NCore::CPreferences::instance()->setByImageHeight( fImpl->byImageHeight->isChecked() );
+                NPreferences::NCore::CPreferences::instance()->setImageHeight( fImpl->imageHeight->value() );
+                NPreferences::NCore::CPreferences::instance()->setGenerateGIF( fImpl->generateGIF->isChecked() );
+                NPreferences::NCore::CPreferences::instance()->setGenerateBIF( fImpl->generateBIF->isChecked() );
                 NPreferences::NCore::CPreferences::instance()->setKeepTempDir( fImpl->keepTempDir->isChecked() );
             }
         }

@@ -100,7 +100,7 @@ namespace NMediaManager
 
                 void setSeasonOutDirPattern( const QString & value );
                 QString getSeasonOutDirPattern() const;
-                    
+
                 void setTVOutFilePattern( const QString & value );
                 QString getTVOutFilePattern() const;
 
@@ -276,8 +276,33 @@ namespace NMediaManager
                 int getNumSearchPages() const;
                 void setNumSearchPages( int numpages );
 
+                QSize getThumbnailSize( const QFileInfo & fi ) const;
+                QString getImageFileName( const QFileInfo & fi, const QString & ext ) const;
+                QString getImageFileName( const QFileInfo & fi, const QSize & sz, const QString & ext ) const;
+
                 int imageInterval() const;
                 void setImageInterval( int value );
+
+                bool imageOriginalSize() const;
+                void setImageOriginalSize( bool value );
+
+                bool byImageWidth() const;
+                void setByImageWidth( bool value );
+
+                int imageWidth() const;
+                void setImageWidth( int value );
+
+                bool byImageHeight() const;
+                void setByImageHeight( bool value );
+
+                int imageHeight() const;
+                void setImageHeight( int value );
+
+                bool generateGIF() const;
+                void setGenerateGIF( bool value );
+
+                bool generateBIF() const;
+                void setGenerateBIF( bool value );
 
                 bool keepTempDir() const;
                 void setKeepTempDir( bool value );

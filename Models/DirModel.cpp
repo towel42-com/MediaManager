@@ -1101,7 +1101,7 @@ namespace NMediaManager
             if ( !NPreferences::NCore::CPreferences::instance()->isMediaFile( fi ) )
                 return;
 
-            auto mediaInfo = getMediaTags( fi, { NSABUtils::EMediaTags::eTitle, NSABUtils::EMediaTags::eLength, NSABUtils::EMediaTags::eDate, NSABUtils::EMediaTags::eComment } );
+            auto mediaInfo = getMediaTags( fi, { NSABUtils::EMediaTags::eTitle, NSABUtils::EMediaTags::eLength, NSABUtils::EMediaTags::eDate, NSABUtils::EMediaTags::eWidth, NSABUtils::EMediaTags::eHeight, NSABUtils::EMediaTags::eComment } );
 
             QStandardItem * item = itemFromIndex( index( idx.row(), getMediaTitleLoc(), idx.parent() ) );
             item->setText( mediaInfo[ NSABUtils::EMediaTags::eTitle ] );
@@ -1125,7 +1125,7 @@ namespace NMediaManager
                 return {};
 
             std::list<SDirNodeItem> retVal;
-            auto mediaInfo = getMediaTags( fileInfo, { NSABUtils::EMediaTags::eTitle, NSABUtils::EMediaTags::eLength, NSABUtils::EMediaTags::eDate, NSABUtils::EMediaTags::eComment } );
+            auto mediaInfo = getMediaTags( fileInfo, { NSABUtils::EMediaTags::eTitle, NSABUtils::EMediaTags::eLength, NSABUtils::EMediaTags::eDate, NSABUtils::EMediaTags::eWidth, NSABUtils::EMediaTags::eHeight, NSABUtils::EMediaTags::eComment } );
 
             retVal.emplace_back( mediaInfo[ NSABUtils::EMediaTags::eTitle ], offset++ );
             retVal.back().fEditable = std::make_pair( EType::eMediaTag, NSABUtils::EMediaTags::eTitle );
@@ -1134,6 +1134,13 @@ namespace NMediaManager
 
             retVal.emplace_back( mediaInfo[ NSABUtils::EMediaTags::eDate ], offset++ );
             retVal.back().fEditable = std::make_pair( EType::eMediaTag, NSABUtils::EMediaTags::eDate );
+
+            auto width = mediaInfo[ NSABUtils::EMediaTags::eWidth ];
+            auto height = mediaInfo[ NSABUtils::EMediaTags::eHeight ];
+            QString resolution;
+            if ( !width.isEmpty() && !height.isEmpty() )
+                resolution = tr( "%1x%2" ).arg( width ).arg( height );
+            retVal.emplace_back( resolution, offset++ );
 
             retVal.emplace_back( mediaInfo[ NSABUtils::EMediaTags::eComment ], offset++ );
             retVal.back().fEditable = std::make_pair( EType::eMediaTag, NSABUtils::EMediaTags::eComment );
@@ -1413,7 +1420,7 @@ namespace NMediaManager
         {
             if ( !canShowMediaInfo() )
                 return {};
-            return QStringList() << tr( "Title" ) << tr( "Length" ) << tr( "Media Date" ) << tr( "Comment" );
+            return QStringList() << tr( "Title" ) << tr( "Length" ) << tr( "Media Date" ) << tr( "Resolution" ) << tr( "Comment" );
         }
 
         std::list< SDirNodeItem > CDirModel::addAdditionalItems( const QFileInfo & fileInfo ) const
@@ -1486,7 +1493,7 @@ namespace NMediaManager
 
         void SProcessInfo::cleanup( CDirModel * model, bool aOK )
         {
-            if ( fOldName.isEmpty() || fNewName.isEmpty() )
+            if ( fOldName.isEmpty() || fNewNames.isEmpty() )
                 return;
 
             if ( aOK && fPostProcess )
@@ -1494,20 +1501,32 @@ namespace NMediaManager
                 QString msg;
                 aOK = fPostProcess( this, msg );
                 if ( !aOK )
-                    CDirModel::appendError( fItem, QObject::tr( "%1: FAILED TO CREATE BIF- %2" ).arg( model->getDispName( fNewName ) ).arg( msg ) );
+                {
+                    for ( auto && ii : fNewNames )
+                    {
+                        CDirModel::appendError( fItem, QObject::tr( "%1: FAILED TO CREATE" ).arg( model->getDispName( ii ) ) );
+                    }
+                    CDirModel::appendError( fItem, QObject::tr( "Message: %1" ).arg( msg ) );
+                }
             }
 
             if ( !aOK )
             {
-                QFile::remove( fNewName );
+                for ( auto && ii : fNewNames )
+                {
+                    QFile::remove( ii );
+                }
                 return;
             }
 
-            if ( !QFileInfo::exists( fNewName ) )
+            for ( auto && ii : fNewNames )
             {
-                CDirModel::appendError( fItem, QObject::tr( "%1:  New file does not exist" ).arg( model->getDispName( fOldName ) ).arg( model->getDispName( fNewName ) ) );
-                model->fProcessResults.first = false;
-                return;
+                if ( !QFileInfo::exists( ii ) )
+                {
+                    CDirModel::appendError( fItem, QObject::tr( "%1:  New file does not exist" ).arg( model->getDispName( fOldName ) ).arg( model->getDispName( ii ) ) );
+                    model->fProcessResults.first = false;
+                    return;
+                }
             }
 
             if ( fBackupOrig )
@@ -1522,24 +1541,33 @@ namespace NMediaManager
             }
 
             QString msg;
-            if ( fSetMKVTagsOnSuccess && !model->setMediaTags( fNewName, QString(), QString(), QString(), &msg, true ) )
+            if ( fSetMKVTagsOnSuccess )
             {
-                CDirModel::appendError( fItem, QObject::tr( "%1: FAILED TO SET MKV Tags - %2" ).arg( model->getDispName( fNewName ) ).arg( msg ) );
-                model->fProcessResults.first = false;
-                return;
+                for ( auto && ii : fNewNames )
+                {
+                    if ( !model->setMediaTags( ii, QString(), QString(), QString(), &msg, true ) )
+                    {
+                        CDirModel::appendError( fItem, QObject::tr( "%1: FAILED TO SET MKV Tags - %2" ).arg( model->getDispName( ii ) ).arg( msg ) );
+                        model->fProcessResults.first = false;
+                        return;
+                    }
+                }
             }
 
             QStringList msgs;
             if ( !model->postExtProcess( *this, msgs ) )
             {
-                CDirModel::appendError( fItem, QObject::tr( "%1: FAILED TO Post Process ITEM TO %2 - %3" ).arg( model->getDispName( fNewName ) ).arg( model->getDispName( fOldName ).arg( msgs.join( "\n" ) ) ) );
+                CDirModel::appendError( fItem, QObject::tr( "%1: FAILED TO Post Process ITEM TO %2 - %3" ).arg( model->getDispName( fOldName ) ).arg( model->getDispName( fNewNames.join( ", " ) ).arg( msgs.join( "\n" ) ) ) );
                 model->fProcessResults.first = false;
             }
 
-            if ( QFileInfo::exists( fNewName ) && !NSABUtils::NFileUtils::setTimeStamps( fNewName, fTimeStamps ) )
+            for ( auto && ii : fNewNames )
             {
-                CDirModel::appendError( fItem, QObject::tr( "%1: FAILED TO MODIFY TIMESTAMP" ).arg( model->getDispName( fOldName ) ) );
-                model->fProcessResults.first = false;
+                if ( QFileInfo::exists( ii ) && !NSABUtils::NFileUtils::setTimeStamps( ii, fTimeStamps ) )
+                {
+                    CDirModel::appendError( fItem, QObject::tr( "%1: FAILED TO MODIFY TIMESTAMP ON GENERATED FILE '%2'" ).arg( model->getDispName( fOldName ) ).arg( model->getDispName( ii ) ) );
+                    model->fProcessResults.first = false;
+                }
             }
 
             if ( QFileInfo::exists( fOldName ) && !NSABUtils::NFileUtils::setTimeStamps( fOldName, fTimeStamps ) )

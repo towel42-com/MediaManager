@@ -312,12 +312,17 @@ namespace NMediaManager
 
             auto dir = mkvFile.absoluteDir();
             qDebug().noquote().nospace() << "Finding SRT files for '" << getDispName( mkvFile ) << "' in dir '" << getDispName( dir.absolutePath() ) << "'";
-            auto srtFiles = NSABUtils::NFileUtils::findFilesInDir( dir, QStringList() << "*.srt", true );
+            auto srtFiles = NSABUtils::NFileUtils::findAllFiles( dir, QStringList() << "*.srt", true );
 
             //qDebug().noquote().nospace() << "Found '" << srtFiles.count() << "' SRT Files";
 
-            if ( srtFiles.size() <= 1 )
-                return srtFiles;
+            if ( !srtFiles.has_value() )
+                return {};
+
+            if ( srtFiles.value().count() <= 1 )
+            {
+                return srtFiles.value();
+            }
 
             // could be 2_lang, 3_lang etc - return them all
             // or could be name.srt (common for TV shows)
@@ -329,7 +334,7 @@ namespace NMediaManager
             QList< QFileInfo > unknownFiles;
 
             std::map< QString, QList< QFileInfo > > nameBasedMap;
-            for ( auto && ii : srtFiles )
+            for ( auto && ii : srtFiles.value() )
             {
                 if ( isNameBasedMatch( mkvFile, ii ) )
                     nameBasedMap[ mkvFile.completeBaseName() ].push_back( ii );
@@ -341,7 +346,7 @@ namespace NMediaManager
             }
             else
             {
-                for ( auto && ii : srtFiles )
+                for ( auto && ii : srtFiles.value() )
                 {
                     //qDebug().noquote().nospace() << "Checking '" << getDispName( ii ) << "'";
                     //qDebug().noquote().nospace() << "Checking '" << fi.completeBaseName() << "' against '" << ii.completeBaseName() << "'";
@@ -370,8 +375,8 @@ namespace NMediaManager
             processInfo.fOldName = computeTransformPath( mkvFile, true );
             auto oldFI = QFileInfo( processInfo.fOldName );
 
-            processInfo.fNewName = oldFI.absoluteDir().absoluteFilePath( oldFI.fileName() + ".new" );// prevents the emby system from picking it up
-            processInfo.fItem = new QStandardItem( QString( "'%1' => '%2'" ).arg( getDispName( processInfo.fOldName ) ).arg( getDispName( processInfo.fNewName ) ) );
+            processInfo.fNewNames << oldFI.absoluteDir().absoluteFilePath( oldFI.fileName() + ".new" );// prevents the emby system from picking it up
+            processInfo.fItem = new QStandardItem( QString( "'%1' => '%2'" ).arg( getDispName( processInfo.fOldName ) ).arg( getDispName( processInfo.fNewNames.front() ) ) );
 
             std::list< std::pair< std::pair< QStandardItem *, QStandardItem * >, NCore::SLanguageInfo > > allLangInfos;
             std::unordered_map<  QStandardItem *, std::unordered_map< int, std::pair< bool, bool > > > langMap;
@@ -470,7 +475,7 @@ namespace NMediaManager
                 processInfo.fArgs = QStringList()
                     << "--ui-language" << "en"
                     << "--priority" << "lower"
-                    << "--output" << processInfo.fNewName
+                    << "--output" << processInfo.fNewNames
                     << "--language" << "0:en"
                     << "--language" << "1:en"
                     << "--language" << "3:en"
@@ -549,9 +554,9 @@ namespace NMediaManager
             processInfo.fOldName = computeTransformPath( mkvFile, true );
             auto oldFI = QFileInfo( processInfo.fOldName );
 
-            processInfo.fNewName = oldFI.absoluteDir().absoluteFilePath( oldFI.fileName() + ".new" );// prevents the emby system from picking it up
+            processInfo.fNewNames << oldFI.absoluteDir().absoluteFilePath( oldFI.fileName() + ".new" );// prevents the emby system from picking it up
 
-            processInfo.fItem = new QStandardItem( QString( "'%1' => '%2'" ).arg( getDispName( processInfo.fOldName ) ).arg( getDispName( processInfo.fNewName ) ) );
+            processInfo.fItem = new QStandardItem( QString( "'%1' => '%2'" ).arg( getDispName( processInfo.fOldName ) ).arg( getDispName( processInfo.fNewNames.front() ) ) );
 
             for ( auto && ii : srtFiles )
             {
@@ -602,7 +607,7 @@ namespace NMediaManager
                 processInfo.fArgs = QStringList()
                     << "--ui-language" << "en"
                     << "--priority" << "lower"
-                    << "--output" << processInfo.fNewName
+                    << "--output" << processInfo.fNewNames
                     << "--language" << "0:en"
                     << "--language" << "1:en"
                     << "(" << processInfo.fOldName << ")"
@@ -674,9 +679,9 @@ namespace NMediaManager
         {
             bool aOK = CDirModel::postExtProcess( info, msgList );
             QStringList retVal;
-            if ( aOK && !QFile::rename( info.fNewName, info.fOldName ) )
+            if ( aOK && !QFile::rename( info.fNewNames.front(), info.fOldName ) )
             {
-                msgList << QString( "ERROR: %1: FAILED TO MOVE ITEM TO %2" ).arg( getDispName( info.fNewName ) ).arg( getDispName( info.fOldName ) );
+                msgList << QString( "ERROR: %1: FAILED TO MOVE ITEM TO %2" ).arg( getDispName( info.fNewNames.front() ) ).arg( getDispName( info.fOldName ) );
                 aOK = false;
             }
 
@@ -851,7 +856,7 @@ namespace NMediaManager
 
         QString CMergeSRTModel::getProgressLabel( const SProcessInfo & processInfo ) const
         {
-            auto dir = QFileInfo( processInfo.fNewName ).absolutePath();
+            auto dir = QFileInfo( processInfo.fNewNames.front() ).absolutePath();
             auto fname = QFileInfo( processInfo.fOldName ).fileName();
 
             auto retVal = QString( "Merging MKV %1<ul><li>%2</li>" ).arg( getDispName( dir ) ).arg( fname );
@@ -861,7 +866,7 @@ namespace NMediaManager
                 retVal += QString( "<li>%1</li>" ).arg( fname );
             }
             retVal += "</ul>";
-            fname = QFileInfo( processInfo.fNewName ).fileName();
+            fname = QFileInfo( processInfo.fNewNames.front() ).fileName();
             retVal += QString( "to create %1" ).arg( fname );
             return retVal;
         }

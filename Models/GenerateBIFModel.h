@@ -24,6 +24,7 @@
 #define _GenerateBIFMODEL_H
 
 #include "DirModel.h"
+class QFileInfo;
 
 namespace NMediaManager
 {
@@ -47,10 +48,14 @@ namespace NMediaManager
             virtual bool ignoreExtrasOnSearch() const override { return false; }
 
             virtual std::pair< bool, QStandardItem * > processItem( const QStandardItem * item, bool displayOnly ) override;
+
             virtual bool showMediaItems() const override { return false; };
             //virtual int firstMediaItemColumn() const override { return EColumns::eMediaColumnLoc; }
             virtual QStringList headers() const override;
             virtual QString getProgressLabel( const SProcessInfo & processInfo ) const override;
+
+            QString getProgressLabel( const SProcessInfo * processInfo, bool bif ) const;
+
             virtual void postLoad( QTreeView * /*treeView*/ ) override;
             virtual void preLoad( QTreeView * /*treeView*/ ) override;
             virtual void postProcess( bool /*displayOnly*/ ) override;

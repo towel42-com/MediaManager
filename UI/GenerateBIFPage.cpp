@@ -33,7 +33,7 @@ namespace NMediaManager
     namespace NUi
     {
         CGenerateBIFPage::CGenerateBIFPage( QWidget * parent )
-            : CBasePage( "Generate Thumbnails", parent )
+            : CBasePage( "Generate Thumbnail Videos", parent )
         {
         }
 
@@ -63,17 +63,17 @@ namespace NMediaManager
 
         QString CGenerateBIFPage::actionTitleName() const
         {
-            return tr( "Generating Thumbnail files..." );
+            return tr( "Generating Thumbnail Videos..." );
         }
 
         QString CGenerateBIFPage::actionCancelName() const
         {
-            return tr( "Abort Generating Thumbnail files" );
+            return tr( "Abort Generating Thumbnail Videos" );
         }
 
         QString CGenerateBIFPage::actionErrorName() const
         {
-            return tr( "Error while Generating Thumbnail files:" );
+            return tr( "Error while Generating Thumbnail Videos:" );
         }
 
         void CGenerateBIFPage::postProcessLog( const QString & string )

@@ -159,6 +159,46 @@ namespace NMediaManager
                 emitSigPreferencesChanged( EPreferenceType::eSystemPrefs );
             }
 
+            QSize CPreferences::getThumbnailSize( const QFileInfo & fi ) const
+            {
+                auto tags = NSABUtils::getMediaTags( fi.absoluteFilePath(), { NSABUtils::EMediaTags::eWidth, NSABUtils::EMediaTags::eHeight, NSABUtils::EMediaTags::eAspectRatio } );
+
+                auto width = tags[ NSABUtils::EMediaTags::eWidth ].toInt();
+                auto height = tags[ NSABUtils::EMediaTags::eHeight ].toInt();
+
+                auto aspectRatio = tags[ NSABUtils::EMediaTags::eAspectRatio ].toDouble(); // w/h
+
+                if ( byImageWidth() )
+                {
+                    width = imageWidth();
+                    height = width / aspectRatio;
+                }
+                else if ( byImageHeight() )
+                {
+                    height = imageHeight();
+                    width = height * aspectRatio;
+                }
+
+                return QSize( width, height );
+            }
+            
+
+            QString CPreferences::getImageFileName( const QFileInfo & fi, const QSize & sz, const QString & ext ) const
+            {
+                return fi.absoluteDir().absoluteFilePath( fi.completeBaseName() + QString( "-%1x%2-%3.%4" )
+                                                   .arg( sz.width() )
+                                                   .arg( sz.height() )
+                                                   .arg( imageInterval() )
+                                                   .arg( ext )
+                                                    );
+            }
+
+            QString CPreferences::getImageFileName( const QFileInfo & fi, const QString & ext ) const
+            {
+                auto sz = getThumbnailSize( fi );
+                return getImageFileName( fi, sz, ext );
+            }
+
             QStringList CPreferences::cleanUpPaths( const QStringList & paths, bool /*areDirs*/ ) const
             {
                 QStringList retVal;
@@ -1215,6 +1255,111 @@ namespace NMediaManager
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eBIFPrefs ) );
                 settings.setValue( "ImageInterval", value );
+                emitSigPreferencesChanged( EPreferenceType::eBIFPrefs );
+            }
+
+            bool CPreferences::imageOriginalSize() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eBIFPrefs ) );
+                return settings.value( "ImageOriginalSize", false ).toBool();
+            }
+
+            void CPreferences::setImageOriginalSize( bool value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eBIFPrefs ) );
+                settings.setValue( "ImageOriginalSize", value );
+                emitSigPreferencesChanged( EPreferenceType::eBIFPrefs );
+            }
+
+            bool CPreferences::byImageWidth() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eBIFPrefs ) );
+                return settings.value( "ByImageWidth", true ).toBool();
+            }
+
+            void CPreferences::setByImageWidth( bool value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eBIFPrefs ) );
+                settings.setValue( "ByImageWidth", value );
+                emitSigPreferencesChanged( EPreferenceType::eBIFPrefs );
+            }
+
+            int CPreferences::imageWidth() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eBIFPrefs ) );
+                return settings.value( "ImageWidth", 320 ).toInt();
+            }
+
+            void CPreferences::setImageWidth( int value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eBIFPrefs ) );
+                settings.setValue( "ImageWidth", value );
+                emitSigPreferencesChanged( EPreferenceType::eBIFPrefs );
+            }
+
+            bool CPreferences::byImageHeight() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eBIFPrefs ) );
+                return settings.value( "ByImageHeight", false ).toBool();
+            }
+
+            void CPreferences::setByImageHeight( bool value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eBIFPrefs ) );
+                settings.setValue( "ByImageHeight", value );
+                emitSigPreferencesChanged( EPreferenceType::eBIFPrefs );
+            }
+
+            int CPreferences::imageHeight() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eBIFPrefs ) );
+                return settings.value( "ImageHeight", 133 ).toInt();
+            }
+
+            void CPreferences::setImageHeight( int value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eBIFPrefs ) );
+                settings.setValue( "ImageHeight", value );
+                emitSigPreferencesChanged( EPreferenceType::eBIFPrefs );
+            }
+
+            bool CPreferences::generateGIF() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eBIFPrefs ) );
+                return settings.value( "GenerateGIF", true ).toBool();
+            }
+
+            void CPreferences::setGenerateGIF( bool value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eBIFPrefs ) );
+                settings.setValue( "GenerateGIF", value );
+                emitSigPreferencesChanged( EPreferenceType::eBIFPrefs );
+            }
+
+            bool CPreferences::generateBIF() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eBIFPrefs ) );
+                return settings.value( "GenerateBIF", true ).toBool();
+            }
+
+            void CPreferences::setGenerateBIF( bool value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eBIFPrefs ) );
+                settings.setValue( "GenerateBIF", value );
                 emitSigPreferencesChanged( EPreferenceType::eBIFPrefs );
             }
 
