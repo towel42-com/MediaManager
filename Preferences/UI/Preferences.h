@@ -23,7 +23,6 @@
 #ifndef __UI_PREFERENCES_H
 #define __UI_PREFERENCES_H
 
-#include "SABUtils/HashUtils.h"
 #include <QDialog>
 #include <unordered_map>
 

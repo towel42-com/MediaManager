@@ -21,7 +21,6 @@
 // SOFTWARE.
 
 #include "BasePrefPage.h"
-#include "SABUtils/HashUtils.h"
 #include "SABUtils/StringUtils.h"
 
 #include <QInputDialog>
