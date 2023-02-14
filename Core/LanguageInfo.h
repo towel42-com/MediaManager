@@ -23,7 +23,6 @@
 #ifndef _LANGUAGEINFO_H
 #define _LANGUAGEINFO_H
 
-#include "SABUtils/HashUtils.h"
 #include <QString>
 #include <unordered_map>
 #include <unordered_set>
