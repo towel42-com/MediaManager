@@ -33,6 +33,7 @@ class QStringListModel;
 class QLineEdit;
 class QListView;
 class QTreeWidgetItem;
+class QValidator;
 namespace NMediaManager
 {
     namespace NPreferences
@@ -54,8 +55,10 @@ namespace NMediaManager
                     return QStringList( { "Transformation Settings" } );
                 }
             public Q_SLOTS:
+                void slotRippedRegEXChanged();
             private:
                 std::unique_ptr< Ui::CTransformationSettings > fImpl;
+                QValidator * fValidator{ nullptr };
             };
         }
     }

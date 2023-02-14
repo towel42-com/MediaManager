@@ -30,7 +30,8 @@
 #include <QInputDialog>
 #include <QFileDialog>
 #include <QMessageBox>
-
+#include <QRegularExpression>
+#include <QRegularExpressionValidator>
 #include "SABUtils/ButtonEnabler.h"
 #include "SABUtils/UtilityModels.h"
 #include "SABUtils/QtUtils.h"
@@ -46,12 +47,14 @@ namespace NMediaManager
                 fImpl( new Ui::CTransformationSettings )
             {
                 fImpl->setupUi( this );
+                fValidator = new QRegularExpressionValidator( QRegularExpression( R"(.*\?\<num\>.*)" ), this );
+                connect( fImpl->rippedWithMKVRegEX, &QLineEdit::textChanged, this, &CTransformationSettings::slotRippedRegEXChanged );
+                fImpl->rippedWithMKVRegEX->setValidator( fValidator );
             }
 
             CTransformationSettings::~CTransformationSettings()
             {
             }
-
 
             void CTransformationSettings::load()
             {
@@ -59,6 +62,7 @@ namespace NMediaManager
                 fImpl->exactMatchesOnly->setChecked( NPreferences::NCore::CPreferences::instance()->getExactMatchesOnly() );
                 fImpl->loadMediaInfo->setChecked( NPreferences::NCore::CPreferences::instance()->getLoadMediaInfo() );
                 fImpl->onlyTransformDirectories->setChecked( NPreferences::NCore::CPreferences::instance()->getOnlyTransformDirectories() );
+                fImpl->rippedWithMKVRegEX->setText( NPreferences::NCore::CPreferences::instance()->getRippedWithMKVRegEX() );
             }
 
             void CTransformationSettings::save()
@@ -67,7 +71,24 @@ namespace NMediaManager
                 NPreferences::NCore::CPreferences::instance()->setExactMatchesOnly( fImpl->exactMatchesOnly->isChecked() );
                 NPreferences::NCore::CPreferences::instance()->setLoadMediaInfo( fImpl->loadMediaInfo->isChecked() );
                 NPreferences::NCore::CPreferences::instance()->setOnlyTransformDirectories( fImpl->onlyTransformDirectories->isChecked() );
+                NPreferences::NCore::CPreferences::instance()->setRippedWithMKVRegEX( fImpl->rippedWithMKVRegEX->text() );
             }
+
+            void CTransformationSettings::slotRippedRegEXChanged()
+            {
+                int pos = -1;
+                auto state = fValidator->validate( fImpl->rippedWithMKVRegEX->text(), pos );
+                if ( ( state == QValidator::State::Intermediate ) || ( state == QValidator::State::Invalid ) )
+                {
+                    fImpl->rippedWithMKVRegEX->setStyleSheet( "QLineEdit { background-color: red }" );
+                    //fImpl->rippedWithMKVRegEX->setStyleSheet( "QLineEdit { background-color: #b7bfaf }" );
+                }
+                else if ( state == QValidator::State::Acceptable )
+                {
+                    fImpl->rippedWithMKVRegEX->setStyleSheet( "QLineEdit { background-color: white }" );
+                }
+            }
+
         }
     }
 }
