@@ -60,6 +60,11 @@ namespace NMediaManager
                 return !getDefaultCustomPathsToDelete().isEmpty();
             }
 
+            QString CPreferences::getDefaultRippedWithMKVRegEX() const
+            {
+                return R"(^.*_t(?<num>\d+)\.mkv$)";
+            }
+
             bool CPreferences::getDefaultDeleteEXE() const
             {
                 return true;
