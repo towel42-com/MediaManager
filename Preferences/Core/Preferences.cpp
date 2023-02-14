@@ -622,6 +622,25 @@ namespace NMediaManager
                 return settings.value( "CustomToDelete", getDefaultCustomPathsToDelete() ).toStringList();
             }
 
+            void CPreferences::setRippedWithMKVRegEX( const QString & value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.setValue( "RippedWithMKVRegEX", value );
+                emitSigPreferencesChanged( EPreferenceType::eTransformPrefs );
+            }
+
+            QString CPreferences::getRippedWithMKVRegEX() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                auto retVal = settings.value( "RippedWithMKVRegEX", getDefaultRippedWithMKVRegEX() ).toString();
+#ifdef _DEBUG
+                Q_ASSERT_X( retVal.indexOf( "?<num>" ) >= 0, "getRippedWithMKVRegEX", "Invalid setting must contain the capture of num" );
+#endif
+                return retVal;
+            }
+
             QStringList CPreferences::getExtensionsToDelete() const
             {
                 QStringList retVal;
@@ -713,27 +732,28 @@ namespace NMediaManager
 
             QStringList CPreferences::getKnownStringRegExs() const
             {
-                auto strings = getKnownStrings();
-                QStringList nonRegExs;
-                QStringList retVal;
-                for ( auto && ii : strings )
+                if ( fKnownStringRegExsCache.isEmpty() )
                 {
-                    bool isRegEx =
-                        ( ii.indexOf( "\\" ) != -1 )
-                        || ( ii.indexOf( "?" ) != -1 )
-                        || ( ii.indexOf( "{" ) != -1 )
-                        || ( ii.indexOf( "}" ) != -1 )
-                        ;
+                    auto strings = getKnownStrings();
+                    QStringList nonRegExs;
+                    for ( auto && ii : strings )
+                    {
+                        bool isRegEx =
+                            ( ii.indexOf( "\\" ) != -1 )
+                            || ( ii.indexOf( "?" ) != -1 )
+                            || ( ii.indexOf( "{" ) != -1 )
+                            || ( ii.indexOf( "}" ) != -1 )
+                            ;
 
-                    if ( isRegEx )
-                        retVal << QString( "(?<word>" + ii + ")" );
-                    else
-                        nonRegExs << QRegularExpression::escape( ii );
+                        if ( isRegEx )
+                            fKnownStringRegExsCache << QString( "(?<word>" + ii + ")" );
+                        else
+                            nonRegExs << QRegularExpression::escape( ii );
+                    }
+                    auto primRegEx = R"(((?<prefix>\[|\()|\W)(?<word>)" + nonRegExs.join( "|" ) + R"()((?<suffix>\]|\))|\W|$))";
+                    fKnownStringRegExsCache << primRegEx;
                 }
-                auto primRegEx = R"(((?<prefix>\[|\()|\W)(?<word>)" + nonRegExs.join( "|" ) + R"()((?<suffix>\]|\))|\W|$))";
-                retVal << primRegEx;
-
-                return retVal;
+                return fKnownStringRegExsCache;
             }
 
             void CPreferences::setKnownExtendedStrings( const QStringList & value )
@@ -1396,8 +1416,7 @@ namespace NMediaManager
                 emitSigPreferencesChanged( EPreferenceType::eBIFPrefs );
             }
 
-
-            /// ////////////////////////////////////////////////////////
+                                    /// ////////////////////////////////////////////////////////
             /// GIF Options
             /// ////////////////////////////////////////////////////////
 
@@ -1491,44 +1510,56 @@ namespace NMediaManager
                 return settings.value( "Delay", 10 ).toInt();
             }
 
-            bool CPreferences::isMediaFile( const QFileInfo & fi ) const
+            bool CPreferences::isFileWithExtension( const QFileInfo & fi, std::function< QStringList() > getExtensions, std::unordered_set< QString > & hash, std::unordered_map< QString, bool > & cache ) const
             {
                 if ( !fi.isFile() )
                     return false;
 
-                auto suffixes = getVideoExtensions();
-                for ( auto && ii : suffixes )
+                if ( hash.empty() )
                 {
-                    auto pos = ii.lastIndexOf( '.' );
-                    ii = ii.mid( pos + 1 );
+                    auto suffixes = getExtensions();
+                    for ( auto && ii : suffixes )
+                    {
+                        auto pos = ii.lastIndexOf( '.' );
+                        ii = ii.mid( pos + 1 );
+                        ii = ii.toLower();
+                    }
+                    hash = NSABUtils::hashFromList( suffixes );
                 }
-                auto extensions = NSABUtils::hashFromList( suffixes );
 
-                auto suffix = fi.suffix();
-                return ( extensions.find( suffix ) != extensions.end() );
+                auto suffix = fi.suffix().toLower();
+                auto pos = cache.find( suffix );
+                if ( pos != cache.end() )
+                {
+                    return ( *pos ).second;
+                }
+                bool retVal = ( hash.find( suffix ) != hash.end() );
+                cache[ suffix ] = retVal;
+                return retVal;
+            }
+
+            bool CPreferences::isMediaFile( const QFileInfo & fi ) const
+            {
+                return isFileWithExtension( fi, [this]()
+                                            {
+                                                return getVideoExtensions();
+                                            }, fMediaExtensionsHash, fIsMediaExtension );
             }
 
             // only return true for X_Lang.srt files or subs directories
             bool CPreferences::isSubtitleFile( const QFileInfo & fi, bool * isLangFileFormat ) const
             {
+                if ( !fi.isFile() )
+                    return false;
                 if ( isLangFileFormat )
                 {
                     *isLangFileFormat = NMediaManager::NCore::SLanguageInfo::isLangFileFormat( fi );
                 }
 
-                auto exts = CPreferences::instance()->getSubtitleExtensions();
-                auto suffix = fi.suffix();
-
-                for ( auto && ii : exts )
-                {
-                    auto pos = ii.lastIndexOf( '.' );
-                    ii = ii.mid( pos + 1 );
-
-                    if ( ii.compare( suffix, Qt::CaseSensitivity::CaseInsensitive ) == 0 )
-                        return true;
-                }
-
-                return false;
+                return isFileWithExtension( fi, [ this ]()
+                                            {
+                                                return getSubtitleExtensions();
+                                            }, fSubtitleExtensionsHash, fIsSubtitleExtension );
             }
 
             void CPreferences::emitSigPreferencesChanged( EPreferenceTypes preferenceTypes )
@@ -1542,6 +1573,17 @@ namespace NMediaManager
                     connect( fPrefChangeTimer, &QTimer::timeout,
                              [this]()
                              {
+                                 if ( ( fPending & eSystemPrefs ) != 0 )
+                                 {
+                                     fMediaExtensionsHash.clear();
+                                     fIsMediaExtension.clear();
+                                     fSubtitleExtensionsHash.clear();
+                                     fIsSubtitleExtension.clear();
+                                 }
+                                 if ( ( fPending & eTransformPrefs ) != 0 )
+                                 {
+                                     fKnownStringRegExsCache.clear();
+                                 }
                                  emit sigPreferencesChanged( fPending );
                                  fPending = EPreferenceTypes();
                              }
@@ -1838,6 +1880,8 @@ namespace NMediaManager
                     << R"()"
                     << "%DEFAULT_DELETE_CUSTOM%"
                     << R"()"
+                    << "%DEFAULT_RIPPED_WITH_MKV_REGEX%"
+                    << R"()"
                     << "%DEFAULT_DELETE_EXE%"
                     << R"()"
                     << "%DEFAULT_DELETE_NFO%"
@@ -1877,6 +1921,7 @@ namespace NMediaManager
                     << compareValues( "Skipped Paths (Media Tagging)", getDefaultSkippedPaths( false ), getSkippedPaths( false ) )
                     << compareValues( "Ignored Paths", getDefaultIgnoredPaths(), getIgnoredPaths() )
                     << compareValues( "Paths to Delete", getDefaultCustomPathsToDelete(), getCustomPathsToDelete() )
+                    << compareValues( "Ripped With MKV RegEX", getDefaultRippedWithMKVRegEX(), getRippedWithMKVRegEX() )
 
                     << compareValues( "Delete Custom", getDefaultDeleteCustom(), deleteCustom() )
                     << compareValues( "Delete Executables", getDefaultDeleteEXE(), deleteEXE() )
@@ -1927,6 +1972,7 @@ namespace NMediaManager
                     replaceText( "%DEFAULT_OUT_FILE_PATTERN%", newFileText, "getDefaultOutFilePattern", "forTV", getTVOutFilePattern(), getMovieOutFilePattern() );
                     replaceText( "%DEFAULT_CUSTOM_PATHS_TO_DELETE%", newFileText, "getDefaultCustomPathsToDelete", getCustomPathsToDelete() );
                     replaceText( "%DEFAULT_DELETE_CUSTOM%", newFileText, "getDefaultDeleteCustom", "!getDefaultCustomPathsToDelete().isEmpty()" );
+                    replaceText( "%DEFAULT_RIPPED_WITH_MKV_REGEX%", newFileText, "getDefaultRippedWithMKVRegEX", getRippedWithMKVRegEX() );
                     replaceText( "%DEFAULT_DELETE_EXE%", newFileText, "getDefaultDeleteEXE", deleteEXE() );
                     replaceText( "%DEFAULT_DELETE_NFO%", newFileText, "getDefaultDeleteNFO", deleteNFO() );
                     replaceText( "%DEFAULT_DELETE_BAK%", newFileText, "getDefaultDeleteBAK", deleteBAK() );

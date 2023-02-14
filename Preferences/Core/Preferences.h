@@ -29,6 +29,7 @@
 #include <QMap>
 #include <QHash>
 #include <QRegularExpression>
+#include <unordered_set>
 class QFileInfo;
 class QWidget;
 
@@ -162,6 +163,10 @@ namespace NMediaManager
                 QStringList getCustomPathsToDelete() const;
                 void setCustomPathsToDelete( const QStringList & paths );
 
+                QString getDefaultRippedWithMKVRegEX() const;
+                QString getRippedWithMKVRegEX() const;
+                void setRippedWithMKVRegEX( const QString & value );
+
                 bool getDefaultDeleteCustom() const;
                 bool deleteCustom() const;
                 void setDeleteCustom( bool deleteCustom );
@@ -233,9 +238,6 @@ namespace NMediaManager
 
                 void setFFProbeEXE( const QString & value );
                 QString getFFProbeEXE() const;
-
-                void setBIFToolEXE( const QString & value );
-                QString getBIFToolEXE() const;
 
                 bool isMediaFile( const QFileInfo & fi ) const;
                 bool isSubtitleFile( const QFileInfo & info, bool * isLangFileFormat = nullptr ) const;
@@ -316,6 +318,7 @@ namespace NMediaManager
                 QString compareValues( const QString & title, bool defaultValue, bool currValue ) const;
                 QString compareValues( const QString & title, const QVariantMap & defaultValues, const QVariantMap & currValues ) const;
                 QStringList variantMapToStringList( const QVariantMap & data ) const;
+                bool isFileWithExtension( const QFileInfo & fi, std::function< QStringList() > getExtensions, std::unordered_set< QString > & hash, std::unordered_map< QString, bool > & cache ) const;
 
                 QStringList cleanUpPaths( const QStringList & paths, bool areDirs ) const;
                 void emitSigPreferencesChanged( EPreferenceTypes prefType );
@@ -327,6 +330,12 @@ namespace NMediaManager
                 QString getDefaultOutFilePattern( bool forTV ) const;
                 QTimer * fPrefChangeTimer{ nullptr };
                 EPreferenceTypes fPending;
+                mutable std::unordered_set< QString > fMediaExtensionsHash;
+                mutable std::unordered_map< QString, bool > fIsMediaExtension;
+
+                mutable std::unordered_set< QString > fSubtitleExtensionsHash;
+                mutable std::unordered_map< QString, bool > fIsSubtitleExtension;
+                mutable QStringList fKnownStringRegExsCache;
             };
         }
     }
