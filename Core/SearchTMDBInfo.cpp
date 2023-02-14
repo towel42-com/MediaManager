@@ -25,6 +25,8 @@
 #include "Preferences/Core/Preferences.h"
 #include "SearchTMDB.h"
 
+#include <QString>
+#include "SABUtils/HashUtils.h"
 #include "SABUtils/QtUtils.h"
 #include "SABUtils/StringUtils.h"
 #include "SABUtils/utils.h"
@@ -33,6 +35,27 @@
 #include <QDebug>
 #include <QUrlQuery>
 #include <QFileInfo>
+
+namespace std
+{
+    template <>
+    struct hash< std::tuple< QString, bool, bool > >
+    {
+        std::size_t operator()( const std::tuple< QString, bool, bool > & key ) const
+        {
+            return NSABUtils::HashCombine( key );
+        }
+    };
+
+    template <>
+    struct hash< std::pair< QString, bool > >
+    {
+        std::size_t operator()( const std::pair< QString, bool > & key ) const
+        {
+            return NSABUtils::HashCombine( key );
+        }
+    };
+}
 
 namespace NMediaManager
 {
@@ -129,6 +152,17 @@ namespace NMediaManager
 
         QString SSearchTMDBInfo::smartTrim( const QString & string, bool stripInnerSeparators, bool checkForKnownHyphens )
         {
+            if ( string.isEmpty() )
+                return string;
+
+            static std::unordered_map< std::tuple< QString, bool, bool >, QString > sCache;
+
+            auto cachePos = sCache.find( std::make_tuple( string, stripInnerSeparators, checkForKnownHyphens ) );
+            if ( cachePos != sCache.end() )
+            {
+                return ( *cachePos ).second;
+            }
+
             auto retVal = string;
             auto pos = retVal.indexOf( QRegularExpression( R"([^\.\s\-\_])" ) );
             if ( pos != -1 )
@@ -174,6 +208,7 @@ namespace NMediaManager
                     }
                 }
             }
+            sCache[ std::make_tuple( string, stripInnerSeparators, checkForKnownHyphens ) ] = retVal;
             return retVal;
         }
 
@@ -193,9 +228,22 @@ namespace NMediaManager
             return retVal;
         }
 
-        EMediaType SSearchTMDBInfo::looksLikeTVShow( const QString & searchString, QString * titleStr, QString * seasonStr, QString * episodeStr, QString * extraStr, bool movieOnUnknown )
+        EMediaType SSearchTMDBInfo::looksLikeTVShow( const QString & searchString, QString * titleStr, QString * seasonStr, QString * episodeStr, QString * extraStr, bool assumeUnknownIsMovie )
         {
-            QString localRetVal = searchString;
+            static std::unordered_map< std::pair< QString, bool >, std::tuple< EMediaType, QString, QString, QString, QString > > sCache;
+            auto pos = sCache.find( std::make_pair( searchString, assumeUnknownIsMovie ) );
+            if ( pos != sCache.end() )
+            {
+                if ( titleStr )
+                    *titleStr = std::get< 1 >( ( *pos ).second );
+                if ( seasonStr )
+                    *seasonStr = std::get< 2 >( ( *pos ).second );
+                if ( episodeStr )
+                    *episodeStr = std::get< 3 >( ( *pos ).second );
+                if ( extraStr )
+                    *extraStr = std::get< 4 >( ( *pos ).second );
+                return std::get< 0 >( ( *pos ).second );
+            }
 
             if ( titleStr )
                 titleStr->clear();
@@ -206,16 +254,19 @@ namespace NMediaManager
             if ( extraStr )
                 extraStr->clear();
 
+            QString title = searchString;
+            QString season;
+            QString episode;
+            QString extra;
             EMediaType retVal = EMediaType::eUnknownType; // default is a movie
 
-            auto regExpStr = QString( R"((^|[^A-Z])S(?<garbage>EASON)?(?<season>\d{1,4}))" );
+            auto regExpStr = QString( R"((^|[^A-Z])S(?<garbage>EASON(_?))?(?<season>\d{1,4}))" );
             auto regExp = QRegularExpression( regExpStr, QRegularExpression::PatternOption::CaseInsensitiveOption );
-            auto match = regExp.match( localRetVal );
+            auto match = regExp.match( title );
             std::list< std::pair< int, int > > positions;
             if ( match.hasMatch() )
             {
-                if ( seasonStr )
-                    *seasonStr = smartTrim( match.captured( "season" ) );
+                season = smartTrim( match.captured( "season" ) );
                 if ( match.capturedStart( "garbage" ) != -1 )
                     positions.emplace_back( match.capturedStart( "garbage" ) - 1, match.capturedLength( "garbage" ) + 1 );
                 positions.emplace_back( match.capturedStart( "season" ) - 1, match.capturedLength( "season" ) + 1 );
@@ -227,13 +278,12 @@ namespace NMediaManager
             auto regExpStr2 = R"((^|[^A-Z])E(?<garbage>PISODE)?(?<episode>\d{1,4})(?![E-]))";
             regExpStr = QString( R"(((%1)|(%2)))" ).arg( regExpStr1 ).arg( regExpStr2 );
             regExp = QRegularExpression( regExpStr, QRegularExpression::PatternOption::CaseInsensitiveOption );
-            match = regExp.match( localRetVal );
+            match = regExp.match( title );
             if ( match.hasMatch() )
             {
                 if ( !match.captured( "episode" ).isEmpty() )
                 {
-                    if ( episodeStr )
-                        *episodeStr = smartTrim( match.captured( "episode" ) );
+                    episode = smartTrim( match.captured( "episode" ) );
 
                     if ( match.capturedStart( "garbage" ) != -1 )
                         positions.emplace_back( match.capturedStart( "garbage" ) - 1, match.capturedLength( "garbage" ) + 1 );
@@ -247,8 +297,7 @@ namespace NMediaManager
                 }
                 else if ( !match.captured( "startEpisode" ).isEmpty() && !match.captured( "endEpisode" ).isEmpty() )
                 {
-                    if ( episodeStr )
-                        *episodeStr = smartTrim( "E" + match.captured( "startEpisode" ) + match.captured( "dash" ) + "E" + match.captured( "endEpisode" ) );
+                     episode = smartTrim( "E" + match.captured( "startEpisode" ) + match.captured( "dash" ) + "E" + match.captured( "endEpisode" ) );
 
                     if ( match.capturedStart( "garbage1" ) != -1 )
                         positions.emplace_back( match.capturedStart( "garbage1" ) - 1, match.capturedLength( "garbage1" ) + 1 );
@@ -276,47 +325,48 @@ namespace NMediaManager
 
             regExpStr = QString( R"((^|[^A-Z])(?<season>\d{1,4})[xX](?<episode>\d{1,4}))" );
             regExp = QRegularExpression( regExpStr, QRegularExpression::PatternOption::CaseInsensitiveOption );
-            match = regExp.match( localRetVal );
+            match = regExp.match( title );
             if ( match.hasMatch() )
             {
-                if ( seasonStr )
-                    *seasonStr = smartTrim( match.captured( "season" ) );
-                if ( episodeStr )
-                    *episodeStr = smartTrim( match.captured( "episode" ) );
+                season = smartTrim( match.captured( "season" ) );
+                episode = smartTrim( match.captured( "episode" ) );
                 positions.emplace_back( match.capturedStart( "season" ) - 1, match.capturedLength( "season" ) + 1 );
                 positions.emplace_back( match.capturedStart( "episode" ) - 1, match.capturedLength( "episode" ) + 1 );
 
                 retVal = EMediaType::eTVSeason;
             }
 
-            if ( titleStr )
+            auto data = stripOutPositions( title, positions );
+            if ( !data.isEmpty() )
             {
-                auto data = stripOutPositions( localRetVal, positions );
-                if ( !data.isEmpty() )
-                {
-                    localRetVal = data.front();
-                    data.pop_front();
-                    if ( extraStr )
-                        *extraStr = data.join( " " );
-                }
+                title = data.front();
+                data.pop_front();
+                extra = data.join( " " );
             }
 
             regExpStr = R"(.*\s??(?<seasonsuffix>-\s??Season\s?(?<season>\d+)))";
             regExp = QRegularExpression( regExpStr, QRegularExpression::PatternOption::CaseInsensitiveOption );
-            match = regExp.match( localRetVal );
+            match = regExp.match( title );
             if ( match.hasMatch() )
             {
-                if ( seasonStr )
-                    *seasonStr = smartTrim( match.captured( ( "season" ) ) );
-                if ( titleStr )
-                    localRetVal.replace( match.capturedStart( "seasonsuffix" ), match.capturedEnd( "seasonsuffix" ), "" );
+                season = smartTrim( match.captured( ( "season" ) ) );
+                title.replace( match.capturedStart( "seasonsuffix" ), match.capturedEnd( "seasonsuffix" ), "" );
                 retVal = EMediaType::eTVSeason;
             }
 
             if ( titleStr )
-                *titleStr = localRetVal;
-            if ( movieOnUnknown && ( retVal == EMediaType::eUnknownType ) )
+                *titleStr = title;
+
+            if ( assumeUnknownIsMovie && ( retVal == EMediaType::eUnknownType ) )
                 retVal = EMediaType::eMovie;
+            if ( seasonStr )
+                *seasonStr = season;
+            if ( episodeStr )
+                *episodeStr = episode;
+            if ( extraStr )
+                *extraStr = extra;
+
+            sCache[ std::make_pair( searchString, assumeUnknownIsMovie ) ] = std::make_tuple( retVal, title, season, episode, extra );
             return retVal;
         }
 
@@ -602,31 +652,52 @@ namespace NMediaManager
             return isTVType( fMediaType.first );
         }
 
-        bool SSearchTMDBInfo::isRippedFromMKV( const QFileInfo & fi, int * titleNum )
+        bool SSearchTMDBInfo::isRippedWithMKV( const QFileInfo & fi, int * titleNum )
         {
-            return isRippedFromMKV( fi.fileName(), titleNum );
+            return isRippedWithMKV( fi.fileName(), titleNum );
         }
 
-        bool SSearchTMDBInfo::isRippedFromMKV( const QString & name, int * titleNum )
+        bool SSearchTMDBInfo::isRippedWithMKV( const QString & name, int * titleNum )
         {
-            auto regExpStr = "^.*_t(?<num>\\d+)\\.mkv$";
+            static std::unordered_map< QString, std::pair< bool, int > > sCache;
+            auto pos = sCache.find( name );
+            if ( pos != sCache.end() )
+            {
+                if ( titleNum )
+                    *titleNum = ( *pos ).second.second;
+                return ( *pos ).second.first;
+            }
+
+            auto regExpStr = NPreferences::NCore::CPreferences::instance()->getRippedWithMKVRegEX();
             auto regExp = QRegularExpression( regExpStr );
             auto match = regExp.match( name );
             bool aOK = false;
+            int lclTitleNum = -1;
             if ( match.hasMatch() )
             {
                 auto titleNumStr = match.captured( "num" );
-                int lclTitleNum = titleNumStr.toInt( &aOK );
+                lclTitleNum = titleNumStr.toInt( &aOK );
                 if ( !aOK )
                     lclTitleNum = -1;
                 if ( titleNum )
                     *titleNum = lclTitleNum;
             }
+            sCache[ name ] = std::make_pair( aOK, lclTitleNum );
             return aOK;
         }
 
         bool SSearchTMDBInfo::hasDiskNumber( QString & searchString, int & diskNum, std::shared_ptr< CTransformResult > searchResult )
         {
+            //  insert cache cache 
+            static std::unordered_map< QString, std::tuple< bool, QString, int > > sCache;
+            auto pos = sCache.find( searchString );
+            if ( pos != sCache.end() )
+            {
+                searchString = std::get< 1 >( ( *pos ).second );
+                diskNum = std::get< 2 >( ( *pos ).second );
+                return std::get< 0 >( ( *pos ).second );
+            }
+
             QString diskStr;
             auto regExpStr = "[^A-Za-z](?<fulltext>D(ISC|ISK)?_?(?<num>\\d+))(\\D|$)";
             auto regExp = QRegularExpression( regExpStr, QRegularExpression::CaseInsensitiveOption );
@@ -638,15 +709,17 @@ namespace NMediaManager
             }
             if ( searchResult && !searchResult->diskNum().isEmpty() )
                 diskStr = searchResult->diskNum();
+
+            bool aOK = false;
             if ( !diskStr.isEmpty() )
             {
-                bool aOK = false;
                 diskNum = diskStr.toInt( &aOK );
                 if ( !aOK )
                     diskNum = -1;
-                return aOK;
             }
-            return false;
+
+            sCache[ searchString ] = std::make_tuple( aOK, searchString, diskNum );
+            return aOK;
         }
 
         void SSearchTMDBInfo::extractDiskNum()
@@ -660,7 +733,9 @@ namespace NMediaManager
             QString episodeStr;
             if ( isTVMedia() )
             {
-                looksLikeTVShow( fSearchName, &fSearchName, &seasonStr, &episodeStr, &fSubTitle );
+                auto tmpSearchString = fSearchName;
+                looksLikeTVShow( fSearchName, &tmpSearchString, &seasonStr, &episodeStr, &fSubTitle );
+                fSearchName = tmpSearchString;
                 fSubTitle = smartTrim( fSubTitle, true );
             }
 
