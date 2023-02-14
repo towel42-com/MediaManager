@@ -28,7 +28,7 @@
 #include <QStandardItemModel>
 class QTemporaryDir;
 #include <QFileInfo> // filedevice
-#include "SABUtils/HashUtils.h"
+#include "SABUtils/QtHashUtils.h"
 #include <unordered_set>
 #include <optional>
 #include <QProcess> // qprocess enums
@@ -418,6 +418,8 @@ namespace NMediaManager
         private:
             mutable std::unordered_map< QString, std::optional< TItemStatus > > fPathStatusCache;
             mutable std::unordered_map< QString, std::unordered_map< int, std::optional< TItemStatus > > > fItemStatusCache;
+            mutable std::unordered_map< QFileInfo, bool > fIsRootPathCache;
+            mutable std::unordered_map< QString, QString > fDispNameCache;
         };
     }
 }

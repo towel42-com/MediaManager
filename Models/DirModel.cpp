@@ -186,6 +186,8 @@ namespace NMediaManager
 
         void CDirModel::setRootPath( const QString & rootPath )
         {
+            fIsRootPathCache.clear();
+            fDispNameCache.clear();
             fRootPath = QDir( rootPath );
             reloadModel();
         }
@@ -212,7 +214,7 @@ namespace NMediaManager
 
             preLoad();
 
-            qDebug() << fRootPath;
+            //qDebug() << fRootPath;
             QFileInfo rootFI( fRootPath.path() );
 
             if ( progressDlg() )
@@ -913,10 +915,17 @@ namespace NMediaManager
 
         QString CDirModel::getDispName( const QString & absPath ) const
         {
-            if ( fRootPath.isEmpty() )
-                return {};
-            auto rootDir = QDir( fRootPath );
-            return rootDir.relativeFilePath( absPath );
+            auto pos = fDispNameCache.find( absPath );
+            if ( pos != fDispNameCache.end() )
+                return ( *pos ).second;
+            QString retVal;
+            if ( !fRootPath.isEmpty() )
+            {
+                auto rootDir = QDir( fRootPath );
+                retVal = rootDir.relativeFilePath( absPath );
+            }
+            fDispNameCache[ absPath ] = retVal;
+            return retVal;
         }
 
         QString CDirModel::getDispName( const QFileInfo & fi ) const
@@ -1699,13 +1708,16 @@ namespace NMediaManager
 
         bool CDirModel::isRootPath( const QFileInfo & path ) const
         {
-            if ( path.isFile() )
-                return false;
+            auto pos = fIsRootPathCache.find( path );
+            if ( pos != fIsRootPathCache.end() )
+                return ( *pos ).second;
 
-            if ( path.isRelative() )
-                return false;
-
-            auto retVal = QFileInfo( fRootPath.absoluteFilePath( "." ) ) == path;
+            bool retVal = false;
+            if ( !path.isFile() && !path.isRelative() )
+            {
+                retVal = QFileInfo( fRootPath.absoluteFilePath( "." ) ) == path;
+            }
+            fIsRootPathCache[ path ] = retVal;
             return retVal;
         }
 
