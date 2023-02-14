@@ -55,8 +55,8 @@ namespace NMediaManager
 
             static bool hasDiskNumber( QString & searchString, int & diskNum, std::shared_ptr< CTransformResult > searchResult );
             static EMediaType looksLikeTVShow( const QString & searchString, QString * titleStr, QString * seasonStr = nullptr, QString * episodeStr = nullptr, QString * extraStr = nullptr, bool movieOnUnknown=true );
-            static bool isRippedFromMKV( const QString & name, int * titleNum = nullptr );
-            static bool isRippedFromMKV( const QFileInfo & fi, int * titleNum = nullptr );
+            static bool isRippedWithMKV( const QString & name, int * titleNum = nullptr );
+            static bool isRippedWithMKV( const QFileInfo & fi, int * titleNum = nullptr );
 
             void updateSearchCriteria( bool updateSearchBy );
 
