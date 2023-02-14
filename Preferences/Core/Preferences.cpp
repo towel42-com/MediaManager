@@ -686,11 +686,29 @@ namespace NMediaManager
                 emitSigPreferencesChanged( EPreferenceType::eTransformPrefs );
             }
 
+            struct SCmp
+            {
+                bool operator()( const QString & lhs, const QString & rhs ) const
+                {
+                    if ( lhs.startsWith( rhs, Qt::CaseInsensitive ) )
+                        return true;
+                    if ( rhs.startsWith( lhs, Qt::CaseInsensitive ) )
+                        return false;
+                    return lhs.compare( rhs, Qt::CaseInsensitive ) < 0;
+                }
+            };
+
             QStringList CPreferences::getKnownStrings() const
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
-                return settings.value( "KnownStrings", getDefaultKnownStrings() ).toStringList();
+                auto tmp = settings.value( "KnownStrings", getDefaultKnownStrings() ).toStringList();
+                auto tmp2 = std::set< QString, SCmp >( { tmp.begin(), tmp.end() } );
+                QStringList retVal;
+                for ( auto && ii : tmp2 )
+                    retVal.push_back( ii );
+
+                return retVal;
             }
 
             QStringList CPreferences::getKnownStringRegExs() const
