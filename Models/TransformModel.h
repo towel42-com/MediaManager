@@ -34,7 +34,8 @@ namespace NMediaManager
     }
     namespace NModels
     {
-        using TTitleMap = std::unordered_map< QString, std::map< int, std::map< int, QString > > >;
+        // title -> season -> disk -> title num, path
+        using TTitleMap = std::unordered_map< QString, std::map< int, std::map< int, std::map< int, QString > > > >;
 
         class CTransformModel : public CDirModel
         {

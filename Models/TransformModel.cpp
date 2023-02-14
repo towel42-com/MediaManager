@@ -197,26 +197,19 @@ namespace NMediaManager
             TTitleMap titleMap;
             findTitlesPerDiskNumbers( index( 0, 0 ), titleMap );
 
-            for ( auto && ii : titleMap )
+            for ( auto && searchNamePos : titleMap ) // search name
             {
-                NCore::SSearchTMDBInfo info( ii.first, {} );
-                auto seasonNum = info.season();
-                auto title = info.searchName();
-                auto episodeNum = 1;
-                for ( auto && jj : ii.second )
+                for ( auto && seasonPos : searchNamePos.second ) 
                 {
-                    for ( auto && kk : jj.second )
+                    auto episodeNum = 1;
+                    for ( auto && diskNumPos : seasonPos.second )
                     {
-                        QString searchName;
-                        if ( seasonNum > 0 )
-                            searchName = QString( "S%2E%3" ).arg( seasonNum, 2, 10, QChar( '0' ) ).arg( episodeNum, 2, 10, QChar( '0' ) );
-                        else
-                            searchName = QString( "E%3" ).arg( episodeNum, 2, 10, QChar( '0' ) );
-                        if ( !title.isEmpty() )
-                            searchName = title + " - " + searchName;
-                        //qDebug() << kk.second << " = " << searchName;
-                        episodeNum++;
-                        fDiskRipSearchMap[ kk.second ] = searchName;
+                        for ( auto && titleNumPos : diskNumPos.second )
+                        {
+                            auto searchName = QString( "%1 - S%2E%3" ).arg( searchNamePos.first ).arg( seasonPos.first, 2, 10, QChar( '0' ) ).arg( episodeNum, 2, 10, QChar( '0' ) );
+                            fDiskRipSearchMap[ titleNumPos.second ] = searchName;
+                            episodeNum++;
+                        }
                     }
                 }
             }
@@ -234,7 +227,14 @@ namespace NMediaManager
                 auto childPaths = getDiskTitles( parentIdx );
                 if ( !childPaths.empty() )
                 {
-                    retVal[ name ][ diskNumber ] = childPaths;
+                    //QString title;
+
+                    NCore::SSearchTMDBInfo info( name, {} );
+
+                    auto title = info.searchName().toLower();
+                    auto season = info.season();
+
+                    retVal[ title ][ season ][ diskNumber ] = childPaths;
                 }
             }
 
@@ -257,7 +257,7 @@ namespace NMediaManager
                 {
                     auto name = childIndex.data().toString();
                     int titleNum = -1;
-                    if ( NCore::SSearchTMDBInfo::isRippedFromMKV( name, &titleNum ) )
+                    if ( NCore::SSearchTMDBInfo::isRippedWithMKV( name, &titleNum ) )
                     {
                         retVal[ titleNum ] = childIndex.data( NModels::ECustomRoles::eAbsFilePath ).toString();
                     }
@@ -272,12 +272,15 @@ namespace NMediaManager
             if ( !idx.isValid() )
                 return {};
 
+            if ( isRootPath( idx ) )
+                return {};
+
             auto path = idx.data( ECustomRoles::eAbsFilePath ).toString();
             auto pos = fDiskRipSearchMap.find( path );
             if ( pos != fDiskRipSearchMap.end() )
                 return ( *pos ).second;
 
-            if ( NCore::SSearchTMDBInfo::isRippedFromMKV( fileInfo( idx ) ) )
+            if ( NCore::SSearchTMDBInfo::isRippedWithMKV( fileInfo( idx ) ) )
                 return getSearchName( idx.parent() );
 
             auto nm = index( idx.row(), EColumns::eTransformName, idx.parent() ).data().toString();
