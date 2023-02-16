@@ -20,6 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+set(_PROJECT_NAME PreferencesUI)
+set(USE_QT TRUE)
+set(FOLDER_NAME Libs/Preferences)
+
 set(qtproject_SRCS
     BasePrefPage.cpp
     BIFGeneration.cpp

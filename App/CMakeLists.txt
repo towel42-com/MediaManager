@@ -22,10 +22,11 @@
 
 cmake_minimum_required(VERSION 3.22)
  
-project( MediaManager ) 
+find_package(IncludeProjectSettings REQUIRED)
+include( ${CMAKE_CURRENT_LIST_DIR}/include.cmake )
+project( ${_PROJECT_NAME} ) 
+IncludeProjectSettings(QT ${USE_QT})
 
-include( include.cmake )
-include( ${CMAKE_SOURCE_DIR}/Project.cmake )
 include_directories( ${CMAKE_BINARY_DIR} )
 
 add_executable( ${PROJECT_NAME} WIN32
@@ -60,9 +61,9 @@ set ( DEBUG_PLUGINPATH
         "$<TARGET_FILE_DIR:gif>/.."
         )
         
-set_target_properties( ${PROJECT_NAME} PROPERTIES FOLDER Apps 
-                                    VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:MediaManager>" 
-                                    VS_DEBUGGER_COMMAND "$<TARGET_FILE:MediaManager>" 
+set_target_properties( ${PROJECT_NAME} PROPERTIES FOLDER ${FOLDER_NAME} 
+                                    VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:${PROJECT_NAME}>" 
+                                    VS_DEBUGGER_COMMAND "$<TARGET_FILE:${PROJECT_NAME}>" 
                                     VS_DEBUGGER_ENVIRONMENT "PATH=${DEBUG_PATH}\nQT_PLUGIN_PATH=${DEBUG_PLUGINPATH}" 
                      )
 

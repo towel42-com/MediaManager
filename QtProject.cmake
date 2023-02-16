@@ -20,39 +20,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-set(_PROJECT_NAME Models)
-set(USE_QT TRUE)
-set(FOLDER_NAME Libs)
+cmake_minimum_required(VERSION 3.1)
+if(CMAKE_VERSION VERSION_LESS "3.7.0")
+    set(CMAKE_INCLUDE_CURRENT_DIR ON)
+endif()
 
-set(qtproject_SRCS
-    DirModel.cpp
-    DirNodeItem.cpp
-    GenerateBIFModel.cpp
-    MergeSRTModel.cpp
-    MakeMKVModel.cpp
-    TagsModel.cpp
-    TransformModel.cpp
-)
+include( ${CMAKE_SOURCE_DIR}/SABUtils/QtProject.cmake )
 
-set(qtproject_H
-    DirModel.h
-    GenerateBIFModel.h
-    MergeSRTModel.h
-    MakeMKVModel.h
-    TagsModel.h
-    TransformModel.h
-)
-
-set(project_H
-    DirNodeItem.h
-)
-
-set(qtproject_UIS
-)
-
-
-set(qtproject_QRC
-)
-
-file(GLOB qtproject_QRC_SOURCES "resources/*")
+SET( project_pub_DEPS
+     Qt5::Network
+     ${project_pub_DEPS}
+     )
 
