@@ -1,3 +1,6 @@
+INSTALL( FILES License.txt DESTINATION . )
+INSTALL( FILES ReleaseNotes.txt DESTINATION . )
+
 SET( CPACK_PACKAGE_VERSION_MAJOR ${MAJOR_VERSION} )
 SET( CPACK_PACKAGE_VERSION_MINOR ${MINOR_VERSION} )
 SET( CPACK_PACKAGE_VERSION_PATCH ${VERSION_FILE_PATCH_VERSION} )
@@ -39,4 +42,6 @@ VIAddVersionKey /LANG=0 \\\"LegalCopyright\\\" \\\"${CPACK_PACKAGE_COPYRIGHT}\\\
 VIAddVersionKey /LANG=0 \\\"FileDescription\\\" \\\"${APP_NAME} Installer\\\"
 VIAddVersionKey /LANG=0 \\\"FileVersion\\\" \\\"v${MAJOR_VERSION}.${MINOR_VERSION}.${VERSION_FILE_PATCH_VERSION}\\\""
 )
+
+include( CPack )
 

@@ -20,12 +20,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.22)
 #cmake_policy(SET CMP0126 NEW)
 #cmake_policy(SET CMP0077 NEW)
-if(CMAKE_VERSION VERSION_LESS "3.7.0")
-    set(CMAKE_INCLUDE_CURRENT_DIR ON)
-endif()
 
 project(root-MediaManager) 
 
@@ -48,7 +45,7 @@ option( gtest_force_shared_crt "Use shared ( DLL ) run-time lib even when Google
 
 set_property( GLOBAL PROPERTY USE_FOLDERS ON )
 
-file( REAL_PATH ~/bin/MediaManager CMAKE_INSTALL_PREFIX EXPAND_TILDE)
+file( REAL_PATH ~/Dropbox/home/bin/MediaManager CMAKE_INSTALL_PREFIX EXPAND_TILDE)
 MESSAGE( STATUS "Installing to ${CMAKE_INSTALL_PREFIX}" )
 
 SET( SABUTILS_DLL ON )
@@ -68,10 +65,5 @@ add_subdirectory( Core )
 add_subdirectory( Models )
 add_subdirectory( App )
 
-INSTALL( FILES License.txt DESTINATION . )
-INSTALL( FILES ReleaseNotes.txt DESTINATION . )
-
 include( InstallerInfo.cmake )
-include( CPack )
-
 
