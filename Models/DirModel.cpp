@@ -62,9 +62,9 @@
 QDebug operator<<( QDebug dbg, const NMediaManager::NModels::STreeNode &node )
 {
     dbg << "STreeNode(";
-    auto name = node.name();
+    auto name = node.text();
     dbg << "'" << name << "' ";
-    dbg << "Path: " << ( QFileInfo( name ).isFile() ? "Yes" : "No" ) << " "
+    dbg << "Path: " << QFileInfo().absoluteFilePath() << " "
         << "Is Loaded? " << node.fLoaded << " "
         << "Is File? " << node.fIsFile << ")";
     return dbg;
@@ -599,12 +599,17 @@ namespace NMediaManager
             model->postAddItems( fileInfo, fItems );
         }
 
-        QString STreeNode::name() const
+        QString STreeNode::text() const
         {
             return rootItem() ? rootItem()->text() : NCore::CTransformResult::getNoItems();
         }
 
-        QStandardItem *STreeNode::item( EColumns column, bool createIfNecessary /*= true */ ) const
+        QString STreeNode::fullPath() const
+        {
+            return fFileInfo.absoluteFilePath();
+        }
+
+        QStandardItem * STreeNode::item( EColumns column, bool createIfNecessary /*= true */ ) const
         {
             items( createIfNecessary );
             return ( column >= fRealItems.count() ) ? nullptr : fRealItems[ int( column ) ];
