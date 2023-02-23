@@ -30,8 +30,8 @@ namespace NMediaManager
 {
     namespace NUi
     {
-        CMergeSRTPage::CMergeSRTPage( QWidget * parent )
-            : CBasePage( "Merge SRT", parent )
+        CMergeSRTPage::CMergeSRTPage( QWidget *parent ) :
+            CBasePage( "Merge SRT", parent )
         {
         }
 
@@ -39,12 +39,12 @@ namespace NMediaManager
         {
         }
 
-        NModels::CDirModel * CMergeSRTPage::createDirModel()
+        NModels::CDirModel *CMergeSRTPage::createDirModel()
         {
             return new NModels::CMergeSRTModel( this );
         }
 
-        void CMergeSRTPage::postProcessLog( const QString & string )
+        void CMergeSRTPage::postProcessLog( const QString &string )
         {
             auto regEx = QRegularExpression( "[Pp]rogress\\:\\s*(?<percent>\\d+)\\%" );
             auto pos = string.lastIndexOf( regEx );
@@ -95,4 +95,3 @@ namespace NMediaManager
         }
     }
 }
-

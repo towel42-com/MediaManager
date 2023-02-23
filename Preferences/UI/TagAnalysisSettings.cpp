@@ -42,8 +42,8 @@ namespace NMediaManager
     {
         namespace NUi
         {
-            CTagAnalysisSettings::CTagAnalysisSettings( QWidget * parent )
-                : CBasePrefPage( parent ),
+            CTagAnalysisSettings::CTagAnalysisSettings( QWidget *parent ) :
+                CBasePrefPage( parent ),
                 fImpl( new Ui::CTagAnalysisSettings )
             {
                 fImpl->setupUi( this );
@@ -58,7 +58,6 @@ namespace NMediaManager
             {
             }
 
-
             void CTagAnalysisSettings::load()
             {
                 fImpl->verifyMediaTags->setChecked( NPreferences::NCore::CPreferences::instance()->getVerifyMediaTags() );
@@ -70,8 +69,8 @@ namespace NMediaManager
                 fImpl->verifyMediaCommentExpr->setText( NPreferences::NCore::CPreferences::instance()->getVerifyMediaCommentExpr() );
 
                 auto allTags = NPreferences::NCore::CPreferences::instance()->getAllMediaTags();
-                std::list < std::pair< QString, bool > > tmp;
-                for ( auto && ii : allTags )
+                std::list< std::pair< QString, bool > > tmp;
+                for ( auto &&ii : allTags )
                 {
                     tmp.emplace_back( std::make_pair( NSABUtils::displayName( ii.first ), ii.second ) );
                 }
@@ -92,7 +91,7 @@ namespace NMediaManager
                 std::list< NSABUtils::EMediaTags > enabled;
 
                 auto checked = fModel->getCheckedStrings();
-                for ( auto && ii : checked )
+                for ( auto &&ii : checked )
                 {
                     enabled.emplace_back( NSABUtils::fromDisplayName( ii ) );
                 }

@@ -33,7 +33,7 @@ namespace NMediaManager
         {
             Q_OBJECT
         public:
-            CMakeMKVPage( QWidget * parent = nullptr );
+            CMakeMKVPage( QWidget *parent = nullptr );
             virtual ~CMakeMKVPage() override;
 
             virtual bool useSecondaryProgressBar() const override { return true; }
@@ -46,9 +46,9 @@ namespace NMediaManager
             virtual QString actionCancelName() const override;
             virtual QString actionErrorName() const override;
 
-            virtual NModels::CDirModel * createDirModel() override;
+            virtual NModels::CDirModel *createDirModel() override;
 
-            virtual void postProcessLog( const QString & string ) override;
+            virtual void postProcessLog( const QString &string ) override;
 
         Q_SIGNALS:
         public Q_SLOTS:
@@ -57,4 +57,4 @@ namespace NMediaManager
         };
     }
 }
-#endif 
+#endif

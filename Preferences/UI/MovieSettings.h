@@ -39,20 +39,20 @@ namespace NMediaManager
     {
         namespace NUi
         {
-            namespace Ui { class CMovieSettings; };
+            namespace Ui
+            {
+                class CMovieSettings;
+            };
             class CMovieSettings : public CBasePrefPage
             {
                 Q_OBJECT
             public:
-                CMovieSettings( QWidget * parent = nullptr );
+                CMovieSettings( QWidget *parent = nullptr );
                 ~CMovieSettings() override;
 
                 virtual void load() override;
                 virtual void save() override;
-                virtual QStringList pageName() const override
-                {
-                    return QStringList( { "Transformation Settings", "Movies" } );
-                }
+                virtual QStringList pageName() const override { return QStringList( { "Transformation Settings", "Movies" } ); }
             public Q_SLOTS:
             private:
                 std::unique_ptr< Ui::CMovieSettings > fImpl;
@@ -60,4 +60,4 @@ namespace NMediaManager
         }
     }
 }
-#endif 
+#endif

@@ -39,20 +39,20 @@ namespace NMediaManager
     {
         namespace NUi
         {
-            namespace Ui { class CExternalTools; };
+            namespace Ui
+            {
+                class CExternalTools;
+            };
             class CExternalTools : public CBasePrefPage
             {
                 Q_OBJECT
             public:
-                CExternalTools( QWidget * parent = nullptr );
+                CExternalTools( QWidget *parent = nullptr );
                 virtual ~CExternalTools() override;
 
                 virtual void load() override;
                 virtual void save() override;
-                virtual QStringList pageName() const override
-                {
-                    return QStringList( { "External Tools" } );
-                }
+                virtual QStringList pageName() const override { return QStringList( { "External Tools" } ); }
             public Q_SLOTS:
                 void slotSelectMKVMergeExe();
                 void slotSelectMKVPropEditExe();
@@ -61,14 +61,15 @@ namespace NMediaManager
 
                 void slotFFToolChanged();
                 void slotMKVNixToolChanged();
-            private:
-                void mkvnixToolChanged( QLineEdit * le );
-                void fftoolToolChanged( QLineEdit * le );
 
-                void updateOtherTool( QObject * sender, const std::pair< QLineEdit *, QString > & lhs, const std::pair< QLineEdit *, QString > & rhs );
+            private:
+                void mkvnixToolChanged( QLineEdit *le );
+                void fftoolToolChanged( QLineEdit *le );
+
+                void updateOtherTool( QObject *sender, const std::pair< QLineEdit *, QString > &lhs, const std::pair< QLineEdit *, QString > &rhs );
                 std::unique_ptr< Ui::CExternalTools > fImpl;
             };
         }
     }
 }
-#endif 
+#endif

@@ -32,20 +32,20 @@ namespace NMediaManager
     {
         namespace NUi
         {
-            namespace Ui { class CBIFGeneration; };
+            namespace Ui
+            {
+                class CBIFGeneration;
+            };
             class CBIFGeneration : public CBasePrefPage
             {
                 Q_OBJECT
             public:
-                CBIFGeneration( QWidget * parent = nullptr );
+                CBIFGeneration( QWidget *parent = nullptr );
                 virtual ~CBIFGeneration() override;
 
                 virtual void load() override;
                 virtual void save() override;
-                virtual QStringList pageName() const override
-                {
-                    return QStringList( { "Thumbnail Generation" } );
-                }
+                virtual QStringList pageName() const override { return QStringList( { "Thumbnail Generation" } ); }
             public Q_SLOTS:
             private:
                 std::unique_ptr< Ui::CBIFGeneration > fImpl;
@@ -53,4 +53,4 @@ namespace NMediaManager
         }
     }
 }
-#endif 
+#endif

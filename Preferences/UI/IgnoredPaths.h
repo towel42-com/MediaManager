@@ -39,28 +39,29 @@ namespace NMediaManager
     {
         namespace NUi
         {
-            namespace Ui { class CIgnoredPaths; };
+            namespace Ui
+            {
+                class CIgnoredPaths;
+            };
             class CIgnoredPaths : public CBasePrefPage
             {
                 Q_OBJECT
             public:
-                CIgnoredPaths( QWidget * parent = nullptr );
+                CIgnoredPaths( QWidget *parent = nullptr );
                 virtual ~CIgnoredPaths() override;
 
                 virtual void load() override;
                 virtual void save() override;
-                virtual QStringList pageName() const override
-                {
-                    return QStringList( { "Paths", "Ignored Paths" } );
-                }
+                virtual QStringList pageName() const override { return QStringList( { "Paths", "Ignored Paths" } ); }
             public Q_SLOTS:
                 void slotAddIgnorePathName();
                 void slotDelIgnorePathName();
+
             private:
-                QStringListModel * fModel{ nullptr };
+                QStringListModel *fModel{ nullptr };
                 std::unique_ptr< Ui::CIgnoredPaths > fImpl;
             };
         }
     }
 }
-#endif 
+#endif

@@ -34,28 +34,29 @@ namespace NMediaManager
     {
         namespace NUi
         {
-            namespace Ui { class CKnownAbbreviations; };
+            namespace Ui
+            {
+                class CKnownAbbreviations;
+            };
             class CKnownAbbreviations : public CBasePrefPage
             {
                 Q_OBJECT
             public:
-                CKnownAbbreviations( QWidget * parent = nullptr );
+                CKnownAbbreviations( QWidget *parent = nullptr );
                 virtual ~CKnownAbbreviations() override;
 
                 virtual void load() override;
                 virtual void save() override;
-                virtual QStringList pageName() const override
-                {
-                    return QStringList( { "Known Strings", "Known Abbreviations" } );
-                }
+                virtual QStringList pageName() const override { return QStringList( { "Known Strings", "Known Abbreviations" } ); }
             public Q_SLOTS:
                 void slotAddAbbreviation();
                 void slotDelAbbreviation();
+
             private:
-                NSABUtils::CKeyValuePairModel * fAbbreviationsModel{ nullptr };
+                NSABUtils::CKeyValuePairModel *fAbbreviationsModel{ nullptr };
                 std::unique_ptr< Ui::CKnownAbbreviations > fImpl;
             };
         }
     }
 }
-#endif 
+#endif

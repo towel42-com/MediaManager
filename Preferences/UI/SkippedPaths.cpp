@@ -41,8 +41,8 @@ namespace NMediaManager
     {
         namespace NUi
         {
-            CSkippedPaths::CSkippedPaths( bool forMediaTransform, QWidget * parent )
-                : CBasePrefPage( parent ),
+            CSkippedPaths::CSkippedPaths( bool forMediaTransform, QWidget *parent ) :
+                CBasePrefPage( parent ),
                 fForMediaTransform( forMediaTransform ),
                 fImpl( new Ui::CSkippedPaths )
             {

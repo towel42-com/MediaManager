@@ -40,26 +40,26 @@ namespace NMediaManager
     {
         namespace NUi
         {
-            namespace Ui { class CTagAnalysisSettings; };
+            namespace Ui
+            {
+                class CTagAnalysisSettings;
+            };
             class CTagAnalysisSettings : public CBasePrefPage
             {
                 Q_OBJECT
             public:
-                CTagAnalysisSettings( QWidget * parent = nullptr );
+                CTagAnalysisSettings( QWidget *parent = nullptr );
                 virtual ~CTagAnalysisSettings() override;
 
                 void load() override;
                 void save() override;
-                virtual QStringList pageName() const override
-                {
-                    return QStringList( { "Tag Analysis Settings" } );
-                }
+                virtual QStringList pageName() const override { return QStringList( { "Tag Analysis Settings" } ); }
             public Q_SLOTS:
             private:
                 std::unique_ptr< Ui::CTagAnalysisSettings > fImpl;
-                NSABUtils::CCheckableStringListModel * fModel{ nullptr };
+                NSABUtils::CCheckableStringListModel *fModel{ nullptr };
             };
         }
     }
 }
-#endif 
+#endif

@@ -42,15 +42,14 @@ namespace NMediaManager
 {
     namespace NUi
     {
-        CSelectTMDB::CSelectTMDB( const QString & text, std::shared_ptr< NCore::CTransformResult > searchResult, QWidget * parent )
-            : QDialog( parent ),
+        CSelectTMDB::CSelectTMDB( const QString &text, std::shared_ptr< NCore::CTransformResult > searchResult, QWidget *parent ) :
+            QDialog( parent ),
             fImpl( new Ui::CSelectTMDB )
         {
             fImpl->setupUi( this );
 
             fSearchInfo = std::make_shared< NCore::SSearchTMDBInfo >( text, searchResult );
             fSearchTMDB = new NCore::CSearchTMDB( fSearchInfo, std::optional< QString >(), this );
-
 
             fImpl->resultExtraInfo->setText( searchResult ? searchResult->extraInfo() : QString() );
             fImpl->resultEpisodeTitle->setText( fSearchInfo->subTitle() );
@@ -153,9 +152,20 @@ namespace NMediaManager
         {
             fImpl->results->setColumnCount( 0 );
             if ( fImpl->searchForTVShows->isChecked() )
-                fImpl->results->setHeaderLabels( QStringList() << "Title" << "TMDB ID" << "Season" << "Episode" << "Air Date" << "Episode Title" << "Desc" );
+                fImpl->results->setHeaderLabels(
+                    QStringList() << "Title"
+                                  << "TMDB ID"
+                                  << "Season"
+                                  << "Episode"
+                                  << "Air Date"
+                                  << "Episode Title"
+                                  << "Desc" );
             else
-                fImpl->results->setHeaderLabels( QStringList() << "Title" << "TMDB ID" << "Release Date" << "Desc" );
+                fImpl->results->setHeaderLabels(
+                    QStringList() << "Title"
+                                  << "TMDB ID"
+                                  << "Release Date"
+                                  << "Desc" );
         }
 
         CSelectTMDB::~CSelectTMDB()
@@ -163,9 +173,10 @@ namespace NMediaManager
         }
 
         const QString apiKeyV3 = "7c58ff37c9fadd56c51dae3a97339378";
-        const QString apiKeyV4 = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI3YzU4ZmYzN2M5ZmFkZDU2YzUxZGFlM2E5NzMzOTM3OCIsInN1YiI6IjVmYTAzMzJiNjM1MDEzMDAzMTViZjg2NyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.MBAzJIxvsRm54kgPKcfixxtfbg2bdNGDHKnEt15Nuac";
+        const QString apiKeyV4 =
+            "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI3YzU4ZmYzN2M5ZmFkZDU2YzUxZGFlM2E5NzMzOTM3OCIsInN1YiI6IjVmYTAzMzJiNjM1MDEzMDAzMTViZjg2NyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.MBAzJIxvsRm54kgPKcfixxtfbg2bdNGDHKnEt15Nuac";
 
-        void CSelectTMDB::deleteParent( QTreeWidgetItem * item )
+        void CSelectTMDB::deleteParent( QTreeWidgetItem *item )
         {
             if ( !item )
                 return;
@@ -221,7 +232,7 @@ namespace NMediaManager
                 return;
 
             auto currResults = fPartialResults ? fSearchTMDB->getPartialResults() : fSearchTMDB->getResults();
-            for ( auto && ii : currResults )
+            for ( auto &&ii : currResults )
             {
                 if ( ii->isNotFoundResult() )
                     continue;
@@ -236,7 +247,7 @@ namespace NMediaManager
             QTimer::singleShot( 0, this, &CSelectTMDB::slotLoadNextResult );
         }
 
-        void CSelectTMDB::countResults( QTreeWidgetItem * parent, std::tuple< int, int, int > & count )
+        void CSelectTMDB::countResults( QTreeWidgetItem *parent, std::tuple< int, int, int > &count )
         {
             auto childCount = parent ? parent->childCount() : fImpl->results->topLevelItemCount();
             for ( int ii = 0; ii < childCount; ++ii )
@@ -244,7 +255,7 @@ namespace NMediaManager
                 auto item = parent ? parent->child( ii ) : fImpl->results->topLevelItem( ii );
                 if ( !item )
                     continue;
-                auto type = static_cast<EItemType>( item->type() );
+                auto type = static_cast< EItemType >( item->type() );
                 if ( type == EItemType::eMovie )
                     std::get< 0 >( count )++;
                 else if ( type == EItemType::eTVShow )
@@ -315,7 +326,7 @@ namespace NMediaManager
             QTimer::singleShot( 100, this, &CSelectTMDB::slotLoadNextResult );
         }
 
-        bool CSelectTMDB::isMatchingItem( QTreeWidgetItem * item ) const
+        bool CSelectTMDB::isMatchingItem( QTreeWidgetItem *item ) const
         {
             if ( !fSearchInfo )
                 return false;
@@ -327,9 +338,9 @@ namespace NMediaManager
         }
 
         // childless items OR if its a season search, and its a season node
-        std::list < QTreeWidgetItem * > CSelectTMDB::getMatchingItems( QTreeWidgetItem * parentItem ) const
+        std::list< QTreeWidgetItem * > CSelectTMDB::getMatchingItems( QTreeWidgetItem *parentItem ) const
         {
-            std::list < QTreeWidgetItem * > retVal;
+            std::list< QTreeWidgetItem * > retVal;
 
             auto childCount = parentItem ? parentItem->childCount() : fImpl->results->topLevelItemCount();
             for ( auto ii = 0; ii < childCount; ++ii )
@@ -345,13 +356,13 @@ namespace NMediaManager
             return retVal;
         }
 
-        QTreeWidgetItem * CSelectTMDB::getSingleMatchingItem( QTreeWidgetItem * parentItem ) const
+        QTreeWidgetItem *CSelectTMDB::getSingleMatchingItem( QTreeWidgetItem *parentItem ) const
         {
             auto children = getMatchingItems( parentItem );
             if ( children.empty() )
                 return nullptr;
-            QTreeWidgetItem * retVal = nullptr;
-            for ( auto && ii : children )
+            QTreeWidgetItem *retVal = nullptr;
+            for ( auto &&ii : children )
             {
                 if ( ii && ii->isSelected() )
                 {
@@ -363,7 +374,7 @@ namespace NMediaManager
             return retVal;
         }
 
-        void CSelectTMDB::loadResults( std::shared_ptr< NCore::CTransformResult > info, QTreeWidgetItem * parent )
+        void CSelectTMDB::loadResults( std::shared_ptr< NCore::CTransformResult > info, QTreeWidgetItem *parent )
         {
             if ( fStopLoading )
                 return;
@@ -395,8 +406,7 @@ namespace NMediaManager
                 labelPos = 3;
             }
 
-
-            QTreeWidgetItem * item;
+            QTreeWidgetItem *item;
             if ( parent )
                 item = new QTreeWidgetItem( parent, data, EItemType::eMovie );
             else
@@ -427,17 +437,8 @@ namespace NMediaManager
                 }
             }
 
-            info->onAllChildren(
-                [item, this]( std::shared_ptr< NCore::CTransformResult > child )
-                {
-                    loadResults( child, item );
-                },
-                [this]()
-                {
-                    return fStopLoading;
-                } );
+            info->onAllChildren( [ item, this ]( std::shared_ptr< NCore::CTransformResult > child ) { loadResults( child, item ); }, [ this ]() { return fStopLoading; } );
         }
-
 
         std::shared_ptr< NCore::CTransformResult > CSelectTMDB::getSearchResult() const
         {
@@ -480,7 +481,7 @@ namespace NMediaManager
             }
         }
 
-        QTreeWidgetItem * CSelectTMDB::getFirstSelected() const
+        QTreeWidgetItem *CSelectTMDB::getFirstSelected() const
         {
             auto selected = fImpl->results->selectedItems();
             if ( selected.empty() )
@@ -551,7 +552,6 @@ namespace NMediaManager
             slotSearchCriteriaChanged();
         }
 
-
         void CSelectTMDB::updateEnabled()
         {
             fImpl->searchSeason->setEnabled( fImpl->searchForTVShows->isChecked() && !fImpl->byTMDBID->isChecked() );
@@ -569,7 +569,7 @@ namespace NMediaManager
                 if ( !tmp.isEmpty() )
                 {
                     auto origWords = tmp;
-                    for ( auto && curr : tmp )
+                    for ( auto &&curr : tmp )
                     {
                         curr = QString( "<li>%1</li>" ).arg( curr );
                     }

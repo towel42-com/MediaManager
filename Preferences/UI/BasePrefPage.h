@@ -38,7 +38,7 @@ namespace NMediaManager
             {
                 Q_OBJECT
             public:
-                CBasePrefPage( QWidget * parent = nullptr );
+                CBasePrefPage( QWidget *parent = nullptr );
                 virtual ~CBasePrefPage() override;
 
                 virtual void load() = 0;
@@ -46,10 +46,10 @@ namespace NMediaManager
                 virtual QStringList pageName() const = 0;
             public Q_SLOTS:
             protected:
-                void addString( const QString & title, const QString & label, QStringListModel * model, QListView * listView, bool splitWords );
-                void delString( QStringListModel * listModel, QListView * listView );
+                void addString( const QString &title, const QString &label, QStringListModel *model, QListView *listView, bool splitWords );
+                void delString( QStringListModel *listModel, QListView *listView );
             };
         }
     }
 }
-#endif 
+#endif

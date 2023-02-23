@@ -50,15 +50,15 @@ namespace NMediaManager
         struct SLanguageInfo
         {
             SLanguageInfo();
-            SLanguageInfo( const QFileInfo & path );
-            SLanguageInfo( const QString & path );
-            SLanguageInfo( const QString & isoCode, const QString & country );
+            SLanguageInfo( const QFileInfo &path );
+            SLanguageInfo( const QString &path );
+            SLanguageInfo( const QString &isoCode, const QString &country );
 
-            static SLanguageInfo fromIDXFile( const QString & path );
-            static SLanguageInfo fromIDXFile( const QFileInfo & path );
+            static SLanguageInfo fromIDXFile( const QString &path );
+            static SLanguageInfo fromIDXFile( const QFileInfo &path );
 
-            bool isNameBasedLangFile() const; // if the filename wasnt of the form XX_Language.srt, but rather basename-xx_yy.srt or basename.xx.srt
-            QString baseName() const; // when the path sent in is a name based lang file, return basename from above
+            bool isNameBasedLangFile() const;   // if the filename wasnt of the form XX_Language.srt, but rather basename-xx_yy.srt or basename.xx.srt
+            QString baseName() const;   // when the path sent in is a name based lang file, return basename from above
 
             QString language() const { return fLanguage; }
             QString displayName() const;
@@ -75,21 +75,21 @@ namespace NMediaManager
             // 1) its not of the format xx_Language
             // 2) its not of the form file.Language<_country.xx>
             // 3) the language from 1 or 2 isnt a known language or country
-            void setDefaultISOCode( const QString & value );  // default is "en_US"
+            void setDefaultISOCode( const QString &value );   // default is "en_US"
 
-            static bool isLangFileFormat( const QFileInfo & fi );
+            static bool isLangFileFormat( const QFileInfo &fi );
             bool usingDefault() const { return fUsingDefault; }
             bool knownLanguage() const { return !usingDefault(); }
-            static QString prettyPrintISOCode( const QString & isoCode );
-            bool operator==( const SLanguageInfo & rhs ) const;
-            bool operator!=( const SLanguageInfo & rhs ) const { return !operator==( rhs ); }
-        private:
-            bool isKnownLanguage( const QString & lang ) const;
-            void computeLanguages( const QFileInfo & fi );
-            void computeLanguage();
-            void computeLanguage( const QString & langName );
-            static std::tuple< QString, QString, QString, bool > computeLanguageInt( const QString & langName ); // returns lang, country, iscode, using default
+            static QString prettyPrintISOCode( const QString &isoCode );
+            bool operator==( const SLanguageInfo &rhs ) const;
+            bool operator!=( const SLanguageInfo &rhs ) const { return !operator==( rhs ); }
 
+        private:
+            bool isKnownLanguage( const QString &lang ) const;
+            void computeLanguages( const QFileInfo &fi );
+            void computeLanguage();
+            void computeLanguage( const QString &langName );
+            static std::tuple< QString, QString, QString, bool > computeLanguageInt( const QString &langName );   // returns lang, country, iscode, using default
 
             static void setupMaps();
 
@@ -103,7 +103,7 @@ namespace NMediaManager
             static QString sDefaultISOCode;
             bool fUsingDefault{ false };
 
-            std::unordered_map< QString, std::vector< SMultLangInfo > > fMultiLanguageList; // langinfo, index, numtimestamps
+            std::unordered_map< QString, std::vector< SMultLangInfo > > fMultiLanguageList;   // langinfo, index, numtimestamps
 
             static std::unordered_map< QString, std::pair< QString, QString > > sLangMap;
             static std::unordered_map< QString, std::pair< QString, std::unordered_set< QString > > > sPrimToSecondaryMap;
@@ -113,6 +113,6 @@ namespace NMediaManager
         Q_DECLARE_METATYPE( SLanguageInfo );
     }
 }
-QDebug operator<<( QDebug debug, const NMediaManager::NCore::SLanguageInfo & info );
+QDebug operator<<( QDebug debug, const NMediaManager::NCore::SLanguageInfo &info );
 
-#endif 
+#endif

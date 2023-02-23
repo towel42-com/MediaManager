@@ -39,28 +39,29 @@ namespace NMediaManager
     {
         namespace NUi
         {
-            namespace Ui { class CPathsToDelete; };
+            namespace Ui
+            {
+                class CPathsToDelete;
+            };
             class CPathsToDelete : public CBasePrefPage
             {
                 Q_OBJECT
             public:
-                CPathsToDelete( QWidget * parent = nullptr );
+                CPathsToDelete( QWidget *parent = nullptr );
                 virtual ~CPathsToDelete() override;
 
                 virtual void load() override;
                 virtual void save() override;
-                virtual QStringList pageName() const override
-                {
-                    return QStringList( { "Paths", "Paths to Delete" } );
-                }
+                virtual QStringList pageName() const override { return QStringList( { "Paths", "Paths to Delete" } ); }
             public Q_SLOTS:
                 void slotAddPathToDelete();
                 void slotDelPathToDelete();
+
             private:
-                QStringListModel * fPathsToDeleteModel{ nullptr };
+                QStringListModel *fPathsToDeleteModel{ nullptr };
                 std::unique_ptr< Ui::CPathsToDelete > fImpl;
             };
         }
     }
 }
-#endif 
+#endif

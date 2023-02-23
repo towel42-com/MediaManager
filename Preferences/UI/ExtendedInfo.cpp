@@ -34,8 +34,8 @@ namespace NMediaManager
     {
         namespace NUi
         {
-            CExtendedInfo::CExtendedInfo( QWidget * parent )
-                : CBasePrefPage( parent ),
+            CExtendedInfo::CExtendedInfo( QWidget *parent ) :
+                CBasePrefPage( parent ),
                 fImpl( new Ui::CExtendedInfo )
             {
                 fImpl->setupUi( this );

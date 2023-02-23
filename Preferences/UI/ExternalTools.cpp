@@ -34,8 +34,8 @@ namespace NMediaManager
     {
         namespace NUi
         {
-            CExternalTools::CExternalTools( QWidget * parent )
-                : CBasePrefPage( parent ),
+            CExternalTools::CExternalTools( QWidget *parent ) :
+                CBasePrefPage( parent ),
                 fImpl( new Ui::CExternalTools )
             {
                 fImpl->setupUi( this );
@@ -59,7 +59,6 @@ namespace NMediaManager
                 fImpl->ffprobeExe->setCheckExists( true );
                 fImpl->ffprobeExe->setCheckIsFile( true );
                 fImpl->ffprobeExe->setCheckIsExecutable( true );
-
 
                 connect( fImpl->ffmpegExe, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CExternalTools::slotFFToolChanged );
                 connect( fImpl->ffprobeExe, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CExternalTools::slotFFToolChanged );
@@ -128,9 +127,9 @@ namespace NMediaManager
                     fImpl->ffprobeExe->setText( exe );
             }
 
-            void CExternalTools::updateOtherTool( QObject * sender, const std::pair< QLineEdit *, QString > & lhs, const std::pair< QLineEdit *, QString > & rhs )
+            void CExternalTools::updateOtherTool( QObject *sender, const std::pair< QLineEdit *, QString > &lhs, const std::pair< QLineEdit *, QString > &rhs )
             {
-                auto le = dynamic_cast<QLineEdit *>( sender );
+                auto le = dynamic_cast< QLineEdit * >( sender );
                 if ( !le )
                     return;
 
@@ -138,7 +137,7 @@ namespace NMediaManager
                     return;
 
                 QString otherExe;
-                QLineEdit * otherLE = nullptr;
+                QLineEdit *otherLE = nullptr;
                 if ( le == lhs.first )
                 {
                     otherLE = rhs.first;
@@ -166,20 +165,20 @@ namespace NMediaManager
 
             void CExternalTools::slotMKVNixToolChanged()
             {
-                mkvnixToolChanged( dynamic_cast<QLineEdit *>( sender() ) );
+                mkvnixToolChanged( dynamic_cast< QLineEdit * >( sender() ) );
             }
 
-            void CExternalTools::mkvnixToolChanged( QLineEdit * le )
+            void CExternalTools::mkvnixToolChanged( QLineEdit *le )
             {
                 updateOtherTool( le, { fImpl->mkvPropEditExe, "mkvpropedit" }, { fImpl->mkvMergeExe, "mkvmerge" } );
             }
 
             void CExternalTools::slotFFToolChanged()
             {
-                fftoolToolChanged( dynamic_cast<QLineEdit *>( sender() ) );
+                fftoolToolChanged( dynamic_cast< QLineEdit * >( sender() ) );
             }
 
-            void CExternalTools::fftoolToolChanged( QLineEdit * le )
+            void CExternalTools::fftoolToolChanged( QLineEdit *le )
             {
                 updateOtherTool( le, { fImpl->ffprobeExe, "ffprobe" }, { fImpl->ffmpegExe, "ffmpeg" } );
             }

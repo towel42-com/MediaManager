@@ -36,8 +36,8 @@ namespace NMediaManager
     {
         namespace NUi
         {
-            CKnownHyphenated::CKnownHyphenated( QWidget * parent )
-                : CBasePrefPage( parent ),
+            CKnownHyphenated::CKnownHyphenated( QWidget *parent ) :
+                CBasePrefPage( parent ),
                 fImpl( new Ui::CKnownHyphenated )
             {
                 fImpl->setupUi( this );

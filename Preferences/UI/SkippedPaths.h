@@ -39,12 +39,15 @@ namespace NMediaManager
     {
         namespace NUi
         {
-            namespace Ui { class CSkippedPaths; };
+            namespace Ui
+            {
+                class CSkippedPaths;
+            };
             class CSkippedPaths : public CBasePrefPage
             {
                 Q_OBJECT
             public:
-                CSkippedPaths( bool forMediaNaming, QWidget * parent = nullptr );
+                CSkippedPaths( bool forMediaNaming, QWidget *parent = nullptr );
                 virtual ~CSkippedPaths() override;
 
                 virtual void load() override;
@@ -53,12 +56,13 @@ namespace NMediaManager
             public Q_SLOTS:
                 void slotAddSkipPathName();
                 void slotDelSkipPathName();
+
             private:
-                QStringListModel * fSkipPathNamesModel{ nullptr };
+                QStringListModel *fSkipPathNamesModel{ nullptr };
                 bool fForMediaTransform{ false };
                 std::unique_ptr< Ui::CSkippedPaths > fImpl;
             };
         }
     }
 }
-#endif 
+#endif

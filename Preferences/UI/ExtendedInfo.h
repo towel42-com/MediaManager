@@ -32,28 +32,29 @@ namespace NMediaManager
     {
         namespace NUi
         {
-            namespace Ui { class CExtendedInfo; };
+            namespace Ui
+            {
+                class CExtendedInfo;
+            };
             class CExtendedInfo : public CBasePrefPage
             {
                 Q_OBJECT
             public:
-                CExtendedInfo( QWidget * parent = nullptr );
+                CExtendedInfo( QWidget *parent = nullptr );
                 virtual ~CExtendedInfo() override;
 
                 virtual void load() override;
                 virtual void save() override;
-                virtual QStringList pageName() const override
-                {
-                    return QStringList( { "Known Strings", "Extended/Extra Information" } );
-                }
+                virtual QStringList pageName() const override { return QStringList( { "Known Strings", "Extended/Extra Information" } ); }
             public Q_SLOTS:
                 void slotAddExtraString();
                 void slotDelExtraString();
+
             private:
-                QStringListModel * fExtraStringModel{ nullptr };
+                QStringListModel *fExtraStringModel{ nullptr };
                 std::unique_ptr< Ui::CExtendedInfo > fImpl;
             };
         }
     }
 }
-#endif 
+#endif

@@ -31,8 +31,8 @@ namespace NMediaManager
     {
         namespace NUi
         {
-            CSearchSettings::CSearchSettings( QWidget * parent )
-                : CBasePrefPage( parent ),
+            CSearchSettings::CSearchSettings( QWidget *parent ) :
+                CBasePrefPage( parent ),
                 fImpl( new Ui::CSearchSettings )
             {
                 fImpl->setupUi( this );

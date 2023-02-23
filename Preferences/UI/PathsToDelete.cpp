@@ -35,8 +35,8 @@ namespace NMediaManager
     {
         namespace NUi
         {
-            CPathsToDelete::CPathsToDelete( QWidget * parent )
-                : CBasePrefPage( parent ),
+            CPathsToDelete::CPathsToDelete( QWidget *parent ) :
+                CBasePrefPage( parent ),
                 fImpl( new Ui::CPathsToDelete )
             {
                 fImpl->setupUi( this );

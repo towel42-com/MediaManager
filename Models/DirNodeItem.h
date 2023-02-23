@@ -70,11 +70,11 @@ namespace NMediaManager
         struct SDirNodeItem
         {
             SDirNodeItem();
-            SDirNodeItem( const QString & text, int nodeType );
+            SDirNodeItem( const QString &text, int nodeType );
 
-            void setData( const QVariant & value, int role );
+            void setData( const QVariant &value, int role );
 
-            QStandardItem * createStandardItem() const;
+            QStandardItem *createStandardItem() const;
 
             QString fText;
             EColumns fType{ EColumns::eFSName };
@@ -82,10 +82,9 @@ namespace NMediaManager
             std::optional< Qt::Alignment > fAlignment;
             std::list< std::pair< QVariant, int > > fRoles;
             NCore::EMediaType fMediaType;
-            std::optional< SCheckable > fCheckable; // isCHeckable, yesno only, is checked
+            std::optional< SCheckable > fCheckable;   // isCHeckable, yesno only, is checked
             std::optional< std::pair< EType, NSABUtils::EMediaTags > > fEditable;
         };
     }
 }
 #endif
-

@@ -49,32 +49,35 @@ namespace NMediaManager
     {
         class CBasePage;
         class CCompleterFileSystemModel;
-        namespace Ui { class CMainWindow; };
+        namespace Ui
+        {
+            class CMainWindow;
+        };
         struct STabDef
         {
-            STabDef( CBasePage * page, const QString & name, const QString & iconPath, QTabWidget * tabWidget );
+            STabDef( CBasePage *page, const QString &name, const QString &iconPath, QTabWidget *tabWidget );
 
             void setVisiblePerPrefs();
             int fTabIndex{ -1 };
-            QWidget * fTab{ nullptr };
+            QWidget *fTab{ nullptr };
             QString fName;
             QIcon fIcon;
-            CBasePage * fPage{ nullptr };
-            QAction * fMenuAction{ nullptr };
-            QToolBar * fToolbar{ nullptr };
-            QAction * fViewAction{ nullptr };
-            QTabWidget * fTabWidget{ nullptr };
+            CBasePage *fPage{ nullptr };
+            QAction *fMenuAction{ nullptr };
+            QToolBar *fToolbar{ nullptr };
+            QAction *fViewAction{ nullptr };
+            QTabWidget *fTabWidget{ nullptr };
         };
 
         class CMainWindow : public QMainWindow
         {
             Q_OBJECT
         public:
-            CMainWindow( QWidget * parent = nullptr );
+            CMainWindow( QWidget *parent = nullptr );
             virtual ~CMainWindow() override;
 
-            bool setBIFFileName( const QString & name );
-            bool titleBarClicked( const QPoint & pt ) const;
+            bool setBIFFileName( const QString &name );
+            bool titleBarClicked( const QPoint &pt ) const;
         public Q_SLOTS:
             virtual void slotOpen();
             virtual void slotDirectoryChanged();
@@ -91,23 +94,24 @@ namespace NMediaManager
             virtual void slotLoadFinished( bool canceled );
             virtual void slotStopStayAwake();
             virtual void slotStartStayAwake();
-            virtual void slotFileCheckFinished( bool aOK, const QString & msg );
+            virtual void slotFileCheckFinished( bool aOK, const QString &msg );
             virtual void slotValidateDefaults();
             virtual void slotPreferencesChanged( NPreferences::EPreferenceTypes prefType );
 
         Q_SIGNALS:
             void sigPreferencesChanged( NPreferences::EPreferenceTypes prefType );
+
         private:
             void addPages();
-            std::shared_ptr< STabDef > addPage( std::shared_ptr< STabDef > & tabDef );
+            std::shared_ptr< STabDef > addPage( std::shared_ptr< STabDef > &tabDef );
 
-            CBasePage * getCurrentBasePage() const;
+            CBasePage *getCurrentBasePage() const;
             void clearDirModel();
 
             bool isActivePageFileBased() const;
             bool isActivePageDirBased() const;
 
-            void connectBasePage( CBasePage * basePage );
+            void connectBasePage( CBasePage *basePage );
 
             void validateLoadAction();
             void validateRunAction();
@@ -118,14 +122,14 @@ namespace NMediaManager
             void saveSettings();
 
             std::unique_ptr< Ui::CMainWindow > fImpl;
-            CCompleterFileSystemModel * fDirModel{ nullptr };
-            CCompleterFileSystemModel * fFileModel{ nullptr };
-            NSABUtils::CBackgroundFileCheck * fFileChecker;
-            NSABUtils::CStayAwake * fStayAwake{ nullptr };
+            CCompleterFileSystemModel *fDirModel{ nullptr };
+            CCompleterFileSystemModel *fFileModel{ nullptr };
+            NSABUtils::CBackgroundFileCheck *fFileChecker;
+            NSABUtils::CStayAwake *fStayAwake{ nullptr };
 
             std::optional< NPreferences::EPreferenceTypes > fQueuedPrefChanged;
             std::list< std::shared_ptr< STabDef > > fUIComponentMap;
         };
     }
 }
-#endif 
+#endif

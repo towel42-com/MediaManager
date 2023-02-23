@@ -49,18 +49,17 @@
 #include <QPixmap>
 #include <QLabel>
 
-
 namespace NMediaManager
 {
     namespace NUi
     {
-        CBIFViewerPage::CBIFViewerPage( QWidget * parent )
-            : CBasePage( "Thumbnail Viewer", parent ),
+        CBIFViewerPage::CBIFViewerPage( QWidget *parent ) :
+            CBasePage( "Thumbnail Viewer", parent ),
             fImpl( new Ui::CBIFViewerPage )
         {
             CBasePage::fImpl.reset();
             auto children = CBasePage::findChildren< QObject * >( QString(), Qt::FindDirectChildrenOnly );
-            for ( auto && ii : children )
+            for ( auto &&ii : children )
                 delete ii;
             CBasePage::fImpl.reset();
 
@@ -109,7 +108,7 @@ namespace NMediaManager
                     fImpl->bifViewerVSplitter->setSizes( QList< int >() << 100 << 100 );
 
                 fImpl->bifViewerHSplitter->setSizes( QList< int >() << 100 << 0 );
-                setButtonsLayout( static_cast<NSABUtils::NBIF::EButtonsLayout>( settings.value( "bifPlayerButtonLayout", static_cast<int>( NSABUtils::NBIF::EButtonsLayout::eTogglePlayPause ) ).toInt() ) );
+                setButtonsLayout( static_cast< NSABUtils::NBIF::EButtonsLayout >( settings.value( "bifPlayerButtonLayout", static_cast< int >( NSABUtils::NBIF::EButtonsLayout::eTogglePlayPause ) ).toInt() ) );
             }
 
             fImpl->bifWidget->setSpeedMultiplier( NPreferences::NCore::CPreferences::instance()->bifPlayerSpeedMultiplier() );
@@ -127,7 +126,7 @@ namespace NMediaManager
         {
             QSettings settings;
             settings.setValue( "bifViewerVSplitter", fImpl->bifViewerVSplitter->saveState() );
-            settings.setValue( "bifPlayerButtonLayout", static_cast<int>( fImpl->bifWidget->buttonsLayout() ) );
+            settings.setValue( "bifPlayerButtonLayout", static_cast< int >( fImpl->bifWidget->buttonsLayout() ) );
 
             NPreferences::NCore::CPreferences::instance()->setBIFPlayerSpeedMultiplier( fImpl->bifWidget->playerSpeedMultiplier() );
             NPreferences::NCore::CPreferences::instance()->setBIFNumFramesToSkip( fImpl->bifWidget->numFramesToSkip() );
@@ -140,7 +139,7 @@ namespace NMediaManager
             NPreferences::NCore::CPreferences::instance()->setGIFDelay( fImpl->bifWidget->gifDelay() );
         }
 
-        bool CBIFViewerPage::eventFilter( QObject * obj, QEvent * event )
+        bool CBIFViewerPage::eventFilter( QObject *obj, QEvent *event )
         {
             if ( ( obj == fImpl->bifImages ) && event->type() == QEvent::Resize )
             {
@@ -150,7 +149,7 @@ namespace NMediaManager
             return QWidget::eventFilter( obj, event );
         }
 
-        QToolBar * CBIFViewerPage::toolBar()
+        QToolBar *CBIFViewerPage::toolBar()
         {
             return fImpl->bifWidget->toolBar();
         }
@@ -161,7 +160,7 @@ namespace NMediaManager
             CBasePage::slotPostInit();
         }
 
-        QMenu * CBIFViewerPage::menu()
+        QMenu *CBIFViewerPage::menu()
         {
             return fImpl->bifWidget->menu();
         }
@@ -211,17 +210,17 @@ namespace NMediaManager
             fImpl->bifWidget->setActive( isActive );
         }
 
-        void CBIFViewerPage::slotFileFinishedEditing( const QString & text )
+        void CBIFViewerPage::slotFileFinishedEditing( const QString &text )
         {
-            fileNameChanged( dynamic_cast<NSABUtils::CDelayComboBox *>( sender() ), text, true );
+            fileNameChanged( dynamic_cast< NSABUtils::CDelayComboBox * >( sender() ), text, true );
         }
 
-        void CBIFViewerPage::slotFileChanged( const QString & text )
+        void CBIFViewerPage::slotFileChanged( const QString &text )
         {
-            fileNameChanged( dynamic_cast<NSABUtils::CDelayComboBox *>( sender() ), text, false );
+            fileNameChanged( dynamic_cast< NSABUtils::CDelayComboBox * >( sender() ), text, false );
         }
 
-        void CBIFViewerPage::fileNameChanged( NSABUtils::CDelayComboBox * comboBox, const QString & text, bool andExecute )
+        void CBIFViewerPage::fileNameChanged( NSABUtils::CDelayComboBox *comboBox, const QString &text, bool andExecute )
         {
             if ( comboBox )
             {
@@ -238,7 +237,7 @@ namespace NMediaManager
             return tr( "BIF Files (*.bif);;All Files (*.*)" );
         }
 
-        bool CBIFViewerPage::setFileName( NSABUtils::CDelayComboBox * comboBox, const QString & fileName, bool andExecute )
+        bool CBIFViewerPage::setFileName( NSABUtils::CDelayComboBox *comboBox, const QString &fileName, bool andExecute )
         {
             if ( fileName.isEmpty() )
                 return true;
@@ -295,7 +294,9 @@ namespace NMediaManager
             new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "Magic Number" ) << tr( "00-07" ) << QString() << fBIF->magicNumber() );
             new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "Version" ) << tr( "08-11" ) << QString::number( fBIF->version().fValue ) << fBIF->version().fPrettyPrint );
             new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "Number of BIF Images" ) << tr( "12-15" ) << QString::number( fBIF->numImages().fValue ) << fBIF->numImages().fPrettyPrint );
-            new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "milliseconds/Frame" ) << tr( "16-19" ) << QString( "%1s (%2ms)" ).arg( NSABUtils::CTimeString( fBIF->timePerFrame().fValue ).toString( "ss.zzz" ) ).arg( fBIF->timePerFrame().fValue ) << fBIF->timePerFrame().fPrettyPrint );
+            new QTreeWidgetItem(
+                fImpl->bifFileValues, QStringList() << tr( "milliseconds/Frame" ) << tr( "16-19" )
+                                                    << QString( "%1s (%2ms)" ).arg( NSABUtils::CTimeString( fBIF->timePerFrame().fValue ).toString( "ss.zzz" ) ).arg( fBIF->timePerFrame().fValue ) << fBIF->timePerFrame().fPrettyPrint );
             new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "Reserved" ) << tr( "20-64" ) << QString() << fBIF->reserved() );
 
             formatBIFTable();
@@ -337,41 +338,41 @@ namespace NMediaManager
             return fImpl->bifWidget->buttonsLayout();
         }
 
-        QAction * CBIFViewerPage::actionSkipBackward()
+        QAction *CBIFViewerPage::actionSkipBackward()
         {
             return fImpl->bifWidget->actionSkipBackward();
         }
 
-        QAction * CBIFViewerPage::actionPrev()
+        QAction *CBIFViewerPage::actionPrev()
         {
             return fImpl->bifWidget->actionPrev();
         }
 
-        QAction * CBIFViewerPage::actionTogglePlayPause( std::optional< bool > asPlayButton )
+        QAction *CBIFViewerPage::actionTogglePlayPause( std::optional< bool > asPlayButton )
         {
             return fImpl->bifWidget->actionTogglePlayPause( asPlayButton );
         }
 
-        QAction * CBIFViewerPage::actionPause()
+        QAction *CBIFViewerPage::actionPause()
         {
             return fImpl->bifWidget->actionPause();
         }
-        QAction * CBIFViewerPage::actionPlay()
+        QAction *CBIFViewerPage::actionPlay()
         {
             return fImpl->bifWidget->actionPlay();
         }
 
-        QAction * CBIFViewerPage::actionNext()
+        QAction *CBIFViewerPage::actionNext()
         {
             return fImpl->bifWidget->actionNext();
         }
 
-        QAction * CBIFViewerPage::actionSkipForward()
+        QAction *CBIFViewerPage::actionSkipForward()
         {
             return fImpl->bifWidget->actionSkipForward();
         }
 
-        void CBIFViewerPage::connectToCB( NSABUtils::CDelayComboBox * comboBox, bool connect )
+        void CBIFViewerPage::connectToCB( NSABUtils::CDelayComboBox *comboBox, bool connect )
         {
             if ( !comboBox )
                 return;
@@ -390,4 +391,3 @@ namespace NMediaManager
 
     }
 }
-

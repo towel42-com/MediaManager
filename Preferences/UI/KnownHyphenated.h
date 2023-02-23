@@ -31,28 +31,29 @@ namespace NMediaManager
     {
         namespace NUi
         {
-            namespace Ui { class CKnownHyphenated; };
+            namespace Ui
+            {
+                class CKnownHyphenated;
+            };
             class CKnownHyphenated : public CBasePrefPage
             {
                 Q_OBJECT
             public:
-                CKnownHyphenated( QWidget * parent = nullptr );
+                CKnownHyphenated( QWidget *parent = nullptr );
                 virtual ~CKnownHyphenated() override;
 
                 virtual void load() override;
                 virtual void save() override;
-                virtual QStringList pageName() const override
-                {
-                    return QStringList( { "Known Strings", "Known Hyphenated" } );
-                }
+                virtual QStringList pageName() const override { return QStringList( { "Known Strings", "Known Hyphenated" } ); }
             public Q_SLOTS:
                 void slotAddHyphenated();
                 void slotDelHyphenated();
+
             private:
-                QStringListModel * fKnownHyphenatedModel{ nullptr };
+                QStringListModel *fKnownHyphenatedModel{ nullptr };
                 std::unique_ptr< Ui::CKnownHyphenated > fImpl;
             };
         }
     }
 }
-#endif 
+#endif

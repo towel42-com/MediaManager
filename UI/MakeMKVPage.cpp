@@ -32,8 +32,8 @@ namespace NMediaManager
 {
     namespace NUi
     {
-        CMakeMKVPage::CMakeMKVPage( QWidget * parent )
-            : CBasePage( "Make MKV", parent )
+        CMakeMKVPage::CMakeMKVPage( QWidget *parent ) :
+            CBasePage( "Make MKV", parent )
         {
         }
 
@@ -41,7 +41,7 @@ namespace NMediaManager
         {
         }
 
-        NModels::CDirModel * CMakeMKVPage::createDirModel()
+        NModels::CDirModel *CMakeMKVPage::createDirModel()
         {
             return new NModels::CMakeMKVModel( this );
         }
@@ -76,7 +76,7 @@ namespace NMediaManager
             return tr( "Error while Creating MKV:" );
         }
 
-        void CMakeMKVPage::postProcessLog( const QString & string )
+        void CMakeMKVPage::postProcessLog( const QString &string )
         {
             // time=00:00:00.00
             auto regEx = QRegularExpression( "[Tt]ime\\=\\s*(?<hours>\\d{2}):(?<mins>\\d{2}):(?<secs>\\d{2})" );
@@ -122,4 +122,3 @@ namespace NMediaManager
         }
     }
 }
-

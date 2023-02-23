@@ -36,8 +36,8 @@ namespace NMediaManager
     {
         namespace NUi
         {
-            CKnownAbbreviations::CKnownAbbreviations( QWidget * parent )
-                : CBasePrefPage( parent ),
+            CKnownAbbreviations::CKnownAbbreviations( QWidget *parent ) :
+                CBasePrefPage( parent ),
                 fImpl( new Ui::CKnownAbbreviations )
             {
                 fImpl->setupUi( this );

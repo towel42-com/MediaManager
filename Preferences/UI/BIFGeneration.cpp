@@ -31,8 +31,8 @@ namespace NMediaManager
     {
         namespace NUi
         {
-            CBIFGeneration::CBIFGeneration( QWidget * parent )
-                : CBasePrefPage( parent ),
+            CBIFGeneration::CBIFGeneration( QWidget *parent ) :
+                CBasePrefPage( parent ),
                 fImpl( new Ui::CBIFGeneration )
             {
                 fImpl->setupUi( this );

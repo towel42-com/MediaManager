@@ -54,9 +54,12 @@ namespace NMediaManager
         {
             switch ( status )
             {
-                case EItemStatus::eOK: return "OK";
-                case EItemStatus::eWarning: return "Warning";
-                case EItemStatus::eError: return "Error";
+                case EItemStatus::eOK:
+                    return "OK";
+                case EItemStatus::eWarning:
+                    return "Warning";
+                case EItemStatus::eError:
+                    return "Error";
             }
             return {};
         }
@@ -65,22 +68,28 @@ namespace NMediaManager
         {
             switch ( prefType )
             {
-                case eSystemPrefs: return "System";
-                case eLoadPrefs: return "Load";
-                case eTransformPrefs: return "Transform";
-                case eTagPrefs: return "Tags";
-                case eExtToolsPrefs: return "ExternalTools";
-                case eGIFPrefs: return "GIF";
-                case eBIFPrefs: return "BIF";
+                case eSystemPrefs:
+                    return "System";
+                case eLoadPrefs:
+                    return "Load";
+                case eTransformPrefs:
+                    return "Transform";
+                case eTagPrefs:
+                    return "Tags";
+                case eExtToolsPrefs:
+                    return "ExternalTools";
+                case eGIFPrefs:
+                    return "GIF";
+                case eBIFPrefs:
+                    return "BIF";
                 default:
                     return "";
             }
         }
 
-
         namespace NCore
         {
-            CPreferences * CPreferences::instance()
+            CPreferences *CPreferences::instance()
             {
                 static CPreferences retVal;
                 return &retVal;
@@ -117,7 +126,7 @@ namespace NMediaManager
                 return settings.value( QString( "%1-%2ground" ).arg( toString( status ) ).arg( background ? "Back" : "Fore" ), defaultColor ).value< QColor >();
             }
 
-            void CPreferences::setColorForStatus( EItemStatus status, bool background, const QColor & value )
+            void CPreferences::setColorForStatus( EItemStatus status, bool background, const QColor &value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eColorsPrefs ) );
@@ -129,7 +138,7 @@ namespace NMediaManager
             /// System Options
             /// ////////////////////////////////////////////////////////
 
-            void CPreferences::setPageVisible( const QString & pageName, bool isVisible )
+            void CPreferences::setPageVisible( const QString &pageName, bool isVisible )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
@@ -137,7 +146,7 @@ namespace NMediaManager
                 emitSigPreferencesChanged( EPreferenceType::eSystemPrefs );
             }
 
-            bool CPreferences::getPageVisible( const QString & pageName ) const
+            bool CPreferences::getPageVisible( const QString &pageName ) const
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
@@ -159,14 +168,14 @@ namespace NMediaManager
                 emitSigPreferencesChanged( EPreferenceType::eSystemPrefs );
             }
 
-            QSize CPreferences::getThumbnailSize( const QFileInfo & fi ) const
+            QSize CPreferences::getThumbnailSize( const QFileInfo &fi ) const
             {
                 auto tags = NSABUtils::getMediaTags( fi.absoluteFilePath(), { NSABUtils::EMediaTags::eWidth, NSABUtils::EMediaTags::eHeight, NSABUtils::EMediaTags::eAspectRatio } );
 
                 auto width = tags[ NSABUtils::EMediaTags::eWidth ].toInt();
                 auto height = tags[ NSABUtils::EMediaTags::eHeight ].toInt();
 
-                auto aspectRatio = tags[ NSABUtils::EMediaTags::eAspectRatio ].toDouble(); // w/h
+                auto aspectRatio = tags[ NSABUtils::EMediaTags::eAspectRatio ].toDouble();   // w/h
 
                 if ( byImageWidth() )
                 {
@@ -181,28 +190,22 @@ namespace NMediaManager
 
                 return QSize( width, height );
             }
-            
 
-            QString CPreferences::getImageFileName( const QFileInfo & fi, const QSize & sz, const QString & ext ) const
+            QString CPreferences::getImageFileName( const QFileInfo &fi, const QSize &sz, const QString &ext ) const
             {
-                return fi.absoluteDir().absoluteFilePath( fi.completeBaseName() + QString( "-%1x%2-%3.%4" )
-                                                   .arg( sz.width() )
-                                                   .arg( sz.height() )
-                                                   .arg( imageInterval() )
-                                                   .arg( ext )
-                                                    );
+                return fi.absoluteDir().absoluteFilePath( fi.completeBaseName() + QString( "-%1x%2-%3.%4" ).arg( sz.width() ).arg( sz.height() ).arg( imageInterval() ).arg( ext ) );
             }
 
-            QString CPreferences::getImageFileName( const QFileInfo & fi, const QString & ext ) const
+            QString CPreferences::getImageFileName( const QFileInfo &fi, const QString &ext ) const
             {
                 auto sz = getThumbnailSize( fi );
                 return getImageFileName( fi, sz, ext );
             }
 
-            QStringList CPreferences::cleanUpPaths( const QStringList & paths, bool /*areDirs*/ ) const
+            QStringList CPreferences::cleanUpPaths( const QStringList &paths, bool /*areDirs*/ ) const
             {
                 QStringList retVal;
-                for ( auto && ii : paths )
+                for ( auto &&ii : paths )
                 {
                     QString curr;
                     if ( NSABUtils::NFileUtils::isIPAddressNetworkPath( ii ) )
@@ -217,7 +220,7 @@ namespace NMediaManager
                 return retVal;
             }
 
-            void CPreferences::setDirectories( const QStringList & dir )
+            void CPreferences::setDirectories( const QStringList &dir )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
@@ -233,7 +236,7 @@ namespace NMediaManager
                 return dirs;
             }
 
-            void CPreferences::setFileNames( const QStringList & dir )
+            void CPreferences::setFileNames( const QStringList &dir )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
@@ -246,7 +249,7 @@ namespace NMediaManager
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
                 auto retVal = settings.value( "FileNames", QStringList() ).toStringList();
-                for ( auto && ii : retVal )
+                for ( auto &&ii : retVal )
                 {
                     ii = QDir::toNativeSeparators( ii );
                 }
@@ -254,8 +257,7 @@ namespace NMediaManager
                 return retVal;
             }
 
-
-            void CPreferences::setMediaExtensions( const QStringList & value )
+            void CPreferences::setMediaExtensions( const QStringList &value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
@@ -263,17 +265,17 @@ namespace NMediaManager
                 emitSigPreferencesChanged( EPreferenceType::eSystemPrefs );
             }
 
-            void CPreferences::setMediaExtensions( const QString & value )
+            void CPreferences::setMediaExtensions( const QString &value )
             {
                 setMediaExtensions( value.toLower().split( ";" ) );
             }
 
-            QStringList  CPreferences::getVideoExtensions() const
+            QStringList CPreferences::getVideoExtensions() const
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
                 auto retVal = settings.value( "MediaExtensions", defaultVideoExtensions( false ) ).toStringList();
-                for ( auto && ii : retVal )
+                for ( auto &&ii : retVal )
                     ii = ii.toLower();
                 return retVal;
             }
@@ -283,12 +285,18 @@ namespace NMediaManager
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
 
-                auto videoExtensions = QStringList() << ".mkv" << ".mp4" << ".avi" << ".mov" << ".wmv" << ".mpg" << ".mpg2";
+                auto videoExtensions = QStringList() << ".mkv"
+                                                     << ".mp4"
+                                                     << ".avi"
+                                                     << ".mov"
+                                                     << ".wmv"
+                                                     << ".mpg"
+                                                     << ".mpg2";
                 if ( forceReset || !settings.contains( "MediaExtensions" ) )
                 {
                     QSettings classes( "HKEY_CLASSES_ROOT", QSettings::NativeFormat );
                     auto groups = classes.childGroups();
-                    for ( auto && group : groups )
+                    for ( auto &&group : groups )
                     {
                         classes.beginGroup( group );
                         QString type;
@@ -313,7 +321,7 @@ namespace NMediaManager
                         classes.endGroup();
                     }
                     videoExtensions.removeDuplicates();
-                    for ( auto && ii : videoExtensions )
+                    for ( auto &&ii : videoExtensions )
                     {
                         ii = "*" + ii;
                     }
@@ -322,14 +330,14 @@ namespace NMediaManager
                 return videoExtensions;
             }
 
-            QStringList  CPreferences::getNonMKVMediaExtensions() const
+            QStringList CPreferences::getNonMKVMediaExtensions() const
             {
                 auto retVal = getVideoExtensions();
                 retVal.removeAll( "*.mkv" );
                 return retVal;
             }
 
-            void CPreferences::setSubtitleExtensions( const QString & value )
+            void CPreferences::setSubtitleExtensions( const QString &value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
@@ -337,12 +345,12 @@ namespace NMediaManager
                 emitSigPreferencesChanged( EPreferenceType::eSystemPrefs );
             }
 
-            void CPreferences::setSubtitleExtensions( const QStringList & value )
+            void CPreferences::setSubtitleExtensions( const QStringList &value )
             {
                 setSubtitleExtensions( value.join( ";" ) );
             }
 
-            QStringList  CPreferences::getSubtitleExtensions() const
+            QStringList CPreferences::getSubtitleExtensions() const
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
@@ -412,7 +420,7 @@ namespace NMediaManager
                 return settings.value( "OnlyLoadDirectories", false ).toBool();
             }
 
-            void CPreferences::setTVOutFilePattern( const QString & value )
+            void CPreferences::setTVOutFilePattern( const QString &value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
@@ -430,7 +438,7 @@ namespace NMediaManager
                 return settings.value( "OutFilePattern", getDefaultOutFilePattern( true ) ).toString();
             }
 
-            void CPreferences::setSeasonOutDirPattern( const QString & value )
+            void CPreferences::setSeasonOutDirPattern( const QString &value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
@@ -448,7 +456,7 @@ namespace NMediaManager
                 return settings.value( "SeasonDirPattern", getDefaultSeasonDirPattern() ).toString();
             }
 
-            void CPreferences::setTVOutDirPattern( const QString & value )
+            void CPreferences::setTVOutDirPattern( const QString &value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
@@ -469,7 +477,7 @@ namespace NMediaManager
                 return retVal;
             }
 
-            void CPreferences::setMovieOutFilePattern( const QString & value )
+            void CPreferences::setMovieOutFilePattern( const QString &value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
@@ -487,7 +495,7 @@ namespace NMediaManager
                 return settings.value( "OutFilePattern", getDefaultOutFilePattern( false ) ).toString();
             }
 
-            void CPreferences::setMovieOutDirPattern( const QString & value )
+            void CPreferences::setMovieOutDirPattern( const QString &value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
@@ -585,7 +593,7 @@ namespace NMediaManager
                 auto imageFormats = QImageReader::supportedImageFormats();
 
                 QStringList retVal;
-                for ( auto && ii : imageFormats )
+                for ( auto &&ii : imageFormats )
                     retVal << "*." + ii;
 
                 return retVal;
@@ -606,11 +614,11 @@ namespace NMediaManager
                 return settings.value( "DeleteTXT", true ).toBool();
             }
 
-            void CPreferences::setCustomPathsToDelete( const QStringList & values )
+            void CPreferences::setCustomPathsToDelete( const QStringList &values )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
-                const QStringList & realValues = values;
+                const QStringList &realValues = values;
                 settings.setValue( "CustomToDelete", realValues );
                 emitSigPreferencesChanged( EPreferenceType::eTransformPrefs );
             }
@@ -622,7 +630,7 @@ namespace NMediaManager
                 return settings.value( "CustomToDelete", getDefaultCustomPathsToDelete() ).toStringList();
             }
 
-            void CPreferences::setRippedWithMKVRegEX( const QString & value )
+            void CPreferences::setRippedWithMKVRegEX( const QString &value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
@@ -659,11 +667,11 @@ namespace NMediaManager
                 return retVal;
             }
 
-            bool CPreferences::isPathToDelete( const QString & path ) const
+            bool CPreferences::isPathToDelete( const QString &path ) const
             {
                 auto fn = QFileInfo( path ).fileName();
                 auto toDelete = getExtensionsToDelete();
-                for ( auto && ii : toDelete )
+                for ( auto &&ii : toDelete )
                 {
                     auto regExStr = QRegularExpression::wildcardToRegularExpression( ii );
                     QRegularExpression::PatternOptions options = QRegularExpression::PatternOption::NoPatternOption;
@@ -678,10 +686,10 @@ namespace NMediaManager
                 return false;
             }
 
-            void CPreferences::addKnownStrings( const QStringList & value )
+            void CPreferences::addKnownStrings( const QStringList &value )
             {
                 auto knownWords = getKnownStrings();
-                for ( auto && ii : value )
+                for ( auto &&ii : value )
                 {
                     if ( !knownWords.contains( ii ) )
                         knownWords << value;
@@ -689,13 +697,13 @@ namespace NMediaManager
                 setKnownStrings( knownWords );
             }
 
-            void CPreferences::setKnownStrings( const QStringList & value )
+            void CPreferences::setKnownStrings( const QStringList &value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
                 QSet< QString > tmp;
                 QStringList realValues;
-                for ( auto && ii : value )
+                for ( auto &&ii : value )
                 {
                     if ( !tmp.contains( ii ) )
                         realValues << ii;
@@ -707,7 +715,7 @@ namespace NMediaManager
 
             struct SCmp
             {
-                bool operator()( const QString & lhs, const QString & rhs ) const
+                bool operator()( const QString &lhs, const QString &rhs ) const
                 {
                     if ( lhs.startsWith( rhs, Qt::CaseInsensitive ) )
                         return true;
@@ -724,7 +732,7 @@ namespace NMediaManager
                 auto tmp = settings.value( "KnownStrings", getDefaultKnownStrings() ).toStringList();
                 auto tmp2 = std::set< QString, SCmp >( { tmp.begin(), tmp.end() } );
                 QStringList retVal;
-                for ( auto && ii : tmp2 )
+                for ( auto &&ii : tmp2 )
                     retVal.push_back( ii );
 
                 return retVal;
@@ -736,14 +744,9 @@ namespace NMediaManager
                 {
                     auto strings = getKnownStrings();
                     QStringList nonRegExs;
-                    for ( auto && ii : strings )
+                    for ( auto &&ii : strings )
                     {
-                        bool isRegEx =
-                            ( ii.indexOf( "\\" ) != -1 )
-                            || ( ii.indexOf( "?" ) != -1 )
-                            || ( ii.indexOf( "{" ) != -1 )
-                            || ( ii.indexOf( "}" ) != -1 )
-                            ;
+                        bool isRegEx = ( ii.indexOf( "\\" ) != -1 ) || ( ii.indexOf( "?" ) != -1 ) || ( ii.indexOf( "{" ) != -1 ) || ( ii.indexOf( "}" ) != -1 );
 
                         if ( isRegEx )
                             fKnownStringRegExsCache << QString( "(?<word>" + ii + ")" );
@@ -756,14 +759,13 @@ namespace NMediaManager
                 return fKnownStringRegExsCache;
             }
 
-            void CPreferences::setKnownExtendedStrings( const QStringList & value )
+            void CPreferences::setKnownExtendedStrings( const QStringList &value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
                 settings.setValue( "KnownExtendedStrings", value );
                 emitSigPreferencesChanged( EPreferenceType::eTransformPrefs );
             }
-
 
             QStringList CPreferences::getKnownExtendedStrings() const
             {
@@ -772,17 +774,17 @@ namespace NMediaManager
                 return settings.value( "KnownExtendedStrings", getDefaultKnownExtendedStrings() ).toStringList();
             }
 
-            void CPreferences::setKnownAbbreviations( const QList<QPair<QString, QString >> & value )
+            void CPreferences::setKnownAbbreviations( const QList< QPair< QString, QString > > &value )
             {
                 QVariantMap map;
-                for ( auto && ii : value )
+                for ( auto &&ii : value )
                 {
                     map[ ii.first ] = ii.second;
                 }
                 return setKnownAbbreviations( map );
             }
 
-            void CPreferences::setKnownAbbreviations( const QVariantMap & value )
+            void CPreferences::setKnownAbbreviations( const QVariantMap &value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
@@ -797,7 +799,7 @@ namespace NMediaManager
                 return settings.value( "KnownAbbreviations", getDefaultKnownAbbreviations() ).toMap();
             };
 
-            void CPreferences::setKnownHyphenated( const QStringList & value )
+            void CPreferences::setKnownHyphenated( const QStringList &value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
@@ -816,7 +818,7 @@ namespace NMediaManager
             {
                 std::list< std::pair< QString, int > > retVal;
                 auto data = getKnownHyphenated();
-                for ( auto && ii : data )
+                for ( auto &&ii : data )
                 {
                     retVal.push_back( { ii, ii.indexOf( '-' ) } );
                 }
@@ -826,9 +828,9 @@ namespace NMediaManager
             /// ////////////////////////////////////////////////////////
             /// Load Options
             /// ////////////////////////////////////////////////////////
-            bool CPreferences::containsValue( const QString & value, const QStringList & values ) const
+            bool CPreferences::containsValue( const QString &value, const QStringList &values ) const
             {
-                for ( auto && ii : values )
+                for ( auto &&ii : values )
                 {
                     QRegularExpression::PatternOption option = QRegularExpression::NoPatternOption;
 #ifdef Q_OS_WINDOWS
@@ -841,7 +843,7 @@ namespace NMediaManager
                 return false;
             }
 
-            bool CPreferences::pathMatches( const QFileInfo & fileInfo, const QStringList & values ) const
+            bool CPreferences::pathMatches( const QFileInfo &fileInfo, const QStringList &values ) const
             {
                 auto pathName = fileInfo.fileName();
 
@@ -851,18 +853,18 @@ namespace NMediaManager
                 return containsValue( pathName, values );
             }
 
-            bool CPreferences::isSkippedPath( bool forMediaNaming, const QFileInfo & fileInfo ) const
+            bool CPreferences::isSkippedPath( bool forMediaNaming, const QFileInfo &fileInfo ) const
             {
                 return pathMatches( fileInfo, getSkippedPaths( forMediaNaming ) );
             }
 
-            void CPreferences::setSkippedPaths( bool forMediaNaming, const QStringList & values )
+            void CPreferences::setSkippedPaths( bool forMediaNaming, const QStringList &values )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eLoadPrefs ) );
                 QStringList realValues = values;
 #ifdef Q_OS_WINDOWS
-                for ( auto && ii : realValues )
+                for ( auto &&ii : realValues )
                     ii = ii.toLower();
 #endif
                 settings.setValue( QString( "SkippedDirs (%1)" ).arg( forMediaNaming ? "Media Transform" : "Media Tagging" ), realValues );
@@ -891,18 +893,18 @@ namespace NMediaManager
                 return settings.value( QString( "SkippedDirs (%1)" ).arg( forMediaNaming ? "Media Transform" : "Media Tagging" ), getDefaultSkippedPaths( forMediaNaming ) ).toStringList();
             }
 
-            bool CPreferences::isIgnoredPath( const QFileInfo & fileInfo ) const
+            bool CPreferences::isIgnoredPath( const QFileInfo &fileInfo ) const
             {
                 return pathMatches( fileInfo, getIgnoredPaths() );
             }
 
-            void CPreferences::setIgnoredPaths( const QStringList & values )
+            void CPreferences::setIgnoredPaths( const QStringList &values )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eLoadPrefs ) );
                 QStringList realValues = values;
 #ifdef Q_OS_WINDOWS
-                for ( auto && ii : realValues )
+                for ( auto &&ii : realValues )
                     ii = ii.toLower();
 #endif
                 settings.setValue( "IgnoredFileNames", realValues );
@@ -955,34 +957,23 @@ namespace NMediaManager
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTagPrefs ) );
 
-                std::list< std::pair< NSABUtils::EMediaTags, bool > > retVal =
-                {
-                     { NSABUtils::EMediaTags::eTitle, true }
-                    ,{ NSABUtils::EMediaTags::eLength, true }
-                    ,{ NSABUtils::EMediaTags::eDate, true }
-                    ,{ NSABUtils::EMediaTags::eComment, true }
-                    ,{ NSABUtils::EMediaTags::eBPM, true }
-                    ,{ NSABUtils::EMediaTags::eArtist, true }
-                    ,{ NSABUtils::EMediaTags::eComposer, true }
-                    ,{ NSABUtils::EMediaTags::eGenre, true }
-                    ,{ NSABUtils::EMediaTags::eTrack, true }
-                    ,{ NSABUtils::EMediaTags::eAlbum, false }
-                    ,{ NSABUtils::EMediaTags::eAlbumArtist, false }
-                    ,{ NSABUtils::EMediaTags::eDiscnumber, false }
-                };
+                std::list< std::pair< NSABUtils::EMediaTags, bool > > retVal = { { NSABUtils::EMediaTags::eTitle, true },    { NSABUtils::EMediaTags::eLength, true },       { NSABUtils::EMediaTags::eDate, true },
+                                                                                 { NSABUtils::EMediaTags::eComment, true },  { NSABUtils::EMediaTags::eBPM, true },          { NSABUtils::EMediaTags::eArtist, true },
+                                                                                 { NSABUtils::EMediaTags::eComposer, true }, { NSABUtils::EMediaTags::eGenre, true },        { NSABUtils::EMediaTags::eTrack, true },
+                                                                                 { NSABUtils::EMediaTags::eAlbum, false },   { NSABUtils::EMediaTags::eAlbumArtist, false }, { NSABUtils::EMediaTags::eDiscnumber, false } };
 
                 if ( !settings.contains( "EnabledTags" ) )
                     return retVal;
 
                 auto enabledTags = settings.value( "EnabledTags" ).toList();
-                for ( auto && jj : retVal )
+                for ( auto &&jj : retVal )
                     jj.second = false;
 
-                for ( auto && ii : enabledTags )
+                for ( auto &&ii : enabledTags )
                 {
-                    for ( auto && jj : retVal )
+                    for ( auto &&jj : retVal )
                     {
-                        if ( jj.first == static_cast<NSABUtils::EMediaTags>( ii.toInt() ) )
+                        if ( jj.first == static_cast< NSABUtils::EMediaTags >( ii.toInt() ) )
                             jj.second = true;
                     }
                 }
@@ -993,7 +984,7 @@ namespace NMediaManager
             {
                 auto allTags = getAllMediaTags();
                 std::list< NSABUtils::EMediaTags > retVal;
-                for ( auto && ii : allTags )
+                for ( auto &&ii : allTags )
                 {
                     if ( ii.second )
                         retVal.emplace_back( ii.first );
@@ -1005,23 +996,23 @@ namespace NMediaManager
             {
                 auto tags = getEnabledTags();
                 QStringList retVal;
-                for ( auto && ii : tags )
+                for ( auto &&ii : tags )
                     retVal << NSABUtils::displayName( ii );
                 return retVal;
             }
 
-            void CPreferences::setEnabledTags( const std::list< NSABUtils::EMediaTags > & values )
+            void CPreferences::setEnabledTags( const std::list< NSABUtils::EMediaTags > &values )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTagPrefs ) );
                 QVariantList tmp;
-                for ( auto && ii : values )
-                    tmp << static_cast<int>( ii );
+                for ( auto &&ii : values )
+                    tmp << static_cast< int >( ii );
                 settings.setValue( "EnabledTags", tmp );
                 emitSigPreferencesChanged( EPreferenceType::eTagPrefs );
             }
 
-            QString replaceFileInfo( const QFileInfo & fi, const QDate & date, const QString & expr )
+            QString replaceFileInfo( const QFileInfo &fi, const QDate &date, const QString &expr )
             {
                 QString retVal = expr;
 
@@ -1057,7 +1048,7 @@ namespace NMediaManager
                 emitSigPreferencesChanged( EPreferenceType::eTagPrefs );
             }
 
-            QRegularExpression CPreferences::getVerifyMediaTitleExpr( const QFileInfo & fi, const QDate & date ) const
+            QRegularExpression CPreferences::getVerifyMediaTitleExpr( const QFileInfo &fi, const QDate &date ) const
             {
                 auto regExStr = replaceFileInfo( fi, date, getVerifyMediaTitleExpr() );
                 return QRegularExpression( regExStr );
@@ -1070,7 +1061,7 @@ namespace NMediaManager
                 return settings.value( "VerifyMediaTitleExpr", "<basename>" ).toString();
             }
 
-            void CPreferences::setVerifyMediaTitleExpr( const QString & value )
+            void CPreferences::setVerifyMediaTitleExpr( const QString &value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTagPrefs ) );
@@ -1099,7 +1090,7 @@ namespace NMediaManager
                 return settings.value( "VerifyMediaDateExpr", R"(<year>|<month>[-\/]<year>|<month>[-\/]<day>[-\/]<year>)" ).toString();
             }
 
-            void CPreferences::setVerifyMediaDateExpr( const QString & value )
+            void CPreferences::setVerifyMediaDateExpr( const QString &value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTagPrefs ) );
@@ -1107,7 +1098,7 @@ namespace NMediaManager
                 emitSigPreferencesChanged( EPreferenceType::eTagPrefs );
             }
 
-            QRegularExpression CPreferences::getVerifyMediaDateExpr( const QFileInfo & fi, const QDate & date ) const
+            QRegularExpression CPreferences::getVerifyMediaDateExpr( const QFileInfo &fi, const QDate &date ) const
             {
                 auto regExStr = replaceFileInfo( fi, date, getVerifyMediaDateExpr() );
                 return QRegularExpression( regExStr );
@@ -1135,7 +1126,7 @@ namespace NMediaManager
                 return settings.value( "VerifyMediaCommentExpr", R"(<EMPTY>)" ).toString();
             }
 
-            void CPreferences::setVerifyMediaCommentExpr( const QString & value )
+            void CPreferences::setVerifyMediaCommentExpr( const QString &value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTagPrefs ) );
@@ -1143,7 +1134,7 @@ namespace NMediaManager
                 emitSigPreferencesChanged( EPreferenceType::eTagPrefs );
             }
 
-            QRegularExpression CPreferences::getVerifyMediaCommentExpr( const QFileInfo & fi, const QDate & date ) const
+            QRegularExpression CPreferences::getVerifyMediaCommentExpr( const QFileInfo &fi, const QDate &date ) const
             {
                 auto regExStr = replaceFileInfo( fi, date, getVerifyMediaCommentExpr() );
                 return QRegularExpression( regExStr );
@@ -1153,7 +1144,7 @@ namespace NMediaManager
             /// External Tools Options
             /// ////////////////////////////////////////////////////////
 
-            void CPreferences::setMKVMergeEXE( const QString & value )
+            void CPreferences::setMKVMergeEXE( const QString &value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eExtToolsPrefs ) );
@@ -1172,7 +1163,7 @@ namespace NMediaManager
                 return aOK ? retVal : QString();
             }
 
-            void CPreferences::setMKVPropEditEXE( const QString & value )
+            void CPreferences::setMKVPropEditEXE( const QString &value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eExtToolsPrefs ) );
@@ -1191,7 +1182,7 @@ namespace NMediaManager
                 return aOK ? retVal : QString();
             }
 
-            void CPreferences::setFFMpegEXE( const QString & value )
+            void CPreferences::setFFMpegEXE( const QString &value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eExtToolsPrefs ) );
@@ -1210,7 +1201,7 @@ namespace NMediaManager
                 return aOK ? retVal : QString();
             }
 
-            void CPreferences::setFFProbeEXE( const QString & value )
+            void CPreferences::setFFProbeEXE( const QString &value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eExtToolsPrefs ) );
@@ -1416,7 +1407,7 @@ namespace NMediaManager
                 emitSigPreferencesChanged( EPreferenceType::eBIFPrefs );
             }
 
-                                    /// ////////////////////////////////////////////////////////
+            /// ////////////////////////////////////////////////////////
             /// GIF Options
             /// ////////////////////////////////////////////////////////
 
@@ -1510,7 +1501,7 @@ namespace NMediaManager
                 return settings.value( "Delay", 10 ).toInt();
             }
 
-            bool CPreferences::isFileWithExtension( const QFileInfo & fi, std::function< QStringList() > getExtensions, std::unordered_set< QString > & hash, std::unordered_map< QString, bool > & cache ) const
+            bool CPreferences::isFileWithExtension( const QFileInfo &fi, std::function< QStringList() > getExtensions, std::unordered_set< QString > &hash, std::unordered_map< QString, bool > &cache ) const
             {
                 if ( !fi.isFile() )
                     return false;
@@ -1518,7 +1509,7 @@ namespace NMediaManager
                 if ( hash.empty() )
                 {
                     auto suffixes = getExtensions();
-                    for ( auto && ii : suffixes )
+                    for ( auto &&ii : suffixes )
                     {
                         auto pos = ii.lastIndexOf( '.' );
                         ii = ii.mid( pos + 1 );
@@ -1538,16 +1529,14 @@ namespace NMediaManager
                 return retVal;
             }
 
-            bool CPreferences::isMediaFile( const QFileInfo & fi ) const
+            bool CPreferences::isMediaFile( const QFileInfo &fi ) const
             {
-                return isFileWithExtension( fi, [this]()
-                                            {
-                                                return getVideoExtensions();
-                                            }, fMediaExtensionsHash, fIsMediaExtension );
+                return isFileWithExtension(
+                    fi, [ this ]() { return getVideoExtensions(); }, fMediaExtensionsHash, fIsMediaExtension );
             }
 
             // only return true for X_Lang.srt files or subs directories
-            bool CPreferences::isSubtitleFile( const QFileInfo & fi, bool * isLangFileFormat ) const
+            bool CPreferences::isSubtitleFile( const QFileInfo &fi, bool *isLangFileFormat ) const
             {
                 if ( !fi.isFile() )
                     return false;
@@ -1556,10 +1545,8 @@ namespace NMediaManager
                     *isLangFileFormat = NMediaManager::NCore::SLanguageInfo::isLangFileFormat( fi );
                 }
 
-                return isFileWithExtension( fi, [ this ]()
-                                            {
-                                                return getSubtitleExtensions();
-                                            }, fSubtitleExtensionsHash, fIsSubtitleExtension );
+                return isFileWithExtension(
+                    fi, [ this ]() { return getSubtitleExtensions(); }, fSubtitleExtensionsHash, fIsSubtitleExtension );
             }
 
             void CPreferences::emitSigPreferencesChanged( EPreferenceTypes preferenceTypes )
@@ -1570,30 +1557,30 @@ namespace NMediaManager
                     fPrefChangeTimer = new QTimer( this );
                     fPrefChangeTimer->setSingleShot( true );
                     fPrefChangeTimer->setInterval( 50 );
-                    connect( fPrefChangeTimer, &QTimer::timeout,
-                             [this]()
-                             {
-                                 if ( ( fPending & eSystemPrefs ) != 0 )
-                                 {
-                                     fMediaExtensionsHash.clear();
-                                     fIsMediaExtension.clear();
-                                     fSubtitleExtensionsHash.clear();
-                                     fIsSubtitleExtension.clear();
-                                 }
-                                 if ( ( fPending & eTransformPrefs ) != 0 )
-                                 {
-                                     fKnownStringRegExsCache.clear();
-                                 }
-                                 emit sigPreferencesChanged( fPending );
-                                 fPending = EPreferenceTypes();
-                             }
-                    );
+                    connect(
+                        fPrefChangeTimer, &QTimer::timeout,
+                        [ this ]()
+                        {
+                            if ( ( fPending & eSystemPrefs ) != 0 )
+                            {
+                                fMediaExtensionsHash.clear();
+                                fIsMediaExtension.clear();
+                                fSubtitleExtensionsHash.clear();
+                                fIsSubtitleExtension.clear();
+                            }
+                            if ( ( fPending & eTransformPrefs ) != 0 )
+                            {
+                                fKnownStringRegExsCache.clear();
+                            }
+                            emit sigPreferencesChanged( fPending );
+                            fPending = EPreferenceTypes();
+                        } );
                 }
                 fPrefChangeTimer->stop();
                 fPrefChangeTimer->start();
             }
 
-            void replaceText( const QString & txt, QStringList & curr, const QStringList & values )
+            void replaceText( const QString &txt, QStringList &curr, const QStringList &values )
             {
                 auto pos = curr.indexOf( txt );
                 Q_ASSERT( pos != -1 );
@@ -1601,7 +1588,7 @@ namespace NMediaManager
                     return;
 
                 curr.removeAt( pos );
-                for ( auto && ii : values )
+                for ( auto &&ii : values )
                 {
                     if ( ii.lastIndexOf( QRegularExpression( R"(\S)" ) ) == -1 )
                         curr.insert( pos++, QString() );
@@ -1615,81 +1602,57 @@ namespace NMediaManager
                 return QString( 4 * indent, QChar( ' ' ) );
             }
 
-            void replaceText( const QString & txt, QStringList & curr, const QString & funcName, const QString & boolVariable, const QString & trueValue, const QString & falseValue )
+            void replaceText( const QString &txt, QStringList &curr, const QString &funcName, const QString &boolVariable, const QString &trueValue, const QString &falseValue )
             {
                 QStringList function;
-                function
-                    << QString( "QString CPreferences::%1( bool %2 ) const" ).arg( funcName ).arg( boolVariable )
-                    << "{"
-                    << getIndent( 1 ) + QString( "if ( %2 )" ).arg( boolVariable )
-                    << getIndent( 2 ) + QString( "return R\"(%1)\";" ).arg( trueValue )
-                    << getIndent( 1 ) + QString( "else" )
-                    << getIndent( 2 ) + QString( "return R\"(%1)\";" ).arg( falseValue )
-                    << "}"
-                    ;
-                for ( auto && ii : function )
+                function << QString( "QString CPreferences::%1( bool %2 ) const" ).arg( funcName ).arg( boolVariable ) << "{" << getIndent( 1 ) + QString( "if ( %2 )" ).arg( boolVariable )
+                         << getIndent( 2 ) + QString( "return R\"(%1)\";" ).arg( trueValue ) << getIndent( 1 ) + QString( "else" ) << getIndent( 2 ) + QString( "return R\"(%1)\";" ).arg( falseValue ) << "}";
+                for ( auto &&ii : function )
                 {
                     ii = getIndent( 3 ) + ii;
                 }
                 return replaceText( txt, curr, function );
             }
 
-            void replaceText( const QString & txt, QStringList & curr, const QString & funcName, const QString & value )
+            void replaceText( const QString &txt, QStringList &curr, const QString &funcName, const QString &value )
             {
                 QStringList function;
-                function
-                    << QString( "QString CPreferences::%1() const" ).arg( funcName )
-                    << "{"
-                    << getIndent( 1 ) + QString( "return R\"(%1)\";" ).arg( value )
-                    << "}"
-                    ;
-                for ( auto && ii : function )
+                function << QString( "QString CPreferences::%1() const" ).arg( funcName ) << "{" << getIndent( 1 ) + QString( "return R\"(%1)\";" ).arg( value ) << "}";
+                for ( auto &&ii : function )
                 {
                     ii = getIndent( 3 ) + ii;
                 }
                 return replaceText( txt, curr, function );
             }
 
-            void replaceText( const QString & txt, QStringList & curr, const QString & funcName, const char * value )
+            void replaceText( const QString &txt, QStringList &curr, const QString &funcName, const char *value )
             {
                 QStringList function;
-                function
-                    << QString( "bool CPreferences::%1() const" ).arg( funcName )
-                    << "{"
-                    << getIndent( 1 ) + QString( "return %1;" ).arg( value )
-                    << "}"
-                    ;
-                for ( auto && ii : function )
-                {
-                    ii = getIndent( 3 ) + ii;
-                }
-                return replaceText( txt, curr, function );
-            }
-           
-
-            template <typename T>
-            void replaceText( const QString & txt, QStringList & curr, const QString & funcName, T value )
-            {
-                static_assert( std::is_same<bool, T>::value, "not bool" );
-                QStringList function;
-                function
-                    << QString( "bool CPreferences::%1() const" ).arg( funcName )
-                    << "{"
-                    << getIndent( 1 ) + QString( "return %1;" ).arg( value ? "true" : "false" )
-                    << "}"
-                    ;
-                for ( auto && ii : function )
+                function << QString( "bool CPreferences::%1() const" ).arg( funcName ) << "{" << getIndent( 1 ) + QString( "return %1;" ).arg( value ) << "}";
+                for ( auto &&ii : function )
                 {
                     ii = getIndent( 3 ) + ii;
                 }
                 return replaceText( txt, curr, function );
             }
 
-            QStringList getListDefValue( const QString & retValType, const QStringList & newValues, bool asString, int indent )
+            template< typename T >
+            void replaceText( const QString &txt, QStringList &curr, const QString &funcName, T value )
+            {
+                static_assert( std::is_same< bool, T >::value, "not bool" );
+                QStringList function;
+                function << QString( "bool CPreferences::%1() const" ).arg( funcName ) << "{" << getIndent( 1 ) + QString( "return %1;" ).arg( value ? "true" : "false" ) << "}";
+                for ( auto &&ii : function )
+                {
+                    ii = getIndent( 3 ) + ii;
+                }
+                return replaceText( txt, curr, function );
+            }
+
+            QStringList getListDefValue( const QString &retValType, const QStringList &newValues, bool asString, int indent )
             {
                 QStringList retVal;
-                retVal << QString( "%1static auto defaultValue =" ).arg( getIndent( indent ) )
-                    ;
+                retVal << QString( "%1static auto defaultValue =" ).arg( getIndent( indent ) );
 
                 if ( newValues.empty() )
                 {
@@ -1697,82 +1660,61 @@ namespace NMediaManager
                 }
                 else
                 {
-                    retVal
-                        << QString( "%2%1(" ).arg( retValType ).arg( getIndent( indent + 1 ) )
-                        << getIndent( indent + 1 ) + "{"
-                        ;
+                    retVal << QString( "%2%1(" ).arg( retValType ).arg( getIndent( indent + 1 ) ) << getIndent( indent + 1 ) + "{";
 
                     bool first = true;
-                    for ( auto && ii : newValues )
+                    for ( auto &&ii : newValues )
                     {
                         auto fmt = asString ? QString( "%3%1R\"(%2)\"" ) : QString( "%3%1%2" );
                         retVal << fmt.arg( first ? " " : "," ).arg( ii ).arg( getIndent( indent + 2 ) );
                         first = false;
                     }
-                    retVal
-                        << QString( "%1} );" ).arg( ( getIndent( indent + 1 ) ) );
+                    retVal << QString( "%1} );" ).arg( ( getIndent( indent + 1 ) ) );
                 }
 
-                retVal
-                    << QString( "%1return defaultValue;" ).arg( getIndent( indent ) )
-                    ;
+                retVal << QString( "%1return defaultValue;" ).arg( getIndent( indent ) );
                 return retVal;
             }
 
-            void replaceText( const QString & txt, QStringList & curr, const QString & funcName, const QString & boolVariable, const QStringList & trueValue, const QStringList & falseValue, const QString & retValType = "QStringList", bool asString = true )
+            void replaceText(
+                const QString &txt, QStringList &curr, const QString &funcName, const QString &boolVariable, const QStringList &trueValue, const QStringList &falseValue, const QString &retValType = "QStringList", bool asString = true )
             {
                 QStringList function;
-                function
-                    << QString( "%3 CPreferences::%1( bool %2 ) const" ).arg( funcName ).arg( boolVariable ).arg( retValType )
-                    << "{"
-                    << getIndent( 1 ) + QString( "if ( %2 )" ).arg( boolVariable )
-                    << getIndent( 1 ) + "{"
-                    << getListDefValue( retValType, trueValue, asString, 2 )
-                    << getIndent( 1 ) + "}"
-                    << getIndent( 1 ) + "else"
-                    << getIndent( 1 ) + "{"
-                    << getListDefValue( retValType, falseValue, asString, 2 )
-                    << getIndent( 1 ) + "}"
-                    << "}"
-                    ;
-                for ( auto && ii : function )
+                function << QString( "%3 CPreferences::%1( bool %2 ) const" ).arg( funcName ).arg( boolVariable ).arg( retValType ) << "{" << getIndent( 1 ) + QString( "if ( %2 )" ).arg( boolVariable ) << getIndent( 1 ) + "{"
+                         << getListDefValue( retValType, trueValue, asString, 2 ) << getIndent( 1 ) + "}" << getIndent( 1 ) + "else" << getIndent( 1 ) + "{" << getListDefValue( retValType, falseValue, asString, 2 ) << getIndent( 1 ) + "}"
+                         << "}";
+                for ( auto &&ii : function )
                 {
                     ii = getIndent( 3 ) + ii;
                 }
                 return replaceText( txt, curr, function );
             }
 
-            void replaceText( const QString & txt, QStringList & curr, const QString & funcName, const QStringList & newValues, const QString & retValType = "QStringList", bool asString = true )
+            void replaceText( const QString &txt, QStringList &curr, const QString &funcName, const QStringList &newValues, const QString &retValType = "QStringList", bool asString = true )
             {
                 QStringList function;
-                function
-                    << QString( "%2 CPreferences::%1() const" ).arg( funcName ).arg( retValType )
-                    << "{"
-                    ;
+                function << QString( "%2 CPreferences::%1() const" ).arg( funcName ).arg( retValType ) << "{";
 
-                function
-                    << getListDefValue( retValType, newValues, asString, 1 )
-                    << "}"
-                    ;
+                function << getListDefValue( retValType, newValues, asString, 1 ) << "}";
 
-                for ( auto && ii : function )
+                for ( auto &&ii : function )
                 {
                     ii = getIndent( 3 ) + ii;
                 }
                 return replaceText( txt, curr, function );
             }
 
-            void replaceText( const QString & txt, QStringList & curr, const QString & funcName, const QVariantMap & newValues )
+            void replaceText( const QString &txt, QStringList &curr, const QString &funcName, const QVariantMap &newValues )
             {
                 QStringList varList;
-                for ( auto && ii = newValues.cbegin(); ii != newValues.cend(); ++ii )
+                for ( auto &&ii = newValues.cbegin(); ii != newValues.cend(); ++ii )
                 {
                     varList << QString( "{ R\"(%1)\", R\"(%2)\" }" ).arg( ii.key() ).arg( ii.value().toString() );
                 }
                 replaceText( txt, curr, funcName, varList, "QVariantMap", false );
             }
 
-            QString CPreferences::compareValues( const QString & title, const QStringList & defaultValues, const QStringList & currValues ) const
+            QString CPreferences::compareValues( const QString &title, const QStringList &defaultValues, const QStringList &currValues ) const
             {
                 if ( defaultValues == currValues )
                     return {};
@@ -1783,7 +1725,7 @@ namespace NMediaManager
                 {
                     if ( defaultValues[ ii ] != currValues[ ii ] )
                     {
-                        items<< QString( "%1 != %2" ).arg( defaultValues[ ii ] ).arg( currValues[ ii ] );
+                        items << QString( "%1 != %2" ).arg( defaultValues[ ii ] ).arg( currValues[ ii ] );
                     }
                 }
 
@@ -1801,34 +1743,35 @@ namespace NMediaManager
                 if ( items.empty() )
                     return {};
 
-                for ( auto && ii : items )
+                for ( auto &&ii : items )
                 {
                     ii = "<li>" + ii.toHtmlEscaped() + "</li>";
                 }
 
-                auto retVal = QString( "<li>%1\n<ul>%2</ul>\n</li>\n" ).arg( title ).arg( items.join( "\n" ) );;
+                auto retVal = QString( "<li>%1\n<ul>%2</ul>\n</li>\n" ).arg( title ).arg( items.join( "\n" ) );
+                ;
                 return retVal;
             }
 
-            QStringList CPreferences::variantMapToStringList( const QVariantMap & data ) const
+            QStringList CPreferences::variantMapToStringList( const QVariantMap &data ) const
             {
                 QStringList retVal;
-                for ( auto && ii = data.cbegin(); ii != data.cend(); ++ii )
+                for ( auto &&ii = data.cbegin(); ii != data.cend(); ++ii )
                     retVal << QString( "%1=%2" ).arg( ii.key() ).arg( ii.value().toString() );
                 return retVal;
             }
 
-            QString CPreferences::compareValues( const QString & title, const QVariantMap & defaultValues, const QVariantMap & currValues ) const
+            QString CPreferences::compareValues( const QString &title, const QVariantMap &defaultValues, const QVariantMap &currValues ) const
             {
                 return compareValues( title, variantMapToStringList( defaultValues ), variantMapToStringList( currValues ) );
             }
 
-            QString CPreferences::compareValues( const QString & title, const QString & defaultValues, const QString & currValues ) const
+            QString CPreferences::compareValues( const QString &title, const QString &defaultValues, const QString &currValues ) const
             {
                 return compareValues( title, QStringList() << defaultValues, QStringList() << currValues );
             }
 
-            QString CPreferences::compareValues( const QString & title, bool defaultValue, bool currValue ) const
+            QString CPreferences::compareValues( const QString &title, bool defaultValue, bool currValue ) const
             {
                 if ( defaultValue == currValue )
                     return {};
@@ -1839,101 +1782,89 @@ namespace NMediaManager
 
             QStringList CPreferences::getDefaultFile() const
             {
-                auto retVal = QStringList()
-                    << R"(// The MIT License( MIT ))"
-                    << R"(//)"
-                    << R"(// Copyright( c ) 2020-2021 Scott Aron Bloom)"
-                    << R"(//)"
-                    << R"(// Permission is hereby granted, free of charge, to any person obtaining a copy)"
-                    << R"(// of this software and associated documentation files( the "Software" ), to deal)"
-                    << R"(// in the Software without restriction, including without limitation the rights)"
-                    << R"(// to use, copy, modify, merge, publish, distribute, sub-license, and/or sell)"
-                    << R"(// copies of the Software, and to permit persons to whom the Software is)"
-                    << R"(// furnished to do so, subject to the following conditions :)"
-                    << R"(//)"
-                    << R"(// The above copyright notice and this permission notice shall be included in)"
-                    << R"(// all copies or substantial portions of the Software.)"
-                    << R"(//)"
-                    << R"(// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR)"
-                    << R"(// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,)"
-                    << R"(// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE)"
-                    << R"(// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER)"
-                    << R"(// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,)"
-                    << R"(// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE)"
-                    << R"(// SOFTWARE.)"
-                    << R"()"
-                    << R"(#include "Preferences.h")"
-                    << R"()"
-                    << R"(namespace NMediaManager)"
-                    << R"({)"
-                    << R"(    namespace NPreferences)"
-                    << R"(    {)"
-                    << R"(        namespace NCore)"
-                    << R"(        {)"
-                    << "%DEFAULT_SEASON_DIR_PATTERN%"
-                    << R"()"
-                    << "%DEFAULT_OUT_DIR_PATTERN%"
-                    << R"()"
-                    << "%DEFAULT_OUT_FILE_PATTERN%"
-                    << R"()"
-                    << "%DEFAULT_CUSTOM_PATHS_TO_DELETE%"
-                    << R"()"
-                    << "%DEFAULT_DELETE_CUSTOM%"
-                    << R"()"
-                    << "%DEFAULT_RIPPED_WITH_MKV_REGEX%"
-                    << R"()"
-                    << "%DEFAULT_DELETE_EXE%"
-                    << R"()"
-                    << "%DEFAULT_DELETE_NFO%"
-                    << R"()"
-                    << "%DEFAULT_DELETE_BAK%"
-                    << R"()"
-                    << "%DEFAULT_DELETE_IMAGES%"
-                    << R"()"
-                    << "%DEFAULT_KNOWN_STRINGS%"
-                    << R"()"
-                    << "%DEFAULT_KNOWN_EXTENDED_STRINGS%"
-                    << R"()"
-                    << "%DEFAULT_IGNORED_PATHS%"
-                    << R"()"
-                    << "%DEFAULT_KNOWN_ABBREVIATIONS%"
-                    << R"()"
-                    << "%DEFAULT_KNOWN_HYPHENATED%"
-                    << R"()"
-                    << "%DEFAULT_SKIPPED_PATHS%"
-                    << R"(        })"
-                    << R"(    })"
-                    << R"(})"
-                    ;
+                auto retVal = QStringList() << R"(// The MIT License( MIT ))"
+                                            << R"(//)"
+                                            << R"(// Copyright( c ) 2020-2021 Scott Aron Bloom)"
+                                            << R"(//)"
+                                            << R"(// Permission is hereby granted, free of charge, to any person obtaining a copy)"
+                                            << R"(// of this software and associated documentation files( the "Software" ), to deal)"
+                                            << R"(// in the Software without restriction, including without limitation the rights)"
+                                            << R"(// to use, copy, modify, merge, publish, distribute, sub-license, and/or sell)"
+                                            << R"(// copies of the Software, and to permit persons to whom the Software is)"
+                                            << R"(// furnished to do so, subject to the following conditions :)"
+                                            << R"(//)"
+                                            << R"(// The above copyright notice and this permission notice shall be included in)"
+                                            << R"(// all copies or substantial portions of the Software.)"
+                                            << R"(//)"
+                                            << R"(// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR)"
+                                            << R"(// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,)"
+                                            << R"(// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE)"
+                                            << R"(// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER)"
+                                            << R"(// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,)"
+                                            << R"(// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE)"
+                                            << R"(// SOFTWARE.)"
+                                            << R"()"
+                                            << R"(#include "Preferences.h")"
+                                            << R"()"
+                                            << R"(namespace NMediaManager)"
+                                            << R"({)"
+                                            << R"(    namespace NPreferences)"
+                                            << R"(    {)"
+                                            << R"(        namespace NCore)"
+                                            << R"(        {)"
+                                            << "%DEFAULT_SEASON_DIR_PATTERN%"
+                                            << R"()"
+                                            << "%DEFAULT_OUT_DIR_PATTERN%"
+                                            << R"()"
+                                            << "%DEFAULT_OUT_FILE_PATTERN%"
+                                            << R"()"
+                                            << "%DEFAULT_CUSTOM_PATHS_TO_DELETE%"
+                                            << R"()"
+                                            << "%DEFAULT_DELETE_CUSTOM%"
+                                            << R"()"
+                                            << "%DEFAULT_RIPPED_WITH_MKV_REGEX%"
+                                            << R"()"
+                                            << "%DEFAULT_DELETE_EXE%"
+                                            << R"()"
+                                            << "%DEFAULT_DELETE_NFO%"
+                                            << R"()"
+                                            << "%DEFAULT_DELETE_BAK%"
+                                            << R"()"
+                                            << "%DEFAULT_DELETE_IMAGES%"
+                                            << R"()"
+                                            << "%DEFAULT_KNOWN_STRINGS%"
+                                            << R"()"
+                                            << "%DEFAULT_KNOWN_EXTENDED_STRINGS%"
+                                            << R"()"
+                                            << "%DEFAULT_IGNORED_PATHS%"
+                                            << R"()"
+                                            << "%DEFAULT_KNOWN_ABBREVIATIONS%"
+                                            << R"()"
+                                            << "%DEFAULT_KNOWN_HYPHENATED%"
+                                            << R"()"
+                                            << "%DEFAULT_SKIPPED_PATHS%"
+                                            << R"(        })"
+                                            << R"(    })"
+                                            << R"(})";
                 return retVal;
             }
 
             QString CPreferences::validateDefaults() const
             {
                 auto items =
-                    QStringList()
-                    << compareValues( "Movie Out Dir Pattern", getDefaultOutDirPattern( false ), getMovieOutDirPattern() )
-                    << compareValues( "Movie Out File Pattern", getDefaultOutFilePattern( false ), getMovieOutFilePattern() )
-                    << compareValues( "Season Out Dir Pattern", getDefaultSeasonDirPattern(), getSeasonOutDirPattern() )
-                    << compareValues( "TV Out Dir Pattern", getDefaultOutDirPattern( true ), getTVOutDirPattern( false ) )
-                    << compareValues( "TV Out File Pattern", getDefaultOutFilePattern( true ), getTVOutFilePattern() )
-                    << compareValues( "Skipped Paths (Media Transform)", getDefaultSkippedPaths( true ), getSkippedPaths( true ) )
-                    << compareValues( "Skipped Paths (Media Tagging)", getDefaultSkippedPaths( false ), getSkippedPaths( false ) )
-                    << compareValues( "Ignored Paths", getDefaultIgnoredPaths(), getIgnoredPaths() )
-                    << compareValues( "Paths to Delete", getDefaultCustomPathsToDelete(), getCustomPathsToDelete() )
-                    << compareValues( "Ripped With MKV RegEX", getDefaultRippedWithMKVRegEX(), getRippedWithMKVRegEX() )
+                    QStringList() << compareValues( "Movie Out Dir Pattern", getDefaultOutDirPattern( false ), getMovieOutDirPattern() )
+                                  << compareValues( "Movie Out File Pattern", getDefaultOutFilePattern( false ), getMovieOutFilePattern() ) << compareValues( "Season Out Dir Pattern", getDefaultSeasonDirPattern(), getSeasonOutDirPattern() )
+                                  << compareValues( "TV Out Dir Pattern", getDefaultOutDirPattern( true ), getTVOutDirPattern( false ) ) << compareValues( "TV Out File Pattern", getDefaultOutFilePattern( true ), getTVOutFilePattern() )
+                                  << compareValues( "Skipped Paths (Media Transform)", getDefaultSkippedPaths( true ), getSkippedPaths( true ) )
+                                  << compareValues( "Skipped Paths (Media Tagging)", getDefaultSkippedPaths( false ), getSkippedPaths( false ) ) << compareValues( "Ignored Paths", getDefaultIgnoredPaths(), getIgnoredPaths() )
+                                  << compareValues( "Paths to Delete", getDefaultCustomPathsToDelete(), getCustomPathsToDelete() ) << compareValues( "Ripped With MKV RegEX", getDefaultRippedWithMKVRegEX(), getRippedWithMKVRegEX() )
 
-                    << compareValues( "Delete Custom", getDefaultDeleteCustom(), deleteCustom() )
-                    << compareValues( "Delete Executables", getDefaultDeleteEXE(), deleteEXE() )
-                    << compareValues( "Delete NFO Files", getDefaultDeleteNFO(), deleteNFO() )
-                    << compareValues( "Delete BAK Files", getDefaultDeleteBAK(), deleteBAK() )
-                    << compareValues( "Delete Images", getDefaultDeleteImages(), deleteImages() )
+                                  << compareValues( "Delete Custom", getDefaultDeleteCustom(), deleteCustom() ) << compareValues( "Delete Executables", getDefaultDeleteEXE(), deleteEXE() )
+                                  << compareValues( "Delete NFO Files", getDefaultDeleteNFO(), deleteNFO() ) << compareValues( "Delete BAK Files", getDefaultDeleteBAK(), deleteBAK() )
+                                  << compareValues( "Delete Images", getDefaultDeleteImages(), deleteImages() )
 
-                    << compareValues( "Known Strings", getDefaultKnownStrings(), getKnownStrings() )
-                    << compareValues( "Known Extended Strings", getDefaultKnownExtendedStrings(), getKnownExtendedStrings() )
-                    << compareValues( "Known Abbreviations", getDefaultKnownAbbreviations(), getKnownAbbreviations() )
-                    << compareValues( "Known Hyphenated", getDefaultKnownHyphenated(), getKnownHyphenated() )
-                    ;
+                                  << compareValues( "Known Strings", getDefaultKnownStrings(), getKnownStrings() ) << compareValues( "Known Extended Strings", getDefaultKnownExtendedStrings(), getKnownExtendedStrings() )
+                                  << compareValues( "Known Abbreviations", getDefaultKnownAbbreviations(), getKnownAbbreviations() ) << compareValues( "Known Hyphenated", getDefaultKnownHyphenated(), getKnownHyphenated() );
                 items.removeAll( QString() );
 
                 QString retVal;
@@ -1942,7 +1873,7 @@ namespace NMediaManager
                 return retVal;
             }
 
-            void CPreferences::showValidateDefaults( QWidget * parent, bool showNoChange )
+            void CPreferences::showValidateDefaults( QWidget *parent, bool showNoChange )
             {
                 auto diffs = validateDefaults();
                 if ( diffs.isEmpty() && !showNoChange )
@@ -1961,7 +1892,8 @@ namespace NMediaManager
                 }
                 else if ( showNoChange )
                 {
-                    replace = QMessageBox::information( parent, tr( "Default Preferences are the Same" ), tr( "The defaults are up to date.\nWould you like to copy the defaults to the Clipboard" ), QMessageBox::Yes, QMessageBox::No ) == QMessageBox::Yes;
+                    replace = QMessageBox::information( parent, tr( "Default Preferences are the Same" ), tr( "The defaults are up to date.\nWould you like to copy the defaults to the Clipboard" ), QMessageBox::Yes, QMessageBox::No )
+                              == QMessageBox::Yes;
                 }
 
                 if ( replace )

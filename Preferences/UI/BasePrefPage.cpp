@@ -34,8 +34,8 @@ namespace NMediaManager
     {
         namespace NUi
         {
-            CBasePrefPage::CBasePrefPage( QWidget * parent )
-                : QWidget( parent )
+            CBasePrefPage::CBasePrefPage( QWidget *parent ) :
+                QWidget( parent )
             {
             }
 
@@ -43,7 +43,7 @@ namespace NMediaManager
             {
             }
 
-            void CBasePrefPage::addString( const QString & title, const QString & label, QStringListModel * model, QListView * listView, bool splitWords )
+            void CBasePrefPage::addString( const QString &title, const QString &label, QStringListModel *model, QListView *listView, bool splitWords )
             {
                 auto text = QInputDialog::getText( this, title, label ).trimmed();
                 if ( text.isEmpty() )
@@ -57,7 +57,7 @@ namespace NMediaManager
 
                 auto strings = model->stringList();
 
-                for ( auto && ii : words )
+                for ( auto &&ii : words )
                 {
                     ii = ii.trimmed();
                     strings.removeAll( ii );
@@ -68,7 +68,7 @@ namespace NMediaManager
                 listView->scrollTo( model->index( strings.count() - 1, 0 ) );
             }
 
-            void CBasePrefPage::delString( QStringListModel * listModel, QListView * listView )
+            void CBasePrefPage::delString( QStringListModel *listModel, QListView *listView )
             {
                 auto model = listView->selectionModel();
                 if ( !model )
@@ -79,7 +79,7 @@ namespace NMediaManager
                     return;
 
                 auto strings = listModel->stringList();
-                for ( auto && ii : selected )
+                for ( auto &&ii : selected )
                 {
                     auto text = ii.data().toString();
                     strings.removeAll( text );

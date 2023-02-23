@@ -51,26 +51,26 @@ namespace NMediaManager
         {
         public:
             CNetworkReply();
-            CNetworkReply( ERequestType requestType, QNetworkReply * reply );
-            CNetworkReply( ERequestType requestType, const QString & urlPath, const QByteArray & data );
+            CNetworkReply( ERequestType requestType, QNetworkReply *reply );
+            CNetworkReply( ERequestType requestType, const QString &urlPath, const QByteArray &data );
 
             bool isValid() const;
             bool isCached() const { return !fReply; }
 
-            static QString key( const QNetworkRequest & request, ERequestType type, const QString & tmdbID );
-            static QString key( const QUrl & url, ERequestType type, const QString & tmdbID );
-            static QString key( const QNetworkRequest & request, ERequestType type );
-            static QString key( const QUrl & url, ERequestType type );
+            static QString key( const QNetworkRequest &request, ERequestType type, const QString &tmdbID );
+            static QString key( const QUrl &url, ERequestType type, const QString &tmdbID );
+            static QString key( const QNetworkRequest &request, ERequestType type );
+            static QString key( const QUrl &url, ERequestType type );
             QString key() const;
             // errors only available on real requests, not cached requests
             bool hasError() const;
             QString errorString() const;
 
             bool isReply( std::shared_ptr< CNetworkReply > otherReply ) const;
-            bool isReply( const CNetworkReply * otherReply ) const;
-            bool operator==( const CNetworkReply & otherReply ) const;
+            bool isReply( const CNetworkReply *otherReply ) const;
+            bool operator==( const CNetworkReply &otherReply ) const;
 
-            bool isType( ERequestType type )const { return fRequestType == type; }
+            bool isType( ERequestType type ) const { return fRequestType == type; }
 
             QString tmdbID() const;
 
@@ -80,21 +80,22 @@ namespace NMediaManager
             QByteArray getData() const;
 
             QString toString() const;
-            QNetworkReply * getNetworkReply() const { return fReply; }
+            QNetworkReply *getNetworkReply() const { return fReply; }
 
             ERequestType requestType() const { return fRequestType; }
+
         private:
-            static QString tmdbFromUrl( const QUrl & url );
-            static QString tmdbFromKey( const QString & key );
+            static QString tmdbFromUrl( const QUrl &url );
+            static QString tmdbFromKey( const QString &key );
             ERequestType fRequestType{ ERequestType::eUnknownRequest };
-            QNetworkReply * fReply{ nullptr };
+            QNetworkReply *fReply{ nullptr };
             QString fURLPathKey;
             QString fTMDBID;
             mutable QByteArray fCachedData;
         };
-        QDebug operator<<( QDebug debug, const CNetworkReply & reply );
+        QDebug operator<<( QDebug debug, const CNetworkReply &reply );
 
-        inline bool operator==( const std::shared_ptr< CNetworkReply > & lhs, const std::shared_ptr< CNetworkReply > & rhs )
+        inline bool operator==( const std::shared_ptr< CNetworkReply > &lhs, const std::shared_ptr< CNetworkReply > &rhs )
         {
             if ( !lhs || !rhs )
                 return lhs.get() == rhs.get();
@@ -105,16 +106,13 @@ namespace NMediaManager
 
 namespace std
 {
-    template <>
-    struct hash<NMediaManager::NCore::CNetworkReply>
+    template<>
+    struct hash< NMediaManager::NCore::CNetworkReply >
     {
-        std::size_t operator()( const NMediaManager::NCore::CNetworkReply & ii ) const
-        {
-            return ii.hash();
-        }
+        std::size_t operator()( const NMediaManager::NCore::CNetworkReply &ii ) const { return ii.hash(); }
     };
 
-    template <>
+    template<>
     struct hash< std::shared_ptr< NMediaManager::NCore::CNetworkReply > >
     {
         std::size_t operator()( std::shared_ptr< NMediaManager::NCore::CNetworkReply > ii ) const
@@ -127,4 +125,4 @@ namespace std
     };
 }
 
-#endif 
+#endif

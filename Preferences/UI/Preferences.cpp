@@ -45,15 +45,14 @@
 #include <QPushButton>
 #include "SABUtils/QtUtils.h"
 
-
 namespace NMediaManager
 {
     namespace NPreferences
     {
         namespace NUi
         {
-            CPreferences::CPreferences( QWidget * parent )
-                : QDialog( parent ),
+            CPreferences::CPreferences( QWidget *parent ) :
+                QDialog( parent ),
                 fImpl( new Ui::CPreferences )
             {
                 fImpl->setupUi( this );
@@ -100,7 +99,7 @@ namespace NMediaManager
 
             void CPreferences::loadSettings()
             {
-                for ( auto && ii : fPageMap )
+                for ( auto &&ii : fPageMap )
                 {
                     ii.second->load();
                 }
@@ -108,7 +107,7 @@ namespace NMediaManager
 
             void CPreferences::saveSettings()
             {
-                for ( auto && ii : fPageMap )
+                for ( auto &&ii : fPageMap )
                 {
                     ii.second->save();
                 }
@@ -134,7 +133,7 @@ namespace NMediaManager
                 addPage( new CBIFGeneration );
             }
 
-            void CPreferences::addPage( CBasePrefPage * page )
+            void CPreferences::addPage( CBasePrefPage *page )
             {
                 fImpl->stackedWidget->addWidget( page );
                 auto name = page->pageName();
@@ -143,7 +142,7 @@ namespace NMediaManager
                 if ( name.isEmpty() )
                     return;
                 QString key;
-                QTreeWidgetItem * parentItem = nullptr;
+                QTreeWidgetItem *parentItem = nullptr;
                 for ( int ii = 0; ii < name.count(); ++ii )
                 {
                     key += "__" + name[ ii ];
@@ -151,7 +150,7 @@ namespace NMediaManager
                     auto pos = fItemMap.find( key );
                     if ( pos == fItemMap.end() )
                     {
-                        QTreeWidgetItem * item = nullptr;
+                        QTreeWidgetItem *item = nullptr;
                         if ( parentItem )
                             item = new QTreeWidgetItem( parentItem );
                         else
@@ -206,7 +205,7 @@ namespace NMediaManager
                 NPreferences::NCore::CPreferences::instance()->showValidateDefaults( this, true );
             }
 
-            QString CPreferences::keyForItem( QTreeWidgetItem * item )
+            QString CPreferences::keyForItem( QTreeWidgetItem *item )
             {
                 if ( !item )
                     return {};

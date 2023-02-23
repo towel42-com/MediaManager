@@ -31,32 +31,32 @@ namespace NMediaManager
     {
         namespace NUi
         {
-            namespace Ui { class CExtensions; };
+            namespace Ui
+            {
+                class CExtensions;
+            };
             class CExtensions : public CBasePrefPage
             {
                 Q_OBJECT
             public:
-                CExtensions( QWidget * parent = nullptr );
+                CExtensions( QWidget *parent = nullptr );
 
                 virtual ~CExtensions() override;
 
                 virtual void load() override;
 
                 virtual void save() override;
-                virtual QStringList pageName() const override
-                {
-                    return QStringList( { "Extensions" } );
-                }
+                virtual QStringList pageName() const override { return QStringList( { "Extensions" } ); }
             public Q_SLOTS:
             private:
-                void loadExtensions( QListWidget * listWidget, QStringList & videoExtensions );
-                QStringList getExtensions( QListWidget * listWidget );
-                void addExtension( const QString & title, const QString & label, QListWidget * listWidget );
-                void delExtension( QListWidget * listWidget );
+                void loadExtensions( QListWidget *listWidget, QStringList &videoExtensions );
+                QStringList getExtensions( QListWidget *listWidget );
+                void addExtension( const QString &title, const QString &label, QListWidget *listWidget );
+                void delExtension( QListWidget *listWidget );
 
                 std::unique_ptr< Ui::CExtensions > fImpl;
             };
         }
     }
 }
-#endif 
+#endif

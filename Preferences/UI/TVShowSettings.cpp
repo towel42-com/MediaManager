@@ -41,8 +41,8 @@ namespace NMediaManager
     {
         namespace NUi
         {
-            CTVShowSettings::CTVShowSettings( QWidget * parent )
-                : CBasePrefPage( parent ),
+            CTVShowSettings::CTVShowSettings( QWidget *parent ) :
+                CBasePrefPage( parent ),
                 fImpl( new Ui::CTVShowSettings )
             {
                 fImpl->setupUi( this );

@@ -31,8 +31,8 @@ namespace NMediaManager
     {
         namespace NUi
         {
-            CMovieSettings::CMovieSettings( QWidget * parent )
-                : CBasePrefPage( parent ),
+            CMovieSettings::CMovieSettings( QWidget *parent ) :
+                CBasePrefPage( parent ),
                 fImpl( new Ui::CMovieSettings )
             {
                 fImpl->setupUi( this );

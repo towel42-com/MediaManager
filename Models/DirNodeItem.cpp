@@ -35,25 +35,23 @@ namespace NMediaManager
         SDirNodeItem::SDirNodeItem() :
             fMediaType( NCore::EMediaType::eUnknownType )
         {
-
         }
 
-        SDirNodeItem::SDirNodeItem( const QString & text, int nodeType ) :
+        SDirNodeItem::SDirNodeItem( const QString &text, int nodeType ) :
             fText( text ),
-            fType( static_cast<EColumns>( nodeType ) ),
+            fType( static_cast< EColumns >( nodeType ) ),
             fMediaType( NCore::EMediaType::eUnknownType )
         {
-
         }
 
-        void SDirNodeItem::setData( const QVariant & value, int role )
+        void SDirNodeItem::setData( const QVariant &value, int role )
         {
             fRoles.emplace_back( value, role );
         }
 
-        QStandardItem * SDirNodeItem::createStandardItem() const
+        QStandardItem *SDirNodeItem::createStandardItem() const
         {
-            QStandardItem * retVal = nullptr;
+            QStandardItem *retVal = nullptr;
             if ( !fEditable.has_value() )
             {
                 retVal = new QStandardItem( fText );
@@ -65,7 +63,7 @@ namespace NMediaManager
                 bool editable = true;
                 if ( fEditable.value().first == EType::eMediaTag )
                 {
-                    retVal->setData( static_cast<int>( fEditable.value().second ), NModels::ECustomRoles::eMediaTagTypeRole );
+                    retVal->setData( static_cast< int >( fEditable.value().second ), NModels::ECustomRoles::eMediaTagTypeRole );
                     auto mkvPropEdit = NPreferences::NCore::CPreferences::instance()->getMKVPropEditEXE();
                     if ( mkvPropEdit.isEmpty() )
                         editable = false;
@@ -76,7 +74,7 @@ namespace NMediaManager
             retVal->setIcon( fIcon );
             if ( fAlignment.has_value() )
                 retVal->setTextAlignment( fAlignment.value() );
-            for ( auto && ii : fRoles )
+            for ( auto &&ii : fRoles )
             {
                 retVal->setData( ii.first, ii.second );
             }

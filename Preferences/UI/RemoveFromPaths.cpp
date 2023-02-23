@@ -35,8 +35,8 @@ namespace NMediaManager
     {
         namespace NUi
         {
-            CRemoveFromPaths::CRemoveFromPaths( QWidget * parent )
-                : CBasePrefPage( parent ),
+            CRemoveFromPaths::CRemoveFromPaths( QWidget *parent ) :
+                CBasePrefPage( parent ),
                 fImpl( new Ui::CRemoveFromPaths )
             {
                 fImpl->setupUi( this );

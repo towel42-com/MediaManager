@@ -48,56 +48,59 @@ namespace NMediaManager
 {
     namespace NUi
     {
-        namespace Ui { class CBasePage; };
+        namespace Ui
+        {
+            class CBasePage;
+        };
         class CBasePage : public QWidget
         {
             Q_OBJECT
         public:
-            CBasePage( const QString & pageName, QWidget * parent = nullptr );
+            CBasePage( const QString &pageName, QWidget *parent = nullptr );
             virtual ~CBasePage() override;
 
-            virtual void load( const QString & dirName );
+            virtual void load( const QString &dirName );
             virtual void load( bool postRun );
 
             void clearDirModel();
 
-            virtual void run( const QModelIndex & idx );
+            virtual void run( const QModelIndex &idx );
             virtual bool canRun() const;
 
-            QTreeView * filesView() const;
-            QPlainTextEdit * log() const;
+            QTreeView *filesView() const;
+            QPlainTextEdit *log() const;
 
             virtual void appendSeparatorToLog();
-            virtual void appendToLog( const QString & msg, bool stdOut );
-            virtual void appendToLog( const QString & msg, std::pair<QString, bool> & previousText, bool stdOut, bool fromProcess );
+            virtual void appendToLog( const QString &msg, bool stdOut );
+            virtual void appendToLog( const QString &msg, std::pair< QString, bool > &previousText, bool stdOut, bool fromProcess );
 
-            virtual void postProcessLog( const QString & string );
-            virtual bool extendContextMenu( QMenu * menu, const QModelIndex & idx );
+            virtual void postProcessLog( const QString &string );
+            virtual bool extendContextMenu( QMenu *menu, const QModelIndex &idx );
 
-            NSABUtils::CDoubleProgressDlg * progressDlg() const { return fProgressDlg; }
+            NSABUtils::CDoubleProgressDlg *progressDlg() const { return fProgressDlg; }
             bool progressCanceled() const;
 
-            virtual QMenu * menu() { return nullptr; }
-            virtual QToolBar * toolBar() { return nullptr; }
+            virtual QMenu *menu() { return nullptr; }
+            virtual QToolBar *toolBar() { return nullptr; }
             virtual void setActive( bool isActive ) { fIsActive = isActive; }
             virtual bool isActive() const { return fIsActive; }
             virtual bool isFileBased() const { return false; }
             virtual bool isDirBased() const { return true; }
 
             virtual QString selectFileFilter() const { return QString(); }
-            virtual bool eventFilter( QObject * obj, QEvent * event ) override;
+            virtual bool eventFilter( QObject *obj, QEvent *event ) override;
 
-            void editMediaTags( const QModelIndex & idx );
+            void editMediaTags( const QModelIndex &idx );
 
-            QVBoxLayout * mainLayout() const;
+            QVBoxLayout *mainLayout() const;
         public Q_SLOTS:
             void slotLoadFinished( bool canceled );
             void slotProcessingStarted();
             void slotProcessesFinished( bool status, bool showProcessResults, bool canceled, bool reloadModel );
 
             void showResults();
-            virtual void slotDoubleClicked( const QModelIndex & idx ) final;
-            virtual void slotContextMenu( const QPoint & pt ) final;
+            virtual void slotDoubleClicked( const QModelIndex &idx ) final;
+            virtual void slotContextMenu( const QPoint &pt ) final;
             virtual void slotPreferencesChanged( NPreferences::EPreferenceTypes prefType );
         protected Q_SLOTS:
             virtual void slotPostInit();
@@ -107,13 +110,14 @@ namespace NMediaManager
             void sigStartStayAwake();
             void sigStopStayAwake();
             void sigDialogClosed();
+
         protected:
-            virtual QMenu * menuForIndex( const QModelIndex & idx ) final;
-            virtual void openLocation( const QModelIndex & idx ) final;
+            virtual QMenu *menuForIndex( const QModelIndex &idx ) final;
+            virtual void openLocation( const QModelIndex &idx ) final;
 
             virtual QString getPageName() const final { return fPageName; }
-            virtual NModels::CDirModel * createDirModel() = 0;
-            virtual QAbstractItemModel * getDirModel() const;
+            virtual NModels::CDirModel *createDirModel() = 0;
+            virtual QAbstractItemModel *getDirModel() const;
             virtual bool useSecondaryProgressBar() const { return false; }
             virtual QString secondaryProgressLabel() const;
 
@@ -127,7 +131,7 @@ namespace NMediaManager
             virtual void postLoadFinished( bool /*canceled*/ ) {}
             virtual void setupModel();
 
-            void setupProgressDlg( const QString & title, const QString & cancelButtonText, int max, int eventsPerPath = 1 );
+            void setupProgressDlg( const QString &title, const QString &cancelButtonText, int max, int eventsPerPath = 1 );
             void clearProgressDlg( bool canceled );
 
             virtual void loadSettings();
@@ -138,10 +142,10 @@ namespace NMediaManager
 
             bool fIsActive{ false };
 
-            NSABUtils::CDoubleProgressDlg * fProgressDlg{ nullptr };
+            NSABUtils::CDoubleProgressDlg *fProgressDlg{ nullptr };
             std::unique_ptr< NModels::CDirModel > fModel;
             std::unique_ptr< Ui::CBasePage > fImpl;
         };
     }
 }
-#endif 
+#endif

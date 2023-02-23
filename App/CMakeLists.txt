@@ -61,11 +61,13 @@ set ( DEBUG_PLUGINPATH
         "$<TARGET_FILE_DIR:gif>/.."
         )
         
-set_target_properties( ${PROJECT_NAME} PROPERTIES FOLDER ${FOLDER_NAME} 
+set_target_properties( ${PROJECT_NAME} PROPERTIES 
+                                    FOLDER ${FOLDER_NAME} 
                                     VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:${PROJECT_NAME}>" 
                                     VS_DEBUGGER_COMMAND "$<TARGET_FILE:${PROJECT_NAME}>" 
                                     VS_DEBUGGER_ENVIRONMENT "PATH=${DEBUG_PATH}\nQT_PLUGIN_PATH=${DEBUG_PLUGINPATH}" 
                      )
+
 
 target_link_libraries( ${PROJECT_NAME}
     PUBLIC

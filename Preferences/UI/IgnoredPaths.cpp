@@ -34,8 +34,8 @@ namespace NMediaManager
     {
         namespace NUi
         {
-            CIgnoredPaths::CIgnoredPaths( QWidget * parent )
-                : CBasePrefPage( parent ),
+            CIgnoredPaths::CIgnoredPaths( QWidget *parent ) :
+                CBasePrefPage( parent ),
                 fImpl( new Ui::CIgnoredPaths )
             {
                 fImpl->setupUi( this );

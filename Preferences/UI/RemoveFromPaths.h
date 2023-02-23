@@ -39,28 +39,29 @@ namespace NMediaManager
     {
         namespace NUi
         {
-            namespace Ui { class CRemoveFromPaths; };
+            namespace Ui
+            {
+                class CRemoveFromPaths;
+            };
             class CRemoveFromPaths : public CBasePrefPage
             {
                 Q_OBJECT
             public:
-                CRemoveFromPaths( QWidget * parent = nullptr );
+                CRemoveFromPaths( QWidget *parent = nullptr );
                 virtual ~CRemoveFromPaths() override;
 
                 virtual void load() override;
                 virtual void save() override;
-                virtual QStringList pageName() const override
-                {
-                    return QStringList( { "Known Strings", "Remove from Paths" } );
-                }
+                virtual QStringList pageName() const override { return QStringList( { "Known Strings", "Remove from Paths" } ); }
             public Q_SLOTS:
                 void slotAddKnownString();
                 void slotDelKnownString();
+
             private:
-                QStringListModel * fKnownStringModel{ nullptr };
+                QStringListModel *fKnownStringModel{ nullptr };
                 std::unique_ptr< Ui::CRemoveFromPaths > fImpl;
             };
         }
     }
 }
-#endif 
+#endif

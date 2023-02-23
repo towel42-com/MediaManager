@@ -40,27 +40,28 @@ namespace NMediaManager
     {
         namespace NUi
         {
-            namespace Ui { class CTransformationSettings; };
+            namespace Ui
+            {
+                class CTransformationSettings;
+            };
             class CTransformationSettings : public CBasePrefPage
             {
                 Q_OBJECT
             public:
-                CTransformationSettings( QWidget * parent = nullptr );
+                CTransformationSettings( QWidget *parent = nullptr );
                 virtual ~CTransformationSettings() override;
 
                 virtual void load() override;
                 virtual void save() override;
-                virtual QStringList pageName() const override
-                {
-                    return QStringList( { "Transformation Settings" } );
-                }
+                virtual QStringList pageName() const override { return QStringList( { "Transformation Settings" } ); }
             public Q_SLOTS:
                 void slotRippedRegEXChanged();
+
             private:
                 std::unique_ptr< Ui::CTransformationSettings > fImpl;
-                QValidator * fValidator{ nullptr };
+                QValidator *fValidator{ nullptr };
             };
         }
     }
 }
-#endif 
+#endif

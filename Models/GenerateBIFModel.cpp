@@ -34,14 +34,14 @@
 #include <QTemporaryDir>
 
 #ifndef NDEBUG
-#define DEBUG_TEMP_DIR
+    #define DEBUG_TEMP_DIR
 #endif
 
 namespace NMediaManager
 {
     namespace NModels
     {
-        CGenerateBIFModel::CGenerateBIFModel( NUi::CBasePage * page, QObject * parent /*= 0*/ ) :
+        CGenerateBIFModel::CGenerateBIFModel( NUi::CBasePage *page, QObject *parent /*= 0*/ ) :
             CDirModel( page, parent )
         {
         }
@@ -55,7 +55,7 @@ namespace NMediaManager
             return QStringList() << "*.mkv";
         }
 
-        std::pair< bool, QStandardItem * > CGenerateBIFModel::processItem( const QStandardItem * item, bool displayOnly )
+        std::pair< bool, QStandardItem * > CGenerateBIFModel::processItem( const QStandardItem *item, bool displayOnly )
         {
             if ( item->data( ECustomRoles::eIsDir ).toBool() )
                 return std::make_pair( true, nullptr );
@@ -88,18 +88,18 @@ namespace NMediaManager
             }
             processInfo.fItem->setData( processInfo.fNewNames, ECustomRoles::eNewName );
 
-
             bool aOK = true;
-            QStandardItem * myItem = nullptr;
+            QStandardItem *myItem = nullptr;
             fFirstProcess = true;
             if ( !displayOnly )
             {
-                processInfo.fMaximum = NSABUtils::getNumberOfSeconds( processInfo.fOldName );;
+                processInfo.fMaximum = NSABUtils::getNumberOfSeconds( processInfo.fOldName );
+                ;
                 processInfo.fCmd = NPreferences::NCore::CPreferences::instance()->getFFMpegEXE();
 
                 if ( processInfo.fCmd.isEmpty() || !QFileInfo( processInfo.fCmd ).isExecutable() )
                 {
-                    QStandardItem * errorItem = nullptr;
+                    QStandardItem *errorItem = nullptr;
                     if ( processInfo.fCmd.isEmpty() )
                         appendError( processInfo.fItem, tr( "ffmpeg is not set properly" ) );
                     else
@@ -123,24 +123,21 @@ namespace NMediaManager
                 qDebug() << processInfo.fTempDir->path();
 
                 // eg -f matroska -threads 1 -skip_interval 10 -copyts -i file:"/volume2/video/Movies/Westworld (1973) [tmdbid=2362]/Westworld.mkv" -an -sn -vf "scale=w=320:h=133" -vsync cfr -r 0.1 -f image2 "/var/packages/EmbyServer/var/cache/temp/112d22a09fea457eaea27c4b0c88f790/img_%05d.jpg"
-                processInfo.fArgs = QStringList()
-                    << "-f" << "matroska"
-                    << "-threads" << "1"
-                    << "-skip_interval" << QString::number( NPreferences::NCore::CPreferences::instance()->imageInterval() )
-                    << "-copyts"
-                    << "-i"
-                    << processInfo.fOldName
-                    << "-an"
-                    << "-sn"
-                    << "-vf" << QString( "scale=w=%1:h=%2" ).arg( sz.width() ).arg( sz.height() )
-                    << "-vsync" << "cfr"
-                    << "-r" << "0.1"
-                    << "-f" << "image2"
-                    << processInfo.fTempDir->filePath( "img_%05d.jpg" )
-                    ;
+                processInfo.fArgs = QStringList() << "-f"
+                                                  << "matroska"
+                                                  << "-threads"
+                                                  << "1"
+                                                  << "-skip_interval" << QString::number( NPreferences::NCore::CPreferences::instance()->imageInterval() ) << "-copyts"
+                                                  << "-i" << processInfo.fOldName << "-an"
+                                                  << "-sn"
+                                                  << "-vf" << QString( "scale=w=%1:h=%2" ).arg( sz.width() ).arg( sz.height() ) << "-vsync"
+                                                  << "cfr"
+                                                  << "-r"
+                                                  << "0.1"
+                                                  << "-f"
+                                                  << "image2" << processInfo.fTempDir->filePath( "img_%05d.jpg" );
                 processInfo.fBackupOrig = false;
-                processInfo.fPostProcess =
-                [ this ]( const SProcessInfo * processInfo, QString & msg ) -> bool
+                processInfo.fPostProcess = [ this ]( const SProcessInfo *processInfo, QString &msg ) -> bool
                 {
                     progressDlg()->setPrimaryValue( progressDlg()->primaryValue() + 1 );
                     if ( !processInfo || !processInfo->fTempDir )
@@ -157,7 +154,7 @@ namespace NMediaManager
 
                     bool aOK = true;
                     QString errorMsg;
-                    auto allImages = NSABUtils::NFileUtils::findAllFiles( dir, {  "img_*.jpg" }, false, true, &errorMsg );
+                    auto allImages = NSABUtils::NFileUtils::findAllFiles( dir, { "img_*.jpg" }, false, true, &errorMsg );
                     if ( !allImages.has_value() || allImages.value().isEmpty() )
                     {
                         msg = QString( "No images exists in dir '%1' of the format 'img_*.jpg' - %2" ).arg( dir.absolutePath() ).arg( errorMsg );
@@ -181,40 +178,37 @@ namespace NMediaManager
                             CDirModel::appendError( processInfo->fItem, QObject::tr( "%1: FAILED TO REMOVE ITEM %2" ).arg( getDispName( processInfo->fNewNames.front() ) ).arg( getDispName( backupName ) ) );
                             return false;
                         }
-                        
+
                         if ( QFile::exists( processInfo->fNewNames.back() ) && !QFile::rename( processInfo->fNewNames.back(), backupName ) )
                         {
                             CDirModel::appendError( processInfo->fItem, QObject::tr( "%1: FAILED TO MOVE ITEM TO %2" ).arg( getDispName( processInfo->fNewNames.back() ) ).arg( getDispName( backupName ) ) );
                             return false;
                         }
-                        
-                        aOK = NSABUtils::CGIFWriterDlg::saveToGIF( nullptr, processInfo->fNewNames.back(), allImages.value(),
-                                                                   NPreferences::NCore::CPreferences::instance()->gifDitherImage(),
-                                                                   NPreferences::NCore::CPreferences::instance()->gifFlipImage(),
-                                                                   NPreferences::NCore::CPreferences::instance()->gifLoopCount(),
-                                                                   NPreferences::NCore::CPreferences::instance()->gifDelay(),
-                                                                   [this, fi, processInfo]( size_t min, size_t max )
-                                                                   {
-                                                                       if ( progressDlg() )
-                                                                       {
-                                                                           progressDlg()->setCancelButtonText( tr( "Cancel Generating GIF" ) );
-                                                                           progressDlg()->setLabelText( getProgressLabel( processInfo, false ) );
-                                                                           progressDlg()->setSecondaryProgressLabel( "Current Frame" );
-                                                                           progressDlg()->setSecondaryRange( static_cast<int>( min ), static_cast<int>( max ) );
-                                                                       }
-                                                                   },
-                                                                   [ this ]( size_t value )
-                                                                   {
-                                                                       if ( progressDlg() )
-                                                                           progressDlg()->setSecondaryValue( static_cast<int>( value ) );
-                                                                   },
-                                                                   [ this ]()->bool 
-                                                                   {
-                                                                       if ( progressDlg() )
-                                                                           return progressDlg()->wasCanceled();
-                                                                       return false;
-                                                                   }
-                                                                 );
+
+                        aOK = NSABUtils::CGIFWriterDlg::saveToGIF(
+                            nullptr, processInfo->fNewNames.back(), allImages.value(), NPreferences::NCore::CPreferences::instance()->gifDitherImage(), NPreferences::NCore::CPreferences::instance()->gifFlipImage(),
+                            NPreferences::NCore::CPreferences::instance()->gifLoopCount(), NPreferences::NCore::CPreferences::instance()->gifDelay(),
+                            [ this, fi, processInfo ]( size_t min, size_t max )
+                            {
+                                if ( progressDlg() )
+                                {
+                                    progressDlg()->setCancelButtonText( tr( "Cancel Generating GIF" ) );
+                                    progressDlg()->setLabelText( getProgressLabel( processInfo, false ) );
+                                    progressDlg()->setSecondaryProgressLabel( "Current Frame" );
+                                    progressDlg()->setSecondaryRange( static_cast< int >( min ), static_cast< int >( max ) );
+                                }
+                            },
+                            [ this ]( size_t value )
+                            {
+                                if ( progressDlg() )
+                                    progressDlg()->setSecondaryValue( static_cast< int >( value ) );
+                            },
+                            [ this ]() -> bool
+                            {
+                                if ( progressDlg() )
+                                    return progressDlg()->wasCanceled();
+                                return false;
+                            } );
                     }
                     progressDlg()->setPrimaryValue( progressDlg()->primaryValue() + 1 );
                     return aOK;
@@ -227,12 +221,12 @@ namespace NMediaManager
             return std::make_pair( aOK, myItem );
         }
 
-        QString CGenerateBIFModel::getProgressLabel( const SProcessInfo & processInfo ) const
+        QString CGenerateBIFModel::getProgressLabel( const SProcessInfo &processInfo ) const
         {
             return getProgressLabel( &processInfo, true );
         }
 
-        QString CGenerateBIFModel::getProgressLabel( const SProcessInfo * processInfo, bool bif ) const
+        QString CGenerateBIFModel::getProgressLabel( const SProcessInfo *processInfo, bool bif ) const
         {
             auto retVal = QString( "Generating Thumbnail Videos<ul><li>%1</li>to<li>%2</li></ul>" ).arg( getDispName( processInfo->fOldName ) ).arg( getDispName( bif ? processInfo->fNewNames.front() : processInfo->fNewNames.back() ) );
             return retVal;
@@ -243,12 +237,12 @@ namespace NMediaManager
             return CDirModel::headers();
         }
 
-        void CGenerateBIFModel::postLoad( QTreeView * treeView )
+        void CGenerateBIFModel::postLoad( QTreeView *treeView )
         {
             CDirModel::postLoad( treeView );
         }
 
-        void CGenerateBIFModel::preLoad( QTreeView * treeView )
+        void CGenerateBIFModel::preLoad( QTreeView *treeView )
         {
             CDirModel::preLoad( treeView );
         }
@@ -259,18 +253,16 @@ namespace NMediaManager
                 progressDlg()->setValue( 0 );
         }
 
-        void CGenerateBIFModel::postFileFunction( bool /*aOK*/, const QFileInfo & /*fileInfo*/, TParentTree & /*tree*/ )
+        void CGenerateBIFModel::postFileFunction( bool /*aOK*/, const QFileInfo & /*fileInfo*/, TParentTree & /*tree*/, bool /*countOnly*/ )
         {
-
         }
 
-        bool CGenerateBIFModel::preFileFunction( const QFileInfo & fileInfo, std::unordered_set<QString> & /*alreadyAdded*/, TParentTree & /*tree*/ )
+        bool CGenerateBIFModel::preFileFunction( const QFileInfo &fileInfo, std::unordered_set< QString > & /*alreadyAdded*/, TParentTree & /*tree*/, bool /*countOnly*/ )
         {
             auto dir = fileInfo.absoluteDir();
             //qDebug() << fileInfo;
             if ( !fileInfo.exists() || !fileInfo.isFile() )
                 return false;
-
 
             bool needsBIF = false;
             if ( NPreferences::NCore::CPreferences::instance()->generateBIF() )
@@ -301,7 +293,7 @@ namespace NMediaManager
             return needsBIF || needsGIF;
         }
 
-        void CGenerateBIFModel::postDirFunction( bool aOK, const QFileInfo & dirInfo, TParentTree & parentTree )
+        void CGenerateBIFModel::postDirFunction( bool aOK, const QFileInfo &dirInfo, TParentTree &parentTree, bool /*countOnly*/ )
         {
             if ( !aOK )
                 return;
@@ -309,10 +301,8 @@ namespace NMediaManager
             (void)parentTree;
         }
 
-
         void CGenerateBIFModel::attachTreeNodes( QStandardItem * /*nextParent*/, QStandardItem *& /*prevParent*/, const STreeNode & /*treeNode*/ )
         {
-
         }
 
     }

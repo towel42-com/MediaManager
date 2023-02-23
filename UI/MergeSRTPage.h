@@ -38,7 +38,7 @@ namespace NMediaManager
         {
             Q_OBJECT
         public:
-            CMergeSRTPage( QWidget * parent = nullptr );
+            CMergeSRTPage( QWidget *parent = nullptr );
             virtual ~CMergeSRTPage() override;
 
             virtual bool useSecondaryProgressBar() const override { return true; }
@@ -51,8 +51,8 @@ namespace NMediaManager
             virtual QString actionCancelName() const override;
             virtual QString actionErrorName() const override;
 
-            virtual NModels::CDirModel * createDirModel() override;
-            virtual void postProcessLog( const QString & string ) override;
+            virtual NModels::CDirModel *createDirModel() override;
+            virtual void postProcessLog( const QString &string ) override;
         Q_SIGNALS:
         public Q_SLOTS:
         protected Q_SLOTS:
@@ -60,4 +60,4 @@ namespace NMediaManager
         };
     }
 }
-#endif 
+#endif

@@ -49,7 +49,7 @@ namespace NMediaManager
         {
             Q_OBJECT
         public:
-            CTransformPage( QWidget * parent = nullptr );
+            CTransformPage( QWidget *parent = nullptr );
             virtual ~CTransformPage() override;
 
             virtual bool useSecondaryProgressBar() const override { return false; }
@@ -61,42 +61,42 @@ namespace NMediaManager
             virtual QString actionCancelName() const override;
             virtual QString actionErrorName() const override;
 
-            virtual NModels::CDirModel * createDirModel() override;
+            virtual NModels::CDirModel *createDirModel() override;
             virtual void setupModel() override;
 
             virtual void postLoadFinished( bool canceled ) override;
             virtual void postNonQueuedRun( bool finalStep, bool canceled ) override;
 
-            virtual bool extendContextMenu( QMenu * menu, const QModelIndex & idx ) override;
+            virtual bool extendContextMenu( QMenu *menu, const QModelIndex &idx ) override;
 
-            virtual QMenu * menu() override;
+            virtual QMenu *menu() override;
         Q_SIGNALS:
         public Q_SLOTS:
         protected Q_SLOTS:
             void slotAutoSearchForNewNames();
-            void slotAutoSearchFinished( const QString & path, NCore::SSearchTMDBInfo * searchInfo, bool searchesRemaining );
+            void slotAutoSearchFinished( const QString &path, NCore::SSearchTMDBInfo *searchInfo, bool searchesRemaining );
             void slotMenuAboutToShow();
             virtual void slotPreferencesChanged( NPreferences::EPreferenceTypes prefTypes ) override;
 
         protected:
-            void manualSearch( const QModelIndex & idx );
+            void manualSearch( const QModelIndex &idx );
 
             virtual void loadSettings() override;
-            bool autoSearchForNewNames( const QModelIndex & rootIdx, bool searchChildren, std::optional< NCore::EMediaType > mediaType );
+            bool autoSearchForNewNames( const QModelIndex &rootIdx, bool searchChildren, std::optional< NCore::EMediaType > mediaType );
 
-            NModels::CTransformModel * model();
+            NModels::CTransformModel *model();
 
-            NCore::CSearchTMDB * fSearchTMDB{ nullptr };
+            NCore::CSearchTMDB *fSearchTMDB{ nullptr };
             uint64_t fSearchesCompleted{ 0 };
-            QMenu * fMenu{ nullptr };
-            QAction * fTreatAsTVShowByDefaultAction{ nullptr };
-            QAction * fExactMatchesOnlyAction{ nullptr };
-            QAction * fDeleteEXE{ nullptr };
-            QAction * fDeleteTXT{ nullptr };
-            QAction * fDeleteBAK{ nullptr };
-            QAction * fDeleteNFO{ nullptr };
-            QAction * fDeleteCustom{ nullptr };
+            QMenu *fMenu{ nullptr };
+            QAction *fTreatAsTVShowByDefaultAction{ nullptr };
+            QAction *fExactMatchesOnlyAction{ nullptr };
+            QAction *fDeleteEXE{ nullptr };
+            QAction *fDeleteTXT{ nullptr };
+            QAction *fDeleteBAK{ nullptr };
+            QAction *fDeleteNFO{ nullptr };
+            QAction *fDeleteCustom{ nullptr };
         };
     }
 }
-#endif 
+#endif

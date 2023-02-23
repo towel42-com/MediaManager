@@ -34,27 +34,31 @@ namespace NMediaManager
         namespace NUi
         {
             class CBasePrefPage;
-            namespace Ui { class CPreferences; };
+            namespace Ui
+            {
+                class CPreferences;
+            };
             class CPreferences : public QDialog
             {
                 Q_OBJECT
             public:
-                CPreferences( QWidget * parent = nullptr );
+                CPreferences( QWidget *parent = nullptr );
                 virtual ~CPreferences() override;
             public Q_SLOTS:
-                void slotPageSelectorCurrChanged( QTreeWidgetItem * current, QTreeWidgetItem * previous );
-                void slotPageSelectorItemActived( QTreeWidgetItem * item );
+                void slotPageSelectorCurrChanged( QTreeWidgetItem *current, QTreeWidgetItem *previous );
+                void slotPageSelectorItemActived( QTreeWidgetItem *item );
                 void slotPageSelectorSelectionChanged();
                 void slotValidatePreferences();
                 void slotApply();
                 void accept() override;
+
             private:
-                static QString keyForItem( QTreeWidgetItem * item );
+                static QString keyForItem( QTreeWidgetItem *item );
 
                 void loadSettings();
                 void saveSettings();
 
-                void addPage( CBasePrefPage * page );
+                void addPage( CBasePrefPage *page );
                 void loadPages();
 
                 std::unordered_map< QString, QTreeWidgetItem * > fItemMap;
@@ -64,4 +68,4 @@ namespace NMediaManager
         }
     }
 }
-#endif 
+#endif

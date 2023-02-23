@@ -48,15 +48,14 @@ namespace NMediaManager
         struct SSearchTMDBInfo
         {
             SSearchTMDBInfo();
-            SSearchTMDBInfo( const QString & searchString, std::shared_ptr< CTransformResult > titleInfo );
+            SSearchTMDBInfo( const QString &searchString, std::shared_ptr< CTransformResult > titleInfo );
 
             bool canSearch() const;
 
-
-            static bool hasDiskNumber( QString & searchString, int & diskNum, std::shared_ptr< CTransformResult > searchResult );
-            static EMediaType looksLikeTVShow( const QString & searchString, QString * titleStr, QString * seasonStr = nullptr, QString * episodeStr = nullptr, QString * extraStr = nullptr, bool movieOnUnknown=true );
-            static bool isRippedWithMKV( const QString & name, int * titleNum = nullptr );
-            static bool isRippedWithMKV( const QFileInfo & fi, int * titleNum = nullptr );
+            static bool hasDiskNumber( QString &searchString, int &diskNum, std::shared_ptr< CTransformResult > searchResult );
+            static EMediaType looksLikeTVShow( const QString &searchString, QString *titleStr, QString *seasonStr = nullptr, QString *episodeStr = nullptr, QString *extraStr = nullptr, bool movieOnUnknown = true );
+            static bool isRippedWithMKV( const QString &name, int *titleNum = nullptr );
+            static bool isRippedWithMKV( const QFileInfo &fi, int *titleNum = nullptr );
 
             void updateSearchCriteria( bool updateSearchBy );
 
@@ -67,7 +66,7 @@ namespace NMediaManager
 
             std::optional< std::pair< QUrl, ESearchType > > getSearchURL() const;
 
-            void setSearchName( const QString & searchName ) { fSearchName = searchName; }
+            void setSearchName( const QString &searchName ) { fSearchName = searchName; }
             QString searchName() const { return fSearchName; }
             QString subTitle() const { return fSubTitle; }
 
@@ -83,16 +82,16 @@ namespace NMediaManager
             bool searchByName() const { return fSearchByName; }
 
             void setPageNumber( int pageNumber );
-            void setReleaseDate( const QString & releaseDate );
+            void setReleaseDate( const QString &releaseDate );
             std::pair< QDate, QString > releaseDate() const { return fReleaseDate; }
-            int releaseYear( bool * aOK = nullptr ) const;
-            static int releaseYear( const QString & dateStr, bool * aOK = nullptr );
-            bool releaseDateSet()  const { return !fReleaseDate.second.isEmpty(); }
+            int releaseYear( bool *aOK = nullptr ) const;
+            static int releaseYear( const QString &dateStr, bool *aOK = nullptr );
+            bool releaseDateSet() const { return !fReleaseDate.second.isEmpty(); }
 
-            void setTMDBID( const QString & tmdbID ) { fTMDBID = tmdbID; }
+            void setTMDBID( const QString &tmdbID ) { fTMDBID = tmdbID; }
             QString tmdbIDString() const { return fTMDBID; }
-            int tmdbID( bool * aOK = nullptr ) const;
-            bool tmdbIDSet()  const { return !fTMDBID.isEmpty(); }
+            int tmdbID( bool *aOK = nullptr ) const;
+            bool tmdbIDSet() const { return !fTMDBID.isEmpty(); }
 
             int season() const { return fSeason; }
             void setSeason( int value ) { fSeason = value; }
@@ -100,7 +99,11 @@ namespace NMediaManager
             bool hasEpisodes() const { return !fEpisodes.empty(); }
             QString episodeString( bool forDebug ) const;
             std::list< int > episodes() const { return fEpisodes; }
-            void setEpisodes( const std::list< int > & value ) { fEpisodes = value; fEpisodes.sort(); }
+            void setEpisodes( const std::list< int > &value )
+            {
+                fEpisodes = value;
+                fEpisodes.sort();
+            }
 
             QString getExtendedInfo() const { return fFoundExtendedInfo; }
             QString toString( bool forDebug ) const;
@@ -108,24 +111,20 @@ namespace NMediaManager
             bool isMatch( std::shared_ptr< CTransformResult > searchResult ) const;
 
             template< typename T >
-            bool isMatch( const std::pair< QDate, QString > & releaseDate, const T & tmdbid, const QString & name ) const
+            bool isMatch( const std::pair< QDate, QString > &releaseDate, const T &tmdbid, const QString &name ) const
             {
-                auto retVal = ( tmdbIDSet() && isMatchingTMDBID( tmdbid ) )
-                    || ( isMatchingDate( releaseDate )
-                         && isMatchingTMDBID( tmdbid )
-                         && isMatchingName( name ) )
-                    ;
+                auto retVal = ( tmdbIDSet() && isMatchingTMDBID( tmdbid ) ) || ( isMatchingDate( releaseDate ) && isMatchingTMDBID( tmdbid ) && isMatchingName( name ) );
                 return retVal;
             }
 
             template< typename T >
-            bool isMatch( const QString & releaseDate, const T & tmdbid, const QString & name ) const
+            bool isMatch( const QString &releaseDate, const T &tmdbid, const QString &name ) const
             {
                 return isMatch( { NSABUtils::getDate( releaseDate ), releaseDate }, tmdbid, name );
             }
 
             template< typename T >
-            bool isMatch( const std::pair< QDate, QString > & releaseDate, const T & tmdbid, const QString & name, EMediaType mediaType, const T & season, const T & episode ) const
+            bool isMatch( const std::pair< QDate, QString > &releaseDate, const T &tmdbid, const QString &name, EMediaType mediaType, const T &season, const T &episode ) const
             {
                 bool retVal = isMatch( releaseDate, tmdbid, name ) && ( fMediaType.first == mediaType );
 
@@ -135,33 +134,33 @@ namespace NMediaManager
             }
 
             template< typename T >
-            bool isMatch( const QString & releaseDate, const T & tmdbid, const QString & name, EMediaType mediaType, const T & season, const T & episode ) const
+            bool isMatch( const QString &releaseDate, const T &tmdbid, const QString &name, EMediaType mediaType, const T &season, const T &episode ) const
             {
                 return isMatch( { NSABUtils::getDate( releaseDate ), releaseDate }, tmdbid, name, mediaType, season, episode );
             }
 
             bool isSeasonMatch( int seasonToMatch ) const;
-            bool isSeasonMatch( const QString & seasonToMatch ) const;
-            bool isEpisodeMatch( const std::list< int > & episodeMatch ) const;
-            bool isEpisodeMatch( const QString & episodeToMatch ) const;
+            bool isSeasonMatch( const QString &seasonToMatch ) const;
+            bool isEpisodeMatch( const std::list< int > &episodeMatch ) const;
+            bool isEpisodeMatch( const QString &episodeToMatch ) const;
+
         private:
-            std::list< int > episodesFromString( const QString & episodeStr, bool & aOK ) const;
+            std::list< int > episodesFromString( const QString &episodeStr, bool &aOK ) const;
 
             QStringList getSearchStrings() const;
 
-            bool isMatchingDate( const std::pair< QDate, QString > & releaseDate ) const;
+            bool isMatchingDate( const std::pair< QDate, QString > &releaseDate ) const;
             bool isMatchingTMDBID( int tmdbid ) const;
-            bool isMatchingTMDBID( const QString & tmdbd ) const;
-            bool isMatchingName( const QString & name ) const;
+            bool isMatchingTMDBID( const QString &tmdbd ) const;
+            bool isMatchingName( const QString &name ) const;
 
+            static QString stripExistingExtraInfo( const QString &string, QString &extended );
+            static QString stripKnownExtendedData( const QString &string, QString &extended );
+            static QString stripKnownData( const QString &string );
+            static QString replaceKnownAbbreviations( const QString &string );
 
-            static QString stripExistingExtraInfo( const QString & string, QString & extended );
-            static QString stripKnownExtendedData( const QString & string, QString & extended );
-            static QString stripKnownData( const QString & string );
-            static QString replaceKnownAbbreviations( const QString & string );
-
-            static QString smartTrim( const QString & string, bool stripInnerSeparators = false, bool checkForKnownHyphens = false );
-            static QStringList stripOutPositions( const QString & inString, const std::list< std::pair< int, int > > & positions );
+            static QString smartTrim( const QString &string, bool stripInnerSeparators = false, bool checkForKnownHyphens = false );
+            static QStringList stripOutPositions( const QString &inString, const std::list< std::pair< int, int > > &positions );
 
             QString fSearchName;
             std::pair< QDate, QString > fReleaseDate;
@@ -186,6 +185,6 @@ namespace NMediaManager
         };
     }
 }
-QDebug operator<<( QDebug debug, const NMediaManager::NCore::SSearchTMDBInfo & info );
+QDebug operator<<( QDebug debug, const NMediaManager::NCore::SSearchTMDBInfo &info );
 
-#endif 
+#endif

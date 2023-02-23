@@ -42,10 +42,10 @@ namespace NMediaManager
 {
     namespace NUi
     {
-        CTransformPage::CTransformPage( QWidget * parent )
-            : CBasePage( "Transform", parent )
+        CTransformPage::CTransformPage( QWidget *parent ) :
+            CBasePage( "Transform", parent )
         {
-            fSearchTMDB = new NCore::CSearchTMDB( nullptr, std::optional<QString>(), this );
+            fSearchTMDB = new NCore::CSearchTMDB( nullptr, std::optional< QString >(), this );
             fSearchTMDB->setSkipImages( true );
             connect( fSearchTMDB, &NCore::CSearchTMDB::sigAutoSearchFinished, this, &CTransformPage::slotAutoSearchFinished );
         }
@@ -60,12 +60,12 @@ namespace NMediaManager
             CBasePage::loadSettings();
         }
 
-        NMediaManager::NModels::CTransformModel * CTransformPage::model()
+        NMediaManager::NModels::CTransformModel *CTransformPage::model()
         {
             if ( !fModel )
                 return nullptr;
 
-            return dynamic_cast<NModels::CTransformModel *>( fModel.get() );
+            return dynamic_cast< NModels::CTransformModel * >( fModel.get() );
         }
 
         void CTransformPage::postNonQueuedRun( bool finalStep, bool canceled )
@@ -75,7 +75,7 @@ namespace NMediaManager
                 load( true );
         }
 
-        bool CTransformPage::extendContextMenu( QMenu * menu, const QModelIndex & idx )
+        bool CTransformPage::extendContextMenu( QMenu *menu, const QModelIndex &idx )
         {
             if ( !idx.isValid() )
                 return false;
@@ -83,51 +83,27 @@ namespace NMediaManager
             auto nameIdx = model()->index( idx.row(), NModels::EColumns::eFSName, idx.parent() );
 
             auto nm = nameIdx.data().toString();
-            auto action = menu->addAction( tr( "Search for '%1'..." ).arg( nm ),
-                                           [nameIdx, this]()
-                                           {
-                                               manualSearch( nameIdx );
-                                           } );
+            auto action = menu->addAction( tr( "Search for '%1'..." ).arg( nm ), [ nameIdx, this ]() { manualSearch( nameIdx ); } );
             menu->setDefaultAction( action );
 
             if ( model()->canAutoSearch( nameIdx, false ) )
             {
-                action = menu->addAction( tr( "Auto-Search for '%1'" ).arg( nm ),
-                                          [nameIdx, this]()
-                                          {
-                                              autoSearchForNewNames( nameIdx, false, {} );
-                                          } );
+                action = menu->addAction( tr( "Auto-Search for '%1'" ).arg( nm ), [ nameIdx, this ]() { autoSearchForNewNames( nameIdx, false, {} ); } );
             }
             menu->addSeparator();
 
             auto searchResult = model()->getTransformResult( nameIdx, false );
             if ( searchResult )
             {
-                menu->addAction( tr( "Clear Search Result" ),
-                                 [nameIdx, this]()
-                                 {
-                                     model()->clearSearchResult( nameIdx, false );
-                                 } );
+                menu->addAction( tr( "Clear Search Result" ), [ nameIdx, this ]() { model()->clearSearchResult( nameIdx, false ); } );
                 if ( model()->rowCount( nameIdx ) )
                 {
-                    menu->addAction( tr( "Clear Search Result (Including Children)" ),
-                                     [nameIdx, this]()
-                                     {
-                                         model()->clearSearchResult( nameIdx, true );
-                                     } );
+                    menu->addAction( tr( "Clear Search Result (Including Children)" ), [ nameIdx, this ]() { model()->clearSearchResult( nameIdx, true ); } );
 
-                    menu->addAction( tr( "Apply Search Results to Children" ),
-                                     [nameIdx, searchResult, this]()
-                                     {
-                                         model()->setSearchResult( nameIdx, searchResult, true, true );
-                                     } );
+                    menu->addAction( tr( "Apply Search Results to Children" ), [ nameIdx, searchResult, this ]() { model()->setSearchResult( nameIdx, searchResult, true, true ); } );
                 }
                 menu->addSeparator();
-                menu->addAction( tr( "Transform Item..." ),
-                                 [nameIdx, this]()
-                                 {
-                                     run( nameIdx );
-                                 } );
+                menu->addAction( tr( "Transform Item..." ), [ nameIdx, this ]() { run( nameIdx ); } );
             }
             return true;
         }
@@ -163,7 +139,7 @@ namespace NMediaManager
             }
         }
 
-        bool CTransformPage::autoSearchForNewNames( const QModelIndex & index, bool searchChildren, std::optional< NCore::EMediaType > mediaType )
+        bool CTransformPage::autoSearchForNewNames( const QModelIndex &index, bool searchChildren, std::optional< NCore::EMediaType > mediaType )
         {
             bool retVal = false;
 
@@ -244,7 +220,7 @@ namespace NMediaManager
             return retVal;
         }
 
-        void CTransformPage::slotAutoSearchFinished( const QString & path, NCore::SSearchTMDBInfo * searchInfo, bool searchesRemaining )
+        void CTransformPage::slotAutoSearchFinished( const QString &path, NCore::SSearchTMDBInfo *searchInfo, bool searchesRemaining )
         {
             auto results = fSearchTMDB->getResult( path );
             bool notFound = ( results.size() == 1 ) && results.front()->isNotFoundResult();
@@ -350,7 +326,7 @@ namespace NMediaManager
                 QTimer::singleShot( 0, this, &CTransformPage::slotAutoSearchForNewNames );
         }
 
-        NModels::CDirModel * CTransformPage::createDirModel()
+        NModels::CDirModel *CTransformPage::createDirModel()
         {
             return new NModels::CTransformModel( this );
         }
@@ -380,7 +356,6 @@ namespace NMediaManager
             return tr( "Error while Transforming Media:" );
         }
 
-
         void CTransformPage::setupModel()
         {
             model()->slotTVOutputFilePatternChanged( NPreferences::NCore::CPreferences::instance()->getTVOutFilePattern() );
@@ -391,7 +366,7 @@ namespace NMediaManager
             CBasePage::setupModel();
         }
 
-        void CTransformPage::manualSearch( const QModelIndex & idx )
+        void CTransformPage::manualSearch( const QModelIndex &idx )
         {
             auto baseIdx = model()->index( idx.row(), NModels::EColumns::eFSName, idx.parent() );
             auto titleInfo = model()->getTransformResult( idx, true );
@@ -416,7 +391,7 @@ namespace NMediaManager
             emit sigDialogClosed();
         }
 
-        QMenu * CTransformPage::menu()
+        QMenu *CTransformPage::menu()
         {
             if ( !fMenu )
             {
@@ -429,76 +404,48 @@ namespace NMediaManager
                 fExactMatchesOnlyAction->setObjectName( QString::fromUtf8( "actionExactMatchesOnly" ) );
                 fExactMatchesOnlyAction->setCheckable( true );
                 fExactMatchesOnlyAction->setText( QCoreApplication::translate( "NMediaManager::NUi::CMainWindow", "Exact Matches Only?", nullptr ) );
-                connect( fExactMatchesOnlyAction, &QAction::triggered, [this]()
-                         {
-                             NPreferences::NCore::CPreferences::instance()->setExactMatchesOnly( fExactMatchesOnlyAction->isChecked() );
-                         }
-                );
+                connect( fExactMatchesOnlyAction, &QAction::triggered, [ this ]() { NPreferences::NCore::CPreferences::instance()->setExactMatchesOnly( fExactMatchesOnlyAction->isChecked() ); } );
 
                 fTreatAsTVShowByDefaultAction = new QAction( this );
                 fTreatAsTVShowByDefaultAction->setObjectName( QString::fromUtf8( "actionTreatAsTVShowByDefault" ) );
                 fTreatAsTVShowByDefaultAction->setCheckable( true );
                 fTreatAsTVShowByDefaultAction->setText( QCoreApplication::translate( "NMediaManager::NUi::CMainWindow", "Treat as TV Show by Default?", nullptr ) );
-                connect( fTreatAsTVShowByDefaultAction, &QAction::triggered, [this]()
-                         {
-                             NPreferences::NCore::CPreferences::instance()->setTreatAsTVShowByDefault( fTreatAsTVShowByDefaultAction->isChecked() );
-                         }
-                );
+                connect( fTreatAsTVShowByDefaultAction, &QAction::triggered, [ this ]() { NPreferences::NCore::CPreferences::instance()->setTreatAsTVShowByDefault( fTreatAsTVShowByDefaultAction->isChecked() ); } );
 
                 fDeleteEXE = new QAction( this );
                 fDeleteEXE->setObjectName( QString::fromUtf8( "actionDeleteKnownPathEXEs" ) );
                 fDeleteEXE->setCheckable( true );
                 fDeleteEXE->setChecked( NPreferences::NCore::CPreferences::instance()->deleteEXE() );
                 fDeleteEXE->setText( QCoreApplication::translate( "NMediaManager::NUi::CMainWindow", "Delete Executables (*.exe)?", nullptr ) );
-                connect( fDeleteEXE, &QAction::triggered, [this]()
-                         {
-                             NPreferences::NCore::CPreferences::instance()->setDeleteEXE( fDeleteEXE->isChecked() );
-                         }
-                );
+                connect( fDeleteEXE, &QAction::triggered, [ this ]() { NPreferences::NCore::CPreferences::instance()->setDeleteEXE( fDeleteEXE->isChecked() ); } );
 
                 fDeleteTXT = new QAction( this );
                 fDeleteTXT->setObjectName( QString::fromUtf8( "actionDeleteKnownPathTXTs" ) );
                 fDeleteTXT->setCheckable( true );
                 fDeleteTXT->setChecked( NPreferences::NCore::CPreferences::instance()->deleteTXT() );
                 fDeleteTXT->setText( QCoreApplication::translate( "NMediaManager::NUi::CMainWindow", "Delete Text Files (*.txt)?", nullptr ) );
-                connect( fDeleteTXT, &QAction::triggered, [this]()
-                         {
-                             NPreferences::NCore::CPreferences::instance()->setDeleteTXT( fDeleteTXT->isChecked() );
-                         }
-                );
+                connect( fDeleteTXT, &QAction::triggered, [ this ]() { NPreferences::NCore::CPreferences::instance()->setDeleteTXT( fDeleteTXT->isChecked() ); } );
 
                 fDeleteBAK = new QAction( this );
                 fDeleteBAK->setObjectName( QString::fromUtf8( "actionDeleteKnownPathBAKs" ) );
                 fDeleteBAK->setCheckable( true );
                 fDeleteBAK->setChecked( NPreferences::NCore::CPreferences::instance()->deleteBAK() );
                 fDeleteBAK->setText( QCoreApplication::translate( "NMediaManager::NUi::CMainWindow", "Delete Backup Files (*.bak)?", nullptr ) );
-                connect( fDeleteBAK, &QAction::triggered, [this]()
-                         {
-                             NPreferences::NCore::CPreferences::instance()->setDeleteBAK( fDeleteBAK->isChecked() );
-                         }
-                );
+                connect( fDeleteBAK, &QAction::triggered, [ this ]() { NPreferences::NCore::CPreferences::instance()->setDeleteBAK( fDeleteBAK->isChecked() ); } );
 
                 fDeleteNFO = new QAction( this );
                 fDeleteNFO->setObjectName( QString::fromUtf8( "actionDeleteKnownPathNFOs" ) );
                 fDeleteNFO->setCheckable( true );
                 fDeleteNFO->setChecked( NPreferences::NCore::CPreferences::instance()->deleteNFO() );
                 fDeleteNFO->setText( QCoreApplication::translate( "NMediaManager::NUi::CMainWindow", "Delete NFO Files (*.nfo)?", nullptr ) );
-                connect( fDeleteNFO, &QAction::triggered, [this]()
-                         {
-                             NPreferences::NCore::CPreferences::instance()->setDeleteNFO( fDeleteNFO->isChecked() );
-                         }
-                );
+                connect( fDeleteNFO, &QAction::triggered, [ this ]() { NPreferences::NCore::CPreferences::instance()->setDeleteNFO( fDeleteNFO->isChecked() ); } );
 
                 fDeleteCustom = new QAction( this );
                 fDeleteCustom->setObjectName( QString::fromUtf8( "actionDeleteKnownPathCustoms" ) );
                 fDeleteCustom->setCheckable( true );
                 fDeleteCustom->setChecked( NPreferences::NCore::CPreferences::instance()->deleteCustom() );
                 fDeleteCustom->setText( QCoreApplication::translate( "NMediaManager::NUi::CMainWindow", "Delete Custom Known Paths?", nullptr ) );
-                connect( fDeleteCustom, &QAction::triggered, [this]()
-                         {
-                             NPreferences::NCore::CPreferences::instance()->setDeleteCustom( fDeleteCustom->isChecked() );
-                         }
-                );
+                connect( fDeleteCustom, &QAction::triggered, [ this ]() { NPreferences::NCore::CPreferences::instance()->setDeleteCustom( fDeleteCustom->isChecked() ); } );
 
                 auto deleteKnownMenu = new QMenu( this );
                 deleteKnownMenu->setObjectName( "DeleteKnownMenu" );
@@ -539,5 +486,3 @@ namespace NMediaManager
         }
     }
 }
-
-

@@ -33,7 +33,7 @@ namespace NMediaManager
 {
     namespace NModels
     {
-        CMakeMKVModel::CMakeMKVModel( NUi::CBasePage * page, QObject * parent /*= 0*/ ) :
+        CMakeMKVModel::CMakeMKVModel( NUi::CBasePage *page, QObject *parent /*= 0*/ ) :
             CDirModel( page, parent )
         {
         }
@@ -47,7 +47,7 @@ namespace NMediaManager
             return NPreferences::NCore::CPreferences::instance()->getNonMKVMediaExtensions();
         }
 
-        std::pair< bool, QStandardItem * > CMakeMKVModel::processItem( const QStandardItem * item, bool displayOnly )
+        std::pair< bool, QStandardItem * > CMakeMKVModel::processItem( const QStandardItem *item, bool displayOnly )
         {
             if ( item->data( ECustomRoles::eIsDir ).toBool() )
                 return std::make_pair( true, nullptr );
@@ -62,16 +62,17 @@ namespace NMediaManager
             processInfo.fItem->setData( processInfo.fNewNames, ECustomRoles::eNewName );
 
             bool aOK = true;
-            QStandardItem * myItem = nullptr;
+            QStandardItem *myItem = nullptr;
             fFirstProcess = true;
             if ( !displayOnly )
             {
-                processInfo.fMaximum = NSABUtils::getNumberOfSeconds( processInfo.fOldName );;
+                processInfo.fMaximum = NSABUtils::getNumberOfSeconds( processInfo.fOldName );
+                ;
 
                 processInfo.fCmd = NPreferences::NCore::CPreferences::instance()->getFFMpegEXE();
                 if ( processInfo.fCmd.isEmpty() || !QFileInfo( processInfo.fCmd ).isExecutable() )
                 {
-                    QStandardItem * errorItem = nullptr;
+                    QStandardItem *errorItem = nullptr;
                     if ( processInfo.fCmd.isEmpty() )
                         appendError( processInfo.fItem, tr( "ffmpeg is not set properly" ) );
                     else
@@ -82,15 +83,13 @@ namespace NMediaManager
                 aOK = aOK && checkProcessItemExists( processInfo.fOldName, processInfo.fItem );
                 processInfo.fTimeStamps = NSABUtils::NFileUtils::timeStamps( processInfo.fOldName );
 
-                processInfo.fArgs = QStringList()
-                    << "-y"
-                    << "-fflags"
-                    << "+genpts"
-                    << "-i"
-                    << processInfo.fOldName
-                    << "-c:v" << "copy"
-                    << "-c:a" << "copy"
-                    << processInfo.fNewNames;
+                processInfo.fArgs = QStringList() << "-y"
+                                                  << "-fflags"
+                                                  << "+genpts"
+                                                  << "-i" << processInfo.fOldName << "-c:v"
+                                                  << "copy"
+                                                  << "-c:a"
+                                                  << "copy" << processInfo.fNewNames;
                 fProcessQueue.push_back( processInfo );
                 QTimer::singleShot( 0, this, &CDirModel::slotRunNextProcessInQueue );
             }
@@ -98,7 +97,7 @@ namespace NMediaManager
             return std::make_pair( aOK, myItem );
         }
 
-        QString CMakeMKVModel::getProgressLabel( const SProcessInfo & processInfo ) const
+        QString CMakeMKVModel::getProgressLabel( const SProcessInfo &processInfo ) const
         {
             auto retVal = QString( "Converting to MKV<ul><li>%1</li>to<li>%2</li></ul>" ).arg( getDispName( processInfo.fOldName ) ).arg( getDispName( processInfo.fNewNames.front() ) );
             return retVal;
@@ -106,17 +105,16 @@ namespace NMediaManager
 
         QStringList CMakeMKVModel::headers() const
         {
-            return CDirModel::headers()
-                << getMediaHeaders();
+            return CDirModel::headers() << getMediaHeaders();
             ;
         }
 
-        void CMakeMKVModel::postLoad( QTreeView * treeView )
+        void CMakeMKVModel::postLoad( QTreeView *treeView )
         {
             CDirModel::postLoad( treeView );
         }
 
-        void CMakeMKVModel::preLoad( QTreeView * treeView )
+        void CMakeMKVModel::preLoad( QTreeView *treeView )
         {
             CDirModel::preLoad( treeView );
         }
@@ -127,19 +125,17 @@ namespace NMediaManager
                 progressDlg()->setValue( 0 );
         }
 
-        void CMakeMKVModel::postFileFunction( bool /*aOK*/, const QFileInfo & /*fileInfo*/, TParentTree & /*tree*/ )
+        void CMakeMKVModel::postFileFunction( bool /*aOK*/, const QFileInfo & /*fileInfo*/, TParentTree & /*tree*/, bool /*countOnly*/ )
         {
-
         }
 
-        bool CMakeMKVModel::preFileFunction( const QFileInfo & /*fileInfo*/, std::unordered_set<QString> & /*alreadyAdded*/, TParentTree & /*tree*/ )
+        bool CMakeMKVModel::preFileFunction( const QFileInfo & /*fileInfo*/, std::unordered_set< QString > & /*alreadyAdded*/, TParentTree & /*tree*/, bool /*countOnly*/ )
         {
             return true;
         }
 
         void CMakeMKVModel::attachTreeNodes( QStandardItem * /*nextParent*/, QStandardItem *& /*prevParent*/, const STreeNode & /*treeNode*/ )
         {
-
         }
 
     }

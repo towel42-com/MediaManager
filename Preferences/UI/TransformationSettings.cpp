@@ -42,8 +42,8 @@ namespace NMediaManager
     {
         namespace NUi
         {
-            CTransformationSettings::CTransformationSettings( QWidget * parent )
-                : CBasePrefPage( parent ),
+            CTransformationSettings::CTransformationSettings( QWidget *parent ) :
+                CBasePrefPage( parent ),
                 fImpl( new Ui::CTransformationSettings )
             {
                 fImpl->setupUi( this );

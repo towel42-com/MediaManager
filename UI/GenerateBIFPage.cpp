@@ -32,8 +32,8 @@ namespace NMediaManager
 {
     namespace NUi
     {
-        CGenerateBIFPage::CGenerateBIFPage( QWidget * parent )
-            : CBasePage( "Generate Thumbnail Videos", parent )
+        CGenerateBIFPage::CGenerateBIFPage( QWidget *parent ) :
+            CBasePage( "Generate Thumbnail Videos", parent )
         {
         }
 
@@ -41,7 +41,7 @@ namespace NMediaManager
         {
         }
 
-        NModels::CDirModel * CGenerateBIFPage::createDirModel()
+        NModels::CDirModel *CGenerateBIFPage::createDirModel()
         {
             return new NModels::CGenerateBIFModel( this );
         }
@@ -76,7 +76,7 @@ namespace NMediaManager
             return tr( "Error while Generating Thumbnail Videos:" );
         }
 
-        void CGenerateBIFPage::postProcessLog( const QString & string )
+        void CGenerateBIFPage::postProcessLog( const QString &string )
         {
             // Skip-Option - Write output: pkt_pts_time:2570 pkt_dts_time:2570 input_pts_time:2570.2
             // time=00:00:00.00
@@ -105,4 +105,3 @@ namespace NMediaManager
         }
     }
 }
-

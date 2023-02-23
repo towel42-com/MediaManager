@@ -31,20 +31,20 @@ namespace NMediaManager
     {
         namespace NUi
         {
-            namespace Ui { class CSearchSettings; };
+            namespace Ui
+            {
+                class CSearchSettings;
+            };
             class CSearchSettings : public CBasePrefPage
             {
                 Q_OBJECT
             public:
-                CSearchSettings( QWidget * parent = nullptr );
+                CSearchSettings( QWidget *parent = nullptr );
                 ~CSearchSettings() override;
 
                 virtual void load() override;
                 virtual void save() override;
-                virtual QStringList pageName() const override
-                {
-                    return QStringList( { "Search Settings" } );
-                }
+                virtual QStringList pageName() const override { return QStringList( { "Search Settings" } ); }
             public Q_SLOTS:
             private:
                 std::unique_ptr< Ui::CSearchSettings > fImpl;
@@ -52,4 +52,4 @@ namespace NMediaManager
         }
     }
 }
-#endif 
+#endif

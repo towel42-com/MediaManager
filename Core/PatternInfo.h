@@ -32,18 +32,19 @@ namespace NMediaManager
     {
         struct SPatternInfo
         {
-            bool isValidName( const QString & name, bool isDir ) const;
-            bool isValidName( const QFileInfo & fi ) const;
+            bool isValidName( const QString &name, bool isDir ) const;
+            bool isValidName( const QFileInfo &fi ) const;
 
             QString dirPattern() const { return fDirPattern; }
             void setDirPattern( QString val ) { fDirPattern = val; }
 
             QString filePattern() const { return fFilePattern; }
             void setFilePattern( QString val ) { fFilePattern = val; }
+
         private:
             QString fDirPattern;
             QString fFilePattern;
         };
     }
 }
-#endif // 
+#endif   //

@@ -39,20 +39,20 @@ namespace NMediaManager
     {
         namespace NUi
         {
-            namespace Ui { class CTVShowSettings; };
+            namespace Ui
+            {
+                class CTVShowSettings;
+            };
             class CTVShowSettings : public CBasePrefPage
             {
                 Q_OBJECT
             public:
-                CTVShowSettings( QWidget * parent = nullptr );
+                CTVShowSettings( QWidget *parent = nullptr );
                 virtual ~CTVShowSettings() override;
 
                 virtual void load() override;
                 virtual void save() override;
-                virtual QStringList pageName() const override
-                {
-                    return QStringList( { "Transformation Settings", "TV Shows" } );
-                }
+                virtual QStringList pageName() const override { return QStringList( { "Transformation Settings", "TV Shows" } ); }
             public Q_SLOTS:
             private:
                 std::unique_ptr< Ui::CTVShowSettings > fImpl;
@@ -60,4 +60,4 @@ namespace NMediaManager
         }
     }
 }
-#endif 
+#endif

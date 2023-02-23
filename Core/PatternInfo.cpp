@@ -33,7 +33,7 @@ namespace NMediaManager
 {
     namespace NCore
     {
-        QString patternToRegExp( const QString & captureName, const QString & inPattern, const QString & value, bool removeOptional )
+        QString patternToRegExp( const QString &captureName, const QString &inPattern, const QString &value, bool removeOptional )
         {
             if ( captureName.isEmpty() || inPattern.isEmpty() )
                 return inPattern;
@@ -51,7 +51,7 @@ namespace NMediaManager
             return retVal;
         }
 
-        QString patternToRegExp( const QString & pattern, bool removeOptional )
+        QString patternToRegExp( const QString &pattern, bool removeOptional )
         {
             QString retVal = pattern;
             retVal.replace( "(", "\\(" );
@@ -69,32 +69,25 @@ namespace NMediaManager
             return retVal;
         }
 
-        bool SPatternInfo::isValidName( const QFileInfo & fi ) const
+        bool SPatternInfo::isValidName( const QFileInfo &fi ) const
         {
             return isValidName( fi.fileName(), fi.isDir() );
         }
 
-        bool SPatternInfo::isValidName( const QString & name, bool isDir ) const
+        bool SPatternInfo::isValidName( const QString &name, bool isDir ) const
         {
             if ( name.isEmpty() )
                 return false;
             QStringList patterns;
             if ( isDir )
             {
-                patterns
-                    << patternToRegExp( dirPattern(), true )
-                    << patternToRegExp( dirPattern(), false )
-                    << "(.*)\\s\\(((\\d{2}){1,2}\\))\\s(-\\s(.*)\\s)?\\[(tmdbid=\\d+)|(imdbid=tt.*)\\]"
-                    ;
+                patterns << patternToRegExp( dirPattern(), true ) << patternToRegExp( dirPattern(), false ) << "(.*)\\s\\(((\\d{2}){1,2}\\))\\s(-\\s(.*)\\s)?\\[(tmdbid=\\d+)|(imdbid=tt.*)\\]";
             }
             else
             {
-                patterns
-                    << patternToRegExp( filePattern(), true )
-                    << patternToRegExp( filePattern(), false )
-                    ;
+                patterns << patternToRegExp( filePattern(), true ) << patternToRegExp( filePattern(), false );
             }
-            for ( auto && ii : patterns )
+            for ( auto &&ii : patterns )
             {
                 QRegularExpression regExp( ii );
                 if ( !ii.isEmpty() && regExp.match( name ).hasMatch() )

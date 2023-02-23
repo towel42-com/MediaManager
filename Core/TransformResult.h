@@ -68,11 +68,11 @@ namespace NMediaManager
         public:
             CTransformResult( EMediaType type );
 
-            void mergeEpisodeResults( const std::shared_ptr< CTransformResult > & rhs );
+            void mergeEpisodeResults( const std::shared_ptr< CTransformResult > &rhs );
 
-            bool isTVShow() const { return mediaType() != EMediaType::eMovie; } // tvshow, season or episode are all not movie
-            bool isDeleteResult() const { return mediaType() == EMediaType::eDeleteFileType; } // tvshow, season or episode are all not movie
-            bool isNotFoundResult() const { return mediaType() == EMediaType::eNotFoundType; } // search not found
+            bool isTVShow() const { return mediaType() != EMediaType::eMovie; }   // tvshow, season or episode are all not movie
+            bool isDeleteResult() const { return mediaType() == EMediaType::eDeleteFileType; }   // tvshow, season or episode are all not movie
+            bool isNotFoundResult() const { return mediaType() == EMediaType::eNotFoundType; }   // search not found
             QString getTitle() const;
             QString getMovieReleaseYear() const;
             QString getShowFirstAirYear() const;
@@ -97,100 +97,95 @@ namespace NMediaManager
             bool isNoMatch() const;
             bool isDeleteThis() const;
 
-            static bool isNoItems( const QString & text );
+            static bool isNoItems( const QString &text );
             static QString getNoItems();
 
-            static bool isNoMatch( const QString & text );
+            static bool isNoMatch( const QString &text );
             static QString getNoMatch();
 
-            static bool isDeleteThis( const QString & text );
+            static bool isDeleteThis( const QString &text );
             static QString getDeleteThis();
 
-            static bool isAutoSetText( const QString & text );
+            static bool isAutoSetText( const QString &text );
             bool isAutoSetText() const;
 
-            QString transformedName( const QFileInfo & fileInfo, const SPatternInfo & info, bool titleOnly ) const;
+            QString transformedName( const QFileInfo &fileInfo, const SPatternInfo &info, bool titleOnly ) const;
             void removeChild( std::shared_ptr< CTransformResult > info );
 
             QString toString( bool forDebug ) const;
             [[nodiscard]] QString getMyText( ETitleInfo which ) const;
             [[nodiscard]] QString getText( ETitleInfo which, bool forceTop = false ) const;
 
-            bool isBetterMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr<CTransformResult> rhs ) const;
+            bool isBetterMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr< CTransformResult > rhs ) const;
 
-            const CTransformResult * getTVShowInfo() const; // not to be saved, only used and ignored
+            const CTransformResult *getTVShowInfo() const;   // not to be saved, only used and ignored
 
-            void setMovieReleaseDate( const QString & date );
-            void setShowFirstAirDate( const QString & date );
-            void setSeasonStartDate( const QString & date );
-            void setEpisodeAirDate( const QString & date );
+            void setMovieReleaseDate( const QString &date );
+            void setShowFirstAirDate( const QString &date );
+            void setSeasonStartDate( const QString &date );
+            void setEpisodeAirDate( const QString &date );
 
-            void setMovieReleaseDate( const std::pair< QDate, QString > & date ) { fMovieReleaseDate = date; }
-            void setShowFirstAirDate( const std::pair< QDate, QString > & date ) { fShowFirstAirDate = date; }
-            void setSeasonStartDate( const std::pair< QDate, QString > & date ) { fSeasonStartDate = date; }
-            void setEpisodeAirDate( const std::pair< QDate, QString > & date ) { fEpisodeAirDate = date; }
+            void setMovieReleaseDate( const std::pair< QDate, QString > &date ) { fMovieReleaseDate = date; }
+            void setShowFirstAirDate( const std::pair< QDate, QString > &date ) { fShowFirstAirDate = date; }
+            void setSeasonStartDate( const std::pair< QDate, QString > &date ) { fSeasonStartDate = date; }
+            void setEpisodeAirDate( const std::pair< QDate, QString > &date ) { fEpisodeAirDate = date; }
 
-            [[nodiscard]] static QString cleanFileName( const QString & inFile, bool isDir );
-            [[nodiscard]] static QString cleanFileName( const QFileInfo & fi );
+            [[nodiscard]] static QString cleanFileName( const QString &inFile, bool isDir );
+            [[nodiscard]] static QString cleanFileName( const QFileInfo &fi );
 
-            bool operator==( const CTransformResult & rhs ) const;
+            bool operator==( const CTransformResult &rhs ) const;
 
-            void setParent( std::shared_ptr< CTransformResult > parent )
-            {
-                fParent = parent;
-            }
+            void setParent( std::shared_ptr< CTransformResult > parent ) { fParent = parent; }
 
             bool hasChildren() const { return !fChildren.empty(); }
-            void addChild( std::shared_ptr< CTransformResult > child )
-            {
-                fChildren.push_back( child );
-            }
+            void addChild( std::shared_ptr< CTransformResult > child ) { fChildren.push_back( child ); }
 
             void onAllChildren( std::function< void( std::shared_ptr< CTransformResult > child ) > func, std::function< bool() > stopFunc );
 
             QString diskNum() const { return fDiskNum; }
             //void setDiskNum( const QString & val ) { fDiskNum = val; }
 
-            std::weak_ptr<NMediaManager::NCore::CTransformResult> parent() const { return fParent; }
+            std::weak_ptr< NMediaManager::NCore::CTransformResult > parent() const { return fParent; }
             //void setParent( std::weak_ptr<NMediaManager::NCore::CTransformResult> val ) { fParent = val; }
 
             QString description() const { return fDescription; }
-            void setDescription( const QString & val ) { fDescription = val; }
+            void setDescription( const QString &val ) { fDescription = val; }
 
             QString title() const { return fTitle; }
-            void setTitle( const QString & val );
+            void setTitle( const QString &val );
 
             QString tmdbID() const { return fTMDBID; }
-            void setTMDBID( const QString & val ) { fTMDBID = val; }
+            void setTMDBID( const QString &val ) { fTMDBID = val; }
 
             QString showTMDBID() const { return fShowTMDBID; }
-            void setShowTMDBID( const QString & val ) { fShowTMDBID = val; }
+            void setShowTMDBID( const QString &val ) { fShowTMDBID = val; }
 
             QString seasonTMDBID() const { return fSeasonTMDBID; }
-            void setSeasonTMDBID( const QString & val ) { fSeasonTMDBID = val; }
+            void setSeasonTMDBID( const QString &val ) { fSeasonTMDBID = val; }
 
             QString episodeTMDBID() const { return fEpisodeTMDBID; }
-            void setEpisodeTMDBID( const QString & val ) { fEpisodeTMDBID = val; }
+            void setEpisodeTMDBID( const QString &val ) { fEpisodeTMDBID = val; }
 
             QString extraInfo() const { return fExtraInfo; }
-            void setExtraInfo( const QString & val ) { fExtraInfo = val; }
+            void setExtraInfo( const QString &val ) { fExtraInfo = val; }
 
             QString season() const { return fSeason; }
-            void setSeason( const QString & val ) { fSeason = val; }
+            void setSeason( const QString &val ) { fSeason = val; }
 
             QString episode() const { return fEpisode; }
-            void setEpisode( const QString & val ) { fEpisode = val; }
+            void setEpisode( const QString &val ) { fEpisode = val; }
 
             QString subTitle() const { return fSubTitle; }
-            void setSubTitle( const QString & val ) { fSubTitle = val; }
+            void setSubTitle( const QString &val ) { fSubTitle = val; }
 
             QPixmap pixmap() const { return fPixmap; }
-            void setPixmap( const QPixmap & val ) { fPixmap = val; }
-            void setPixmapPath( const QString & path ) { fPixmapPath = path; }
+            void setPixmap( const QPixmap &val ) { fPixmap = val; }
+            void setPixmapPath( const QString &path ) { fPixmapPath = path; }
             bool pixmapFinished() const { return !fPixmap.isNull() || fPixmapPath.isEmpty(); }
 
             NMediaManager::NCore::EMediaType mediaType() const { return fMediaType; }
             void setMediaType( NMediaManager::NCore::EMediaType val ) { fMediaType = val; }
+
         private:
             QString fTitle;
             QString fTMDBID;
@@ -215,14 +210,15 @@ namespace NMediaManager
 
             EMediaType fMediaType;
 
-            std::weak_ptr < CTransformResult > fParent;
+            std::weak_ptr< CTransformResult > fParent;
             std::list< std::shared_ptr< CTransformResult > > fChildren;
             std::list< std::shared_ptr< CTransformResult > > fExtraEpisodes;
+
         private:
-            bool isBetterTitleMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr<CTransformResult> rhs ) const;
+            bool isBetterTitleMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr< CTransformResult > rhs ) const;
             bool isBetterSeasonMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr< CTransformResult > rhs ) const;
             bool isBetterEpisodeMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr< CTransformResult > rhs ) const;
         };
     }
 }
-#endif // 
+#endif   //

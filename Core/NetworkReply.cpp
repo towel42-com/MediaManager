@@ -44,15 +44,24 @@ namespace NMediaManager
         {
             switch ( requestType )
             {
-                case ERequestType::eUnknownRequest: return "Unknown";
-                case ERequestType::eConfig: return "Config";
-                case ERequestType::eTVSearch: return "TV Search";
-                case ERequestType::eMovieSearch: return "Movie Search";
-                case ERequestType::eGetImage: return "Get Image";
-                case ERequestType::eGetMovie: return "Get Movie";
-                case ERequestType::eGetTVShow: return "Get TV Show";
-                case ERequestType::eSeasonInfo: return "Get Season Info";
-                case ERequestType::eTVInfo: return "Get TV Info";
+                case ERequestType::eUnknownRequest:
+                    return "Unknown";
+                case ERequestType::eConfig:
+                    return "Config";
+                case ERequestType::eTVSearch:
+                    return "TV Search";
+                case ERequestType::eMovieSearch:
+                    return "Movie Search";
+                case ERequestType::eGetImage:
+                    return "Get Image";
+                case ERequestType::eGetMovie:
+                    return "Get Movie";
+                case ERequestType::eGetTVShow:
+                    return "Get TV Show";
+                case ERequestType::eSeasonInfo:
+                    return "Get Season Info";
+                case ERequestType::eTVInfo:
+                    return "Get TV Info";
             }
             return QString();
         };
@@ -61,7 +70,7 @@ namespace NMediaManager
         {
         }
 
-        CNetworkReply::CNetworkReply( ERequestType requestType, QNetworkReply * reply ) :
+        CNetworkReply::CNetworkReply( ERequestType requestType, QNetworkReply *reply ) :
             fRequestType( requestType ),
             fReply( reply )
         {
@@ -69,7 +78,7 @@ namespace NMediaManager
             fURLPathKey = key( reply->url(), requestType, fTMDBID );
         }
 
-        CNetworkReply::CNetworkReply( ERequestType requestType, const QString & urlPathKey, const QByteArray & data ) :
+        CNetworkReply::CNetworkReply( ERequestType requestType, const QString &urlPathKey, const QByteArray &data ) :
             fRequestType( requestType ),
             fURLPathKey( urlPathKey ),
             fCachedData( data )
@@ -82,7 +91,7 @@ namespace NMediaManager
             return fTMDBID;
         }
 
-        QString CNetworkReply::tmdbFromKey( const QString & key )
+        QString CNetworkReply::tmdbFromKey( const QString &key )
         {
             auto tmp = key.split( "__" );
             if ( tmp.length() != 3 )
@@ -90,7 +99,7 @@ namespace NMediaManager
             return tmp[ 2 ];
         }
 
-        QString CNetworkReply::tmdbFromUrl( const QUrl & url )
+        QString CNetworkReply::tmdbFromUrl( const QUrl &url )
         {
             auto path = url.path();
             auto tmdbid = path.mid( path.lastIndexOf( '/' ) + 1 );
@@ -102,23 +111,22 @@ namespace NMediaManager
             return fReply || ( fRequestType != ERequestType::eUnknownRequest );
         }
 
-
-        QString CNetworkReply::key( const QUrl & url, ERequestType type, const QString & tmdb )
+        QString CNetworkReply::key( const QUrl &url, ERequestType type, const QString &tmdb )
         {
             return NCore::toString( type ) + "__" + url.toString( QUrl::PrettyDecoded | QUrl::RemoveScheme | QUrl::RemoveAuthority ) + "__" + tmdb;
         }
 
-        QString CNetworkReply::key( const QNetworkRequest & request, ERequestType type, const QString & tmdb )
+        QString CNetworkReply::key( const QNetworkRequest &request, ERequestType type, const QString &tmdb )
         {
             return key( request.url(), type, tmdb );
         }
 
-        QString CNetworkReply::key( const QNetworkRequest & request, ERequestType type )
+        QString CNetworkReply::key( const QNetworkRequest &request, ERequestType type )
         {
             return key( request.url(), type, tmdbFromUrl( request.url() ) );
         }
 
-        QString CNetworkReply::key( const QUrl & url, ERequestType type )
+        QString CNetworkReply::key( const QUrl &url, ERequestType type )
         {
             return key( url, type, tmdbFromUrl( url ) );
         }
@@ -143,14 +151,14 @@ namespace NMediaManager
             return isReply( otherReply.get() );
         }
 
-        bool CNetworkReply::isReply( const CNetworkReply * otherReply ) const
+        bool CNetworkReply::isReply( const CNetworkReply *otherReply ) const
         {
             if ( !otherReply )
                 return false;
             return *this == *otherReply;
         }
 
-        bool CNetworkReply::operator==( const CNetworkReply & otherReply ) const
+        bool CNetworkReply::operator==( const CNetworkReply &otherReply ) const
         {
             if ( fReply == otherReply.fReply )
                 return true;
@@ -166,10 +174,10 @@ namespace NMediaManager
 
         std::size_t CNetworkReply::hash() const
         {
-            auto h1 = std::hash<ERequestType>()( fRequestType );
-            auto h2 = std::hash<QString>()( fURLPathKey );
-            auto h3 = std::hash<QString>()( fTMDBID );
-            return NSABUtils::HashCombine( { h1, h2, h3 } ); // as a key, it only depends on the URL and type
+            auto h1 = std::hash< ERequestType >()( fRequestType );
+            auto h2 = std::hash< QString >()( fURLPathKey );
+            auto h3 = std::hash< QString >()( fTMDBID );
+            return NSABUtils::HashCombine( { h1, h2, h3 } );   // as a key, it only depends on the URL and type
         }
 
         void CNetworkReply::reportUnhandled() const
@@ -189,14 +197,14 @@ namespace NMediaManager
 
         QString CNetworkReply::toString() const
         {
-            auto reply = fReply ? QString( "0x%1" ).arg( reinterpret_cast<uintptr_t>( fReply ), 0, 16 ) : QString( "CACHED" );
+            auto reply = fReply ? QString( "0x%1" ).arg( reinterpret_cast< uintptr_t >( fReply ), 0, 16 ) : QString( "CACHED" );
             auto retVal = QString( "CNetworkReply( %1 - %2 - %3)" ).arg( NMediaManager::NCore::toString( fRequestType ) ).arg( reply ).arg( fURLPathKey );
             return retVal;
         }
     }
 }
 
-QDebug operator<<( QDebug debug, const NMediaManager::NCore::CNetworkReply & reply )
+QDebug operator<<( QDebug debug, const NMediaManager::NCore::CNetworkReply &reply )
 {
     debug.noquote().nospace() << reply.toString();
     return debug;

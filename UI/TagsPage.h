@@ -46,26 +46,26 @@ namespace NMediaManager
         {
             Q_OBJECT
         public:
-            CTagsPage( QWidget * parent = nullptr );
+            CTagsPage( QWidget *parent = nullptr );
             virtual ~CTagsPage() override;
 
             virtual bool useSecondaryProgressBar() const override { return false; }
 
             virtual QString loadTitleName() const override;
             virtual QString loadCancelName() const override;
-            
+
             virtual QString actionTitleName() const override;
             virtual QString actionCancelName() const override;
             virtual QString actionErrorName() const override;
 
-            virtual NModels::CDirModel * createDirModel() override;
-            virtual QAbstractItemModel * getDirModel() const override;
+            virtual NModels::CDirModel *createDirModel() override;
+            virtual QAbstractItemModel *getDirModel() const override;
             virtual void setupModel() override;
 
             virtual void postLoadFinished( bool canceled ) override;
             virtual void postNonQueuedRun( bool finalStep, bool canceled ) override;
 
-            virtual QMenu * menu() override;
+            virtual QMenu *menu() override;
         Q_SIGNALS:
         public Q_SLOTS:
         protected Q_SLOTS:
@@ -74,19 +74,19 @@ namespace NMediaManager
 
         protected:
             virtual void loadSettings() override;
-            NModels::CTagsModel * tagsModel();
+            NModels::CTagsModel *tagsModel();
 
-            QMenu * fMenu{ nullptr };
-            QAction * fIgnoreSkippedPathSettings{ nullptr };
-            QAction * fVerifyMediaTitle{ nullptr };
-            QAction * fVerifyMediaDate{ nullptr };
-            QAction * fVerifyMediaComment{ nullptr };
-            QAction * fVerifyMediaTags{ nullptr };
+            QMenu *fMenu{ nullptr };
+            QAction *fIgnoreSkippedPathSettings{ nullptr };
+            QAction *fVerifyMediaTitle{ nullptr };
+            QAction *fVerifyMediaDate{ nullptr };
+            QAction *fVerifyMediaComment{ nullptr };
+            QAction *fVerifyMediaTags{ nullptr };
 
-            QLineEdit * fFilter{ nullptr };
+            QLineEdit *fFilter{ nullptr };
 
-            NModels::CTagsFilterModel * fFilterModel{ nullptr };
+            NModels::CTagsFilterModel *fFilterModel{ nullptr };
         };
     }
 }
-#endif 
+#endif

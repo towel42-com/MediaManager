@@ -44,8 +44,8 @@ namespace NMediaManager
 {
     namespace NUi
     {
-        CTagsPage::CTagsPage( QWidget * parent )
-            : CBasePage( "Tags", parent )
+        CTagsPage::CTagsPage( QWidget *parent ) :
+            CBasePage( "Tags", parent )
         {
             fFilter = new QLineEdit;
             fFilter->setPlaceholderText( tr( "Filter" ) );
@@ -63,12 +63,12 @@ namespace NMediaManager
             CBasePage::loadSettings();
         }
 
-        NModels::CTagsModel * CTagsPage::tagsModel()
+        NModels::CTagsModel *CTagsPage::tagsModel()
         {
             if ( !fModel )
                 return nullptr;
 
-            return dynamic_cast<NModels::CTagsModel *>( fModel.get() );
+            return dynamic_cast< NModels::CTagsModel * >( fModel.get() );
         }
 
         void CTagsPage::postNonQueuedRun( bool finalStep, bool canceled )
@@ -82,7 +82,7 @@ namespace NMediaManager
         {
         }
 
-        NModels::CDirModel * CTagsPage::createDirModel()
+        NModels::CDirModel *CTagsPage::createDirModel()
         {
             auto retVal = new NModels::CTagsModel( this );
 
@@ -93,7 +93,7 @@ namespace NMediaManager
             return retVal;
         }
 
-        QAbstractItemModel * CTagsPage::getDirModel() const
+        QAbstractItemModel *CTagsPage::getDirModel() const
         {
             return fFilterModel;
         }
@@ -128,7 +128,7 @@ namespace NMediaManager
             CBasePage::setupModel();
         }
 
-        QMenu * CTagsPage::menu()
+        QMenu *CTagsPage::menu()
         {
             if ( !fMenu )
             {
@@ -142,58 +142,43 @@ namespace NMediaManager
                 fIgnoreSkippedPathSettings->setCheckable( true );
                 fIgnoreSkippedPathSettings->setChecked( NPreferences::NCore::CPreferences::instance()->getIgnorePathNamesToSkip( false ) );
                 fIgnoreSkippedPathSettings->setText( QCoreApplication::translate( "NMediaManager::NUi::CMainWindow", "Ignore Skipped Path Settings?", nullptr ) );
-                connect( fIgnoreSkippedPathSettings, &QAction::triggered, [this]()
-                         {
-                             NPreferences::NCore::CPreferences::instance()->setIgnorePathNamesToSkip( false, fIgnoreSkippedPathSettings->isChecked() );
-                         }
-                );
+                connect( fIgnoreSkippedPathSettings, &QAction::triggered, [ this ]() { NPreferences::NCore::CPreferences::instance()->setIgnorePathNamesToSkip( false, fIgnoreSkippedPathSettings->isChecked() ); } );
 
                 fVerifyMediaTitle = new QAction( this );
                 fVerifyMediaTitle->setObjectName( QString::fromUtf8( "actionVerifyMediaTitle" ) );
                 fVerifyMediaTitle->setCheckable( true );
                 fVerifyMediaTitle->setChecked( NPreferences::NCore::CPreferences::instance()->deleteNFO() );
                 fVerifyMediaTitle->setText( QCoreApplication::translate( "NMediaManager::NUi::CMainWindow", "Verify Media Title?", nullptr ) );
-                connect( fVerifyMediaTitle, &QAction::triggered, [this]()
-                         {
-                             NPreferences::NCore::CPreferences::instance()->setVerifyMediaTitle( fVerifyMediaTitle->isChecked() );
-                         }
-                );
+                connect( fVerifyMediaTitle, &QAction::triggered, [ this ]() { NPreferences::NCore::CPreferences::instance()->setVerifyMediaTitle( fVerifyMediaTitle->isChecked() ); } );
 
                 fVerifyMediaDate = new QAction( this );
                 fVerifyMediaDate->setObjectName( QString::fromUtf8( "actionVerifyMediaDate" ) );
                 fVerifyMediaDate->setCheckable( true );
                 fVerifyMediaDate->setChecked( NPreferences::NCore::CPreferences::instance()->deleteNFO() );
                 fVerifyMediaDate->setText( QCoreApplication::translate( "NMediaManager::NUi::CMainWindow", "Verify Media Date?", nullptr ) );
-                connect( fVerifyMediaDate, &QAction::triggered, [this]()
-                         {
-                             NPreferences::NCore::CPreferences::instance()->setVerifyMediaDate( fVerifyMediaDate->isChecked() );
-                         }
-                );
+                connect( fVerifyMediaDate, &QAction::triggered, [ this ]() { NPreferences::NCore::CPreferences::instance()->setVerifyMediaDate( fVerifyMediaDate->isChecked() ); } );
 
                 fVerifyMediaComment = new QAction( this );
                 fVerifyMediaComment->setObjectName( QString::fromUtf8( "actionVerifyMediaComment" ) );
                 fVerifyMediaComment->setCheckable( true );
                 fVerifyMediaComment->setChecked( NPreferences::NCore::CPreferences::instance()->deleteNFO() );
                 fVerifyMediaComment->setText( QCoreApplication::translate( "NMediaManager::NUi::CMainWindow", "Verify Media Comment?", nullptr ) );
-                connect( fVerifyMediaComment, &QAction::triggered, [this]()
-                         {
-                             NPreferences::NCore::CPreferences::instance()->setVerifyMediaComment( fVerifyMediaComment->isChecked() );
-                         }
-                );
+                connect( fVerifyMediaComment, &QAction::triggered, [ this ]() { NPreferences::NCore::CPreferences::instance()->setVerifyMediaComment( fVerifyMediaComment->isChecked() ); } );
 
                 fVerifyMediaTags = new QAction( this );
                 fVerifyMediaTags->setObjectName( QString::fromUtf8( "actionVerifyMediaTags" ) );
                 fVerifyMediaTags->setCheckable( true );
                 fVerifyMediaTags->setChecked( NPreferences::NCore::CPreferences::instance()->deleteNFO() );
                 fVerifyMediaTags->setText( QCoreApplication::translate( "NMediaManager::NUi::CMainWindow", "Verify Media Tags?", nullptr ) );
-                connect( fVerifyMediaTags, &QAction::triggered, [this]()
-                         {
-                             fVerifyMediaDate->setEnabled( fVerifyMediaTags->isChecked() );
-                             fVerifyMediaTitle->setEnabled( fVerifyMediaTags->isChecked() );
-                             fVerifyMediaComment->setEnabled( fVerifyMediaTags->isChecked() );
-                             NPreferences::NCore::CPreferences::instance()->setVerifyMediaTags( fVerifyMediaTags->isChecked() );
-                         }
-                );
+                connect(
+                    fVerifyMediaTags, &QAction::triggered,
+                    [ this ]()
+                    {
+                        fVerifyMediaDate->setEnabled( fVerifyMediaTags->isChecked() );
+                        fVerifyMediaTitle->setEnabled( fVerifyMediaTags->isChecked() );
+                        fVerifyMediaComment->setEnabled( fVerifyMediaTags->isChecked() );
+                        NPreferences::NCore::CPreferences::instance()->setVerifyMediaTags( fVerifyMediaTags->isChecked() );
+                    } );
 
                 auto verifyMediaMenu = new QMenu( this );
                 verifyMediaMenu->setObjectName( "VerifyMediaMenu" );
@@ -237,5 +222,3 @@ namespace NMediaManager
         }
     }
 }
-
-

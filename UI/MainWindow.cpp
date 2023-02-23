@@ -62,8 +62,8 @@
 #include <QAbstractNativeEventFilter>
 
 #ifdef Q_OS_WINDOWS
-#include <qt_windows.h>
-#include <windowsx.h>
+    #include <qt_windows.h>
+    #include <windowsx.h>
 #endif
 
 namespace NMediaManager
@@ -73,12 +73,12 @@ namespace NMediaManager
         class CCompleterFileSystemModel : public QFileSystemModel
         {
         public:
-            CCompleterFileSystemModel( QObject * parent = nullptr ) :
+            CCompleterFileSystemModel( QObject *parent = nullptr ) :
                 QFileSystemModel( parent )
             {
             }
 
-            QVariant data( const QModelIndex & index, int role = Qt::DisplayRole ) const override
+            QVariant data( const QModelIndex &index, int role = Qt::DisplayRole ) const override
             {
                 if ( role == Qt::DisplayRole && index.column() == 0 )
                 {
@@ -97,22 +97,22 @@ namespace NMediaManager
             CClickOnTitleBar() = default;
             ~CClickOnTitleBar() override = default;
 
-            bool nativeEventFilter( const QByteArray & eventType, void * message, long * result ) override
+            bool nativeEventFilter( const QByteArray &eventType, void *message, long *result ) override
             {
 #ifdef Q_OS_WINDOWS
-                ( void )result;
+                (void)result;
                 if ( eventType == "windows_generic_MSG" )
                 {
-                    auto msg = static_cast<MSG *>( message );
+                    auto msg = static_cast< MSG * >( message );
                     if ( msg->message == WM_NCLBUTTONDBLCLK )
                     {
-                        auto hitTest = static_cast<int>( msg->wParam );
+                        auto hitTest = static_cast< int >( msg->wParam );
                         if ( hitTest == HTCAPTION )
                         {
                             auto pt = QPoint( GET_X_LPARAM( msg->lParam ), GET_Y_LPARAM( msg->lParam ) );
                             auto rootWindow = qApp->topLevelAt( pt );
-                            if ( dynamic_cast<CMainWindow *>( rootWindow ) )
-                                return dynamic_cast<CMainWindow *>( rootWindow )->titleBarClicked( pt );
+                            if ( dynamic_cast< CMainWindow * >( rootWindow ) )
+                                return dynamic_cast< CMainWindow * >( rootWindow )->titleBarClicked( pt );
                         }
                     }
                 }
@@ -121,8 +121,8 @@ namespace NMediaManager
             }
         };
 
-        CMainWindow::CMainWindow( QWidget * parent )
-            : QMainWindow( parent ),
+        CMainWindow::CMainWindow( QWidget *parent ) :
+            QMainWindow( parent ),
             fImpl( new Ui::CMainWindow )
         {
             fImpl->setupUi( this );
@@ -193,7 +193,7 @@ namespace NMediaManager
             saveSettings();
         }
 
-        void CMainWindow::connectBasePage( CBasePage * basePage )
+        void CMainWindow::connectBasePage( CBasePage *basePage )
         {
             connect( this, &CMainWindow::sigPreferencesChanged, basePage, &CBasePage::slotPreferencesChanged );
             connect( basePage, &CBasePage::sigLoadFinished, this, &CMainWindow::slotLoadFinished );
@@ -202,12 +202,12 @@ namespace NMediaManager
             connect( basePage, &CBasePage::sigDialogClosed, this, &CMainWindow::slotQueuedPrefChange );
         }
 
-        std::shared_ptr< STabDef > CMainWindow::addPage( std::shared_ptr< STabDef > & tabDef )
+        std::shared_ptr< STabDef > CMainWindow::addPage( std::shared_ptr< STabDef > &tabDef )
         {
             fImpl->menuView->addAction( tabDef->fViewAction );
 
             bool isVisible = NPreferences::NCore::CPreferences::instance()->getPageVisible( tabDef->fName );
-#if QT_VERSION >= QT_VERSION_CHECK( 5,15, 0 )
+#if QT_VERSION >= QT_VERSION_CHECK( 5, 15, 0 )
             fImpl->tabWidget->setTabVisible( tabDef->fTabIndex, isVisible );
 #else
             fImpl->tabWidget->setTabEnabled( tabDef->fTabIndex, isVisible );
@@ -234,9 +234,8 @@ namespace NMediaManager
             addPage( std::make_shared< STabDef >( new CGenerateBIFPage( nullptr ), tr( "Generate Thumbnail Videos" ), QString::fromUtf8( ":/roku.png" ), fImpl->tabWidget ) );
             auto bifPage = addPage( std::make_shared< STabDef >( new CBIFViewerPage( nullptr ), tr( "Thumbnail Viewer" ), QString::fromUtf8( ":/roku.png" ), fImpl->tabWidget ) );
 
-            connect( fImpl->fileName, &NSABUtils::CDelayComboBox::sigEditTextChangedAfterDelay, dynamic_cast<CBIFViewerPage *>( bifPage->fPage ), &CBIFViewerPage::slotFileChanged );
-            connect( fImpl->fileName->lineEdit(), &NSABUtils::CDelayLineEdit::sigFinishedEditingAfterDelay, dynamic_cast<CBIFViewerPage *>( bifPage->fPage ), &CBIFViewerPage::slotFileFinishedEditing );
-
+            connect( fImpl->fileName, &NSABUtils::CDelayComboBox::sigEditTextChangedAfterDelay, dynamic_cast< CBIFViewerPage * >( bifPage->fPage ), &CBIFViewerPage::slotFileChanged );
+            connect( fImpl->fileName->lineEdit(), &NSABUtils::CDelayLineEdit::sigFinishedEditingAfterDelay, dynamic_cast< CBIFViewerPage * >( bifPage->fPage ), &CBIFViewerPage::slotFileFinishedEditing );
         }
 
         void CMainWindow::slotValidateDefaults()
@@ -250,7 +249,7 @@ namespace NMediaManager
         {
             if ( ( prefType & NPreferences::EPreferenceType::eSystemPrefs ) != 0 )
             {
-                for ( auto && ii : fUIComponentMap )
+                for ( auto &&ii : fUIComponentMap )
                 {
                     ii->setVisiblePerPrefs();
                 }
@@ -281,14 +280,14 @@ namespace NMediaManager
             return false;
         }
 
-        bool CMainWindow::setBIFFileName( const QString & name )
+        bool CMainWindow::setBIFFileName( const QString &name )
         {
             QSettings settings;
             int index = -1;
-            CBIFViewerPage * page = nullptr;
-            for ( auto && ii : fUIComponentMap )
+            CBIFViewerPage *page = nullptr;
+            for ( auto &&ii : fUIComponentMap )
             {
-                page = dynamic_cast<CBIFViewerPage *>( ii->fPage );
+                page = dynamic_cast< CBIFViewerPage * >( ii->fPage );
                 if ( page )
                 {
                     index = fImpl->tabWidget->indexOf( ii->fTab );
@@ -312,9 +311,9 @@ namespace NMediaManager
 
             QSettings settings;
             int index = -1;
-            for ( auto && ii : fUIComponentMap )
+            for ( auto &&ii : fUIComponentMap )
             {
-                if ( dynamic_cast<CTransformPage *>( ii->fPage ) )
+                if ( dynamic_cast< CTransformPage * >( ii->fPage ) )
                 {
                     index = fImpl->tabWidget->indexOf( ii->fTab );
                     break;
@@ -350,7 +349,7 @@ namespace NMediaManager
             validateLoadAction();
 
             auto activePage = fImpl->tabWidget->currentWidget();
-            for ( auto && ii : fUIComponentMap )
+            for ( auto &&ii : fUIComponentMap )
             {
                 auto tabWidget = ii->fTab;
 
@@ -386,7 +385,7 @@ namespace NMediaManager
             fFileChecker->checkPath( fImpl->directory->currentText() );
         }
 
-        void CMainWindow::slotFileCheckFinished( bool aOK, const QString & msg )
+        void CMainWindow::slotFileCheckFinished( bool aOK, const QString &msg )
         {
             fImpl->actionLoad->setEnabled( aOK );
             if ( !aOK )
@@ -467,7 +466,7 @@ namespace NMediaManager
             }
         }
 
-        CBasePage * CMainWindow::getCurrentBasePage() const
+        CBasePage *CMainWindow::getCurrentBasePage() const
         {
             auto currWidget = fImpl->tabWidget->currentWidget();
             auto basePage = currWidget->findChild< CBasePage * >();
@@ -496,7 +495,7 @@ namespace NMediaManager
             fStayAwake->stop();
         }
 
-        bool CMainWindow::titleBarClicked( const QPoint & pt ) const
+        bool CMainWindow::titleBarClicked( const QPoint &pt ) const
         {
             auto localPt = mapFromGlobal( pt );
             auto title = windowTitle();
@@ -512,7 +511,7 @@ namespace NMediaManager
             }
         }
 
-        STabDef::STabDef( CBasePage * page, const QString & name, const QString & iconPath, QTabWidget * tabWidget ) :
+        STabDef::STabDef( CBasePage *page, const QString &name, const QString &iconPath, QTabWidget *tabWidget ) :
             fPage( page ),
             fName( name ),
             fTabWidget( tabWidget )
@@ -536,12 +535,7 @@ namespace NMediaManager
             fViewAction->setCheckable( true );
             fViewAction->setChecked( NPreferences::NCore::CPreferences::instance()->getPageVisible( fName ) );
 
-            QObject::connect( fViewAction, &QAction::triggered,
-                              [name]( bool checked )
-                              {
-                                  NPreferences::NCore::CPreferences::instance()->setPageVisible( name, checked );
-                              }
-            );
+            QObject::connect( fViewAction, &QAction::triggered, [ name ]( bool checked ) { NPreferences::NCore::CPreferences::instance()->setPageVisible( name, checked ); } );
 
             fTabIndex = fTabWidget->addTab( fTab, fIcon, fName );
             setVisiblePerPrefs();
@@ -550,7 +544,7 @@ namespace NMediaManager
         void STabDef::setVisiblePerPrefs()
         {
             auto shouldBeVisible = NPreferences::NCore::CPreferences::instance()->getPageVisible( fName );
-#if QT_VERSION >= QT_VERSION_CHECK( 5,15, 0 )
+#if QT_VERSION >= QT_VERSION_CHECK( 5, 15, 0 )
             fTabWidget->setTabVisible( fTabIndex, shouldBeVisible );
 #else
             fTabWidget->setTabEnabled( fTabIndex, shouldBeVisible );

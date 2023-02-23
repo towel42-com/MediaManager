@@ -33,48 +33,23 @@ namespace NMediaManager
     {
         namespace NUi
         {
-            CExtensions::CExtensions( QWidget * parent )
-                : CBasePrefPage( parent ),
+            CExtensions::CExtensions( QWidget *parent ) :
+                CBasePrefPage( parent ),
                 fImpl( new Ui::CExtensions )
             {
                 fImpl->setupUi( this );
                 new NSABUtils::CButtonEnabler( fImpl->videoExtensions, fImpl->delVideoExt );
                 new NSABUtils::CButtonEnabler( fImpl->subtitleExtensions, fImpl->delSubExt );
 
-                connect( fImpl->recomputeBtn, &QPushButton::clicked,
-                         [this]()
-                         {
-                             loadExtensions( fImpl->videoExtensions, NPreferences::NCore::CPreferences::instance()->defaultVideoExtensions( true ) );
-                         }
-                );
+                connect( fImpl->recomputeBtn, &QPushButton::clicked, [ this ]() { loadExtensions( fImpl->videoExtensions, NPreferences::NCore::CPreferences::instance()->defaultVideoExtensions( true ) ); } );
 
-                connect( fImpl->addVideoExt, &QPushButton::clicked,
-                         [this]()
-                         {
-                             addExtension( tr( "Video Extension" ), tr( "Extension:" ), fImpl->videoExtensions );
-                         }
-                );
+                connect( fImpl->addVideoExt, &QPushButton::clicked, [ this ]() { addExtension( tr( "Video Extension" ), tr( "Extension:" ), fImpl->videoExtensions ); } );
 
-                connect( fImpl->delVideoExt, &QPushButton::clicked,
-                         [this]()
-                         {
-                             delExtension( fImpl->videoExtensions );
-                         }
-                );
+                connect( fImpl->delVideoExt, &QPushButton::clicked, [ this ]() { delExtension( fImpl->videoExtensions ); } );
 
-                connect( fImpl->addSubExt, &QPushButton::clicked,
-                         [this]()
-                         {
-                             addExtension( tr( "Subtitle Extension" ), tr( "Extension:" ), fImpl->subtitleExtensions );
-                         }
-                );
+                connect( fImpl->addSubExt, &QPushButton::clicked, [ this ]() { addExtension( tr( "Subtitle Extension" ), tr( "Extension:" ), fImpl->subtitleExtensions ); } );
 
-                connect( fImpl->delSubExt, &QPushButton::clicked,
-                         [this]()
-                         {
-                             delExtension( fImpl->subtitleExtensions );
-                         }
-                );
+                connect( fImpl->delSubExt, &QPushButton::clicked, [ this ]() { delExtension( fImpl->subtitleExtensions ); } );
             }
 
             CExtensions::~CExtensions()
@@ -93,19 +68,19 @@ namespace NMediaManager
                 NPreferences::NCore::CPreferences::instance()->setSubtitleExtensions( getExtensions( fImpl->subtitleExtensions ) );
             }
 
-            void CExtensions::loadExtensions( QListWidget * listWidget, QStringList & extensions )
+            void CExtensions::loadExtensions( QListWidget *listWidget, QStringList &extensions )
             {
                 listWidget->clear();
                 extensions.sort();
-                for ( auto && ii : extensions )
+                for ( auto &&ii : extensions )
                     ii = ii.toLower();
-                for ( auto && ii : extensions )
+                for ( auto &&ii : extensions )
                 {
                     new QListWidgetItem( ii, listWidget );
                 }
             }
 
-            QStringList CExtensions::getExtensions( QListWidget * listWidget )
+            QStringList CExtensions::getExtensions( QListWidget *listWidget )
             {
                 QStringList retVal;
                 for ( int ii = 0; ii < listWidget->count(); ++ii )
@@ -113,7 +88,7 @@ namespace NMediaManager
                 return retVal;
             }
 
-            void CExtensions::addExtension( const QString & title, const QString & label, QListWidget * listWidget )
+            void CExtensions::addExtension( const QString &title, const QString &label, QListWidget *listWidget )
             {
                 auto ext = QInputDialog::getText( this, title, label );
                 if ( ext.isEmpty() )
@@ -130,7 +105,7 @@ namespace NMediaManager
                 listWidget->sortItems();
             }
 
-            void CExtensions::delExtension( QListWidget * listWidget )
+            void CExtensions::delExtension( QListWidget *listWidget )
             {
                 if ( !listWidget )
                     return;

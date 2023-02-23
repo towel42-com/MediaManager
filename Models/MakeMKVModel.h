@@ -38,23 +38,23 @@ namespace NMediaManager
                 eMediaColumnLoc = NModels::EColumns::eFirstCustomColumn,
             };
 
-            CMakeMKVModel( NUi::CBasePage * page, QObject * parent = nullptr );
+            CMakeMKVModel( NUi::CBasePage *page, QObject *parent = nullptr );
             virtual ~CMakeMKVModel() override;
 
         private:
             virtual QStringList dirModelFilter() const override;
 
-            virtual std::pair< bool, QStandardItem * > processItem( const QStandardItem * item, bool displayOnly ) override;
+            virtual std::pair< bool, QStandardItem * > processItem( const QStandardItem *item, bool displayOnly ) override;
             virtual bool showMediaItems() const override { return true; };
             virtual int firstMediaItemColumn() const override { return EColumns::eMediaColumnLoc; }
             virtual QStringList headers() const override;
-            virtual QString getProgressLabel( const SProcessInfo & processInfo ) const override;
+            virtual QString getProgressLabel( const SProcessInfo &processInfo ) const override;
             virtual void postLoad( QTreeView * /*treeView*/ ) override;
             virtual void preLoad( QTreeView * /*treeView*/ ) override;
             virtual void postProcess( bool /*displayOnly*/ ) override;
 
-            virtual void postFileFunction( bool aOK, const QFileInfo & fileInfo, TParentTree & /*tree*/ ) override;
-            virtual bool preFileFunction( const QFileInfo & fileInfo, std::unordered_set<QString> & alreadyAdded, TParentTree & tree ) override;
+            virtual void postFileFunction( bool aOK, const QFileInfo &fileInfo, TParentTree & /*tree*/, bool countOnly ) override;
+            virtual bool preFileFunction( const QFileInfo &fileInfo, std::unordered_set< QString > &alreadyAdded, TParentTree &tree, bool countOnly ) override;
 
             virtual void attachTreeNodes( QStandardItem * /*nextParent*/, QStandardItem *& /*prevParent*/, const STreeNode & /*treeNode*/ ) override;
 
@@ -62,4 +62,4 @@ namespace NMediaManager
         };
     }
 }
-#endif 
+#endif

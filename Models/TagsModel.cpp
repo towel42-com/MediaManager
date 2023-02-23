@@ -44,7 +44,7 @@ namespace NMediaManager
 {
     namespace NModels
     {
-        CTagsModel::CTagsModel( NUi::CBasePage * page, QObject * parent /*= 0*/ ) :
+        CTagsModel::CTagsModel( NUi::CBasePage *page, QObject *parent /*= 0*/ ) :
             CDirModel( page, parent )
         {
         }
@@ -59,13 +59,13 @@ namespace NMediaManager
             return retVal;
         }
 
-        std::pair< bool, QStandardItem * > CTagsModel::processItem( const QStandardItem * item, bool displayOnly )
+        std::pair< bool, QStandardItem * > CTagsModel::processItem( const QStandardItem *item, bool displayOnly )
         {
             auto fi = fileInfo( item );
             if ( !isMediaFile( fi ) )
                 return std::make_pair( true, nullptr );
 
-            QStandardItem * myItem = nullptr;
+            QStandardItem *myItem = nullptr;
             bool aOK = true;
 
             if ( !areMediaTagsSameAsAutoSet( indexFromItem( item ) ) )
@@ -113,7 +113,6 @@ namespace NMediaManager
 
         void CTagsModel::attachTreeNodes( QStandardItem * /*nextParent*/, QStandardItem *& /*prevParent*/, const STreeNode & /*treeNode*/ )
         {
-
         }
 
         void CTagsModel::preLoad( QTreeView * /*treeView*/ )
@@ -121,7 +120,7 @@ namespace NMediaManager
             fTagsBeingShown = NPreferences::NCore::CPreferences::instance()->getEnabledTags();
             fFirstColumn = -1;
             int colNum = EColumns::eMediaColumnLoc;
-            for ( auto && ii : fTagsBeingShown )
+            for ( auto &&ii : fTagsBeingShown )
             {
                 if ( ii == NSABUtils::EMediaTags::eTitle )
                     fTitleColumn = colNum;
@@ -144,11 +143,10 @@ namespace NMediaManager
             return CDirModel::headers() << NPreferences::NCore::CPreferences::instance()->getEnabledTagsForDisplay();
         }
 
-        std::list< SDirNodeItem > CTagsModel::addAdditionalItems( const QFileInfo & fileInfo ) const
+        std::list< SDirNodeItem > CTagsModel::addAdditionalItems( const QFileInfo &fileInfo ) const
         {
             if ( showMediaItems() && canShowMediaInfo() )
                 return {};
-
 
             bool isMediaFile = this->isMediaFile( fileInfo );
 
@@ -156,8 +154,8 @@ namespace NMediaManager
             auto mediaInfo = getMediaTags( fileInfo, tagsToShow );
             int colNum = EColumns::eMediaColumnLoc;
 
-            std::list<SDirNodeItem> retVal;
-            for ( auto && ii : tagsToShow )
+            std::list< SDirNodeItem > retVal;
+            for ( auto &&ii : tagsToShow )
             {
                 QString value;
                 auto pos = mediaInfo.find( ii );
@@ -176,7 +174,7 @@ namespace NMediaManager
             return retVal;
         }
 
-        void CTagsModel::reloadMediaTags( const QModelIndex & idx )
+        void CTagsModel::reloadMediaTags( const QModelIndex &idx )
         {
             if ( !canShowMediaInfo() )
                 return;
@@ -184,16 +182,16 @@ namespace NMediaManager
             CDirModel::reloadMediaTags( idx, true );
         }
 
-        void CTagsModel::postFileFunction( bool /*aOK*/, const QFileInfo & /*fileInfo*/, TParentTree & /*tree*/ )
+        void CTagsModel::postFileFunction( bool /*aOK*/, const QFileInfo & /*fileInfo*/, TParentTree & /*tree*/, bool /*countOnly*/ )
         {
         }
 
-        bool CTagsModel::preFileFunction( const QFileInfo & /*fileInfo*/, std::unordered_set<QString> & /*alreadyAdded*/, TParentTree & /*tree*/ )
+        bool CTagsModel::preFileFunction( const QFileInfo & /*fileInfo*/, std::unordered_set< QString > & /*alreadyAdded*/, TParentTree & /*tree*/, bool /*countOnly*/ )
         {
             return true;
         }
 
-        std::optional< TItemStatus > CTagsModel::computeItemStatus( const QModelIndex & idx ) const
+        std::optional< TItemStatus > CTagsModel::computeItemStatus( const QModelIndex &idx ) const
         {
             if ( isRootPath( idx ) )
                 return {};
@@ -245,11 +243,8 @@ namespace NMediaManager
                     if ( tag.isEmpty() )
                         tag = QString( "<EMPTY>" ).toHtmlEscaped();
 
-                    auto msg = tr( "<p style='white-space:pre'>File <b>'%1'</b> does not meet <b>'%2'</b> Meta Tag requirement '%3' - Currently <b>'%4'</b></p>" )
-                        .arg( fileInfo.fileName() )
-                        .arg( tagName )
-                        .arg( expr.toHtmlEscaped() )
-                        .arg( tag );
+                    auto msg =
+                        tr( "<p style='white-space:pre'>File <b>'%1'</b> does not meet <b>'%2'</b> Meta Tag requirement '%3' - Currently <b>'%4'</b></p>" ).arg( fileInfo.fileName() ).arg( tagName ).arg( expr.toHtmlEscaped() ).arg( tag );
 
                     return TItemStatus( NPreferences::EItemStatus::eWarning, msg );
                 }
@@ -257,13 +252,13 @@ namespace NMediaManager
             return {};
         }
 
-        CTagsFilterModel::CTagsFilterModel( QObject * parent ) :
+        CTagsFilterModel::CTagsFilterModel( QObject *parent ) :
             QSortFilterProxyModel( parent )
         {
             setRecursiveFilteringEnabled( true );
         }
 
-        void CTagsFilterModel::slotSetFilter( const QString & text )
+        void CTagsFilterModel::slotSetFilter( const QString &text )
         {
             if ( text != fFilter )
             {
@@ -277,7 +272,7 @@ namespace NMediaManager
             }
         }
 
-        bool CTagsFilterModel::filterAcceptsRow( int source_row, const QModelIndex & source_parent ) const
+        bool CTagsFilterModel::filterAcceptsRow( int source_row, const QModelIndex &source_parent ) const
         {
             if ( fFilter.isEmpty() || !fFilterRegEx.isValid() )
                 return true;

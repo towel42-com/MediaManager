@@ -38,10 +38,9 @@ namespace NMediaManager
         CTransformResult::CTransformResult( EMediaType type ) :
             fMediaType( type )
         {
-
         }
 
-        void CTransformResult::mergeEpisodeResults( const std::shared_ptr< CTransformResult > & rhs )
+        void CTransformResult::mergeEpisodeResults( const std::shared_ptr< CTransformResult > &rhs )
         {
             if ( isTVShow() != rhs->isTVShow() )
                 return;
@@ -112,14 +111,19 @@ namespace NMediaManager
         {
             switch ( mediaType() )
             {
-                case EMediaType::eMovie: return getMovieReleaseDate();
-                case EMediaType::eTVShow: return getShowFirstAirDate();
-                case EMediaType::eTVSeason: return getSeasonStartDate();
-                case EMediaType::eTVEpisode: return getEpisodeAirDate();
-                default: return {};
+                case EMediaType::eMovie:
+                    return getMovieReleaseDate();
+                case EMediaType::eTVShow:
+                    return getShowFirstAirDate();
+                case EMediaType::eTVSeason:
+                    return getSeasonStartDate();
+                case EMediaType::eTVEpisode:
+                    return getEpisodeAirDate();
+                default:
+                    return {};
             }
         }
-                //QString CTransformResult::getInitialYear() const
+        //QString CTransformResult::getInitialYear() const
         //{
         //    if ( ( fMediaType != EMediaType::eTVEpisode )
         //         && ( fMediaType != EMediaType::eTVSeason ) )
@@ -133,10 +137,9 @@ namespace NMediaManager
         //    return tvShowInfo->getYear();
         //}
 
-        const CTransformResult * CTransformResult::getTVShowInfo() const
+        const CTransformResult *CTransformResult::getTVShowInfo() const
         {
-            if ( ( mediaType() == EMediaType::eTVEpisode )
-                 || ( mediaType() == EMediaType::eTVSeason ) )
+            if ( ( mediaType() == EMediaType::eTVEpisode ) || ( mediaType() == EMediaType::eTVSeason ) )
             {
                 auto parent = fParent.lock();
                 if ( parent )
@@ -147,22 +150,22 @@ namespace NMediaManager
             return this;
         }
 
-        void CTransformResult::setMovieReleaseDate( const QString & date )
+        void CTransformResult::setMovieReleaseDate( const QString &date )
         {
             fMovieReleaseDate = { NSABUtils::getDate( date ), date };
         }
 
-        void CTransformResult::setShowFirstAirDate( const QString & date )
+        void CTransformResult::setShowFirstAirDate( const QString &date )
         {
             fShowFirstAirDate = { NSABUtils::getDate( date ), date };
         }
 
-        void CTransformResult::setSeasonStartDate( const QString & date )
+        void CTransformResult::setSeasonStartDate( const QString &date )
         {
             fSeasonStartDate = { NSABUtils::getDate( date ), date };
         }
 
-        void CTransformResult::setEpisodeAirDate( const QString & date )
+        void CTransformResult::setEpisodeAirDate( const QString &date )
         {
             fEpisodeAirDate = { NSABUtils::getDate( date ), date };
         }
@@ -171,11 +174,16 @@ namespace NMediaManager
         {
             switch ( mediaType() )
             {
-                case EMediaType::eMovie: return getMovieReleaseYear();
-                case EMediaType::eTVShow: return getShowFirstAirYear();
-                case EMediaType::eTVSeason: return getSeasonStartYear();
-                case EMediaType::eTVEpisode: return getEpisodeAirYear();
-                default: return {};
+                case EMediaType::eMovie:
+                    return getMovieReleaseYear();
+                case EMediaType::eTVShow:
+                    return getShowFirstAirYear();
+                case EMediaType::eTVSeason:
+                    return getSeasonStartYear();
+                case EMediaType::eTVEpisode:
+                    return getEpisodeAirYear();
+                default:
+                    return {};
             }
         }
 
@@ -214,7 +222,7 @@ namespace NMediaManager
         QString CTransformResult::getSubTitle() const
         {
             auto subTitles = QStringList( { subTitle() } );
-            for ( auto && ii : fExtraEpisodes )
+            for ( auto &&ii : fExtraEpisodes )
                 subTitles << ii->subTitle();
 
             return NSABUtils::NStringUtils::transformTitle( subTitles.join( "-" ) );
@@ -230,7 +238,6 @@ namespace NMediaManager
             return retVal;
         }
 
-
         QString CTransformResult::getSeason() const
         {
             if ( !isTVShow() )
@@ -240,7 +247,6 @@ namespace NMediaManager
             return season();
         }
 
-
         QString CTransformResult::getEpisode() const
         {
             if ( !isTVShow() )
@@ -249,12 +255,12 @@ namespace NMediaManager
                 return {};
             std::list< int > episodes;
             episodes.push_back( episode().toInt() );
-            for ( auto && ii : fExtraEpisodes )
+            for ( auto &&ii : fExtraEpisodes )
                 episodes.push_back( ii->episode().toInt() );
 
             auto groupedEpisodes = NSABUtils::group( episodes );
             QStringList episodeList;
-            for ( auto && ii : groupedEpisodes )
+            for ( auto &&ii : groupedEpisodes )
             {
                 if ( ii.size() == 1 )
                 {
@@ -274,8 +280,8 @@ namespace NMediaManager
             return retVal;
         }
 
-                // do not include <> in the capture name
-        QString replaceCapture( const QString & captureName, const QString & returnPattern, const QString & value )
+        // do not include <> in the capture name
+        QString replaceCapture( const QString &captureName, const QString &returnPattern, const QString &value )
         {
             if ( captureName.isEmpty() )
                 return returnPattern;
@@ -312,7 +318,8 @@ namespace NMediaManager
                     replText.clear();
                 else
                 {
-                    replText = replaceCapture( captureName, replText, value );;
+                    replText = replaceCapture( captureName, replText, value );
+                    ;
                 }
             }
             auto retVal = returnPattern;
@@ -320,7 +327,7 @@ namespace NMediaManager
             return retVal;
         }
 
-        QString CTransformResult::cleanFileName( const QString & inFile, bool isDir )
+        QString CTransformResult::cleanFileName( const QString &inFile, bool isDir )
         {
             if ( inFile.isEmpty() )
                 return inFile;
@@ -342,14 +349,14 @@ namespace NMediaManager
             return retVal;
         }
 
-        QString CTransformResult::cleanFileName( const QFileInfo & fi )
+        QString CTransformResult::cleanFileName( const QFileInfo &fi )
         {
             return cleanFileName( fi.completeBaseName(), fi.isDir() );
         }
 
         void CTransformResult::onAllChildren( std::function< void( std::shared_ptr< CTransformResult > child ) > func, std::function< bool() > stopFunc )
         {
-            for ( auto && ii : fChildren )
+            for ( auto &&ii : fChildren )
             {
                 func( ii );
                 if ( stopFunc() )
@@ -357,7 +364,7 @@ namespace NMediaManager
             }
         }
 
-        void CTransformResult::setTitle( const QString & val )
+        void CTransformResult::setTitle( const QString &val )
         {
             fTitle = val;
 
@@ -369,28 +376,15 @@ namespace NMediaManager
             }
         }
 
-        bool CTransformResult::operator==( const CTransformResult & rhs ) const
+        bool CTransformResult::operator==( const CTransformResult &rhs ) const
         {
-            return ( title() == rhs.title() )
-                && ( fMovieReleaseDate == rhs.fMovieReleaseDate )
-                && ( fShowFirstAirDate == rhs.fShowFirstAirDate )
-                && ( fSeasonStartDate == rhs.fSeasonStartDate )
-                && ( fEpisodeAirDate == rhs.fEpisodeAirDate )
-                && ( tmdbID() == rhs.tmdbID() )
-                && ( seasonTMDBID() == rhs.seasonTMDBID() )
-                && ( episodeTMDBID() == rhs.episodeTMDBID() )
-                && ( season() == rhs.season() )
-                && ( fSeasonOnly == rhs.fSeasonOnly )
-                && ( episode() == rhs.episode() )
-                && ( subTitle() == rhs.subTitle() )
-                && ( extraInfo() == rhs.extraInfo() )
-                && ( diskNum() == rhs.diskNum() )
-                && ( description() == rhs.description() )
-                ;
+            return ( title() == rhs.title() ) && ( fMovieReleaseDate == rhs.fMovieReleaseDate ) && ( fShowFirstAirDate == rhs.fShowFirstAirDate ) && ( fSeasonStartDate == rhs.fSeasonStartDate ) && ( fEpisodeAirDate == rhs.fEpisodeAirDate )
+                   && ( tmdbID() == rhs.tmdbID() ) && ( seasonTMDBID() == rhs.seasonTMDBID() ) && ( episodeTMDBID() == rhs.episodeTMDBID() ) && ( season() == rhs.season() ) && ( fSeasonOnly == rhs.fSeasonOnly )
+                   && ( episode() == rhs.episode() ) && ( subTitle() == rhs.subTitle() ) && ( extraInfo() == rhs.extraInfo() ) && ( diskNum() == rhs.diskNum() ) && ( description() == rhs.description() );
             // pixmap, parent, children and mediatype do not count
         }
 
-        QString CTransformResult::transformedName( const QFileInfo & fileInfo, const SPatternInfo & patternInfo, bool titleOnly ) const
+        QString CTransformResult::transformedName( const QFileInfo &fileInfo, const SPatternInfo &patternInfo, bool titleOnly ) const
         {
             auto title = getTitle();
             auto releaseYear = getMovieReleaseYear();
@@ -425,7 +419,7 @@ namespace NMediaManager
 
         void CTransformResult::removeChild( std::shared_ptr< CTransformResult > info )
         {
-            for ( auto && ii = fChildren.begin(); ii != fChildren.end(); ++ii )
+            for ( auto &&ii = fChildren.begin(); ii != fChildren.end(); ++ii )
             {
                 if ( ( *ii ).get() == info.get() )
                 {
@@ -450,16 +444,12 @@ namespace NMediaManager
                     << "TMDBID: '" + tmdbID() + "'"
                     << "Season TMBDID: '" + seasonTMDBID() + "'"
                     << "Episode TMDBID: '" + episodeTMDBID() + "'"
-                    << "Season: '" + season() + "'"
-                    << QString( " Season Only? %1" ).arg( fSeasonOnly ? "Yes" : "No" )
-                    << "Episode: '" + episode() + "'"
+                    << "Season: '" + season() + "'" << QString( " Season Only? %1" ).arg( fSeasonOnly ? "Yes" : "No" ) << "Episode: '" + episode() + "'"
                     << "Sub Title: '" + subTitle() + "'"
                     << "ExtraInfo: '" + extraInfo() + "'"
-                    << "Description: '" + description() + "'"
-                    << QString( "Has Pixmap? %1" ).arg( pixmap().isNull() ? "No" : "Yes" )
-                    ;
+                    << "Description: '" + description() + "'" << QString( "Has Pixmap? %1" ).arg( pixmap().isNull() ? "No" : "Yes" );
                 QStringList children = { " - Children(" };
-                for ( auto && ii : fChildren )
+                for ( auto &&ii : fChildren )
                 {
                     children << ii->toString( true );
                 }
@@ -468,8 +458,7 @@ namespace NMediaManager
             else
             {
                 tmp << NMediaManager::NCore::toEnumString( mediaType() ) + " -"
-                    << "Title: '" + title() + "'"
-                    ;
+                    << "Title: '" + title() + "'";
                 switch ( mediaType() )
                 {
                     case EMediaType::eMovie:
@@ -494,7 +483,6 @@ namespace NMediaManager
                     if ( !episode().isEmpty() )
                         tmp << "Episode TMDBID: '" + episodeTMDBID() + "'";
 
-
                     if ( !season().isEmpty() )
                         tmp << "Season: '" + season() + "'";
 
@@ -504,8 +492,7 @@ namespace NMediaManager
                         tmp << "Sub Title: '" + subTitle() + "'";
                 }
 
-                tmp << "ExtraInfo: '" + extraInfo() + "'"
-                    ;
+                tmp << "ExtraInfo: '" + extraInfo() + "'";
             }
             QString retVal = QString( forDebug ? "STitleInfo(%1)" : "%1" ).arg( tmp.join( " " ) );
             return retVal;
@@ -530,8 +517,7 @@ namespace NMediaManager
             return text;
         }
 
-
-        bool CTransformResult::isBetterTitleMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr<CTransformResult> rhs ) const
+        bool CTransformResult::isBetterTitleMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr< CTransformResult > rhs ) const
         {
             if ( !rhs )
                 return true;
@@ -591,7 +577,7 @@ namespace NMediaManager
             return isBetterTitleMatch( searchInfo, rhs );
         }
 
-        bool CTransformResult::isBetterMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr<CTransformResult> rhs ) const
+        bool CTransformResult::isBetterMatch( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::shared_ptr< CTransformResult > rhs ) const
         {
             if ( mediaType() == EMediaType::eTVSeason )
                 return isBetterSeasonMatch( searchInfo, rhs );
@@ -605,30 +591,37 @@ namespace NMediaManager
         {
             switch ( which )
             {
-                case ETitleInfo::eTitle: return getTitle();
+                case ETitleInfo::eTitle:
+                    return getTitle();
                 case ETitleInfo::eYear:
-                {
-                    switch ( mediaType() )
                     {
-                        case EMediaType::eMovie:
-                            return getMovieReleaseYear();
-                        case EMediaType::eTVShow:
-                            return getShowFirstAirYear();
-                        case EMediaType::eTVSeason:
-                            return getSeasonStartYear();
-                        case EMediaType::eTVEpisode:
-                            return getEpisodeAirYear();
-                        default:
-                            break;
+                        switch ( mediaType() )
+                        {
+                            case EMediaType::eMovie:
+                                return getMovieReleaseYear();
+                            case EMediaType::eTVShow:
+                                return getShowFirstAirYear();
+                            case EMediaType::eTVSeason:
+                                return getSeasonStartYear();
+                            case EMediaType::eTVEpisode:
+                                return getEpisodeAirYear();
+                            default:
+                                break;
+                        }
                     }
-                }
-                break;
-                case ETitleInfo::eTMDBID: return tmdbID();
-                case ETitleInfo::eSeason: return season();
-                case ETitleInfo::eEpisode: return episode();
-                case ETitleInfo::eEpisodeTitle: return subTitle();
-                case ETitleInfo::eExtraInfo: return extraInfo();
-                case ETitleInfo::eDescription: return description();
+                    break;
+                case ETitleInfo::eTMDBID:
+                    return tmdbID();
+                case ETitleInfo::eSeason:
+                    return season();
+                case ETitleInfo::eEpisode:
+                    return episode();
+                case ETitleInfo::eEpisodeTitle:
+                    return subTitle();
+                case ETitleInfo::eExtraInfo:
+                    return extraInfo();
+                case ETitleInfo::eDescription:
+                    return description();
             }
             return {};
         }
@@ -637,7 +630,7 @@ namespace NMediaManager
         const QString kNoMatch = "<NO MATCH>";
         const QString kDeleteThis = "<DELETE THIS>";
 
-        bool CTransformResult::isNoItems( const QString & text )
+        bool CTransformResult::isNoItems( const QString &text )
         {
             return text == kNoItems;
         }
@@ -647,7 +640,7 @@ namespace NMediaManager
             return kNoItems;
         }
 
-        bool CTransformResult::isNoMatch( const QString & text )
+        bool CTransformResult::isNoMatch( const QString &text )
         {
             return text == kNoMatch;
         }
@@ -662,7 +655,7 @@ namespace NMediaManager
             return kNoMatch;
         }
 
-        bool CTransformResult::isDeleteThis( const QString & text )
+        bool CTransformResult::isDeleteThis( const QString &text )
         {
             return text == kDeleteThis;
         }
@@ -687,15 +680,13 @@ namespace NMediaManager
 
         bool CTransformResult::isAutoSetText() const
         {
-            if ( ( mediaType() == EMediaType::eDeleteFileType )
-                 || ( mediaType() == EMediaType::eNotFoundType )
-                 || ( mediaType() == EMediaType::eUnknownType ) )
+            if ( ( mediaType() == EMediaType::eDeleteFileType ) || ( mediaType() == EMediaType::eNotFoundType ) || ( mediaType() == EMediaType::eUnknownType ) )
                 return true;
 
             return isAutoSetText( title() );
         }
 
-        bool CTransformResult::isAutoSetText( const QString & text )
+        bool CTransformResult::isAutoSetText( const QString &text )
         {
             return isNoItems( text ) || isDeleteThis( text ) || isNoMatch( text );
         }
@@ -704,13 +695,20 @@ namespace NMediaManager
         {
             switch ( infoType )
             {
-                case EMediaType::eUnknownType: return "Unknown";
-                case EMediaType::eMovie: return "Movie";
-                case EMediaType::eTVShow: return "TV Show";
-                case EMediaType::eTVSeason: return "TV Season";
-                case EMediaType::eTVEpisode: return "TV Episode";
-                case EMediaType::eDeleteFileType: return "Delete File";
-                case EMediaType::eNotFoundType: return "Not Found";
+                case EMediaType::eUnknownType:
+                    return "Unknown";
+                case EMediaType::eMovie:
+                    return "Movie";
+                case EMediaType::eTVShow:
+                    return "TV Show";
+                case EMediaType::eTVSeason:
+                    return "TV Season";
+                case EMediaType::eTVEpisode:
+                    return "TV Episode";
+                case EMediaType::eDeleteFileType:
+                    return "Delete File";
+                case EMediaType::eNotFoundType:
+                    return "Not Found";
             }
             return {};
         }
