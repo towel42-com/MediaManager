@@ -83,6 +83,7 @@ namespace NMediaManager
             eIsRoot,
             eIsTVShowRole,
             eISOCodeRole,
+            eLanguageName,
             eDefaultTrackRole,
             eHearingImparedRole,
             eForcedSubTitleRole,
@@ -123,7 +124,8 @@ namespace NMediaManager
             ~STreeNode() {}
 
             QFileInfo fileInfo() const { return fFileInfo; }
-            QString name() const;
+            QString text() const;
+            QString fullPath() const;
 
             QStandardItem *item( EColumns column, bool createIfNecessary = true ) const;
             QStandardItem *rootItem( bool createIfNecessary = true ) const;
