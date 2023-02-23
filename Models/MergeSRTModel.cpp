@@ -115,7 +115,8 @@ namespace NMediaManager
                     continue;
 
                 auto languageItem = getLanguageItem( ii );
-                tmp[ languageItem->text() ].emplace_back( ii, isLangFormat );
+                auto langName = languageItem->data( ECustomRoles::eLanguageName ).toString();
+                tmp[ langName ].emplace_back( ii, isLangFormat );
             }
 
             bool allLangFiles = true;
@@ -161,13 +162,13 @@ namespace NMediaManager
             {
                 for ( auto &&ii : srtFiles )
                 {
-                    if ( ii.second.size() == 3 )
+                    if ( ii.second.size() >= 3 )
                     {
                         // smallest is "Forced"
                         // mid is normal
                         // largest is "SDH"
-                        setChecked( getItem( ii.second[ 0 ], EColumns::eForced ), ECustomRoles::eForcedSubTitleRole, true );
-                        setChecked( getItem( ii.second[ 2 ], EColumns::eSDH ), ECustomRoles::eHearingImparedRole, true );
+                        setChecked( getItem( ii.second.front(), EColumns::eForced ), ECustomRoles::eForcedSubTitleRole, true );
+                        setChecked( getItem( ii.second.back(), EColumns::eSDH ), ECustomRoles::eHearingImparedRole, true );
                     }
                     else if ( ii.second.size() == 2 )
                     {
@@ -420,7 +421,7 @@ namespace NMediaManager
 
                         auto label = tr( "'%1' Index: %2 - Forced : %4 SDH : %5" ).arg( lang->displayName() ).arg( index );
 
-                        if ( currLangInfos.size() == 3 )
+                        if ( currLangInfos.size() >= 3 )
                         {
                             if ( fileNum == 0 )
                             {
@@ -432,7 +433,7 @@ namespace NMediaManager
                                 label = label.arg( "No" ).arg( "No" );
                                 langMap[ ii.first ][ index ] = std::make_pair( false, false );
                             }
-                            else
+                            else if ( fileNum == ( currLangInfos.size() - 1 ) ) 
                             {
                                 label = label.arg( "No" ).arg( "Yes" );
                                 langMap[ ii.first ][ index ] = std::make_pair( false, true );
@@ -707,6 +708,7 @@ namespace NMediaManager
                 auto languageFileItem = SDirNodeItem( langName, CMergeSRTModel::EColumns::eLanguage );
                 if ( !language.isMultiLanguage() )
                     languageFileItem.setData( language.isoCode(), ECustomRoles::eISOCodeRole );
+                languageFileItem.setData( language.language(), ECustomRoles::eLanguageName );
                 retVal.push_back( languageFileItem );
 
                 auto forcedItem = SDirNodeItem( QString(), EColumns::eForced );
@@ -766,7 +768,7 @@ namespace NMediaManager
         {
             if ( treeNode.fIsFile )
             {
-                auto isSubFile = NPreferences::NCore::CPreferences::instance()->isSubtitleFile( treeNode.name() );
+                auto isSubFile = NPreferences::NCore::CPreferences::instance()->isSubtitleFile( treeNode.fullPath(), false );
                 auto useAsParent = [ isSubFile, this ]( QStandardItem *item )
                 {
                     if ( !item )
@@ -878,3 +880,5 @@ namespace NMediaManager
         }
     }
 }
+
+
