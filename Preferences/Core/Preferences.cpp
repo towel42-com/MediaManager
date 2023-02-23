@@ -1503,9 +1503,6 @@ namespace NMediaManager
 
             bool CPreferences::isFileWithExtension( const QFileInfo &fi, std::function< QStringList() > getExtensions, std::unordered_set< QString > &hash, std::unordered_map< QString, bool > &cache ) const
             {
-                if ( !fi.isFile() )
-                    return false;
-
                 if ( hash.empty() )
                 {
                     auto suffixes = getExtensions();
@@ -1538,8 +1535,6 @@ namespace NMediaManager
             // only return true for X_Lang.srt files or subs directories
             bool CPreferences::isSubtitleFile( const QFileInfo &fi, bool *isLangFileFormat ) const
             {
-                if ( !fi.isFile() )
-                    return false;
                 if ( isLangFileFormat )
                 {
                     *isLangFileFormat = NMediaManager::NCore::SLanguageInfo::isLangFileFormat( fi );
