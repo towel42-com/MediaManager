@@ -327,10 +327,12 @@ namespace NMediaManager
             { "sl-SI", { "Slovenian", "(Slovenia)" } },
             { "sq", { "Albanian", "" } },
             { "sq-AL", { "Albanian", "(Albania)" } },
-            { "sr-BA", { "Serbian", "(Latin) (Bosnia and Herzegovina)" } },
+            { "sr-Latn-BA", { "Serbian", "(Latin) (Bosnia and Herzegovina)" } },
             { "sr-BA", { "Serbian", "(Cyrillic) (Bosnia and Herzegovina)" } },
-            { "sr-SP", { "Serbian", "(Latin) (Serbia and Montenegro)" } },
+            { "sr-Latn-SP", { "Serbian", "(Latin) (Serbia and Montenegro)" } },
             { "sr-SP", { "Serbian", "(Cyrillic) (Serbia and Montenegro)" } },
+            { "sr-Latn-RS", { "Serbian", "(Latin) (Republic of Serbia)" } },
+            { "sr-RS", { "Serbian", "(Cyrillic) (Republic of Serbia)" } },
             { "sv", { "Swedish", "" } },
             { "sv-FI", { "Swedish", "(Finland)" } },
             { "sv-SE", { "Swedish", "(Sweden)" } },
@@ -384,11 +386,13 @@ namespace NMediaManager
             {
                 sLangMap[ "Hin" ] = ( *sLangMap.find( "hi-IN" ) ).second;
                 sLangMap[ "May" ] = ( *sLangMap.find( "ms-MY" ) ).second;
-                sLangMap[ "Nor" ] = ( *sLangMap.find( "nb-NO" ) ).second;
                 sLangMap[ "Tam" ] = ( *sLangMap.find( "ta-IN" ) ).second;
                 sLangMap[ "Tel" ] = ( *sLangMap.find( "te-IN" ) ).second;
                 sLangMap[ "Eng" ] = ( *sLangMap.find( "en-US" ) ).second;
+                sLangMap[ "Nor" ] = ( *sLangMap.find( "nb" ) ).second;
+                sLangMap[ "Nor-NO" ] = ( *sLangMap.find( "nb-NO" ) ).second;
                 sLangMap[ "no" ] = ( *sLangMap.find( "nb" ) ).second;
+                sLangMap[ "no-NO" ] = ( *sLangMap.find( "nb-NO" ) ).second;
                 sLangMap[ "slo" ] = ( *sLangMap.find( "sl-SI" ) ).second;
 
                 for ( auto &&ii : sLangMap )
@@ -614,7 +618,19 @@ namespace NMediaManager
                     isoCode = prettyPrintISOCode( ( *pos ).second.second );
                 }
             }
+
             bool usingDefault{ false };
+            if ( language.isEmpty() )
+            {
+                auto pos = langName.indexOf( QRegularExpression( R"([_-])" ) );
+                if ( pos != -1 )
+                {
+                    auto lang = langName.left( pos );
+                    std::tie( language, country, isoCode, usingDefault ) = computeLanguageInt( lang );
+                    country = langName.mid( pos + 1 );
+                }
+            }
+
             if ( language.isEmpty() )
             {
                 std::tie( language, country, isoCode, usingDefault ) = computeLanguageInt( sDefaultISOCode );
