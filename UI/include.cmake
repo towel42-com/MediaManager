@@ -35,6 +35,7 @@ set(qtproject_SRCS
     ProcessConfirm.cpp
     TagsPage.cpp
     TransformPage.cpp
+    ValidateMKVPage.cpp
 )
 
 set(qtproject_H
@@ -48,6 +49,7 @@ set(qtproject_H
     ProcessConfirm.h
     TagsPage.h
     TransformPage.h
+    ValidateMKVPage.h
 )
 
 set(project_H
