@@ -71,7 +71,7 @@ namespace NMediaManager
             QPlainTextEdit *log() const;
 
             virtual void appendSeparatorToLog();
-            virtual void appendToLog( const QString &msg, bool stdOut );
+            virtual void appendToLog( const QString &msg, bool stdOut ) final;
             virtual void appendToLog( const QString &msg, std::pair< QString, bool > &previousText, bool stdOut, bool fromProcess );
 
             virtual void postProcessLog( const QString &string );
