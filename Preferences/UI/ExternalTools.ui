@@ -14,17 +14,23 @@
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="2" column="1">
-    <widget class="NSABUtils::CPathBasedDelayLineEdit" name="ffmpegExe"/>
-   </item>
-   <item row="1" column="2">
-    <widget class="QToolButton" name="btnSelectMKVPropEditExe">
-     <property name="text">
-      <string>...</string>
+   <item row="1" column="1">
+    <widget class="NSABUtils::CPathBasedDelayLineEdit" name="mkvPropEditExe">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
      </property>
-     <property name="icon">
-      <iconset resource="../../SABUtils/resources/SABUtils.qrc">
-       <normaloff>:/SABUtilsResources/open.png</normaloff>:/SABUtilsResources/open.png</iconset>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="label_11">
+     <property name="text">
+      <string>ffmpeg Executable:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
     </widget>
    </item>
@@ -38,10 +44,34 @@
      </property>
     </widget>
    </item>
-   <item row="3" column="1">
+   <item row="4" column="1">
     <widget class="NSABUtils::CPathBasedDelayLineEdit" name="ffprobeExe"/>
    </item>
-   <item row="3" column="2">
+   <item row="0" column="2">
+    <widget class="QToolButton" name="btnSelectMKVMergeExe">
+     <property name="text">
+      <string>...</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../../SABUtils/resources/SABUtils.qrc">
+       <normaloff>:/SABUtilsResources/open.png</normaloff>:/SABUtilsResources/open.png</iconset>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="0">
+    <spacer name="verticalSpacer_4">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>167</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="4" column="2">
     <widget class="QToolButton" name="btnSelectFFProbeExe">
      <property name="text">
       <string>...</string>
@@ -52,8 +82,39 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="2">
-    <widget class="QToolButton" name="btnSelectMKVMergeExe">
+   <item row="4" column="0">
+    <widget class="QLabel" name="label_12">
+     <property name="text">
+      <string>ffprobe Executable:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="2">
+    <widget class="QToolButton" name="btnSelectMKVPropEditExe">
+     <property name="text">
+      <string>...</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../../SABUtils/resources/SABUtils.qrc">
+       <normaloff>:/SABUtilsResources/open.png</normaloff>:/SABUtilsResources/open.png</iconset>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="NSABUtils::CPathBasedDelayLineEdit" name="mkvMergeExe">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="2">
+    <widget class="QToolButton" name="btnSelectFFMpegExe">
      <property name="text">
       <string>...</string>
      </property>
@@ -73,7 +134,7 @@
      </property>
     </widget>
    </item>
-   <item row="4" column="0" colspan="2">
+   <item row="5" column="0" colspan="2">
     <widget class="QLabel" name="label_2">
      <property name="text">
       <string>ffmpeg and ffprobe need to come from the Emby distribution.</string>
@@ -83,67 +144,27 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="1">
-    <widget class="NSABUtils::CPathBasedDelayLineEdit" name="mkvMergeExe">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="1">
-    <widget class="NSABUtils::CPathBasedDelayLineEdit" name="mkvPropEditExe">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="0">
-    <spacer name="verticalSpacer_4">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>167</height>
-      </size>
-     </property>
-    </spacer>
+   <item row="3" column="1">
+    <widget class="NSABUtils::CPathBasedDelayLineEdit" name="ffmpegExe"/>
    </item>
    <item row="2" column="0">
-    <widget class="QLabel" name="label_11">
+    <widget class="QLabel" name="label_3">
      <property name="text">
-      <string>ffmpeg Executable:</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      <string>mkvalidator Executable:</string>
      </property>
     </widget>
    </item>
+   <item row="2" column="1">
+    <widget class="NSABUtils::CPathBasedDelayLineEdit" name="mkvValidatorExe"/>
+   </item>
    <item row="2" column="2">
-    <widget class="QToolButton" name="btnSelectFFMpegExe">
+    <widget class="QToolButton" name="btnSelectMKVValidatorExe">
      <property name="text">
       <string>...</string>
      </property>
      <property name="icon">
       <iconset resource="../../SABUtils/resources/SABUtils.qrc">
        <normaloff>:/SABUtilsResources/open.png</normaloff>:/SABUtilsResources/open.png</iconset>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="label_12">
-     <property name="text">
-      <string>ffprobe Executable:</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
     </widget>
    </item>
@@ -161,8 +182,12 @@
   <tabstop>btnSelectMKVMergeExe</tabstop>
   <tabstop>mkvPropEditExe</tabstop>
   <tabstop>btnSelectMKVPropEditExe</tabstop>
+  <tabstop>mkvValidatorExe</tabstop>
+  <tabstop>btnSelectMKVValidatorExe</tabstop>
   <tabstop>ffmpegExe</tabstop>
   <tabstop>btnSelectFFMpegExe</tabstop>
+  <tabstop>ffprobeExe</tabstop>
+  <tabstop>btnSelectFFProbeExe</tabstop>
  </tabstops>
  <resources>
   <include location="../../SABUtils/resources/SABUtils.qrc"/>

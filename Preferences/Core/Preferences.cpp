@@ -1144,6 +1144,25 @@ namespace NMediaManager
             /// External Tools Options
             /// ////////////////////////////////////////////////////////
 
+            void CPreferences::setMKVValidatorEXE( const QString & value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eExtToolsPrefs ) );
+                settings.setValue( "MKVValidatorEXE", value );
+                emitSigPreferencesChanged( EPreferenceType::eExtToolsPrefs );
+            }
+
+            QString CPreferences::getMKVValidatorEXE() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eExtToolsPrefs ) );
+                auto retVal = settings.value( "MKVValidatorEXE", QString() ).toString();
+
+                auto fi = QFileInfo( retVal );
+                bool aOK = !retVal.isEmpty() && fi.isExecutable();
+                return aOK ? retVal : QString();
+            }
+
             void CPreferences::setMKVMergeEXE( const QString &value )
             {
                 QSettings settings;

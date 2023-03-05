@@ -56,6 +56,7 @@ namespace NMediaManager
             public Q_SLOTS:
                 void slotSelectMKVMergeExe();
                 void slotSelectMKVPropEditExe();
+                void slotSelectMKVValidatorExe();
                 void slotSelectFFMpegExe();
                 void slotSelectFFProbeExe();
 
