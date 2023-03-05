@@ -32,6 +32,7 @@ set(qtproject_SRCS
     MakeMKVModel.cpp
     TagsModel.cpp
     TransformModel.cpp
+    ValidateMKVModel.cpp
 )
 
 set(qtproject_H
@@ -41,6 +42,7 @@ set(qtproject_H
     MakeMKVModel.h
     TagsModel.h
     TransformModel.h
+    ValidateMKVModel.h
 )
 
 set(project_H
