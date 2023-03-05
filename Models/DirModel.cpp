@@ -160,10 +160,16 @@ namespace NMediaManager
             fBasePage( page )
         {
             fIconProvider = new CIconProvider();
-            fTimer = new QTimer( this );
-            fTimer->setInterval( 50 );
-            fTimer->setSingleShot( true );
-            connect( fTimer, &QTimer::timeout, this, &CDirModel::slotLoadRootDirectory );
+
+            fReloadTimer = new QTimer( this );
+            fReloadTimer->setInterval( 50 );
+            fReloadTimer->setSingleShot( true );
+            connect( fReloadTimer, &QTimer::timeout, this, &CDirModel::slotLoadRootDirectory );
+
+            fUnbufferedTimer = new QTimer( this );
+            fUnbufferedTimer->setInterval( 50 );
+            fUnbufferedTimer->setSingleShot( false );
+            connect( fUnbufferedTimer, &QTimer::timeout, this, &CDirModel::slotUnbufferedTimeout );
 
             fProcess = new QProcess( this );
             connect( fProcess, &QProcess::errorOccurred, this, &CDirModel::slotProcessErrorOccured );
@@ -191,8 +197,8 @@ namespace NMediaManager
 
         void CDirModel::reloadModel()
         {
-            fTimer->stop();
-            fTimer->start();
+            fReloadTimer->stop();
+            fReloadTimer->start();
             postReloadModelRequest();
         }
 
@@ -1386,7 +1392,10 @@ namespace NMediaManager
                 log()->appendPlainText( "Running Command:" + tmp.join( " " ) );
             }
 
-            fProcess->start( curr.fCmd, curr.fArgs );
+            QProcess::OpenMode openMode = QProcess::ReadWrite;
+            if ( curr.fUnbuffered )
+                openMode |= QProcess::Unbuffered;
+            fProcess->start( curr.fCmd, curr.fArgs, openMode );
         }
 
         QString CDirModel::getProgressLabel( const SProcessInfo & /*processInfo*/ ) const
@@ -1430,6 +1439,7 @@ namespace NMediaManager
         void CDirModel::slotProgressCanceled()
         {
             fProcess->kill();
+            fUnbufferedTimer->stop();
         }
 
         QStringList CDirModel::getMediaHeaders() const
@@ -1484,6 +1494,7 @@ namespace NMediaManager
 
         void CDirModel::slotProcessErrorOccured( QProcess::ProcessError error )
         {
+            fUnbufferedTimer->stop();
             auto msg = tr( "Error Running Command: %1(%2)" ).arg( errorString( error ) ).arg( error );
             processFinished( msg, true );
             fProcessFinishedHandled = true;
@@ -1491,6 +1502,8 @@ namespace NMediaManager
 
         void CDirModel::slotProcessFinished( int exitCode, QProcess::ExitStatus exitStatus )
         {
+            fUnbufferedTimer->stop();
+
             if ( fProcessFinishedHandled )
                 return;
 
@@ -1500,6 +1513,10 @@ namespace NMediaManager
 
         void CDirModel::slotProcessStarted()
         {
+            if ( fProcessQueue.empty() )
+                return;
+            if ( fProcessQueue.front().fUnbuffered )
+                fUnbufferedTimer->start();
         }
 
         void CDirModel::slotProcesssStateChanged( QProcess::ProcessState newState )
@@ -1682,6 +1699,13 @@ namespace NMediaManager
         QTreeView *CDirModel::filesView() const
         {
             return fBasePage->filesView();
+        }
+
+        void CDirModel::slotUnbufferedTimeout()
+        {
+            fProcess->waitForReadyRead( 100 );
+            //slotProcessStandardError();
+            //slotProcessStandardOutput();
         }
 
         void CDirModel::slotProcessStandardError()

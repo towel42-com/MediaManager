@@ -151,6 +151,7 @@ namespace NMediaManager
 
             bool fBackupOrig{ true };
             bool fSetMKVTagsOnSuccess{ false };
+            bool fUnbuffered{ false };
             QString fCmd;
             QStringList fArgs;
             QStandardItem *fItem{ nullptr };
@@ -268,6 +269,8 @@ namespace NMediaManager
             void slotProcesssStateChanged( QProcess::ProcessState newState );
             void slotProgressCanceled();
             virtual void slotDataChanged( const QModelIndex &start, const QModelIndex &end, const QVector< int > &roles );
+
+            void slotUnbufferedTimeout();
 
         protected:
             virtual bool isTitleSameAsAutoSet( const QModelIndex &idx, QString *msg = nullptr ) const;
@@ -404,7 +407,8 @@ namespace NMediaManager
 
             std::map< QString, QStandardItem * > fPathMapping;
 
-            QTimer *fTimer{ nullptr };
+            QTimer * fReloadTimer{ nullptr };
+            QTimer * fUnbufferedTimer{ nullptr };
             NUi::CBasePage *fBasePage{ nullptr };
             QProcess *fProcess{ nullptr };
             std::pair< bool, std::shared_ptr< QStandardItemModel > > fProcessResults;

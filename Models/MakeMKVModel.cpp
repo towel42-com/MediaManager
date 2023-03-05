@@ -67,8 +67,6 @@ namespace NMediaManager
             if ( !displayOnly )
             {
                 processInfo.fMaximum = NSABUtils::getNumberOfSeconds( processInfo.fOldName );
-                ;
-
                 processInfo.fCmd = NPreferences::NCore::CPreferences::instance()->getFFMpegEXE();
                 if ( processInfo.fCmd.isEmpty() || !QFileInfo( processInfo.fCmd ).isExecutable() )
                 {
