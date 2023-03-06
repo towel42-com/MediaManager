@@ -29,7 +29,7 @@ set(qtproject_SRCS
     BasePage.cpp
     GenerateBIFPage.cpp
     MainWindow.cpp
-    MakeMKVPage.cpp
+    MakeH265MKVPage.cpp
     MergeSRTPage.cpp
     SelectTMDB.cpp
     ProcessConfirm.cpp
@@ -43,7 +43,7 @@ set(qtproject_H
     BasePage.h
     GenerateBIFPage.h
     MainWindow.h
-    MakeMKVPage.h
+    MakeH265MKVPage.h
     MergeSRTPage.h
     SelectTMDB.h
     ProcessConfirm.h

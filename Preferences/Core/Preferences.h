@@ -164,9 +164,9 @@ namespace NMediaManager
                 QStringList getCustomPathsToDelete() const;
                 void setCustomPathsToDelete( const QStringList &paths );
 
-                QString getDefaultRippedWithMKVRegEX() const;
-                QString getRippedWithMKVRegEX() const;
-                void setRippedWithMKVRegEX( const QString &value );
+                QString getDefaultRippedWithMakeMKVRegEX() const;
+                QString getRippedWithMakeMKVRegEX() const;
+                void setRippedWithMakeMKVRegEX( const QString &value );
 
                 bool getDefaultDeleteCustom() const;
                 bool deleteCustom() const;

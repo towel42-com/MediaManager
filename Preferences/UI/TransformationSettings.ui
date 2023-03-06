@@ -52,7 +52,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="rippedWithMKVRegEX">
+      <widget class="QLineEdit" name="rippedWithMakeMKVRegEX">
        <property name="placeholderText">
         <string>Must include named capture ?&lt;num&gt;</string>
        </property>

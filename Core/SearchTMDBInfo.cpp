@@ -665,7 +665,7 @@ namespace NMediaManager
                 return ( *pos ).second.first;
             }
 
-            auto regExpStr = NPreferences::NCore::CPreferences::instance()->getRippedWithMKVRegEX();
+            auto regExpStr = NPreferences::NCore::CPreferences::instance()->getRippedWithMakeMKVRegEX();
             auto regExp = QRegularExpression( regExpStr );
             auto match = regExp.match( name );
             bool aOK = false;

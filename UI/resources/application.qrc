@@ -4,6 +4,7 @@
         <file>cc.png</file>
         <file>roku.png</file>
         <file>mkv.png</file>
+        <file>h265.png</file>
         <file>tag.png</file>
         <file>mediamanager.png</file>
     </qresource>

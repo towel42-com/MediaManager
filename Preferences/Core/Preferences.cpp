@@ -630,7 +630,7 @@ namespace NMediaManager
                 return settings.value( "CustomToDelete", getDefaultCustomPathsToDelete() ).toStringList();
             }
 
-            void CPreferences::setRippedWithMKVRegEX( const QString &value )
+            void CPreferences::setRippedWithMakeMKVRegEX( const QString &value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
@@ -638,11 +638,11 @@ namespace NMediaManager
                 emitSigPreferencesChanged( EPreferenceType::eTransformPrefs );
             }
 
-            QString CPreferences::getRippedWithMKVRegEX() const
+            QString CPreferences::getRippedWithMakeMKVRegEX() const
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
-                auto retVal = settings.value( "RippedWithMKVRegEX", getDefaultRippedWithMKVRegEX() ).toString();
+                auto retVal = settings.value( "RippedWithMKVRegEX", getDefaultRippedWithMakeMKVRegEX() ).toString();
 #ifdef _DEBUG
                 Q_ASSERT_X( retVal.indexOf( "?<num>" ) >= 0, "getRippedWithMKVRegEX", "Invalid setting must contain the capture of num" );
 #endif
@@ -1871,7 +1871,7 @@ namespace NMediaManager
                                   << compareValues( "TV Out Dir Pattern", getDefaultOutDirPattern( true ), getTVOutDirPattern( false ) ) << compareValues( "TV Out File Pattern", getDefaultOutFilePattern( true ), getTVOutFilePattern() )
                                   << compareValues( "Skipped Paths (Media Transform)", getDefaultSkippedPaths( true ), getSkippedPaths( true ) )
                                   << compareValues( "Skipped Paths (Media Tagging)", getDefaultSkippedPaths( false ), getSkippedPaths( false ) ) << compareValues( "Ignored Paths", getDefaultIgnoredPaths(), getIgnoredPaths() )
-                                  << compareValues( "Paths to Delete", getDefaultCustomPathsToDelete(), getCustomPathsToDelete() ) << compareValues( "Ripped With MKV RegEX", getDefaultRippedWithMKVRegEX(), getRippedWithMKVRegEX() )
+                                  << compareValues( "Paths to Delete", getDefaultCustomPathsToDelete(), getCustomPathsToDelete() ) << compareValues( "Ripped With MKV RegEX", getDefaultRippedWithMakeMKVRegEX(), getRippedWithMakeMKVRegEX() )
 
                                   << compareValues( "Delete Custom", getDefaultDeleteCustom(), deleteCustom() ) << compareValues( "Delete Executables", getDefaultDeleteEXE(), deleteEXE() )
                                   << compareValues( "Delete NFO Files", getDefaultDeleteNFO(), deleteNFO() ) << compareValues( "Delete BAK Files", getDefaultDeleteBAK(), deleteBAK() )
@@ -1918,7 +1918,7 @@ namespace NMediaManager
                     replaceText( "%DEFAULT_OUT_FILE_PATTERN%", newFileText, "getDefaultOutFilePattern", "forTV", getTVOutFilePattern(), getMovieOutFilePattern() );
                     replaceText( "%DEFAULT_CUSTOM_PATHS_TO_DELETE%", newFileText, "getDefaultCustomPathsToDelete", getCustomPathsToDelete() );
                     replaceText( "%DEFAULT_DELETE_CUSTOM%", newFileText, "getDefaultDeleteCustom", "!getDefaultCustomPathsToDelete().isEmpty()" );
-                    replaceText( "%DEFAULT_RIPPED_WITH_MKV_REGEX%", newFileText, "getDefaultRippedWithMKVRegEX", getRippedWithMKVRegEX() );
+                    replaceText( "%DEFAULT_RIPPED_WITH_MKV_REGEX%", newFileText, "getDefaultRippedWithMKVRegEX", getRippedWithMakeMKVRegEX() );
                     replaceText( "%DEFAULT_DELETE_EXE%", newFileText, "getDefaultDeleteEXE", deleteEXE() );
                     replaceText( "%DEFAULT_DELETE_NFO%", newFileText, "getDefaultDeleteNFO", deleteNFO() );
                     replaceText( "%DEFAULT_DELETE_BAK%", newFileText, "getDefaultDeleteBAK", deleteBAK() );
