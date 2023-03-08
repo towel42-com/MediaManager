@@ -1,0 +1,26 @@
+#
+# Export file for libvorbisidec
+#
+# Only the symbols listed in the global section will be callable from
+# applications linking to libvorbisidec.
+#
+
+@PACKAGE@.so.1
+{
+	global:
+		ov_streams;
+		ov_seekable;
+		ov_serialnumber;
+		ov_raw_total;
+		ov_pcm_total;
+		ov_time_total;
+
+		vorbis_info_init;
+		vorbis_info_clear;
+		vorbis_comment_init;
+		vorbis_comment_clear;
+		vorbis_synthesis_headerin;
+
+	local:
+		*;
+};

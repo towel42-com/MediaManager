@@ -64,6 +64,7 @@ add_subdirectory( Preferences/Core )
 add_subdirectory( Core )
 add_subdirectory( Models )
 add_subdirectory( App )
+add_subdirectory( mkvalidator-0.6.0 )
 
 #set_property( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT MediaManager ) 
 
