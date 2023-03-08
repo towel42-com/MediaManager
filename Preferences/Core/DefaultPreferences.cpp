@@ -88,15 +88,15 @@ namespace NMediaManager
             QStringList CPreferences::getDefaultKnownStrings() const
             {
                 static auto defaultValue = QStringList(
-                    { R"(1080p)",   R"(10bit)",   R"(2.0.h.264)", R"(2.0.h.265)",  R"(2160p)",       R"(4K)",       R"(5.1)",     R"(7.1)",         R"(720p)",          R"(8bit)",    R"(AAC2.0.AVC)", R"(AAC2.0)",   R"(AAC5.1)", R"(AAC)",
-                      R"(Amazon)",  R"(AMZN)",    R"(APEX)",      R"(ARROW)",      R"(Atmos)",       R"(ATVP)",     R"(AVC)",     R"(B0MBARDiERS)", R"(BAE)",           R"(BluRay)",  R"(BRRip)",      R"(BTTF)",     R"(BTV)",    R"(CA)",
-                      R"(CCBB)",    R"(CMRG)",    R"(CM)",        R"(CUPCAKES)",   R"(DC)",          R"(DD2.0)",    R"(DD5.1)",   R"(DDP5.1)",      R"(DL.AAC2.0.AVC)", R"(DL.DD+)",  R"(DL.DD)",      R"(DSNP)",     R"(DTS-HD)", R"(DTS)",
-                      R"(DUAL)",    R"(DVDRip)",  R"(DVSUX)",     R"(DV)",         R"(EddieSmurfy)", R"(FGT)",      R"(FLUX)",    R"(h.264)",       R"(h.265)",         R"(h264)",    R"(h265)",       R"(HD4U)",     R"(HDRip)",  R"(HDR)",
-                      R"(HEVC)",    R"(HMAX)",    R"(IAMABLE)",   R"(IMAX)",       R"(iNTERNAL)",    R"(ion10)",    R"(Japhson)", R"(KNiVES)",      R"(KOGi)",          R"(KORSUB)",  R"(LCHD)",       R"(LiMiTED)",  R"(LION)",   R"(LT)",
-                      R"(MA)",      R"(MKV)",     R"(MoviesFD)",  R"(MT)",         R"(MX)",          R"(NAISU)",    R"(NF)",      R"(nogrp)",       R"(NTb)",           R"(PCOK)",    R"(PECULATE)",   R"(PEGASUS)",  R"(PiGNUS)", R"(PLEW)",
-                      R"(PROPER)",  R"(rarbg)",   R"(rartv)",     R"(REMASTERED)", R"(REMASTER)",    R"(REMUX)",    R"(ROKU)",    R"(RUMOUR)",      R"(RUSTED)",        R"(SDR)",     R"(SHITBOX)",    R"(SHOUT)",    R"(SMURF)",  R"(SPARKS)",
-                      R"(SURCODE)", R"(SWTYBLZ)", R"(TBD)",       R"(TEPES)",      R"(TERMiNAL)",    R"(THUGLiNE)", R"(TrollHD)", R"(Troll)",       R"(TrueHD)",        R"(TRUFFLE)", R"(UHD)",        R"(UMBRELLA)", R"(UNCUT)",  R"(WAKEUP)",
-                      R"(WEB-DL)",  R"(WebRip)",  R"(WEB)",       R"(x264)",       R"(x265)",        R"(XviDTLF)",  R"(YIFY)",    R"(YTS.AG)",      R"(YTS.AM)",        R"(YTS)" } );
+                    { R"(1080p)",    R"(10bit)",  R"(2.0.h.264)", R"(2.0.h.265)", R"(2160p)",   R"(4K)",       R"(5.1)",         R"(7.1)",         R"(720p)",     R"(8bit)",    R"(AAC2.0.AVC)",    R"(AAC2.0)", R"(AAC5.1)",  R"(AAC)",
+                      R"(Amazon)",   R"(AMZN)",   R"(APEX)",      R"(ARROW)",     R"(Atmos)",   R"(ATVP)",     R"(AVC)",         R"(B0MBARDiERS)", R"(BAE)",      R"(BluRay)",  R"(BRRip)",         R"(BTTF)",   R"(BTV)",     R"(CA)",
+                      R"(CCBB)",     R"(CMRG)",   R"(CM)",        R"(CUPCAKES)",  R"(DC)",      R"(DD2.0)",    R"(DD5.1)",       R"(DDP5.1)",      R"(DDPA5.1)",  R"(DiN)",     R"(DL.AAC2.0.AVC)", R"(DL.DD+)", R"(DL.DD)",   R"(DSNP)",
+                      R"(DTS-HD)",   R"(DTS)",    R"(DUAL)",      R"(DVDRip)",    R"(DVSUX)",   R"(DV)",       R"(EddieSmurfy)", R"(FGT)",         R"(FLUX)",     R"(h.264)",   R"(h.265)",         R"(h264)",   R"(h265)",    R"(HD4U)",
+                      R"(HDRip)",    R"(HDR)",    R"(HEVC)",      R"(HMAX)",      R"(IAMABLE)", R"(IMAX)",     R"(iNTERNAL)",    R"(ion10)",       R"(Japhson)",  R"(KINO)",    R"(KNiVES)",        R"(KOGi)",   R"(KORSUB)",  R"(LCHD)",
+                      R"(LiMiTED)",  R"(LION)",   R"(LT)",        R"(MA)",        R"(MKV)",     R"(MoviesFD)", R"(MT)",          R"(MX)",          R"(NAISU)",    R"(NF)",      R"(nogrp)",         R"(NTb)",    R"(PCOK)",    R"(PECULATE)",
+                      R"(PEGASUS)",  R"(PiGNUS)", R"(PLEW)",      R"(PROPER)",    R"(rarbg)",   R"(rartv)",    R"(REMASTERED)",  R"(REMASTER)",    R"(REMUX)",    R"(ROKU)",    R"(RUMOUR)",        R"(RUSTED)", R"(SDR)",     R"(SHITBOX)",
+                      R"(SHOUT)",    R"(SMURF)",  R"(SPARKS)",    R"(SURCODE)",   R"(SWTYBLZ)", R"(TBD)",      R"(TEPES)",       R"(TERMiNAL)",    R"(THUGLiNE)", R"(TrollHD)", R"(Troll)",         R"(TrueHD)", R"(TRUFFLE)", R"(UHD)",
+                      R"(UMBRELLA)", R"(UNCUT)",  R"(WAKEUP)",    R"(WEB-DL)",    R"(WebRip)",  R"(WEB)",      R"(x264)",        R"(x265)",        R"(XviDTLF)",  R"(YIFY)",    R"(YTS.AG)",        R"(YTS.AM)", R"(YTS)" } );
                 return defaultValue;
             }
 

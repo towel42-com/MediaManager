@@ -23,8 +23,9 @@
 #include "Preferences.h"
 #include "Core/LanguageInfo.h"
 #include "SABUtils/QtUtils.h"
-#include "SABUtils/MKVUtils.h"
+#include "SABUtils/MediaInfo.h"
 #include "SABUtils/FileUtils.h"
+#include "SABUtils/GPUDetect.h"
 
 #include <QSettings>
 #include <QStringListModel>
@@ -82,6 +83,8 @@ namespace NMediaManager
                     return "GIF";
                 case eBIFPrefs:
                     return "BIF";
+                case eMakeMKVPrefs:
+                    return "MakeMKV";
                 default:
                     return "";
             }
@@ -89,6 +92,96 @@ namespace NMediaManager
 
         namespace NCore
         {
+            QString toString( EMakeMKVPreset preset )
+            {
+                switch ( preset )
+                {
+                    case EMakeMKVPreset::eUltraFast:
+                        return "ultrafast";
+                    case EMakeMKVPreset::eSuperFast:
+                        return "superfast";
+                    case EMakeMKVPreset::eVeryFast:
+                        return "veryfast";
+                    case EMakeMKVPreset::eFaster:
+                        return "faster";
+                    case EMakeMKVPreset::eFast:
+                        return "fast";
+                    case EMakeMKVPreset::eMedium:
+                        return "medium";
+                    case EMakeMKVPreset::eSlow:
+                        return "slow";
+                    case EMakeMKVPreset::eSlower:
+                        return "slower";
+                    case EMakeMKVPreset::eVerySlow:
+                        return "verislow";
+                }
+                return "medium";
+            }
+
+            QString toString( EMakeMKVTune preset )
+            {
+                switch ( preset )
+                {
+                    case EMakeMKVTune::eFilm:
+                        return "film";
+                    case EMakeMKVTune::eAnimation:
+                        return "animation";
+                    case EMakeMKVTune::eGrain:
+                        return "grain";
+                    case EMakeMKVTune::eStillImage:
+                        return "stillimage";
+                    case EMakeMKVTune::eFastDecode:
+                        return "fastdecode";
+                    case EMakeMKVTune::eZeroLatency:
+                        return "zerolatency";
+                }
+                return "film";
+            }
+
+            QString toString( EMakeMKVProfile profile )
+            {
+                switch ( profile )
+                {
+                    case EMakeMKVProfile::eMain:
+                        return "main";
+                    case EMakeMKVProfile::eMainIntra:
+                        return "main-intra";
+                    case EMakeMKVProfile::eMailStillPicture:
+                        return "mailstillpicture";
+                    case EMakeMKVProfile::eMain444_8:
+                        return "main444-8";
+                    case EMakeMKVProfile::eMain444Intra:
+                        return "main444-intra";
+                    case EMakeMKVProfile::eMain444StillPicture:
+                        return "main444-stillpicture";
+                    case EMakeMKVProfile::eMain10:
+                        return "main10";
+                    case EMakeMKVProfile::eMain10Intra:
+                        return "main10-intra";
+                    case EMakeMKVProfile::eMain422_10:
+                        return "main422-10";
+                    case EMakeMKVProfile::eMain422_10Intra:
+                        return "main422-10-intra";
+                    case EMakeMKVProfile::eMain444_10:
+                        return "main444-10";
+                    case EMakeMKVProfile::eMain444_10Intra:
+                        return "main444-10-intra";
+                    case EMakeMKVProfile::eMain12:
+                        return "main12";
+                    case EMakeMKVProfile::eMain12Intra:
+                        return "main12-intra";
+                    case EMakeMKVProfile::eMain422_12:
+                        return "main422-12";
+                    case EMakeMKVProfile::eMain422_12Intra:
+                        return "main422-12-intra";
+                    case EMakeMKVProfile::eMain444_12:
+                        return "main444-12";
+                    case EMakeMKVProfile::eMain444_12Intra:
+                        return "main444012-intra";
+                }
+                return "main";
+            }
+ 
             CPreferences *CPreferences::instance()
             {
                 static CPreferences retVal;
@@ -170,7 +263,8 @@ namespace NMediaManager
 
             QSize CPreferences::getThumbnailSize( const QFileInfo &fi ) const
             {
-                auto tags = NSABUtils::getMediaTags( fi.absoluteFilePath(), { NSABUtils::EMediaTags::eWidth, NSABUtils::EMediaTags::eHeight, NSABUtils::EMediaTags::eAspectRatio } );
+                auto mediaInfo = NSABUtils::CMediaInfo( fi.absoluteFilePath() );
+                auto tags = mediaInfo.getMediaTags( { NSABUtils::EMediaTags::eWidth, NSABUtils::EMediaTags::eHeight, NSABUtils::EMediaTags::eAspectRatio } );
 
                 auto width = tags[ NSABUtils::EMediaTags::eWidth ].toInt();
                 auto height = tags[ NSABUtils::EMediaTags::eHeight ].toInt();
@@ -330,10 +424,10 @@ namespace NMediaManager
                 return videoExtensions;
             }
 
-            QStringList CPreferences::getNonMKVMediaExtensions() const
+            QStringList CPreferences::getNonMKVVideoExtensions() const
             {
                 auto retVal = getVideoExtensions();
-                retVal.removeAll( "*.mkv" );
+                //retVal.removeAll( "*.mkv" );
                 return retVal;
             }
 
@@ -1239,6 +1333,101 @@ namespace NMediaManager
                 return aOK ? retVal : QString();
             }
 
+            bool CPreferences::hasIntelGPU() const
+            {
+                if ( !fHasIntelGPU.has_value() )
+                {
+                    fHasIntelGPU = false;
+                    auto gpus = NSABUtils::detectGPUs();
+                    for ( auto &&ii : gpus )
+                    {
+                        if ( ii->isIntelGPU() )
+                        {
+                            fHasIntelGPU = true;
+                            break;
+                        }
+                    }
+                }
+                return fHasIntelGPU.value();
+            }
+
+            bool CPreferences::hasNVidiaGPU() const
+            {
+                if ( !fHasNVidiaGPU.has_value() )
+                {
+                    fHasNVidiaGPU = false;
+                    auto gpus = NSABUtils::detectGPUs();
+                    for ( auto &&ii : gpus )
+                    {
+                        if ( ii->isNVidiaGPU() )
+                        {
+                            fHasNVidiaGPU = true;
+                            break;
+                        }
+                    }
+                }
+                return fHasNVidiaGPU.value();
+            }
+
+            void CPreferences::setIntelGPUTranscode( bool value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eExtToolsPrefs ) );
+                settings.setValue( "IntelGPUTranscode", value );
+                emitSigPreferencesChanged( EPreferenceType::eExtToolsPrefs );
+            }
+
+            bool CPreferences::getIntelGPUTranscodeDefault() const
+            {
+                return hasIntelGPU() && !hasNVidiaGPU();
+            }
+
+            bool CPreferences::getIntelGPUTranscode() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eExtToolsPrefs ) );
+                return settings.value( "IntelGPUTranscode", getIntelGPUTranscodeDefault() ).toBool();
+            }
+
+            void CPreferences::setNVidiaGPUTranscode( bool value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eExtToolsPrefs ) );
+                settings.setValue( "nVidiaGPUTranscode", value );
+                emitSigPreferencesChanged( EPreferenceType::eExtToolsPrefs );
+            }
+
+            bool CPreferences::getNVidiaGPUTranscodeDefault() const
+            {
+                return hasNVidiaGPU();
+            }
+
+            bool CPreferences::getNVidiaGPUTranscode() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eExtToolsPrefs ) );
+                return settings.value( "nVidiaGPUTranscode", getNVidiaGPUTranscodeDefault() ).toBool();
+            }
+
+            void CPreferences::setSoftwareTranscode( bool value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eExtToolsPrefs ) );
+                settings.setValue( "SoftwareTranscode", value );
+                emitSigPreferencesChanged( EPreferenceType::eExtToolsPrefs );
+            }
+
+            bool CPreferences::getSoftwareTranscodeDefault() const
+            {
+                return !hasIntelGPU() && !hasNVidiaGPU();
+            }
+            bool CPreferences::getSoftwareTranscode() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eExtToolsPrefs ) );
+                return settings.value( "SoftwareTranscode", getSoftwareTranscodeDefault() ).toBool();
+            }
+
             /// ////////////////////////////////////////////////////////
             /// BIF Options
             /// ////////////////////////////////////////////////////////
@@ -1520,6 +1709,255 @@ namespace NMediaManager
                 return settings.value( "Delay", 10 ).toInt();
             }
 
+            
+            /// ////////////////////////////////////////////////////////
+            /// MakeMKV Options
+            /// ////////////////////////////////////////////////////////
+
+            QStringList CPreferences::getConvertToMKVArgs( bool sourceH265, const QString &srcName, const QString &destName ) const
+            {
+                auto convertToH265 = sourceH265 && getConvertToH265();
+                
+                auto retVal = QStringList() //
+                    << "-y" //
+                    << "-fflags" << "+genpts"   //
+                    ;
+
+                if( convertToH265 )
+                {
+                    QString hwAccel;
+                    QString videoCodec;
+
+                    if ( NPreferences::NCore::CPreferences::instance()->getNVidiaGPUTranscode() )
+                    {
+                        hwAccel = "cuda";
+                        videoCodec = "hevc_nvenc";
+
+                    }
+                    else if ( NPreferences::NCore::CPreferences::instance()->getIntelGPUTranscode() )
+                    {
+                        hwAccel = "qsv";
+                        videoCodec = "hevc_qsv";
+                    }
+                    else if ( NPreferences::NCore::CPreferences::instance()->getSoftwareTranscode() )
+                    {
+                        hwAccel.clear();
+                        videoCodec = "libx265";
+                    }
+
+                    if ( !hwAccel.isEmpty() )
+                    {
+                        retVal //
+                            << "-hwaccel" << hwAccel //
+                            << "-hwaccel_output_format" << hwAccel //
+                            ;
+                    }
+
+                    retVal << "-i" << srcName   //
+                           << "-map" << "0:a?"   //
+                           << "-map" << "0:v?"   // 
+                           << "-map" << "0:s?"   //
+                           << "-c:a" << "copy"   //
+                           << "-c:v" << videoCodec  //
+                        ;
+                    if ( getLosslessTranscoding() )
+                        retVal << "-x265-params" << "lossless=1";
+                    else
+                    {
+                        if ( getUseExplicitCRF() )
+                            retVal << "-crf" << QString::number( getExplicitCRF() );
+                        if ( getUsePreset() )
+                            retVal << "-preset" << toString( getPreset() );
+                        if ( getUseTune() )
+                            retVal << "-tune" << toString( getTune() );
+                    }
+                    if ( getUseProfile() )
+                        retVal << "-profile:v" << toString( getProfile() );
+                }
+                else
+                {
+                    // already HVEC but wrong container, just copy
+                    retVal 
+                        << "-i" << srcName   //
+                        << "-c:v" << "copy"   //
+                        << "-c:a" << "copy"   //
+                        << "-c:s" << "copy"   //
+                        ;
+                }
+                retVal << "-f" << "matroska"   //
+                       << destName;
+
+                return retVal;
+            }
+
+            void CPreferences::setConvertToH265( bool value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
+                return settings.setValue( "ConvertToH265", value );
+                emitSigPreferencesChanged( EPreferenceType::eMakeMKVPrefs );
+            }
+
+            bool CPreferences::getConvertToH265() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
+                return settings.value( "ConvertToH265", true ).toBool();
+            }
+
+            void CPreferences::setLosslessTranscoding( bool value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
+                return settings.setValue( "LosslessTranscoding", value );
+                emitSigPreferencesChanged( EPreferenceType::eMakeMKVPrefs );
+            }
+
+            bool CPreferences::getLosslessTranscoding() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
+                return settings.value( "LosslessTranscoding", true ).toBool();
+            }
+
+            void CPreferences::setUseCRF( bool value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
+                return settings.setValue( "UseCRF", value );
+                emitSigPreferencesChanged( EPreferenceType::eMakeMKVPrefs );
+            }
+
+            bool CPreferences::getUseCRF() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
+                return settings.value( "UseCRF", false ).toBool();
+            }
+
+            void CPreferences::setUseExplicitCRF( bool value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
+                return settings.setValue( "UseConstantRateFactor", value );
+                emitSigPreferencesChanged( EPreferenceType::eMakeMKVPrefs );
+            }
+
+            bool CPreferences::getUseExplicitCRF() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
+                return settings.value( "UseConstantRateFactor", false ).toBool();
+            }
+
+            void CPreferences::setExplicitCRF( int value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
+                return settings.setValue( "ExplicitCRF", value );
+                emitSigPreferencesChanged( EPreferenceType::eMakeMKVPrefs );
+            }
+
+            int CPreferences::getExplicitCRF() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
+                return settings.value( "ExplicitCRF", 28 ).toInt();
+            }
+
+            void CPreferences::setUsePreset( bool value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
+                return settings.setValue( "UsePreset", value );
+                emitSigPreferencesChanged( EPreferenceType::eMakeMKVPrefs );
+            }
+
+            bool CPreferences::getUsePreset() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
+                return settings.value( "UsePreset", false ).toBool();
+            }
+
+            void CPreferences::setPreset( EMakeMKVPreset value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
+                return settings.setValue( "Preset", value );
+                emitSigPreferencesChanged( EPreferenceType::eMakeMKVPrefs );
+            }
+
+            EMakeMKVPreset CPreferences::getPreset() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
+                return static_cast< EMakeMKVPreset >( settings.value( "Preset", EMakeMKVPreset::eMedium ).toInt() );
+            }
+
+            void CPreferences::setUseTune( bool value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
+                return settings.setValue( "UseTune", value );
+                emitSigPreferencesChanged( EPreferenceType::eMakeMKVPrefs );
+            }
+
+            bool CPreferences::getUseTune() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
+                return settings.value( "UseTune", false ).toBool();
+            }
+
+            void CPreferences::setTune( EMakeMKVTune value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
+                return settings.setValue( "Tune", value );
+                emitSigPreferencesChanged( EPreferenceType::eMakeMKVPrefs );
+            }
+
+            EMakeMKVTune CPreferences::getTune() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
+                return static_cast< EMakeMKVTune >( settings.value( "Tune", EMakeMKVTune::eFilm ).toInt() );
+            }
+
+            void CPreferences::setUseProfile( bool value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
+                return settings.setValue( "UseProfile", value );
+                emitSigPreferencesChanged( EPreferenceType::eMakeMKVPrefs );
+            }
+
+            bool CPreferences::getUseProfile() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
+                return settings.value( "UseProfile", false ).toBool();
+            }
+
+            void CPreferences::setProfile( EMakeMKVProfile value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
+                return settings.setValue( "Profile", value );
+                emitSigPreferencesChanged( EPreferenceType::eMakeMKVPrefs );
+            }
+
+            EMakeMKVProfile CPreferences::getProfile() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
+                return static_cast< EMakeMKVProfile >( settings.value( "Profile", EMakeMKVProfile::eMain422_12 ).toInt() );
+            }
+
+            /////////////////////////////////
+            /////////////////////////////////
+
             bool CPreferences::isFileWithExtension( const QFileInfo &fi, std::function< QStringList() > getExtensions, std::unordered_set< QString > &hash, std::unordered_map< QString, bool > &cache ) const
             {
                 if ( hash.empty() )
@@ -1743,6 +2181,9 @@ namespace NMediaManager
                     }
                 }
 
+                if ( items.count() > 15 )
+                    items.clear();
+
                 int origII = ii;
                 for ( int ii = origII; ii < defaultValues.count(); ++ii )
                 {
@@ -1866,19 +2307,26 @@ namespace NMediaManager
             QString CPreferences::validateDefaults() const
             {
                 auto items =
-                    QStringList() << compareValues( "Movie Out Dir Pattern", getDefaultOutDirPattern( false ), getMovieOutDirPattern() )
-                                  << compareValues( "Movie Out File Pattern", getDefaultOutFilePattern( false ), getMovieOutFilePattern() ) << compareValues( "Season Out Dir Pattern", getDefaultSeasonDirPattern(), getSeasonOutDirPattern() )
-                                  << compareValues( "TV Out Dir Pattern", getDefaultOutDirPattern( true ), getTVOutDirPattern( false ) ) << compareValues( "TV Out File Pattern", getDefaultOutFilePattern( true ), getTVOutFilePattern() )
-                                  << compareValues( "Skipped Paths (Media Transform)", getDefaultSkippedPaths( true ), getSkippedPaths( true ) )
-                                  << compareValues( "Skipped Paths (Media Tagging)", getDefaultSkippedPaths( false ), getSkippedPaths( false ) ) << compareValues( "Ignored Paths", getDefaultIgnoredPaths(), getIgnoredPaths() )
-                                  << compareValues( "Paths to Delete", getDefaultCustomPathsToDelete(), getCustomPathsToDelete() ) << compareValues( "Ripped With MKV RegEX", getDefaultRippedWithMakeMKVRegEX(), getRippedWithMakeMKVRegEX() )
-
-                                  << compareValues( "Delete Custom", getDefaultDeleteCustom(), deleteCustom() ) << compareValues( "Delete Executables", getDefaultDeleteEXE(), deleteEXE() )
-                                  << compareValues( "Delete NFO Files", getDefaultDeleteNFO(), deleteNFO() ) << compareValues( "Delete BAK Files", getDefaultDeleteBAK(), deleteBAK() )
-                                  << compareValues( "Delete Images", getDefaultDeleteImages(), deleteImages() )
-
-                                  << compareValues( "Known Strings", getDefaultKnownStrings(), getKnownStrings() ) << compareValues( "Known Extended Strings", getDefaultKnownExtendedStrings(), getKnownExtendedStrings() )
-                                  << compareValues( "Known Abbreviations", getDefaultKnownAbbreviations(), getKnownAbbreviations() ) << compareValues( "Known Hyphenated", getDefaultKnownHyphenated(), getKnownHyphenated() );
+                    QStringList()
+                        << compareValues( "Movie Out Dir Pattern", getDefaultOutDirPattern( false ), getMovieOutDirPattern() ) //
+                        << compareValues( "Movie Out File Pattern", getDefaultOutFilePattern( false ), getMovieOutFilePattern() ) //
+                        << compareValues( "Season Out Dir Pattern", getDefaultSeasonDirPattern(), getSeasonOutDirPattern() ) //
+                        << compareValues( "TV Out Dir Pattern", getDefaultOutDirPattern( true ), getTVOutDirPattern( false ) ) //
+                        << compareValues( "TV Out File Pattern", getDefaultOutFilePattern( true ), getTVOutFilePattern() ) //
+                        << compareValues( "Skipped Paths (Media Transform)", getDefaultSkippedPaths( true ), getSkippedPaths( true ) ) //
+                        << compareValues( "Skipped Paths (Media Tagging)", getDefaultSkippedPaths( false ), getSkippedPaths( false ) ) //
+                        << compareValues( "Ignored Paths", getDefaultIgnoredPaths(), getIgnoredPaths() ) //
+                        << compareValues( "Paths to Delete", getDefaultCustomPathsToDelete(), getCustomPathsToDelete() ) //
+                        << compareValues( "Ripped With MKV RegEX", getDefaultRippedWithMakeMKVRegEX(), getRippedWithMakeMKVRegEX() ) //
+                        << compareValues( "Delete Custom", getDefaultDeleteCustom(), deleteCustom() ) //
+                        << compareValues( "Delete Executables", getDefaultDeleteEXE(), deleteEXE() ) //
+                        << compareValues( "Delete NFO Files", getDefaultDeleteNFO(), deleteNFO() ) // 
+                        << compareValues( "Delete BAK Files", getDefaultDeleteBAK(), deleteBAK() ) //
+                        << compareValues( "Delete Images", getDefaultDeleteImages(), deleteImages() ) //
+                        << compareValues( "Known Strings", getDefaultKnownStrings(), getKnownStrings() ) //
+                        << compareValues( "Known Extended Strings", getDefaultKnownExtendedStrings(), getKnownExtendedStrings() ) //
+                        << compareValues( "Known Abbreviations", getDefaultKnownAbbreviations(), getKnownAbbreviations() ) //
+                        << compareValues( "Known Hyphenated", getDefaultKnownHyphenated(), getKnownHyphenated() );
                 items.removeAll( QString() );
 
                 QString retVal;
@@ -1918,7 +2366,7 @@ namespace NMediaManager
                     replaceText( "%DEFAULT_OUT_FILE_PATTERN%", newFileText, "getDefaultOutFilePattern", "forTV", getTVOutFilePattern(), getMovieOutFilePattern() );
                     replaceText( "%DEFAULT_CUSTOM_PATHS_TO_DELETE%", newFileText, "getDefaultCustomPathsToDelete", getCustomPathsToDelete() );
                     replaceText( "%DEFAULT_DELETE_CUSTOM%", newFileText, "getDefaultDeleteCustom", "!getDefaultCustomPathsToDelete().isEmpty()" );
-                    replaceText( "%DEFAULT_RIPPED_WITH_MKV_REGEX%", newFileText, "getDefaultRippedWithMKVRegEX", getRippedWithMakeMKVRegEX() );
+                    replaceText( "%DEFAULT_RIPPED_WITH_MKV_REGEX%", newFileText, "getDefaultRippedWithMakeMKVRegEX", getRippedWithMakeMKVRegEX() );
                     replaceText( "%DEFAULT_DELETE_EXE%", newFileText, "getDefaultDeleteEXE", deleteEXE() );
                     replaceText( "%DEFAULT_DELETE_NFO%", newFileText, "getDefaultDeleteNFO", deleteNFO() );
                     replaceText( "%DEFAULT_DELETE_BAK%", newFileText, "getDefaultDeleteBAK", deleteBAK() );
@@ -1933,6 +2381,6 @@ namespace NMediaManager
                     QGuiApplication::clipboard()->setText( newFileText.join( "\n" ) );
                 }
             }
-        }
+       }
     }
 }

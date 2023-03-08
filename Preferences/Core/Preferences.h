@@ -30,6 +30,7 @@
 #include <QHash>
 #include <QRegularExpression>
 #include <unordered_set>
+#include <optional>
 class QFileInfo;
 class QWidget;
 
@@ -61,7 +62,8 @@ namespace NMediaManager
             eTagPrefs = 16,
             eExtToolsPrefs = 32,
             eBIFPrefs = 64,
-            eGIFPrefs = 128
+            eGIFPrefs = 128,
+            eMakeMKVPrefs = 256
         };
         Q_DECLARE_FLAGS( EPreferenceTypes, EPreferenceType );
         Q_DECLARE_OPERATORS_FOR_FLAGS( EPreferenceTypes );
@@ -69,6 +71,55 @@ namespace NMediaManager
 
         namespace NCore
         {
+            enum EMakeMKVPreset
+            {
+                eUltraFast,
+                eSuperFast,
+                eVeryFast,
+                eFaster,
+                eFast,
+                eMedium,
+                eSlow,
+                eSlower,
+                eVerySlow
+            };
+            QString toString( EMakeMKVPreset preset );
+
+            enum EMakeMKVTune
+            {
+                eFilm,
+                eAnimation,
+                eGrain,
+                eStillImage,
+                eFastDecode,
+                eZeroLatency
+            };
+            QString toString( EMakeMKVTune preset );
+
+            enum EMakeMKVProfile
+            {
+                eMain,
+                eMainIntra,
+                eMailStillPicture,
+                eMain444_8,
+                eMain444Intra,
+                eMain444StillPicture,
+                eMain10,
+                eMain10Intra,
+                eMain422_10,
+                eMain422_10Intra,
+                eMain444_10,
+                eMain444_10Intra,
+                eMain12,
+                eMain12Intra,
+                eMain422_12,
+                eMain422_12Intra,
+                eMain444_12,
+                eMain444_12Intra
+            };
+            QString toString( EMakeMKVProfile profile );
+
+
             class CPreferences : public QObject
             {
                 Q_OBJECT;
@@ -90,6 +141,41 @@ namespace NMediaManager
 
                 void setTreatAsTVShowByDefault( bool value );
                 bool getTreatAsTVShowByDefault() const;
+
+
+                QStringList getConvertToMKVArgs( bool sourceH265, const QString & srcName, const QString & destName ) const;
+                void setConvertToH265( bool value );
+                bool getConvertToH265() const;
+
+                void setLosslessTranscoding( bool value );
+                bool getLosslessTranscoding() const;
+
+                void setUseCRF( bool value );
+                bool getUseCRF() const;
+
+                void setUseExplicitCRF( bool value );
+                bool getUseExplicitCRF() const;
+
+                void setExplicitCRF( int value );
+                int getExplicitCRF() const;
+
+                void setUsePreset( bool value );
+                bool getUsePreset() const;
+
+                void setPreset( EMakeMKVPreset value );
+                EMakeMKVPreset getPreset() const;
+
+                void setUseTune( bool value );
+                bool getUseTune() const;
+
+                void setTune( EMakeMKVTune value );
+                EMakeMKVTune getTune() const;
+
+                void setUseProfile( bool value );
+                bool getUseProfile() const;
+
+                void setProfile( EMakeMKVProfile value );
+                EMakeMKVProfile getProfile() const;
 
                 void setExactMatchesOnly( bool value );
                 bool getExactMatchesOnly() const;
@@ -206,7 +292,7 @@ namespace NMediaManager
                 void setSubtitleExtensions( const QStringList &value );
                 QStringList getSubtitleExtensions() const;
 
-                QStringList getNonMKVMediaExtensions() const;
+                QStringList getNonMKVVideoExtensions() const;
 
                 void addKnownStrings( const QStringList &value );
                 void setKnownStrings( const QStringList &value );
@@ -243,6 +329,21 @@ namespace NMediaManager
 
                 void setFFProbeEXE( const QString &value );
                 QString getFFProbeEXE() const;
+
+                bool hasIntelGPU() const;
+                bool hasNVidiaGPU() const;
+
+                void setIntelGPUTranscode( bool value );
+                bool getIntelGPUTranscodeDefault() const;
+                bool getIntelGPUTranscode() const;
+
+                void setNVidiaGPUTranscode( bool value );
+                bool getNVidiaGPUTranscodeDefault() const;
+                bool getNVidiaGPUTranscode() const;
+
+                void setSoftwareTranscode( bool value );
+                bool getSoftwareTranscodeDefault() const;
+                bool getSoftwareTranscode() const;
 
                 bool isMediaFile( const QFileInfo &fi ) const;
                 bool isSubtitleFile( const QFileInfo &info, bool *isLangFileFormat = nullptr ) const;
@@ -336,6 +437,8 @@ namespace NMediaManager
                 QString getDefaultOutFilePattern( bool forTV ) const;
                 QTimer *fPrefChangeTimer{ nullptr };
                 EPreferenceTypes fPending;
+                mutable std::optional< bool > fHasIntelGPU;
+                mutable std::optional< bool > fHasNVidiaGPU;
                 mutable std::unordered_set< QString > fMediaExtensionsHash;
                 mutable std::unordered_map< QString, bool > fIsMediaExtension;
 
