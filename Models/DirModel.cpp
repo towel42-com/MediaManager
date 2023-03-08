@@ -33,6 +33,7 @@
 #include "SABUtils/AutoWaitCursor.h"
 #include "SABUtils/FileUtils.h"
 #include "SABUtils/FileCompare.h"
+#include "SABUtils/MediaInfo.h"
 #include "SABUtils/MKVUtils.h"
 
 #include "SABUtils/DoubleProgressDlg.h"
@@ -166,11 +167,6 @@ namespace NMediaManager
             fReloadTimer->setSingleShot( true );
             connect( fReloadTimer, &QTimer::timeout, this, &CDirModel::slotLoadRootDirectory );
 
-            fUnbufferedTimer = new QTimer( this );
-            fUnbufferedTimer->setInterval( 50 );
-            fUnbufferedTimer->setSingleShot( false );
-            connect( fUnbufferedTimer, &QTimer::timeout, this, &CDirModel::slotUnbufferedTimeout );
-
             fProcess = new QProcess( this );
             connect( fProcess, &QProcess::errorOccurred, this, &CDirModel::slotProcessErrorOccured );
             connect( fProcess, qOverload< int, QProcess::ExitStatus >( &QProcess::finished ), this, &CDirModel::slotProcessFinished );
@@ -269,6 +265,9 @@ namespace NMediaManager
 
         void CDirModel::preLoad( QTreeView * /*treeView*/ )
         {
+            resetStatusCaches();
+            fPathMapping.clear();
+            fMediaInfoCache.clear();
         }
 
         void CDirModel::postReloadModelRequest()
@@ -615,7 +614,7 @@ namespace NMediaManager
             return fFileInfo.absoluteFilePath();
         }
 
-        QStandardItem * STreeNode::item( EColumns column, bool createIfNecessary /*= true */ ) const
+        QStandardItem *STreeNode::item( EColumns column, bool createIfNecessary /*= true */ ) const
         {
             items( createIfNecessary );
             return ( column >= fRealItems.count() ) ? nullptr : fRealItems[ int( column ) ];
@@ -761,6 +760,15 @@ namespace NMediaManager
                 bool aOK = isSeasonDir( idx, &isNameOK );
                 return aOK && isNameOK;
             }
+            else if ( role == ECustomRoles::eIsHEVCCodecRole )
+            {
+                auto fileInfo = this->fileInfo( idx );
+                auto mediaInfo = getMediaInfo( idx );
+                if ( !mediaInfo )
+                    return {};
+                return mediaInfo->isHEVCVideo();
+            }
+
             return QStandardItemModel::data( idx, role );
         }
 
@@ -1085,6 +1093,7 @@ namespace NMediaManager
         void CDirModel::clear()
         {
             fPathMapping.clear();
+            fMediaInfoCache.clear();
             QStandardItemModel::clear();
         }
 
@@ -1097,9 +1106,35 @@ namespace NMediaManager
                 return {};
 
             NSABUtils::CAutoWaitCursor awc;
-            auto retVal = NSABUtils::getMediaTags( fi.absoluteFilePath(), tags );
+            auto mediaInfo = getMediaInfo( fi );
+            if ( !mediaInfo )
+                return {};
+            return mediaInfo->getMediaTags( tags );
+        }
 
-            return retVal;
+        std::shared_ptr< NSABUtils::CMediaInfo > CDirModel::getMediaInfo( const QFileInfo &fi ) const
+        {
+            return getMediaInfo( fi.absoluteFilePath() );
+        }
+
+        std::shared_ptr< NSABUtils::CMediaInfo > CDirModel::getMediaInfo( const QString & path ) const
+        {
+            if ( !isMediaFile( path ) )
+                return {};
+
+            auto pos = fMediaInfoCache.find( path );
+            if ( pos == fMediaInfoCache.end() )
+            {
+                auto mediaInfo = std::make_shared< NSABUtils::CMediaInfo >( path);
+                pos = fMediaInfoCache.insert( { path, mediaInfo } ).first;
+            }
+            return ( *pos ).second;
+        }
+
+        std::shared_ptr< NSABUtils::CMediaInfo > CDirModel::getMediaInfo( const QModelIndex &idx ) const
+        {
+            auto fileInfo = this->fileInfo( idx );
+            return getMediaInfo( fileInfo );
         }
 
         bool CDirModel::canShowMediaInfo() const
@@ -1146,8 +1181,8 @@ namespace NMediaManager
                 return {};
 
             std::list< SDirNodeItem > retVal;
-            auto mediaInfo =
-                getMediaTags( fileInfo, { NSABUtils::EMediaTags::eTitle, NSABUtils::EMediaTags::eLength, NSABUtils::EMediaTags::eDate, NSABUtils::EMediaTags::eWidth, NSABUtils::EMediaTags::eHeight, NSABUtils::EMediaTags::eComment } );
+            auto mediaInfo = 
+                getMediaTags( fileInfo, { NSABUtils::EMediaTags::eTitle, NSABUtils::EMediaTags::eLength, NSABUtils::EMediaTags::eDate, NSABUtils::EMediaTags::eResolution, NSABUtils::EMediaTags::eVideoCodec, NSABUtils::EMediaTags::eAudioCodec, NSABUtils::EMediaTags::eVideoBitrateString, NSABUtils::EMediaTags::eComment } );
 
             retVal.emplace_back( mediaInfo[ NSABUtils::EMediaTags::eTitle ], offset++ );
             retVal.back().fEditable = std::make_pair( EType::eMediaTag, NSABUtils::EMediaTags::eTitle );
@@ -1157,12 +1192,17 @@ namespace NMediaManager
             retVal.emplace_back( mediaInfo[ NSABUtils::EMediaTags::eDate ], offset++ );
             retVal.back().fEditable = std::make_pair( EType::eMediaTag, NSABUtils::EMediaTags::eDate );
 
-            auto width = mediaInfo[ NSABUtils::EMediaTags::eWidth ];
-            auto height = mediaInfo[ NSABUtils::EMediaTags::eHeight ];
-            QString resolution;
-            if ( !width.isEmpty() && !height.isEmpty() )
-                resolution = tr( "%1x%2" ).arg( width ).arg( height );
+            auto resolution = mediaInfo[ NSABUtils::EMediaTags::eResolution ];
             retVal.emplace_back( resolution, offset++ );
+
+            auto videoCodec = mediaInfo[ NSABUtils::EMediaTags::eVideoCodec ];
+            retVal.emplace_back( videoCodec, offset++ );
+
+            auto audioCodec = mediaInfo[ NSABUtils::EMediaTags::eAudioCodec ];
+            retVal.emplace_back( audioCodec, offset++ );
+
+            auto bitrate= mediaInfo[ NSABUtils::EMediaTags::eVideoBitrateString ];
+            retVal.emplace_back( bitrate, offset++ );
 
             retVal.emplace_back( mediaInfo[ NSABUtils::EMediaTags::eComment ], offset++ );
             retVal.back().fEditable = std::make_pair( EType::eMediaTag, NSABUtils::EMediaTags::eComment );
@@ -1381,9 +1421,19 @@ namespace NMediaManager
                 if ( curr.fMaximum != 0 )
                     progressDlg()->setSecondaryMaximum( curr.fMaximum );
             }
+
+            auto cmd = curr.fCmd;
+            auto args = curr.fArgs;
+            //if ( curr.fUnbuffered )
+            //{
+            //    args.push_front( cmd );
+            //    args.push_front( "/C" );
+            //    cmd = qgetenv( "COMSPEC" );
+            //}
+
             if ( log() )
             {
-                auto tmp = QStringList() << curr.fCmd << curr.fArgs;
+                auto tmp = QStringList() << cmd << args;
                 for ( auto &&ii : tmp )
                 {
                     if ( ii.contains( " " ) )
@@ -1395,7 +1445,7 @@ namespace NMediaManager
             QProcess::OpenMode openMode = QProcess::ReadWrite;
             if ( curr.fUnbuffered )
                 openMode |= QProcess::Unbuffered;
-            fProcess->start( curr.fCmd, curr.fArgs, openMode );
+            fProcess->start( cmd, args, openMode );
         }
 
         QString CDirModel::getProgressLabel( const SProcessInfo & /*processInfo*/ ) const
@@ -1439,14 +1489,13 @@ namespace NMediaManager
         void CDirModel::slotProgressCanceled()
         {
             fProcess->kill();
-            fUnbufferedTimer->stop();
         }
 
         QStringList CDirModel::getMediaHeaders() const
         {
             if ( !canShowMediaInfo() )
                 return {};
-            return QStringList() << tr( "Title" ) << tr( "Length" ) << tr( "Media Date" ) << tr( "Resolution" ) << tr( "Comment" );
+            return QStringList() << tr( "Title" ) << tr( "Length" ) << tr( "Media Date" ) << tr( "Resolution" ) << tr( "Video Codec" ) << tr( "Audio Codec" ) << tr( "Bitrate" ) << tr( "Comment" );
         }
 
         std::list< SDirNodeItem > CDirModel::addAdditionalItems( const QFileInfo &fileInfo ) const
@@ -1494,7 +1543,6 @@ namespace NMediaManager
 
         void CDirModel::slotProcessErrorOccured( QProcess::ProcessError error )
         {
-            fUnbufferedTimer->stop();
             auto msg = tr( "Error Running Command: %1(%2)" ).arg( errorString( error ) ).arg( error );
             processFinished( msg, true );
             fProcessFinishedHandled = true;
@@ -1502,8 +1550,6 @@ namespace NMediaManager
 
         void CDirModel::slotProcessFinished( int exitCode, QProcess::ExitStatus exitStatus )
         {
-            fUnbufferedTimer->stop();
-
             if ( fProcessFinishedHandled )
                 return;
 
@@ -1515,8 +1561,6 @@ namespace NMediaManager
         {
             if ( fProcessQueue.empty() )
                 return;
-            if ( fProcessQueue.front().fUnbuffered )
-                fUnbufferedTimer->start();
         }
 
         void CDirModel::slotProcesssStateChanged( QProcess::ProcessState newState )
@@ -1552,6 +1596,17 @@ namespace NMediaManager
                 return;
             }
 
+            if ( fBackupOrig )
+            {
+                auto backupName = fOldName + ".bak";
+                if ( !QFile::rename( fOldName, backupName ) )
+                {
+                    CDirModel::appendError( fItem, QObject::tr( "%1: FAILED TO MOVE ITEM TO %2" ).arg( model->getDispName( fOldName ) ).arg( model->getDispName( backupName ) ) );
+                    model->fProcessResults.first = false;
+                    return;
+                }
+            }
+
             for ( auto &&ii : fNewNames )
             {
                 if ( !QFileInfo::exists( ii ) )
@@ -1562,14 +1617,17 @@ namespace NMediaManager
                 }
             }
 
-            if ( fBackupOrig )
+            for ( auto &&ii : fNewNames )
             {
-                auto backupName = fOldName + ".bak";
-                if ( !QFile::rename( fOldName, backupName ) )
+                if ( QFileInfo( ii ).suffix() == "new" )
                 {
-                    CDirModel::appendError( fItem, QObject::tr( "%1: FAILED TO MOVE ITEM TO %2" ).arg( model->getDispName( fOldName ) ).arg( model->getDispName( backupName ) ) );
-                    model->fProcessResults.first = false;
-                    return;
+                    auto newName = ii.mid( 0, ii.length() - 4 );
+                    if ( !QFile::rename( ii, newName ) )
+                    {
+                        CDirModel::appendError( fItem, QObject::tr( "%1: FAILED TO MOVE ITEM TO %2" ).arg( model->getDispName( ii ) ).arg( model->getDispName( newName ) ) );
+                        model->fProcessResults.first = false;
+                        return;
+                    }
                 }
             }
 
@@ -1689,23 +1747,44 @@ namespace NMediaManager
             return getMediaLengthLoc() + 1;
         }
 
-        int CDirModel::getMediaCommentLoc() const
+        int CDirModel::getMediaResolutionLoc() const
         {
             if ( !canShowMediaInfo() )
                 return -1;
             return getMediaDateLoc() + 1;
         }
 
+        int CDirModel::getMediaVideoCodecLoc() const
+        {
+            if ( !canShowMediaInfo() )
+                return -1;
+            return getMediaResolutionLoc() + 1;
+        }
+
+        int CDirModel::getMediaAudioCodecLoc() const
+        {
+            if ( !canShowMediaInfo() )
+                return -1;
+            return getMediaVideoCodecLoc() + 1;
+        }
+
+        int CDirModel::getMediaBitrateLoc() const
+        {
+            if ( !canShowMediaInfo() )
+                return -1;
+            return getMediaAudioCodecLoc() + 1;
+        }
+
+        int CDirModel::getMediaCommentLoc() const
+        {
+            if ( !canShowMediaInfo() )
+                return -1;
+            return getMediaAudioCodecLoc() + 1;
+        }
+
         QTreeView *CDirModel::filesView() const
         {
             return fBasePage->filesView();
-        }
-
-        void CDirModel::slotUnbufferedTimeout()
-        {
-            fProcess->waitForReadyRead( 100 );
-            //slotProcessStandardError();
-            //slotProcessStandardOutput();
         }
 
         void CDirModel::slotProcessStandardError()

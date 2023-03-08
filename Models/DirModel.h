@@ -30,6 +30,7 @@ class QTemporaryDir;
 #include <QFileInfo>   // filedevice
 #include "SABUtils/QtHashUtils.h"
 #include <unordered_set>
+#include <unordered_map>
 #include <optional>
 #include <QProcess>   // qprocess enums
 #include <QMessageBox>   // needed for icon type
@@ -43,6 +44,7 @@ class QTemporaryDir;
 
 namespace NSABUtils
 {
+    class CMediaInfo;
     class CDoubleProgressDlg;
     enum class EMediaTags;
 }
@@ -94,7 +96,8 @@ namespace NMediaManager
             eMediaTagTypeRole,
             eYesNoCheckableOnly,
             eIsSeasonDirRole,
-            eIsSeasonDirCorrectRole
+            eIsSeasonDirCorrectRole,
+            eIsHEVCCodecRole
         };
 
         enum class EType
@@ -270,9 +273,11 @@ namespace NMediaManager
             void slotProgressCanceled();
             virtual void slotDataChanged( const QModelIndex &start, const QModelIndex &end, const QVector< int > &roles );
 
-            void slotUnbufferedTimeout();
-
         protected:
+            std::shared_ptr< NSABUtils::CMediaInfo > getMediaInfo( const QFileInfo &fi ) const;
+            std::shared_ptr< NSABUtils::CMediaInfo > getMediaInfo( const QModelIndex &idx ) const;
+            std::shared_ptr< NSABUtils::CMediaInfo > getMediaInfo( const QString &path ) const;
+
             virtual bool isTitleSameAsAutoSet( const QModelIndex &idx, QString *msg = nullptr ) const;
             virtual bool isDateSameAsAutoSet( const QModelIndex &idx, QString *msg = nullptr ) const;
             virtual bool isCommentSameAsAutoSet( const QModelIndex &idx, QString *msg = nullptr ) const;
@@ -312,6 +317,10 @@ namespace NMediaManager
             virtual int getMediaTitleLoc() const;
             virtual int getMediaLengthLoc() const;
             virtual int getMediaDateLoc() const;
+            virtual int getMediaResolutionLoc() const;
+            virtual int getMediaVideoCodecLoc() const;
+            virtual int getMediaAudioCodecLoc() const;
+            virtual int getMediaBitrateLoc() const;
             virtual int getMediaCommentLoc() const;
             virtual std::list< SDirNodeItem > addAdditionalItems( const QFileInfo &fileInfo ) const;
             virtual std::list< SDirNodeItem > getMediaInfoItems( const QFileInfo &fileInfo, int firstColumn ) const;
@@ -406,9 +415,10 @@ namespace NMediaManager
             CIconProvider *fIconProvider{ nullptr };
 
             std::map< QString, QStandardItem * > fPathMapping;
+            
+            mutable std::unordered_map< QString, std::shared_ptr< NSABUtils::CMediaInfo > > fMediaInfoCache;
 
             QTimer * fReloadTimer{ nullptr };
-            QTimer * fUnbufferedTimer{ nullptr };
             NUi::CBasePage *fBasePage{ nullptr };
             QProcess *fProcess{ nullptr };
             std::pair< bool, std::shared_ptr< QStandardItemModel > > fProcessResults;
