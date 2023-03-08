@@ -48,6 +48,7 @@ static bool_t Live = 0;
 static bool_t Details = 0;
 static bool_t DivX = 0;
 static bool_t Quiet = 0;
+static bool_t Stage = 0;
 static bool_t QuickExit = 0;
 static timecode_t MinTime = INVALID_TIMECODE_T, MaxTime = INVALID_TIMECODE_T;
 static timecode_t ClusterTime = INVALID_TIMECODE_T;
@@ -134,6 +135,7 @@ static int OutputError(int ErrCode, const tchar_t *ErrString, ...)
 	vstprintf_s(Buffer,TSIZEOF(Buffer), ErrString, Args);
 	va_end(Args);
 	TextPrintf(StdErr,T("\rERR%03X: %s\r\n"),ErrCode,Buffer);
+    TextFlush( StdErr );
     if (QuickExit)
         exit(-ErrCode);
 	return -ErrCode;
@@ -149,7 +151,8 @@ static void OutputWarning(int ErrCode, const tchar_t *ErrString, ...)
 	    vstprintf_s(Buffer,TSIZEOF(Buffer), ErrString, Args);
 	    va_end(Args);
 	    TextPrintf(StdErr,T("\rWRN%03X: %s\r\n"),ErrCode,Buffer);
-        if (QuickExit)
+        TextFlush( StdErr );
+        if ( QuickExit )
             exit(-ErrCode);
     }
 }
@@ -824,10 +827,18 @@ static int CheckCueEntries(ebml_master *Cues)
 	else if (ARRAYCOUNT(RClusters,matroska_cluster*))
 	{
 		matroska_cuepoint *CuePoint = (matroska_cuepoint*)EBML_MasterFindChild(Cues, MATROSKA_getContextCuePoint());
+        int DotCount = 0;
 		while (CuePoint)
 		{
-            if (!Quiet && ClustNum++ % 24 == 0)
-                TextWrite(StdErr,T("."));
+            if ( !Quiet && ClustNum++ % 24 == 0 )
+            {
+                TextWrite( StdErr, T( "." ) ); ++DotCount;
+                if ( !( DotCount % 60 ) )
+                {
+                    TextWrite( StdErr, T( "\r                                                              \r" ) );
+                    TextFlush( StdErr );
+                }
+            }
 			MATROSKA_LinkCueSegmentInfo(CuePoint,RSegmentInfo);
 			TimecodeEntry = MATROSKA_CueTimecode(CuePoint);
 			TrackNumEntry = MATROSKA_CueTrackNum(CuePoint);
@@ -889,6 +900,9 @@ int main(int argc, const char *argv[])
     ArrayInit(&RClusters);
     ArrayInit(&Tracks);
 
+    memset( Path, 0, sizeof( Path ) );
+
+
     StdErr = &_StdErr;
     memset(StdErr,0,sizeof(_StdErr));
     StdErr->Stream = (stream*)NodeSingleton(&p,STDERR_ID);
@@ -907,6 +921,7 @@ int main(int argc, const char *argv[])
 		else if (tcsisame_ascii(Path,T("--divx"))) DivX = 1;
 		else if (tcsisame_ascii(Path,T("--version"))) ShowVersion = 1;
 		else if (tcsisame_ascii(Path,T("--quiet"))) Quiet = 1;
+		else if (tcsisame_ascii(Path,T("--stage"))) Stage = 1;
         else if (tcsisame_ascii(Path,T("--quick"))) QuickExit = 1;
         else if (tcsisame_ascii(Path,T("--help"))) {ShowVersion = 1; ShowUsage = 1;}
 		else if (i<argc-1) TextPrintf(StdErr,T("Unknown parameter '%s'\r\n"),Path);
@@ -924,7 +939,8 @@ int main(int argc, const char *argv[])
             TextWrite(StdErr,T("  --details   show details for valid files\r\n"));
             TextWrite(StdErr,T("  --divx      assume the file is using DivX specific extensions\r\n"));
             TextWrite(StdErr,T("  --quick     exit after the first error or warning\r\n"));
-            TextWrite(StdErr,T("  --quiet     don't ouput progress and file info\r\n"));
+            TextWrite(StdErr,T("  --quiet     don't output progress and file info\r\n"));
+            TextWrite(StdErr,T("  --stage     output progress via stage reports\r\n"));
             TextWrite(StdErr,T("  --version   show the version of ") PROJECT_NAME T("\r\n"));
             TextWrite(StdErr,T("  --help      show this screen\r\n"));
         }
@@ -954,6 +970,12 @@ int main(int argc, const char *argv[])
     {
         Result = OutputError(3,T("EBML head not found! Are you sure it's a matroska/webm file?"));
         goto exit;
+    }
+
+    if ( Stage )
+    {
+        TextWrite( StdErr, T( "Stage: 0 - Initialization\r\n" ) );
+        TextFlush( StdErr );
     }
 
     if (!Quiet) TextWrite(StdErr,T("."));
@@ -1035,6 +1057,11 @@ int main(int argc, const char *argv[])
 	DotCount = 0;
 	Prev = NULL;
     RLevel1 = (ebml_master*)EBML_FindNextElement(Input, &RSegmentContext, &UpperElement, 1);
+    if ( Stage )
+    {
+        TextWrite( StdErr, T( "\nStage: 1 - RLevel1 Analysis\r\n" ) );
+        TextFlush( StdErr );
+    }
     while (RLevel1)
 	{
         RLevelX = NULL;
@@ -1293,8 +1320,11 @@ int main(int argc, const char *argv[])
 		}
         if (!Quiet) {
             TextWrite(StdErr,T(".")); ++DotCount;
-		    if (!(DotCount % 60))
-			    TextWrite(StdErr,T("\r                                                              \r"));
+            if ( !( DotCount % 60 ) )
+            {
+                TextWrite( StdErr, T( "\r                                                              \r" ) );
+                TextFlush( StdErr );
+            }
         }
 
 		Prev = RLevel1;
@@ -1326,6 +1356,11 @@ int main(int argc, const char *argv[])
 	if (RSeekHead2)
 		Result |= CheckSeekHead(RSeekHead2);
 
+    if ( Stage )
+    {
+        TextWrite( StdErr, T( "\nStage: 2 - RClusters Analysis\r\n" ) );
+        TextFlush( StdErr );
+    }
 	if (ARRAYCOUNT(RClusters,ebml_element*))
 	{
         if (!Quiet) TextWrite(StdErr,T("."));
@@ -1350,6 +1385,11 @@ int main(int argc, const char *argv[])
 	}
 
     if (!Quiet) TextWrite(StdErr,T("."));
+    if ( Stage )
+    {
+        TextWrite( StdErr, T( "\nStage: 3 - Track Analysis\r\n" ) );
+        TextFlush( StdErr );
+    }
 	if (RTrackInfo)
 		CheckTracks(RTrackInfo, MatroskaProfile);
 
@@ -1372,14 +1412,24 @@ int main(int argc, const char *argv[])
             {
                 EBML_StringGet(TI->CodecID,String,TSIZEOF(String));
                 TextPrintf(StdErr,T("Track #%d %18s %") TPRId64 T(" bits/s\r\n"),TI->Num,String,Scale64(TI->DataLength,8000000, (MaxTime-MinTime)/1000));
+                TextFlush( StdErr );
             }
         }
     }
 
 exit:
+    if ( Stage )
+    {
+        TextWrite( StdErr, T( "\r                                                              \r" ) );
+        TextWrite( StdErr, T( "\nStage: 4 - Clean Up\r\n" ) );
+    }
 	if (!Quiet)
 	{
-        TextPrintf(StdErr, T("\r\tfile \"%s\"\r\n"), Path);
+        if ( !Stage )
+            TextWrite( StdErr, T( "\r                                                              \r" ) );
+        if ( *Path )
+            TextPrintf(StdErr, T("\r\tfile \"%s\"\r\n"), Path);
+        TextFlush( StdErr );
         if (RSegmentInfo)
         {
             tchar_t App[MAXPATH];
@@ -1401,6 +1451,7 @@ exit:
             if (App[0] == 0)
                 tcscat_s(App, TSIZEOF(App), T("<unknown>"));
             TextPrintf(StdErr, T("\r\tcreated with %s\r\n"), App);
+            TextFlush( StdErr );
         }
 	}
 

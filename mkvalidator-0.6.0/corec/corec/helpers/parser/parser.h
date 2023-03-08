@@ -175,6 +175,7 @@ typedef struct textwriter
 
 } textwriter;
 
+NODE_DLL err_t TextFlush( textwriter * );
 NODE_DLL err_t TextWrite(textwriter*, const tchar_t*);
 NODE_DLL err_t TextPrintf(textwriter*, const tchar_t* Msg,...)
 #if defined(__GNUC__) && !defined(_MSC_VER) && !defined(UNICODE)

@@ -1527,6 +1527,11 @@ err_t Stream_Printf(stream* Stream, const tchar_t* Msg,...)
     return TextWrite(&p,s);
 }
 
+err_t TextFlush( textwriter *p )
+{
+    return Stream_Flush( p->Stream );
+}
+
 err_t TextWrite(textwriter* p, const tchar_t* Msg)
 {
 	size_t i;
