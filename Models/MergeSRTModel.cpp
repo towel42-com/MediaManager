@@ -24,6 +24,7 @@
 #include "Core/LanguageInfo.h"
 #include "Preferences/Core/Preferences.h"
 #include "SABUtils/FileUtils.h"
+#include "SABUtils/BackupFile.h"
 #include "SABUtils/StringUtils.h"
 #include "SABUtils/DoubleProgressDlg.h"
 
@@ -328,7 +329,7 @@ namespace NMediaManager
                 srtFiles = NSABUtils::NFileUtils::findAllFiles( dir, QStringList() << "*.srt", true );
                 fSRTFileCache[ dir.absolutePath() ] = srtFiles;
             }
-            else 
+            else
                 srtFiles = ( *ii ).second;
 
             //qDebug().noquote().nospace() << "Found '" << srtFiles.count() << "' SRT Files";
@@ -433,7 +434,7 @@ namespace NMediaManager
                                 label = label.arg( "No" ).arg( "No" );
                                 langMap[ ii.first ][ index ] = std::make_pair( false, false );
                             }
-                            else if ( fileNum == ( currLangInfos.size() - 1 ) ) 
+                            else if ( fileNum == ( currLangInfos.size() - 1 ) )
                             {
                                 label = label.arg( "No" ).arg( "Yes" );
                                 langMap[ ii.first ][ index ] = std::make_pair( false, true );
@@ -679,6 +680,12 @@ namespace NMediaManager
         {
             bool aOK = CDirModel::postExtProcess( info, msgList );
             QStringList retVal;
+            if ( aOK && !NSABUtils::NFileUtils::backup( info.fOldName ) )
+            {
+                msgList << QString( "ERROR: %1: FAILED TO BACKUP ITEM" ).arg( getDispName( info.fOldName ) );
+                aOK = false;
+            }
+
             if ( aOK && !QFile::rename( info.fNewNames.front(), info.fOldName ) )
             {
                 msgList << QString( "ERROR: %1: FAILED TO MOVE ITEM TO %2" ).arg( getDispName( info.fNewNames.front() ) ).arg( getDispName( info.fOldName ) );
@@ -880,5 +887,3 @@ namespace NMediaManager
         }
     }
 }
-
-

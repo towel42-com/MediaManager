@@ -26,6 +26,7 @@
 #include "Preferences/Core/Preferences.h"
 #include "SABUtils/QtUtils.h"
 #include "SABUtils/FileUtils.h"
+#include "SABUtils/BackupFile.h"
 #include "SABUtils/FileCompare.h"
 
 #include "SABUtils/DoubleProgressDlg.h"
@@ -539,6 +540,11 @@ namespace NMediaManager
                             auto oldPath = fi.absoluteFilePath();
                             auto relPath = QDir( oldFileInfo.absoluteFilePath() ).relativeFilePath( oldPath );
                             auto newPath = QDir( newFileInfo.absoluteFilePath() ).absoluteFilePath( relPath );
+                            if ( !NSABUtils::NFileUtils::backup( newPath ) )
+                            {
+                                appendError( myItem, tr( "%1: FAILED TO BACKUP ITEM" ).arg( newPath ) );
+                                allDeletedOK = false;
+                            }
                             if ( !QFile::rename( oldPath, newPath ) )
                             {
                                 appendError( myItem, tr( "%1: FAILED TO MOVE ITEM TO %2" ).arg( oldPath ).arg( newPath ) );
@@ -649,6 +655,10 @@ namespace NMediaManager
                                 }
                                 else
                                 {
+                                    if ( !NSABUtils::NFileUtils::backup( newName ) )
+                                    {
+                                        errorMsg = tr("Could not backup %1").arg( newName );
+                                    }
                                     auto fi = QFile( oldName );
                                     aOK = fi.rename( newName );
                                     if ( !aOK )

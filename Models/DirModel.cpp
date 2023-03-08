@@ -32,6 +32,7 @@
 #include "SABUtils/QtUtils.h"
 #include "SABUtils/AutoWaitCursor.h"
 #include "SABUtils/FileUtils.h"
+#include "SABUtils/BackupFile.h"
 #include "SABUtils/FileCompare.h"
 #include "SABUtils/MediaInfo.h"
 #include "SABUtils/MKVUtils.h"
@@ -1079,8 +1080,7 @@ namespace NMediaManager
             bool aOK = true;
             for ( auto &&ii : info.fAncillary )
             {
-                bool tmpAOK = QFile::rename( ii, ii + ".bak" );
-                if ( !tmpAOK )
+                if ( !NSABUtils::NFileUtils::backup( ii ) )
                 {
                     msgList << QString( "ERROR: Failed to backup '%1'" ).arg( ii );
                     aOK = false;
@@ -1195,7 +1195,9 @@ namespace NMediaManager
 
             std::list< SDirNodeItem > retVal;
             auto mediaInfo = 
-                getMediaTags( fileInfo, { NSABUtils::EMediaTags::eTitle, NSABUtils::EMediaTags::eLength, NSABUtils::EMediaTags::eDate, NSABUtils::EMediaTags::eResolution, NSABUtils::EMediaTags::eVideoCodec, NSABUtils::EMediaTags::eVideoBitrateString, NSABUtils::EMediaTags::eAudioCodec, NSABUtils::EMediaTags::eAudioBitrateString, NSABUtils::EMediaTags::eComment } );
+                getMediaTags(
+                fileInfo, { NSABUtils::EMediaTags::eTitle, NSABUtils::EMediaTags::eLength, NSABUtils::EMediaTags::eDate, NSABUtils::EMediaTags::eResolution, NSABUtils::EMediaTags::eVideoCodec, NSABUtils::EMediaTags::eVideoBitrateString,
+                            NSABUtils::EMediaTags::eAudioCodec, NSABUtils::EMediaTags::eAudioSampleRateString, NSABUtils::EMediaTags::eComment } );
 
             retVal.emplace_back( mediaInfo[ NSABUtils::EMediaTags::eTitle ], offset++ );
             retVal.back().fEditable = std::make_pair( EType::eMediaTag, NSABUtils::EMediaTags::eTitle );
@@ -1217,8 +1219,8 @@ namespace NMediaManager
             auto audioCodec = mediaInfo[ NSABUtils::EMediaTags::eAudioCodec ];
             retVal.emplace_back( audioCodec, offset++ );
 
-            auto audioBitrate = mediaInfo[ NSABUtils::EMediaTags::eAudioBitrateString ];
-            retVal.emplace_back( audioBitrate, offset++ );
+            auto sampleRate = mediaInfo[ NSABUtils::EMediaTags::eAudioSampleRateString ];
+            retVal.emplace_back( sampleRate, offset++ );
 
             retVal.emplace_back( mediaInfo[ NSABUtils::EMediaTags::eComment ], offset++ );
             retVal.back().fEditable = std::make_pair( EType::eMediaTag, NSABUtils::EMediaTags::eComment );
@@ -1503,7 +1505,7 @@ namespace NMediaManager
         {
             if ( !canShowMediaInfo() )
                 return {};
-            return QStringList() << tr( "Title" ) << tr( "Length" ) << tr( "Media Date" ) << tr( "Resolution" ) << tr( "Video Codec" ) << tr( "Video Bitrate" ) << tr( "Audio Codec" ) << tr( "Audio Bitrate" ) << tr( "Comment" );
+            return QStringList() << tr( "Title" ) << tr( "Length" ) << tr( "Media Date" ) << tr( "Resolution" ) << tr( "Video Codec" ) << tr( "Video Bitrate" ) << tr( "Audio Codec" ) << tr( "Sampling Rate" ) << tr( "Comment" );
         }
 
         std::list< SDirNodeItem > CDirModel::addAdditionalItems( const QFileInfo &fileInfo ) const
@@ -1606,10 +1608,9 @@ namespace NMediaManager
 
             if ( fBackupOrig )
             {
-                auto backupName = fOldName + ".bak";
-                if ( !QFile::rename( fOldName, backupName ) )
+                if ( !NSABUtils::NFileUtils::backup( fOldName ) )
                 {
-                    CDirModel::appendError( fItem, QObject::tr( "%1: FAILED TO MOVE ITEM TO %2" ).arg( model->getDispName( fOldName ) ).arg( model->getDispName( backupName ) ) );
+                    CDirModel::appendError( fItem, QObject::tr( "%1: FAILED TO BACKUP" ).arg( model->getDispName( fOldName ) ) );
                     model->fProcessResults.first = false;
                     return;
                 }
@@ -1630,6 +1631,16 @@ namespace NMediaManager
                 if ( QFileInfo( ii ).suffix() == "new" )
                 {
                     auto newName = ii.mid( 0, ii.length() - 4 );
+                    if (QFileInfo(newName).exists())
+                    {
+                        if ( !NSABUtils::NFileUtils::backup( newName ) )
+                        {
+                            CDirModel::appendError( fItem, QObject::tr( "%1: FAILED TO BACKUP" ).arg( model->getDispName( newName ) ) );
+                            model->fProcessResults.first = false;
+                            return;
+                        }
+                    }
+
                     if ( !QFile::rename( ii, newName ) )
                     {
                         CDirModel::appendError( fItem, QObject::tr( "%1: FAILED TO MOVE ITEM TO %2" ).arg( model->getDispName( ii ) ).arg( model->getDispName( newName ) ) );

@@ -23,6 +23,7 @@
 #include "GenerateBIFModel.h"
 #include "Preferences/Core/Preferences.h"
 #include "SABUtils/FileUtils.h"
+#include "SABUtils/BackupFile.h"
 #include "SABUtils/DoubleProgressDlg.h"
 #include "SABUtils/MediaInfo.h"
 #include "SABUtils/BIFFile.h"
@@ -171,16 +172,9 @@ namespace NMediaManager
                     if ( aOK && NPreferences::NCore::CPreferences::instance()->generateGIF() )
                     {
                         auto fi = QFileInfo( processInfo->fNewNames.back() );
-                        auto backupName = processInfo->fNewNames.back() + ".bak";
-                        if ( QFile::exists( backupName ) && !QFile::remove( backupName ) )
+                        if ( !NSABUtils::NFileUtils::backup( processInfo->fNewNames.back() ) )
                         {
-                            CDirModel::appendError( processInfo->fItem, QObject::tr( "%1: FAILED TO REMOVE ITEM %2" ).arg( getDispName( processInfo->fNewNames.front() ) ).arg( getDispName( backupName ) ) );
-                            return false;
-                        }
-
-                        if ( QFile::exists( processInfo->fNewNames.back() ) && !QFile::rename( processInfo->fNewNames.back(), backupName ) )
-                        {
-                            CDirModel::appendError( processInfo->fItem, QObject::tr( "%1: FAILED TO MOVE ITEM TO %2" ).arg( getDispName( processInfo->fNewNames.back() ) ).arg( getDispName( backupName ) ) );
+                            CDirModel::appendError( processInfo->fItem, QObject::tr( "%1: FAILED TO BACKUP" ).arg( getDispName( processInfo->fNewNames.back() ) ) );
                             return false;
                         }
 
