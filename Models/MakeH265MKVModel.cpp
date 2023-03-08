@@ -173,6 +173,7 @@ namespace NMediaManager
         void CMakeH265MKVModel::postFileFunction( bool /*aOK*/, const QFileInfo & /*fileInfo*/, TParentTree & /*tree*/, bool /*countOnly*/ )
         {
         }
+
         bool CMakeH265MKVModel::preFileFunction( const QFileInfo & fileInfo, std::unordered_set< QString > & /*alreadyAdded*/, TParentTree & /*tree*/, bool /*countOnly*/ )
         {
             auto ext = fileInfo.suffix().toLower();
