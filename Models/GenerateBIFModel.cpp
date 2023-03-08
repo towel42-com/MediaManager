@@ -24,7 +24,7 @@
 #include "Preferences/Core/Preferences.h"
 #include "SABUtils/FileUtils.h"
 #include "SABUtils/DoubleProgressDlg.h"
-#include "SABUtils/MKVUtils.h"
+#include "SABUtils/MediaInfo.h"
 #include "SABUtils/BIFFile.h"
 #include "SABUtils/GIFWriterDlg.h"
 
@@ -93,8 +93,7 @@ namespace NMediaManager
             fFirstProcess = true;
             if ( !displayOnly )
             {
-                processInfo.fMaximum = NSABUtils::getNumberOfSeconds( processInfo.fOldName );
-                ;
+                processInfo.fMaximum = NSABUtils::CMediaInfo::getNumberOfSeconds( processInfo.fOldName );
                 processInfo.fCmd = NPreferences::NCore::CPreferences::instance()->getFFMpegEXE();
 
                 if ( processInfo.fCmd.isEmpty() || !QFileInfo( processInfo.fCmd ).isExecutable() )
