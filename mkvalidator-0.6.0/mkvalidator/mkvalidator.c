@@ -869,6 +869,8 @@ int main(int argc, const char *argv[])
 #endif
 {
     int Result = 0;
+    int FatalResult = 0;
+    int IgnoreResult = 0;
     int ShowUsage = 0;
     int ShowVersion = 0;
     parsercontext p;
@@ -922,6 +924,7 @@ int main(int argc, const char *argv[])
 		else if (tcsisame_ascii(Path,T("--version"))) ShowVersion = 1;
 		else if (tcsisame_ascii(Path,T("--quiet"))) Quiet = 1;
 		else if (tcsisame_ascii(Path,T("--stage"))) Stage = 1;
+        else if (tcsisame_ascii(Path,T("--ignore-mkv-errors"))) IgnoreResult = 1;
         else if (tcsisame_ascii(Path,T("--quick"))) QuickExit = 1;
         else if (tcsisame_ascii(Path,T("--help"))) {ShowVersion = 1; ShowUsage = 1;}
 		else if (i<argc-1) TextPrintf(StdErr,T("Unknown parameter '%s'\r\n"),Path);
@@ -934,15 +937,16 @@ int main(int argc, const char *argv[])
         {
             Result = OutputError(1,T("Usage: ") PROJECT_NAME T(" [options] <matroska_src>"));
 		    TextWrite(StdErr,T("Options:\r\n"));
-		    TextWrite(StdErr,T("  --no-warn   only output errors, no warnings\r\n"));
-            TextWrite(StdErr,T("  --live      only output errors/warnings relevant to live streams\r\n"));
-            TextWrite(StdErr,T("  --details   show details for valid files\r\n"));
-            TextWrite(StdErr,T("  --divx      assume the file is using DivX specific extensions\r\n"));
-            TextWrite(StdErr,T("  --quick     exit after the first error or warning\r\n"));
-            TextWrite(StdErr,T("  --quiet     don't output progress and file info\r\n"));
-            TextWrite(StdErr,T("  --stage     output progress via stage reports\r\n"));
-            TextWrite(StdErr,T("  --version   show the version of ") PROJECT_NAME T("\r\n"));
-            TextWrite(StdErr,T("  --help      show this screen\r\n"));
+		    TextWrite(StdErr,T("  --no-warn           only output errors, no warnings\r\n"));
+            TextWrite(StdErr,T("  --live              only output errors/warnings relevant to live streams\r\n"));
+            TextWrite(StdErr,T("  --details           show details for valid files\r\n"));
+            TextWrite(StdErr,T("  --divx              assume the file is using DivX specific extensions\r\n"));
+            TextWrite(StdErr,T("  --quick             exit after the first error or warning\r\n"));
+            TextWrite(StdErr,T("  --quiet             don't output progress and file info\r\n"));
+            TextWrite(StdErr,T("  --stage             output progress via stage reports\r\n"));
+            TextWrite(StdErr,T("  --ignore-mkv-errors the return code will only return on a functional error not an error in the mkv\r\n" ) );
+            TextWrite(StdErr,T("  --version           show the version of " ) PROJECT_NAME T( "\r\n" ) );
+            TextWrite(StdErr,T("  --help              show this screen\r\n"));
         }
         goto exit;
     }
@@ -956,7 +960,9 @@ int main(int argc, const char *argv[])
     if (!Input)
     {
         TextPrintf(StdErr,T("Could not open file \"%s\" for reading\r\n"),Path);
-        Result = -2;
+        FatalResult = -2;
+        if ( !IgnoreResult )
+            Result = FatalResult;
         goto exit;
     }
 
@@ -968,7 +974,7 @@ int main(int argc, const char *argv[])
     EbmlHead = (ebml_master*)EBML_FindNextElement(Input, &RContext, &UpperElement, 0);
 	if (!EbmlHead || !EL_Type(EbmlHead, EBML_getContextHead()))
     {
-        Result = OutputError(3,T("EBML head not found! Are you sure it's a matroska/webm file?"));
+        Result = OutputError( 3, T( "EBML head not found! Are you sure it's a matroska/webm file?" ) );
         goto exit;
     }
 
@@ -1059,7 +1065,9 @@ int main(int argc, const char *argv[])
     RLevel1 = (ebml_master*)EBML_FindNextElement(Input, &RSegmentContext, &UpperElement, 1);
     if ( Stage )
     {
-        TextWrite( StdErr, T( "\nStage: 1 - RLevel1 Analysis\r\n" ) );
+        if ( !Quiet )
+            TextWrite( StdErr, T( "\n" ) ); 
+        TextWrite( StdErr, T( "Stage: 1 - RLevel1 Analysis\r\n" ) );
         TextFlush( StdErr );
     }
     while (RLevel1)
@@ -1358,7 +1366,9 @@ int main(int argc, const char *argv[])
 
     if ( Stage )
     {
-        TextWrite( StdErr, T( "\nStage: 2 - RClusters Analysis\r\n" ) );
+        if ( !Quiet )
+            TextWrite( StdErr, T( "\n" ) );
+        TextWrite( StdErr, T( "Stage: 2 - RClusters Analysis\r\n" ) );
         TextFlush( StdErr );
     }
 	if (ARRAYCOUNT(RClusters,ebml_element*))
@@ -1387,7 +1397,9 @@ int main(int argc, const char *argv[])
     if (!Quiet) TextWrite(StdErr,T("."));
     if ( Stage )
     {
-        TextWrite( StdErr, T( "\nStage: 3 - Track Analysis\r\n" ) );
+        if ( !Quiet )
+            TextWrite( StdErr, T( "\n" ) );
+        TextWrite( StdErr, T( "Stage: 3 - Track Analysis\r\n" ) );
         TextFlush( StdErr );
     }
 	if (RTrackInfo)
@@ -1420,8 +1432,12 @@ int main(int argc, const char *argv[])
 exit:
     if ( Stage )
     {
-        TextWrite( StdErr, T( "\r                                                              \r" ) );
-        TextWrite( StdErr, T( "\nStage: 4 - Clean Up\r\n" ) );
+        if ( !Quiet )
+        {
+            TextWrite( StdErr, T( "\r                                                              \r" ) );
+            TextWrite( StdErr, T( "\n" ) );
+        }
+        TextWrite( StdErr, T( "Stage: 4 - Clean Up\r\n" ) );
     }
 	if (!Quiet)
 	{
@@ -1486,5 +1502,5 @@ exit:
     // Core-C ending
     ParserContext_Done(&p);
 
-    return Result;
+    return IgnoreResult ? FatalResult : Result;
 }
