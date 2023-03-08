@@ -521,6 +521,18 @@ namespace NMediaManager
                 parent->appendRow( items );
             else
                 QStandardItemModel::appendRow( items );
+            auto path = items.front()->data( ECustomRoles::eAbsFilePath ).toString();
+            auto pos = fMessagesForFiles.find( path );
+            if ( pos != fMessagesForFiles.end() )
+            {
+                auto &&msgs = ( *pos ).second;
+                for ( auto &&ii : msgs )
+                {
+                    auto msgItem = new QStandardItem( ii );
+                    items.front()->appendRow( msgItem );
+                    fMsgItems.push_back( msgItem );
+                }
+            }
         }
 
         QStandardItem *CDirModel::attachTreeNodes( TParentTree &parentTree )
@@ -1438,9 +1450,9 @@ namespace NMediaManager
             }
 
             if ( curr.fForceUnbuffered )
-            {
                 fProcess->setCreateProcessArgumentsModifier( NSABUtils::getForceUnbufferedProcessModifier() );
-            }
+            else
+                fProcess->setCreateProcessArgumentsModifier( {} );
             fProcess->start( curr.fCmd, curr.fArgs, QProcess::ReadWrite );
         }
 
@@ -1785,12 +1797,14 @@ namespace NMediaManager
 
         void CDirModel::slotProcessStandardError()
         {
-            fBasePage->appendToLog( fProcess->readAllStandardError(), stdErrRemaining(), false, true );
+            auto currText = fProcess->readAllStandardError();
+            fBasePage->appendToLog( currText, stdErrRemaining(), false, true );
         }
 
         void CDirModel::slotProcessStandardOutput()
         {
-            fBasePage->appendToLog( fProcess->readAllStandardOutput(), stdOutRemaining(), true, true );
+            auto currText = fProcess->readAllStandardOutput();
+            fBasePage->appendToLog( currText, stdOutRemaining(), true, true );
         }
 
         void CDirModel::resizeColumns() const
@@ -2084,6 +2098,31 @@ namespace NMediaManager
                 return ( match1.hasMatch() && ( match1.capturedLength() == baseName.length() ) ) || ( match2.hasMatch() && ( match2.capturedLength() == baseName.length() ) );
             }
             return false;
+        }
+
+        void CDirModel::clearMessages()
+        {
+            fMessagesForFiles.clear();
+            fMsgItems.clear();
+        }
+        
+        void CDirModel::addMessageForFile( const QString &msg )
+        {
+            if ( fProcessQueue.empty() )
+                return;
+            if ( msg.isEmpty() )
+                return;
+
+            auto fi = QFileInfo( fProcessQueue.front().fOldName );
+            fMessagesForFiles[ fi.absoluteFilePath() ] << msg;
+        }
+        
+        std::list< QStandardItem * > CDirModel::messageItems( bool andClear )
+        {
+            auto retVal = fMsgItems;
+            if ( andClear )
+                fMsgItems.clear();
+            return retVal;
         }
 
         QIcon CIconProvider::icon( const QFileInfo &info ) const

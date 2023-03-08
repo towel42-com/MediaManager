@@ -253,6 +253,11 @@ namespace NMediaManager
             virtual void resetStatusCaches();
 
             bool isSeasonDir( const QModelIndex &origIdx, bool *isNameOK = nullptr ) const;
+
+            void clearMessages();
+            void addMessageForFile( const QString &msg );
+            std::list< QStandardItem * > messageItems( bool andClear );
+
         Q_SIGNALS:
             void sigDirLoadFinished( bool canceled );
             void sigProcessesFinished( bool status, bool showProcessResults, bool cancelled, bool reloadModel );
@@ -431,7 +436,9 @@ namespace NMediaManager
             mutable bool fFirstProcess{ true };
             mutable bool fIsLoading{ false };
 
-        private:
+        protected:
+            std::unordered_map< QString, QStringList > fMessagesForFiles;
+            std::list< QStandardItem * > fMsgItems;
             mutable std::unordered_map< QString, std::optional< TItemStatus > > fPathStatusCache;
             mutable std::unordered_map< QString, std::unordered_map< int, std::optional< TItemStatus > > > fItemStatusCache;
             mutable std::unordered_map< QFileInfo, bool > fIsRootPathCache;
