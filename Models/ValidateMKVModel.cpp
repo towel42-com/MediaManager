@@ -63,7 +63,7 @@ namespace NMediaManager
             fFirstProcess = true;
             if ( !displayOnly )
             {
-                processInfo.fUnbuffered = true;
+                processInfo.fForceUnbuffered = true;
                 processInfo.fMaximum = QFileInfo( processInfo.fOldName ).size();
 
                 processInfo.fCmd = NPreferences::NCore::CPreferences::instance()->getMKVValidatorEXE();

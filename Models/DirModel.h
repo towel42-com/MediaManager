@@ -154,7 +154,7 @@ namespace NMediaManager
 
             bool fBackupOrig{ true };
             bool fSetMKVTagsOnSuccess{ false };
-            bool fUnbuffered{ false };
+            bool fForceUnbuffered{ false };
             QString fCmd;
             QStringList fArgs;
             QStandardItem *fItem{ nullptr };

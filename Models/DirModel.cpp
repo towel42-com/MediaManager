@@ -35,6 +35,7 @@
 #include "SABUtils/FileCompare.h"
 #include "SABUtils/MediaInfo.h"
 #include "SABUtils/MKVUtils.h"
+#include "SABUtils/ForceUnbufferedProcessModifier.h"
 
 #include "SABUtils/DoubleProgressDlg.h"
 #include "SABUtils/utils.h"
@@ -1182,7 +1183,7 @@ namespace NMediaManager
 
             std::list< SDirNodeItem > retVal;
             auto mediaInfo = 
-                getMediaTags( fileInfo, { NSABUtils::EMediaTags::eTitle, NSABUtils::EMediaTags::eLength, NSABUtils::EMediaTags::eDate, NSABUtils::EMediaTags::eResolution, NSABUtils::EMediaTags::eVideoCodec, NSABUtils::EMediaTags::eAudioCodec, NSABUtils::EMediaTags::eVideoBitrateString, NSABUtils::EMediaTags::eComment } );
+                getMediaTags( fileInfo, { NSABUtils::EMediaTags::eTitle, NSABUtils::EMediaTags::eLength, NSABUtils::EMediaTags::eDate, NSABUtils::EMediaTags::eResolution, NSABUtils::EMediaTags::eVideoCodec, NSABUtils::EMediaTags::eVideoBitrateString, NSABUtils::EMediaTags::eAudioCodec, NSABUtils::EMediaTags::eAudioBitrateString, NSABUtils::EMediaTags::eComment } );
 
             retVal.emplace_back( mediaInfo[ NSABUtils::EMediaTags::eTitle ], offset++ );
             retVal.back().fEditable = std::make_pair( EType::eMediaTag, NSABUtils::EMediaTags::eTitle );
@@ -1198,11 +1199,14 @@ namespace NMediaManager
             auto videoCodec = mediaInfo[ NSABUtils::EMediaTags::eVideoCodec ];
             retVal.emplace_back( videoCodec, offset++ );
 
+            auto bitrate = mediaInfo[ NSABUtils::EMediaTags::eVideoBitrateString ];
+            retVal.emplace_back( bitrate, offset++ );
+
             auto audioCodec = mediaInfo[ NSABUtils::EMediaTags::eAudioCodec ];
             retVal.emplace_back( audioCodec, offset++ );
 
-            auto bitrate= mediaInfo[ NSABUtils::EMediaTags::eVideoBitrateString ];
-            retVal.emplace_back( bitrate, offset++ );
+            auto audioBitrate = mediaInfo[ NSABUtils::EMediaTags::eAudioBitrateString ];
+            retVal.emplace_back( audioBitrate, offset++ );
 
             retVal.emplace_back( mediaInfo[ NSABUtils::EMediaTags::eComment ], offset++ );
             retVal.back().fEditable = std::make_pair( EType::eMediaTag, NSABUtils::EMediaTags::eComment );
@@ -1442,10 +1446,11 @@ namespace NMediaManager
                 log()->appendPlainText( "Running Command:" + tmp.join( " " ) );
             }
 
-            QProcess::OpenMode openMode = QProcess::ReadWrite;
-            if ( curr.fUnbuffered )
-                openMode |= QProcess::Unbuffered;
-            fProcess->start( cmd, args, openMode );
+            //if ( curr.fForceUnbuffered )
+            //{
+            //    fProcess->setCreateProcessArgumentsModifier( NSABUtils::getForceUnbufferedProcessModifier() );
+            //}
+            fProcess->start( cmd, args, QProcess::ReadWrite );
         }
 
         QString CDirModel::getProgressLabel( const SProcessInfo & /*processInfo*/ ) const
@@ -1495,7 +1500,7 @@ namespace NMediaManager
         {
             if ( !canShowMediaInfo() )
                 return {};
-            return QStringList() << tr( "Title" ) << tr( "Length" ) << tr( "Media Date" ) << tr( "Resolution" ) << tr( "Video Codec" ) << tr( "Audio Codec" ) << tr( "Bitrate" ) << tr( "Comment" );
+            return QStringList() << tr( "Title" ) << tr( "Length" ) << tr( "Media Date" ) << tr( "Resolution" ) << tr( "Video Codec" ) << tr( "Video Bitrate" ) << tr( "Audio Codec" ) << tr( "Audio Bitrate" ) << tr( "Comment" );
         }
 
         std::list< SDirNodeItem > CDirModel::addAdditionalItems( const QFileInfo &fileInfo ) const
