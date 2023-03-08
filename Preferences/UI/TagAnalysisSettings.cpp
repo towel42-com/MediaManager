@@ -28,7 +28,7 @@
 #include "SABUtils/WidgetEnabler.h"
 #include "SABUtils/UtilityModels.h"
 #include "SABUtils/QtUtils.h"
-#include "SABUtils/MKVUtils.h"
+#include "SABUtils/MediaInfo.h"
 
 #include <QSettings>
 #include <QStringListModel>

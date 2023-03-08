@@ -208,6 +208,7 @@ namespace NMediaManager
                 fImpl->mkvValidatorExe->setText( NPreferences::NCore::CPreferences::instance()->getMKVValidatorEXE() );
                 fImpl->ffmpegExe->setText( NPreferences::NCore::CPreferences::instance()->getFFMpegEXE() );
                 fImpl->ffprobeExe->setText( NPreferences::NCore::CPreferences::instance()->getFFProbeEXE() );
+
             }
 
             void CExternalTools::save()

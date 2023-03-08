@@ -45,7 +45,17 @@
    <item>
     <widget class="QCheckBox" name="deleteImages">
      <property name="text">
-      <string>Delete Images (*.jpg *.png)?</string>
+      <string>Delete Images?</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="imageLabelExtensions">
+     <property name="text">
+      <string>Image Extensions:</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
      </property>
     </widget>
    </item>

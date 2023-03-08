@@ -75,8 +75,7 @@ namespace NMediaManager
                 fImpl->deleteCustom->setChecked( NPreferences::NCore::CPreferences::instance()->deleteCustom() );
 
                 auto formats = NPreferences::NCore::CPreferences::instance()->imageExtensions();
-
-                fImpl->deleteImages->setText( tr( "Delete Images (%1)?" ).arg( formats.join( " " ) ) );
+                fImpl->imageLabelExtensions->setText( tr( "  Image Extension: %1?" ).arg( formats.join( " " ) ) );
             }
 
             void CPathsToDelete::save()

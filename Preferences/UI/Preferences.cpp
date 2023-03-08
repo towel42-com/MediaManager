@@ -40,6 +40,7 @@
 #include "TagAnalysisSettings.h"
 #include "TVShowSettings.h"
 #include "BIFGeneration.h"
+#include "MakeMKVSettings.h"
 
 #include <QSettings>
 #include <QPushButton>
@@ -129,6 +130,7 @@ namespace NMediaManager
                 addPage( new CTransformationSettings );
                 addPage( new CMovieSettings );
                 addPage( new CTVShowSettings );
+                addPage( new CMakeMKVSettings );
                 addPage( new CTagAnalysisSettings );
                 addPage( new CBIFGeneration );
             }
