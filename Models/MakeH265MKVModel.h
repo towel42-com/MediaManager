@@ -42,6 +42,8 @@ namespace NMediaManager
             virtual ~CMakeH265MKVModel() override;
 
         private:
+            virtual std::optional< TItemStatus > computeItemStatus( const QModelIndex &idx ) const;;   // the one to override
+
             virtual QStringList dirModelFilter() const override;
 
             virtual std::pair< bool, QStandardItem * > processItem( const QStandardItem *item, bool displayOnly ) override;
