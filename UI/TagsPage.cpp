@@ -78,8 +78,9 @@ namespace NMediaManager
                 load( true );
         }
 
-        void CTagsPage::postLoadFinished( bool /*canceled*/ )
+        void CTagsPage::postLoadFinished( bool canceled )
         {
+            CBasePage::postLoadFinished( canceled );
         }
 
         NModels::CDirModel *CTagsPage::createDirModel()

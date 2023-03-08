@@ -324,6 +324,7 @@ namespace NMediaManager
         {
             if ( !canceled )
                 QTimer::singleShot( 0, this, &CTransformPage::slotAutoSearchForNewNames );
+            CBasePage::postLoadFinished( canceled );
         }
 
         NModels::CDirModel *CTransformPage::createDirModel()

@@ -196,7 +196,12 @@ namespace NMediaManager
             if ( !fImpl )
                 return;
             if ( !postRun )
+            {
                 fImpl->log->clear();
+                if ( fModel )
+                    fModel->clearMessages();
+            }
+
             if ( !fModel )
             {
                 fModel.reset( createDirModel() );
@@ -230,6 +235,23 @@ namespace NMediaManager
 
         void CBasePage::postNonQueuedRun( bool /*finalStep*/, bool /*canceled*/ )
         {
+        }
+
+        void CBasePage::postLoadFinished( bool /*canceled*/ )
+        {
+            auto msgItems = fModel->messageItems( true );
+            if ( !filesView() )
+                return;
+
+            for ( auto &&ii : msgItems )
+            {
+                auto idx = fModel->indexFromItem( ii );
+                if ( !idx.isValid() )
+                    continue;
+
+                auto parent = idx.parent();
+                filesView()->setFirstColumnSpanned( idx.row(), parent, true );
+            }
         }
 
         void CBasePage::slotProcessesFinished( bool status, bool showProcessResults, bool canceled, bool reloadModel )

@@ -50,11 +50,6 @@ namespace NMediaManager
                 fImpl->mkvPropEditExe->setCheckIsFile( true );
                 fImpl->mkvPropEditExe->setCheckIsExecutable( true );
 
-                connect( fImpl->btnSelectMKVValidatorExe, &QToolButton::clicked, this, &CExternalTools::slotSelectMKVValidatorExe );
-                fImpl->mkvValidatorExe->setCheckExists( true );
-                fImpl->mkvValidatorExe->setCheckIsFile( true );
-                fImpl->mkvValidatorExe->setCheckIsExecutable( true );
-
                 connect( fImpl->btnSelectFFMpegExe, &QToolButton::clicked, this, &CExternalTools::slotSelectFFMpegExe );
                 fImpl->ffmpegExe->setCheckExists( true );
                 fImpl->ffmpegExe->setCheckIsFile( true );
@@ -104,19 +99,6 @@ namespace NMediaManager
 
                 if ( !exe.isEmpty() )
                     fImpl->mkvPropEditExe->setText( exe );
-            }
-
-            void CExternalTools::slotSelectMKVValidatorExe()
-            {
-                auto exe = QFileDialog::getOpenFileName( this, tr( "Select MKV Validator Executable:" ), fImpl->mkvValidatorExe->text(), "mkvalidator Executable (mkvalidator.exe);;All Executables (*.exe);;All Files (*.*)" );
-                if ( !exe.isEmpty() && !QFileInfo( exe ).isExecutable() )
-                {
-                    QMessageBox::critical( this, "Not an Executable", tr( "The file '%1' is not an executable" ).arg( exe ) );
-                    return;
-                }
-
-                if ( !exe.isEmpty() )
-                    fImpl->mkvValidatorExe->setText( exe );
             }
 
             void CExternalTools::slotSelectFFMpegExe()
@@ -205,7 +187,6 @@ namespace NMediaManager
             {
                 fImpl->mkvMergeExe->setText( NPreferences::NCore::CPreferences::instance()->getMKVMergeEXE() );
                 fImpl->mkvPropEditExe->setText( NPreferences::NCore::CPreferences::instance()->getMKVPropEditEXE() );
-                fImpl->mkvValidatorExe->setText( NPreferences::NCore::CPreferences::instance()->getMKVValidatorEXE() );
                 fImpl->ffmpegExe->setText( NPreferences::NCore::CPreferences::instance()->getFFMpegEXE() );
                 fImpl->ffprobeExe->setText( NPreferences::NCore::CPreferences::instance()->getFFProbeEXE() );
 
@@ -215,7 +196,6 @@ namespace NMediaManager
             {
                 NPreferences::NCore::CPreferences::instance()->setMKVMergeEXE( fImpl->mkvMergeExe->text() );
                 NPreferences::NCore::CPreferences::instance()->setMKVPropEditEXE( fImpl->mkvPropEditExe->text() );
-                NPreferences::NCore::CPreferences::instance()->setMKVValidatorEXE( fImpl->mkvValidatorExe->text() );
                 NPreferences::NCore::CPreferences::instance()->setFFMpegEXE( fImpl->ffmpegExe->text() );
                 NPreferences::NCore::CPreferences::instance()->setFFProbeEXE( fImpl->ffprobeExe->text() );
             }

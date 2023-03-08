@@ -128,7 +128,7 @@ namespace NMediaManager
             virtual QString actionCancelName() const = 0;
             virtual QString actionErrorName() const = 0;
             virtual void postNonQueuedRun( bool finalStep, bool canceled );
-            virtual void postLoadFinished( bool /*canceled*/ ) {}
+            virtual void postLoadFinished( bool /*canceled*/ );
             virtual void setupModel();
 
             void setupProgressDlg( const QString &title, const QString &cancelButtonText, int max, int eventsPerPath = 1 );

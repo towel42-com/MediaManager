@@ -315,7 +315,6 @@ namespace NMediaManager
                 QStringList getKnownHyphenated() const;
                 std::list< std::pair< QString, int > > getKnownHyphenatedData() const;
 
-                void setMKVValidatorEXE( const QString & value );
                 QString getMKVValidatorEXE() const;
                                 
                 void setMKVMergeEXE( const QString &value );

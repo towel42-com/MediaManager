@@ -50,8 +50,6 @@ namespace NMediaManager
 
             virtual void postProcessLog( const QString &string ) override;
 
-            virtual void appendToLog( const QString & msg, std::pair< QString, bool > & previousText, bool stdOut, bool fromProcess ) override;
-
         Q_SIGNALS:
         public Q_SLOTS:
         protected Q_SLOTS:

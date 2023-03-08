@@ -27,6 +27,7 @@
 #include "SABUtils/DoubleProgressDlg.h"
 
 #include <QRegularExpression>
+#include <QTreeView>
 
 namespace NMediaManager
 {
@@ -48,7 +49,7 @@ namespace NMediaManager
 
         QString CValidateMKVPage::secondaryProgressLabel() const
         {
-            return tr( "Current (seconds):" );
+            return tr( "Current (Stage):" );
         }
 
         QString CValidateMKVPage::loadTitleName() const
@@ -76,73 +77,38 @@ namespace NMediaManager
             return tr( "Error while Validating MKV:" );
         }
 
-        void CValidateMKVPage::appendToLog( const QString & msg, std::pair< QString, bool > & previousText, bool stdOut, bool fromProcess )
+        void CValidateMKVPage::postProcessLog( const QString & string )
         {
-            int startPos = 0;
-            for ( ; startPos < msg.size(); ++startPos )
+            auto regEx = QRegularExpression( R"(Stage: (?<stageNum>\d+) -)" );
+            auto pos = string.lastIndexOf( regEx );
+            if ( pos != -1 )
             {
-                if ( msg[ startPos ] == ' ' )
-                    continue;
-                if ( ( msg[ startPos ] == '\r' ) && ( startPos < ( msg.size() - 1 ) ) && ( msg[ startPos + 1 ] != '\n' ) )
-                    continue;
-                break;
+                auto match = regEx.match( string, pos );
+                if ( !match.hasMatch() )
+                    return;
+
+                auto stage = match.captured( "stageNum" );
+                int stageNum = 0;
+                if ( !stage.isEmpty() )
+                {
+                    bool aOK;
+                    int curr = stage.toInt( &aOK );
+                    if ( aOK )
+                        stageNum = curr;
+                }
+
+                fProgressDlg->setSecondaryValue( stageNum );
             }
 
-            QString realMsg;
-            bool startOfLine = true;
-            bool inSpaceLine = false;
-            QString sinceStart;
-            for ( auto ii = startPos; ii < msg.size(); ++ii )
+            auto msgRegEx = QRegularExpression( R"((?<msg>(ERR|WRN)[A-Fa-f0-9]{3}.*))" );
+            auto ii = msgRegEx.globalMatch( string );
+
+            while ( ii.hasNext() )
             {
-                if ( startOfLine && ( msg[ ii ] == ' ' ) )
-                {
-                    sinceStart = msg[ ii ];
-                    inSpaceLine = true;
-                    startOfLine = false;
-                    continue;
-                }
-
-                if ( inSpaceLine && ( msg[ ii ] == '\r' ) )
-                {
-                    // the whole line is spaces;
-                    if ( ( ( ii + 1 ) < msg.size() ) && ( msg[ ii + 1 ] == '\n' ) )
-                        ii++;
-                    startOfLine = false;
-                    inSpaceLine = false;
-                    sinceStart.clear();
-                    continue;
-                }
-
-                if ( inSpaceLine && ( msg[ ii ] != ' ' ) )
-                {
-                    inSpaceLine = false;
-                    realMsg += sinceStart;
-                    sinceStart.clear();
-                }
-
-                if ( inSpaceLine )
-                    sinceStart += msg[ ii ];
-                else if ( msg[ ii ] == '\r' )
-                {
-                    if ( ( ( ii + 1 ) < msg.size() ) && ( msg[ ii + 1 ] == '\n' ) )
-                        ii++;
-                    startOfLine = true;
-                    realMsg += '\n';
-                }
-                else
-                    realMsg += msg[ ii ];
+                auto match = ii.next();
+                auto msg = match.captured( "msg" ).trimmed();
+                fModel->addMessageForFile( msg );
             }
-
-            /*static QRegularExpression regExp1( R"(\r *(?=[^\r]))" );
-            realMsg = realMsg.replace( regExp1, "" );*/
-
-            static QRegularExpression regExp( R"(\n+)" );
-            realMsg = realMsg.replace( regExp, "\n" );
-            CBasePage::appendToLog( realMsg, previousText, stdOut, fromProcess );
-        }
-
-        void CValidateMKVPage::postProcessLog( const QString &/*string*/ )
-        {
         }
     }
 }
