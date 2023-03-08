@@ -1426,18 +1426,9 @@ namespace NMediaManager
                     progressDlg()->setSecondaryMaximum( curr.fMaximum );
             }
 
-            auto cmd = curr.fCmd;
-            auto args = curr.fArgs;
-            //if ( curr.fUnbuffered )
-            //{
-            //    args.push_front( cmd );
-            //    args.push_front( "/C" );
-            //    cmd = qgetenv( "COMSPEC" );
-            //}
-
             if ( log() )
             {
-                auto tmp = QStringList() << cmd << args;
+                auto tmp = QStringList() << curr.fCmd << curr.fArgs;
                 for ( auto &&ii : tmp )
                 {
                     if ( ii.contains( " " ) )
@@ -1446,11 +1437,11 @@ namespace NMediaManager
                 log()->appendPlainText( "Running Command:" + tmp.join( " " ) );
             }
 
-            //if ( curr.fForceUnbuffered )
-            //{
-            //    fProcess->setCreateProcessArgumentsModifier( NSABUtils::getForceUnbufferedProcessModifier() );
-            //}
-            fProcess->start( cmd, args, QProcess::ReadWrite );
+            if ( curr.fForceUnbuffered )
+            {
+                fProcess->setCreateProcessArgumentsModifier( NSABUtils::getForceUnbufferedProcessModifier() );
+            }
+            fProcess->start( curr.fCmd, curr.fArgs, QProcess::ReadWrite );
         }
 
         QString CDirModel::getProgressLabel( const SProcessInfo & /*processInfo*/ ) const
