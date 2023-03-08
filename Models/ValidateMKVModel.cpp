@@ -64,7 +64,7 @@ namespace NMediaManager
             if ( !displayOnly )
             {
                 processInfo.fForceUnbuffered = true;
-                processInfo.fMaximum = QFileInfo( processInfo.fOldName ).size();
+                processInfo.fMaximum = 4;
 
                 processInfo.fCmd = NPreferences::NCore::CPreferences::instance()->getMKVValidatorEXE();
                 if ( processInfo.fCmd.isEmpty() || !QFileInfo( processInfo.fCmd ).isExecutable() )
@@ -80,8 +80,11 @@ namespace NMediaManager
                 aOK = aOK && checkProcessItemExists( processInfo.fOldName, processInfo.fItem );
 
                 processInfo.fArgs = QStringList() 
-                    << "--no-warn"
-                    << "--quick"
+                    //<< "--no-warn"
+                    << "--stage"
+                    << "--quiet"
+                    << "--ignore-mkv-errors"
+                    //<< "--quick"
                     //<< "--quiet"
                     << processInfo.fOldName
                     ;
