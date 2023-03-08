@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>NMediaManager::NPreferences::NUi::CMakeMKVSettings</class>
+ <widget class="QWidget" name="NMediaManager::NPreferences::NUi::CMakeMKVSettings">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>768</width>
+    <height>335</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QGroupBox" name="convertToH265">
+     <property name="title">
+      <string>Convert all media to H.265?</string>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="1" column="0">
+       <widget class="QRadioButton" name="intelGPUTranscode">
+        <property name="text">
+         <string>Intel GPU</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QRadioButton" name="softwareTranscode">
+        <property name="text">
+         <string>Software</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="3">
+       <spacer name="horizontalSpacer_2">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>255</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="3" column="0" colspan="4">
+       <widget class="QLabel" name="label_7">
+        <property name="text">
+         <string>Default settings for quality are used to maintain quality during the transcoding</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QRadioButton" name="nvidiaGPUTranscode">
+        <property name="text">
+         <string>nVidia GPU</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0" colspan="4">
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QCheckBox" name="useProfile">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>Profile:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_4">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="profile">
+          <item>
+           <property name="text">
+            <string>main</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>main-intra</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>mainstillpicture</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>main444-8</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>main444-intra</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>main444-stillpicture</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>main10</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>main10-intra</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>main422-10</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>main422-10-intra</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>main444-10</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>main444-10-intra</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>main12</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>main12-intra</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>main422-12</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>main422-12-intra</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>main444-12</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>main444-12-intra</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="4" column="0" colspan="4">
+       <widget class="QGroupBox" name="useCRF">
+        <property name="title">
+         <string>Use a Constant Rate Factor?</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_2">
+         <item row="2" column="1">
+          <widget class="QComboBox" name="tune">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <item>
+            <property name="text">
+             <string>Film - Use for High Quality movie content; lowers deblocking</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Animation - Good for Cartoons; uses higher deblocking and more reference frames</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Grain - Preserves the grain structure in old, grainy fim material</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Still Image - Good for slideshow-like content</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Fast Decode - Allows faster decoding by disabling certain filters</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Zero Latency - Good for fast encoding and low-latency streaming</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QComboBox" name="preset">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <item>
+            <property name="text">
+             <string>Ultrafast</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Superfast</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Very Fast</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Faster</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Fast</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Medium - Default</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Slow</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Slower</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Very Slow</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QSpinBox" name="explicitCRF">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>51</number>
+           </property>
+           <property name="value">
+            <number>1</number>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QCheckBox" name="useTune">
+           <property name="text">
+            <string>Tune:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QCheckBox" name="usePreset">
+           <property name="text">
+            <string>Preset:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QCheckBox" name="useExplicitCRF">
+           <property name="text">
+            <string>CRF Value:</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item row="2" column="0" colspan="4">
+       <widget class="QCheckBox" name="losslessTranscoding">
+        <property name="text">
+         <string>Lossless Transcoding?</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer_7">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>231</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
+ </widget>
+ <tabstops>
+  <tabstop>convertToH265</tabstop>
+  <tabstop>useCRF</tabstop>
+  <tabstop>useExplicitCRF</tabstop>
+  <tabstop>explicitCRF</tabstop>
+  <tabstop>usePreset</tabstop>
+  <tabstop>preset</tabstop>
+  <tabstop>useTune</tabstop>
+  <tabstop>tune</tabstop>
+  <tabstop>useProfile</tabstop>
+  <tabstop>profile</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+</ui>

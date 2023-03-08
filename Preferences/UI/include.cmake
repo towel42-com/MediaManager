@@ -34,6 +34,7 @@ set(qtproject_SRCS
     KnownAbbreviations.cpp
     KnownHyphenated.cpp
     MovieSettings.cpp
+    MakeMKVSettings.cpp
     PathsToDelete.cpp
     Preferences.cpp
     RemoveFromPaths.cpp
@@ -53,6 +54,7 @@ set(qtproject_H
     IgnoredPaths.h
     KnownAbbreviations.h
     KnownHyphenated.h
+    MakeMKVSettings.h
     MovieSettings.h
     PathsToDelete.h
     Preferences.h
@@ -75,6 +77,7 @@ set(qtproject_UIS
     IgnoredPaths.ui
     KnownAbbreviations.ui
     KnownHyphenated.ui
+    MakeMKVSettings.ui
     MovieSettings.ui
     PathsToDelete.ui
     Preferences.ui
