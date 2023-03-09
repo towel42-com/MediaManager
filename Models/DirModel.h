@@ -422,7 +422,7 @@ namespace NMediaManager
 
             std::map< QString, QStandardItem * > fPathMapping;
             
-            mutable std::unordered_map< QString, std::pair< QDateTime, std::shared_ptr< NSABUtils::CMediaInfo > > > fMediaInfoCache;
+            mutable std::unordered_map< QString, std::shared_ptr< NSABUtils::CMediaInfo > > fMediaInfoCache;
 
             QTimer * fReloadTimer{ nullptr };
             NUi::CBasePage *fBasePage{ nullptr };

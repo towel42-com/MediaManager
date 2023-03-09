@@ -800,13 +800,12 @@ namespace NMediaManager
 
         bool CMergeSRTModel::preFileFunction( const QFileInfo &fileInfo, std::unordered_set< QString > &alreadyAdded, TParentTree &tree, bool countOnly )
         {
-            if ( countOnly )
-                return true;
-
             //qDebug() << fileInfo;
             auto srtFiles = getSRTFilesForMKV( fileInfo, countOnly );
             if ( !srtFiles.isEmpty() )
             {
+                if ( countOnly )
+                    return true;
                 //for ( auto && ii : tree )
                 //    qDebug() << ii;
                 auto dir = fileInfo.absoluteDir();

@@ -51,12 +51,12 @@ namespace NMediaManager
             if ( !mediaInfo )
                 return {};
 
-            auto transcodeNeeded = NMediaManager::NPreferences::NCore::STranscodeNeeded( mediaInfo );
+            auto transCodeNeeded = NPreferences::NCore::CPreferences::instance()->getTranscodeNeeded( mediaInfo );
             auto fileInfo = this->fileInfo( idx );
 
             if ( idx.column() == 0 )   // filename
             {
-                if ( transcodeNeeded.fFormat )
+                if ( std::get< 2 >( transCodeNeeded ) )
                 {
                     auto msg = tr( "<p style='white-space:pre'>File <b>'%1'</b> is not using a %2 container</p>" ).arg( fileInfo.fileName() ).arg( NPreferences::NCore::CPreferences::instance()->getForceMediaFormatName() );
                     return TItemStatus( NPreferences::EItemStatus::eWarning, msg );
@@ -64,7 +64,7 @@ namespace NMediaManager
             }
             else if ( idx.column() == getMediaVideoCodecLoc() )
             {
-                if ( transcodeNeeded.fVideo )
+                if ( std::get< 0 >( transCodeNeeded ) )
                 {
                     auto fileInfo = this->fileInfo( idx );
                     auto msg = tr( "<p style='white-space:pre'>File <b>'%1'</b> is not using the H.265 video codec</p>" ).arg( fileInfo.fileName() );
@@ -73,7 +73,7 @@ namespace NMediaManager
             }
             else if ( idx.column() == getMediaAudioCodecLoc() )
             {
-                if ( transcodeNeeded.fAudio )
+                if ( std::get< 1 >( transCodeNeeded ) )
                 {
                     auto fileInfo = this->fileInfo( idx );
                     auto msg = tr( "<p style='white-space:pre'>File <b>'%1'</b> is not using the %2 audio codec</p>" ).arg( fileInfo.fileName() ).arg( NPreferences::NCore::CPreferences::instance()->getTranscodeToAudioCodec() );
@@ -98,8 +98,8 @@ namespace NMediaManager
             auto mediaInfo = getMediaInfo( path );
 
             auto fi = QFileInfo( path );
-            auto transcodeNeeded = NPreferences::NCore::STranscodeNeeded( mediaInfo );
-            if ( !transcodeNeeded.transcodeNeeded() )
+            auto transCodeNeeded = NPreferences::NCore::CPreferences::instance()->getTranscodeNeeded( mediaInfo );
+            if ( !std::get< 0 >( transCodeNeeded ) && !std::get< 1 >( transCodeNeeded ) && !std::get< 2 >( transCodeNeeded ) )
                 return std::make_pair( true, nullptr );
 
             SProcessInfo processInfo;
@@ -107,17 +107,17 @@ namespace NMediaManager
             processInfo.fOldName = path;
 
             auto newBaseName = fi.completeBaseName() + "." + NPreferences::NCore::CPreferences::instance()->getForceMediaFormatExt();
-            if ( !transcodeNeeded.fFormat )
+            if ( !std::get< 2 >( transCodeNeeded ) )
                 newBaseName += ".new";
 
             processInfo.fNewNames << fi.absoluteDir().absoluteFilePath( newBaseName );
 
             auto msg = tr( "Convert file from '%1' => '%2'" ).arg( getDispName( processInfo.fOldName ) ).arg( getDispName( processInfo.fNewNames.front() ) );
-            if ( transcodeNeeded.fVideo && transcodeNeeded.fAudio )
+            if ( std::get< 0 >( transCodeNeeded ) && std::get< 1 >( transCodeNeeded ) )
                 msg += tr( ", transcode into H.265, and transcode to %1." ).arg( NPreferences::NCore::CPreferences::instance()->getTranscodeToAudioCodec() );
-            else if ( transcodeNeeded.fVideo && !transcodeNeeded.fAudio )
+            else if ( std::get< 0 >( transCodeNeeded ) && !std::get< 1 >( transCodeNeeded ) )
                 msg += tr( " and transcode into H.265." );
-            else if ( !transcodeNeeded.fVideo && transcodeNeeded.fAudio )
+            else if ( !std::get< 0 >( transCodeNeeded ) && std::get< 1 >( transCodeNeeded ) )
                 msg += tr( " transcode to %1." ).arg( NPreferences::NCore::CPreferences::instance()->getTranscodeToAudioCodec() );
 
             processInfo.fItem = new QStandardItem( msg );
@@ -188,14 +188,18 @@ namespace NMediaManager
         {
         }
 
-        bool CMakeMKVModel::preFileFunction( const QFileInfo &fileInfo, std::unordered_set< QString > & /*alreadyAdded*/, TParentTree & /*tree*/, bool countOnly )
+        bool CMakeMKVModel::preFileFunction( const QFileInfo &fileInfo, std::unordered_set< QString > & /*alreadyAdded*/, TParentTree & /*tree*/, bool /*countOnly*/ )
         {
-            if ( countOnly )
+            static bool showAll = false;
+#if defined( DEBUG ) && defined( MAKEMKVMODEL_SHOWALL )
+            showAll = true;
+#endif;
+            if ( showAll )
                 return true;
 
             auto mediaInfo = getMediaInfo( fileInfo );
-            auto transcodeNeeded = NPreferences::NCore::STranscodeNeeded( mediaInfo );
-            return transcodeNeeded.transcodeNeeded();
+            auto transCodeNeeded = NPreferences::NCore::CPreferences::instance()->getTranscodeNeeded( mediaInfo );
+            return std::get< 0 >( transCodeNeeded ) || std::get< 1 >( transCodeNeeded ) || std::get< 2 >( transCodeNeeded );
         }
 
         void CMakeMKVModel::attachTreeNodes( QStandardItem * /*nextParent*/, QStandardItem *& /*prevParent*/, const STreeNode & /*treeNode*/ )

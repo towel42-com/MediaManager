@@ -250,11 +250,8 @@ namespace NMediaManager
         {
         }
 
-        bool CGenerateBIFModel::preFileFunction( const QFileInfo &fileInfo, std::unordered_set< QString > & /*alreadyAdded*/, TParentTree & /*tree*/, bool countOnly )
+        bool CGenerateBIFModel::preFileFunction( const QFileInfo &fileInfo, std::unordered_set< QString > & /*alreadyAdded*/, TParentTree & /*tree*/, bool /*countOnly*/ )
         {
-            if ( countOnly )
-                return true;
-
             auto dir = fileInfo.absoluteDir();
             //qDebug() << fileInfo;
             if ( !fileInfo.exists() || !fileInfo.isFile() )
