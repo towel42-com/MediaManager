@@ -43,6 +43,7 @@
 #include <QPushButton>
 #include <QLabel>
 #include <QImageReader>
+#include <QProcess>
 
 #include <optional>
 #include <unordered_set>
@@ -374,53 +375,60 @@ namespace NMediaManager
                 return retVal;
             }
 
-            QStringList CPreferences::defaultVideoExtensions( bool forceReset )
+            QStringList CPreferences::defaultVideoExtensions( bool forceReset ) const
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
 
-                auto videoExtensions = QStringList() << ".mkv"
-                                                     << ".mp4"
-                                                     << ".avi"
-                                                     << ".mov"
-                                                     << ".wmv"
-                                                     << ".mpg"
-                                                     << ".mpg2";
+                QStringList videoExtensions;
                 if ( forceReset || !settings.contains( "MediaExtensions" ) )
                 {
-                    QSettings classes( "HKEY_CLASSES_ROOT", QSettings::NativeFormat );
-                    auto groups = classes.childGroups();
-                    for ( auto &&group : groups )
-                    {
-                        classes.beginGroup( group );
-                        QString type;
-                        if ( classes.contains( "Content Type" ) )
-                        {
-                            type = classes.value( "Content Type" ).toString();
-                        }
-                        else if ( classes.contains( "PerceivedType" ) )
-                        {
-                            type = classes.value( "PerceivedType" ).toString();
-                        }
-                        else if ( group.toLower().startsWith( "vlc." ) && classes.value( "Default" ).toString().toLower().contains( "video" ) )
-                        {
-                            group = group.mid( 3 );
-                            type = "video";
-                        }
+                    loadFFmpegFormats( forceReset );
 
-                        if ( type.toLower().startsWith( "video" ) )
-                        {
-                            videoExtensions << group.toLower();
-                        }
-                        classes.endGroup();
-                    }
+                    for ( auto &&ii : fMediaFormatExtensions )
+                        videoExtensions << ii.second;
+
+                    //QStringList type2Exts;
+                    //type2Exts = QStringList() << "*.mkv"
+                    //                          << "*.mp4"
+                    //                          << "*.avi"
+                    //                          << "*.mov"
+                    //                          << "*.wmv"
+                    //                          << "*.mpg"
+                    //                          << "*.mpg2";
+                    //QSettings classes( "HKEY_CLASSES_ROOT", QSettings::NativeFormat );
+                    //auto groups = classes.childGroups();
+                    //for ( auto &&group : groups )
+                    //{
+                    //    classes.beginGroup( group );
+                    //    QString type;
+                    //    if ( classes.contains( "Content Type" ) )
+                    //    {
+                    //        type = classes.value( "Content Type" ).toString();
+                    //    }
+                    //    else if ( classes.contains( "PerceivedType" ) )
+                    //    {
+                    //        type = classes.value( "PerceivedType" ).toString();
+                    //    }
+                    //    else if ( group.toLower().startsWith( "vlc." ) && classes.value( "Default" ).toString().toLower().contains( "video" ) )
+                    //    {
+                    //        group = group.mid( 3 );
+                    //        type = "video";
+                    //    }
+
+                    //    if ( type.toLower().startsWith( "video" ) )
+                    //    {
+                    //        type2Exts << "*" + group.toLower();
+                    //        if ( !type1Exts.contains( "*" + group.toLower() ) )
+                    //            int xyz = 0;
+                    //    }
+                    //    classes.endGroup();
+                    //}
                     videoExtensions.removeDuplicates();
-                    for ( auto &&ii : videoExtensions )
-                    {
-                        ii = "*" + ii;
-                    }
                     settings.setValue( "MediaExtensions", videoExtensions );
                 }
+                else
+                    videoExtensions = settings.value( "MediaExtensions" ).toStringList();
                 return videoExtensions;
             }
 
@@ -468,7 +476,7 @@ namespace NMediaManager
                 settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
                 return settings.value( "TreatAsTVShowByDefault", false ).toBool();
             }
-
+                        
             void CPreferences::setExactMatchesOnly( bool value )
             {
                 QSettings settings;
@@ -1702,22 +1710,47 @@ namespace NMediaManager
             /// ////////////////////////////////////////////////////////
             /// MakeMKV Options
             /// ////////////////////////////////////////////////////////
-
-            QStringList CPreferences::getConvertToMKVArgs( bool sourceH265, const QString &srcName, const QString &destName ) const
+            QStringList CPreferences::getTranscodeArgs( const QString &srcName, const QString &destName ) const
             {
-                auto convertToH265 = sourceH265 && getConvertToH265();
+                auto mediaInfo = std::make_shared< NSABUtils::CMediaInfo >( srcName );
+                return getTranscodeArgs( mediaInfo, srcName, destName );
+            }
+
+            std::tuple< bool, bool, bool > CPreferences::getTranscodeNeeded( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo ) const
+            {
+                auto videoTranscodeNeeded = getTranscodeToH265() && mediaInfo && !mediaInfo->isHEVCVideo();
+                auto audioTranscodeNeeded = getTranscodeAudio() && mediaInfo && !mediaInfo->isAudioCodec( getTranscodeToAudioCodec() );
+                auto formatChangeNeeded   = getForceMediaFormat() && mediaInfo && !mediaInfo->isFormat( getForceMediaFormatName() );
+                return { videoTranscodeNeeded, audioTranscodeNeeded, formatChangeNeeded };
+            }
+
+            QStringList CPreferences::getTranscodeArgs( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName ) const
+            {
+                auto videoTranscodeNeeded = false;
+                auto audioTranscodeNeeded = false;
+                auto formatChangeNeeded = false;
+
+                std::tie( videoTranscodeNeeded, audioTranscodeNeeded, formatChangeNeeded ) = getTranscodeNeeded( mediaInfo );
+                auto transcodeNeeded = videoTranscodeNeeded || audioTranscodeNeeded;
                 
+                if ( !videoTranscodeNeeded && !audioTranscodeNeeded && !formatChangeNeeded )
+                    return {};
+
                 auto retVal = QStringList() //
                     << "-y" //
                     << "-fflags" << "+genpts"   //
                     ;
 
-                if( convertToH265 )
+                if ( transcodeNeeded )
                 {
                     QString hwAccel;
                     QString videoCodec;
-
-                    if ( NPreferences::NCore::CPreferences::instance()->getNVidiaGPUTranscode() )
+                    if ( !videoTranscodeNeeded )
+                    {
+                        hwAccel.clear();
+                        videoCodec = "copy";
+                    }
+                    else if ( NPreferences::NCore::CPreferences::instance()->getNVidiaGPUTranscode() )
                     {
                         hwAccel = "cuda";
                         videoCodec = "hevc_nvenc";
@@ -1734,7 +1767,7 @@ namespace NMediaManager
                         videoCodec = "libx265";
                     }
 
-                    if ( !hwAccel.isEmpty() )
+                    if ( videoTranscodeNeeded && !hwAccel.isEmpty() )
                     {
                         retVal //
                             << "-hwaccel" << hwAccel //
@@ -1742,26 +1775,32 @@ namespace NMediaManager
                             ;
                     }
 
+                    auto audioCodec = audioTranscodeNeeded ? getTranscodeToAudioCodec() : "copy";
+
                     retVal << "-i" << srcName   //
                            << "-map" << "0:a?"   //
                            << "-map" << "0:v?"   // 
                            << "-map" << "0:s?"   //
-                           << "-c:a" << "copy"   //
+                           << "-c:a" << audioCodec   //
                            << "-c:v" << videoCodec  //
                         ;
-                    if ( getLosslessTranscoding() )
-                        retVal << "-x265-params" << "lossless=1";
-                    else
+                    if ( videoTranscodeNeeded )
                     {
-                        if ( getUseExplicitCRF() )
-                            retVal << "-crf" << QString::number( getExplicitCRF() );
-                        if ( getUsePreset() )
-                            retVal << "-preset" << toString( getPreset() );
-                        if ( getUseTune() )
-                            retVal << "-tune" << toString( getTune() );
+                        if ( getLosslessTranscoding() )
+                            retVal << "-x265-params"
+                                   << "lossless=1";
+                        else
+                        {
+                            if ( getUseExplicitCRF() )
+                                retVal << "-crf" << QString::number( getExplicitCRF() );
+                            if ( getUsePreset() )
+                                retVal << "-preset" << toString( getPreset() );
+                            if ( getUseTune() )
+                                retVal << "-tune" << toString( getTune() );
+                        }
+                        if ( getUseProfile() )
+                            retVal << "-profile:v" << toString( getProfile() );
                     }
-                    if ( getUseProfile() )
-                        retVal << "-profile:v" << toString( getProfile() );
                 }
                 else
                 {
@@ -1773,13 +1812,342 @@ namespace NMediaManager
                         << "-c:s" << "copy"   //
                         ;
                 }
-                retVal << "-f" << "matroska"   //
+                retVal << "-f" << getForceMediaFormatName() //
                        << destName;
 
                 return retVal;
             }
 
-            void CPreferences::setConvertToH265( bool value )
+            
+            QStringList CPreferences::availableAudioEncoders( bool verbose ) const
+            {
+                loadCodecs();
+                if ( verbose )
+                    return fAudioCodecsVerbose;
+                else
+                    return fAudioCodecsTerse;
+            }
+
+            QStringList CPreferences::availableVideoEncoders( bool verbose ) const
+            {
+                loadCodecs();
+                if ( verbose )
+                    return fVideoCodecsVerbose;
+                else
+                    return fVideoCodecsTerse;
+            }
+
+            QStringList CPreferences::availableSubtitleEncoders( bool verbose ) const
+            {
+                loadCodecs();
+                if ( verbose )
+                    return fSubtitleCodecsVerbose;
+                else
+                    return fSubtitleCodecsTerse;
+            }
+
+            QStringList CPreferences::availableMediaFormats( bool verbose ) const
+            {
+                loadFFmpegFormats( false );
+                if ( verbose )
+                    return fMediaFormatsVerbose;
+                else
+                    return fMediaFormatsTerse;
+            }
+
+            std::tuple< QStringList, QStringList, std::unordered_map< QString, QStringList >, std::unordered_map< QString, QString > > CPreferences::getAllFFmpegFormats( const QString &ffmpeg )
+            {
+                QStringList mediaFormatsTerse;
+                QStringList mediaFormatsVerbose;
+                std::unordered_map< QString, QStringList > mediaFormatExtensions;
+                std::unordered_map< QString, QString > reverseMediaFormatExtensions;
+
+                QProcess process;
+                process.start(
+                    ffmpeg, QStringList() << "-hide_banner"
+                                          << "-formats" );
+                process.waitForFinished();
+                auto formats = process.readAllStandardOutput();
+
+                auto pos = formats.indexOf( "--" );
+                if ( pos == -1 )
+                    return { mediaFormatsTerse, mediaFormatsVerbose, mediaFormatExtensions, reverseMediaFormatExtensions };
+
+                formats = formats.mid( pos + 2 );
+                /*
+                        * Encoders:
+                           D. = Demuxing supported
+                           .E = Muxing supported
+                        
+                           D  3dostr          3DO STR
+                            E 3g2             3GP2 (3GPP2 file format)
+                        */
+                auto regEx = QRegularExpression( R"((?<type>[DE]{1,2})\s+(?<name>\S+)\s+(?<desc>.*))" );
+                auto ii = regEx.globalMatch( formats );
+                while ( ii.hasNext() )
+                {
+                    auto match = ii.next();
+                    auto type = match.captured( "type" );
+                    if ( ( type.length() == 1 ) && ( type[ 0 ] != 'E' ) )
+                        continue;
+                    if ( ( type.length() == 2 ) && ( type[ 1 ] != 'E' ) )
+                        continue;
+                    auto names = match.captured( "name" ).trimmed().split( "," );
+                    auto desc = match.captured( "desc" ).trimmed();
+
+                    for ( auto &&name : names )
+                    {
+                        auto exts = getExtensionsForMediaFormat( name, ffmpeg, mediaFormatExtensions, reverseMediaFormatExtensions );
+                        if ( exts.empty() )
+                            continue;
+
+                        mediaFormatsTerse.push_back( name );
+                        mediaFormatsVerbose.push_back( name + " - " + desc + " (" + exts.join( ";" ) + ")" );
+                    }
+                }
+                Q_ASSERT( mediaFormatsTerse.count() == mediaFormatsVerbose.count() );
+                return { mediaFormatsTerse, mediaFormatsVerbose, mediaFormatExtensions, reverseMediaFormatExtensions };
+            }
+
+            void CPreferences::loadFFmpegFormats( bool forceLoad ) const
+            {
+                if ( !fMediaFormatsLoaded.has_value() )
+                {
+                    auto ffmpeg = getFFMpegEXE();
+                    if ( ffmpeg.isEmpty() )
+                        return;
+
+                    QSettings settings;
+                    settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
+                    settings.beginGroup( "MediaFormats" );
+                    auto hasFormats = !settings.childGroups().isEmpty();
+                    settings.endGroup();
+
+                    if ( forceLoad || !hasFormats )
+                    {
+                        std::tie( fMediaFormatsTerse, fMediaFormatsVerbose, fMediaFormatExtensions, fReverseMediaFormatExtensions ) = getAllFFmpegFormats( ffmpeg );
+
+                        settings.beginWriteArray( "MediaFormats", fMediaFormatsTerse.size() );
+                        for ( int ii = 0; ii < fMediaFormatsTerse.size(); ++ii )
+                        {
+                            settings.setArrayIndex( ii );
+                            settings.setValue( "terse", fMediaFormatsTerse[ ii ] );
+                            settings.setValue( "verbose", fMediaFormatsVerbose[ ii ] );
+                            auto pos = fMediaFormatExtensions.find( fMediaFormatsTerse[ ii ] );
+                            if ( pos != fMediaFormatExtensions.end() )
+                            {
+                                settings.setValue( "extensions", ( *pos ).second );
+                            }
+                        }
+                        settings.endArray();
+                    }
+                    else
+                    {
+                        fMediaFormatExtensions.clear();
+                        fMediaFormatsTerse.clear();
+                        fMediaFormatsVerbose.clear();
+                        fReverseMediaFormatExtensions.clear();
+
+                        auto arraySize = settings.beginReadArray( "MediaFormats" );
+                        for ( int ii = 0; ii < arraySize; ++ii )
+                        {
+                            settings.setArrayIndex( ii );
+                            auto terse = settings.value( "terse" ).toString();
+                            auto verbose = settings.value( "verbose" ).toString();
+                            auto exts = settings.value( "extensions" ).toStringList();
+
+                            fMediaFormatsTerse.push_back( terse );
+                            fMediaFormatsVerbose.push_back( verbose );
+                            fMediaFormatExtensions[ terse ] = exts;
+                            for ( auto &&ii : exts )
+                                fReverseMediaFormatExtensions[ ii ] = terse;
+                        }
+                        settings.endArray();
+                    }
+                    fMediaFormatsLoaded = true;
+                }
+                Q_ASSERT( fMediaFormatsTerse.count() == fMediaFormatsVerbose.count() );
+            }
+
+            QStringList CPreferences::getExtensionsForMediaFormat( const QString &formatName, const QString &ffmpegExe, std::unordered_map< QString, QStringList > &forwardMap, std::unordered_map< QString, QString > &reverseMap )
+            {
+                if ( ffmpegExe.isEmpty() )
+                    return {};
+
+                auto pos = forwardMap.find( formatName );
+                if ( pos == forwardMap.end() )
+                {
+                    QProcess process;
+                    process.start(
+                        ffmpegExe, QStringList() << "-hide_banner"
+                                              << "-h"
+                                              << "muxer=" + formatName );
+                    process.waitForFinished();
+                    auto formatHelp = process.readAllStandardOutput();
+
+                    // Common extensions: 3g2.
+                    auto regEx = QRegularExpression( R"(Common extensions\:\s(?<exts>.*)\.)" );
+                    auto match = regEx.match( formatHelp );
+                    QStringList exts;
+                    if ( match.hasMatch() )
+                    {
+                        auto tmp = match.captured( "exts" ).trimmed();
+                        exts = match.captured( "exts" ).trimmed().split( "," );
+                        for ( auto &&ii : exts )
+                            ii = "*." + ii;
+                    }
+
+                    for ( auto &&ii : exts )
+                        reverseMap[ ii ] = formatName;
+
+                    pos = forwardMap.insert( { formatName, exts } ).first;
+                }
+                return ( *pos ).second;
+            }
+
+            QStringList CPreferences::getExtensionsForMediaFormat( const QString &formatName ) const
+            {
+                return getExtensionsForMediaFormat( formatName, getFFMpegEXE(), fMediaFormatExtensions, fReverseMediaFormatExtensions );
+            }
+
+            void CPreferences::loadCodecs() const
+            {
+                if ( !fCodecsLoaded.has_value() )
+                {
+                    auto ffmpeg = getFFMpegEXE();
+                    if ( ffmpeg.isEmpty() )
+                        return;
+
+                    QProcess process;
+                    process.start( ffmpeg, QStringList() << "-hide_banner" << "-encoders" );
+                    process.waitForFinished();
+                    auto codecs = process.readAllStandardOutput();
+                    
+                    auto pos = codecs.indexOf( "------" );
+                    if ( pos == -1 )
+                        return;
+
+                    codecs = codecs.mid( pos + 6 );
+                    /*
+                        * Encoders:
+                           V..... = Video
+                           A..... = Audio
+                           S..... = Subtitle
+                        .   F.... = Frame-level multithreading
+                            .S... = Slice-level multithreading
+                         ...  X.. = Codec is experimental
+                        ....   B. = Supports draw_horiz_band
+                        .....   D = Supports direct rendering method 1
+                        
+                        
+                           V....D a64multi             Multicolor charset for Commodore 64 (codec a64_multi)
+                        */
+                    auto regEx = QRegularExpression( R"((?<type>[VAS][FSXBD\.]{5})\s+(?<name>\S+)\s+(?<desc>.*))" );
+                    auto ii = regEx.globalMatch( codecs );
+                    while ( ii.hasNext() )
+                    {
+                        auto match = ii.next();
+                        auto type = match.captured( "type" );
+                        if ( type.length() != 6 )
+                            continue;
+                        if ( type[ 3 ] == 'X' )
+                            continue;
+                        if ( ( type[ 0 ] != 'V' ) && ( type[ 0 ] != 'A' ) && ( type[ 0 ] != 'S' ) )
+                            continue;
+                        auto name = match.captured( "name" );
+                        auto desc = match.captured( "desc" );
+                        switch ( type[ 0 ].toLatin1() )
+                        {
+                            case 'A':
+                                fAudioCodecsTerse.push_back( name );
+                                fAudioCodecsVerbose.push_back( name + " - " + desc );
+                                break;
+                            case 'V':
+                                fVideoCodecsTerse.push_back( name );
+                                fVideoCodecsVerbose.push_back( name + " - " + desc );
+                                break;
+                            case 'S':
+                                fSubtitleCodecsTerse.push_back( name );
+                                fSubtitleCodecsVerbose.push_back( name + " - " + desc );
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    fCodecsLoaded = true;
+                }
+            }
+            
+            void CPreferences::setForceMediaFormat( bool value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
+                return settings.setValue( "ForceMediaFormat", value );
+                emitSigPreferencesChanged( EPreferenceType::eMakeMKVPrefs );
+            }
+
+            bool CPreferences::getForceMediaFormat() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
+                return settings.value( "ForceMediaFormat", true ).toBool();
+            }
+
+            void CPreferences::setForceMediaFormatName( const QString &value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
+                return settings.setValue( "ForceMediaFormatName", value );
+                emitSigPreferencesChanged( EPreferenceType::eMakeMKVPrefs );
+            }
+
+            QString CPreferences::getForceMediaFormatName() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
+                return settings.value( "ForceMediaFormatName", "matroska" ).toString();
+            }
+
+            QString CPreferences::getForceMediaFormatExt() const
+            {
+                auto format = getForceMediaFormatName();
+                if ( format.toLower() == "matroska" )
+                    return "mkv";
+                else
+                    return format;
+            }
+
+            void CPreferences::setTranscodeAudio( bool value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
+                return settings.setValue( "TranscodeAudio", value );
+                emitSigPreferencesChanged( EPreferenceType::eMakeMKVPrefs );
+            }
+
+            bool CPreferences::getTranscodeAudio() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
+                return settings.value( "TranscodeAudio", false ).toBool();
+            }
+
+            void CPreferences::setTranscodeToAudioCodec( const QString &value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
+                return settings.setValue( "AudioCodec", value );
+                emitSigPreferencesChanged( EPreferenceType::eMakeMKVPrefs );
+            }
+
+            QString CPreferences::getTranscodeToAudioCodec() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
+                return settings.value( "AudioCodec", "aac" ).toString();
+            }
+
+            void CPreferences::setTranscodeToH265( bool value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
@@ -1787,7 +2155,7 @@ namespace NMediaManager
                 emitSigPreferencesChanged( EPreferenceType::eMakeMKVPrefs );
             }
 
-            bool CPreferences::getConvertToH265() const
+            bool CPreferences::getTranscodeToH265() const
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
