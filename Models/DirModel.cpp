@@ -269,7 +269,6 @@ namespace NMediaManager
         {
             resetStatusCaches();
             fPathMapping.clear();
-            fMediaInfoCache.clear();
         }
 
         void CDirModel::postReloadModelRequest()
@@ -1106,7 +1105,6 @@ namespace NMediaManager
         void CDirModel::clear()
         {
             fPathMapping.clear();
-            fMediaInfoCache.clear();
             QStandardItemModel::clear();
         }
 
@@ -1136,12 +1134,22 @@ namespace NMediaManager
                 return {};
 
             auto pos = fMediaInfoCache.find( path );
-            if ( pos == fMediaInfoCache.end() )
+            auto dt = QFileInfo( path ).fileTime( QFileDevice::FileModificationTime );
+            auto needsAdding = ( pos == fMediaInfoCache.end() );
+            if ( !needsAdding )
+            {
+                needsAdding = dt != ( *pos ).second.first;
+                if ( needsAdding )
+                    fMediaInfoCache.erase( pos );
+            }
+
+            if ( needsAdding )
             {
                 auto mediaInfo = std::make_shared< NSABUtils::CMediaInfo >( path );
-                pos = fMediaInfoCache.insert( { path, mediaInfo } ).first;
+                pos = fMediaInfoCache.insert( { path, { dt, mediaInfo } } ).first;
             }
-            return ( *pos ).second;
+
+            return ( *pos ).second.second;
         }
 
         std::shared_ptr< NSABUtils::CMediaInfo > CDirModel::getMediaInfo( const QModelIndex &idx ) const
