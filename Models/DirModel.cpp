@@ -1138,7 +1138,7 @@ namespace NMediaManager
             auto pos = fMediaInfoCache.find( path );
             if ( pos == fMediaInfoCache.end() )
             {
-                auto mediaInfo = std::make_shared< NSABUtils::CMediaInfo >( path);
+                auto mediaInfo = std::make_shared< NSABUtils::CMediaInfo >( path );
                 pos = fMediaInfoCache.insert( { path, mediaInfo } ).first;
             }
             return ( *pos ).second;
@@ -1505,7 +1505,7 @@ namespace NMediaManager
         {
             if ( !canShowMediaInfo() )
                 return {};
-            return QStringList() << tr( "Title" ) << tr( "Length" ) << tr( "Media Date" ) << tr( "Resolution" ) << tr( "Video Codec" ) << tr( "Video Bitrate" ) << tr( "Audio Codec" ) << tr( "Sampling Rate" ) << tr( "Comment" );
+            return QStringList() << tr( "Title" ) << tr( "Length" ) << tr( "Media Date" ) << tr( "Resolution" ) << tr( "Video Codec" ) << tr( "Video Bitrate" ) << tr( "Audio Codec" ) << tr( "Audio Sample Rate" ) << tr( "Comment" );
         }
 
         std::list< SDirNodeItem > CDirModel::addAdditionalItems( const QFileInfo &fileInfo ) const
@@ -1780,14 +1780,21 @@ namespace NMediaManager
             return getMediaResolutionLoc() + 1;
         }
 
-        int CDirModel::getMediaAudioCodecLoc() const
+        int CDirModel::getMediaVideoBitrateLoc() const
         {
             if ( !canShowMediaInfo() )
                 return -1;
             return getMediaVideoCodecLoc() + 1;
         }
 
-        int CDirModel::getMediaBitrateLoc() const
+        int CDirModel::getMediaAudioCodecLoc() const
+        {
+            if ( !canShowMediaInfo() )
+                return -1;
+            return getMediaVideoBitrateLoc() + 1;
+        }
+
+        int CDirModel::getMediaAudioSampleRateLoc() const
         {
             if ( !canShowMediaInfo() )
                 return -1;
@@ -1798,7 +1805,7 @@ namespace NMediaManager
         {
             if ( !canShowMediaInfo() )
                 return -1;
-            return getMediaAudioCodecLoc() + 1;
+            return getMediaAudioSampleRateLoc() + 1;
         }
 
         QTreeView *CDirModel::filesView() const
