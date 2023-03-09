@@ -57,12 +57,14 @@ namespace NMediaManager
 
                 auto pos = fImpl->audioCodec->findData( NPreferences::NCore::CPreferences::instance()->getTranscodeToAudioCodec() );
                 fImpl->audioCodec->setCurrentIndex( pos );
+                fImpl->onlyTranscodeAudioOnFormatChange->setChecked( NPreferences::NCore::CPreferences::instance()->getOnlyTranscodeAudioOnFormatChange() );
             }
 
             void CMakeMKVAudioSettings::save()
             {
                 NPreferences::NCore::CPreferences::instance()->setTranscodeToAudioCodec( fImpl->audioCodec->currentData().toString() );
                 NPreferences::NCore::CPreferences::instance()->setTranscodeAudio( fImpl->transcodeAudio->isChecked() );
+                NPreferences::NCore::CPreferences::instance()->setOnlyTranscodeAudioOnFormatChange( fImpl->onlyTranscodeAudioOnFormatChange->isChecked() );
             }
        }
     }

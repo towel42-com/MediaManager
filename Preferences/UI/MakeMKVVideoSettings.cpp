@@ -76,6 +76,7 @@ namespace NMediaManager
                 fImpl->tune->setCurrentIndex( NPreferences::NCore::CPreferences::instance()->getTune() );
                 fImpl->useProfile->setChecked( NPreferences::NCore::CPreferences::instance()->getUseProfile() );
                 fImpl->profile->setCurrentIndex( NPreferences::NCore::CPreferences::instance()->getProfile() );
+                fImpl->onlyTranscodeVideoOnFormatChange->setChecked( NPreferences::NCore::CPreferences::instance()->getOnlyTranscodeVideoOnFormatChange() );
             }
 
             void CMakeMKVVideoSettings::save()
@@ -95,6 +96,8 @@ namespace NMediaManager
                 NPreferences::NCore::CPreferences::instance()->setTune( static_cast< NMediaManager::NPreferences::NCore::EMakeMKVTune >( fImpl->tune->currentIndex() ) );
                 NPreferences::NCore::CPreferences::instance()->setUseProfile( fImpl->useProfile->isChecked() );
                 NPreferences::NCore::CPreferences::instance()->setProfile( static_cast< NMediaManager::NPreferences::NCore::EMakeMKVProfile >( fImpl->profile->currentIndex() ) );
+
+                NPreferences::NCore::CPreferences::instance()->setOnlyTranscodeVideoOnFormatChange( fImpl->onlyTranscodeVideoOnFormatChange->isChecked() );
             }
 
             void CMakeMKVVideoSettings::slotLosslessChanged()

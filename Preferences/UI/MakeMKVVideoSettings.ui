@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>768</width>
+    <width>774</width>
     <height>535</height>
    </rect>
   </property>
@@ -23,21 +23,14 @@
       <bool>true</bool>
      </property>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="1" column="0">
-       <widget class="QRadioButton" name="intelGPUTranscode">
-        <property name="text">
-         <string>Intel GPU</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="2">
+      <item row="2" column="2">
        <widget class="QRadioButton" name="softwareTranscode">
         <property name="text">
          <string>Software</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="3">
+      <item row="2" column="3">
        <spacer name="horizontalSpacer_2">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -50,21 +43,14 @@
         </property>
        </spacer>
       </item>
-      <item row="3" column="0" colspan="4">
+      <item row="4" column="0" colspan="4">
        <widget class="QLabel" name="label_7">
         <property name="text">
          <string>Default settings for quality are used to maintain quality during the transcoding</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
-       <widget class="QRadioButton" name="nvidiaGPUTranscode">
-        <property name="text">
-         <string>nVidia GPU</string>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="0" colspan="4">
+      <item row="6" column="0" colspan="4">
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
          <widget class="QCheckBox" name="useProfile">
@@ -201,7 +187,14 @@
         </item>
        </layout>
       </item>
-      <item row="4" column="0" colspan="4">
+      <item row="2" column="1">
+       <widget class="QRadioButton" name="nvidiaGPUTranscode">
+        <property name="text">
+         <string>nVidia GPU</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0" colspan="4">
        <widget class="QGroupBox" name="useCRF">
         <property name="title">
          <string>Use a Constant Rate Factor?</string>
@@ -348,14 +341,35 @@
         </layout>
        </widget>
       </item>
-      <item row="2" column="0" colspan="4">
+      <item row="2" column="0">
+       <widget class="QRadioButton" name="intelGPUTranscode">
+        <property name="text">
+         <string>Intel GPU</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0" colspan="4">
        <widget class="QCheckBox" name="losslessTranscoding">
         <property name="text">
          <string>Lossless Transcoding?</string>
         </property>
        </widget>
       </item>
+      <item row="1" column="0" colspan="4">
+       <widget class="QCheckBox" name="onlyTranscodeVideoOnFormatChange">
+        <property name="text">
+         <string>Only Transcode Video when Format requires it?</string>
+        </property>
+       </widget>
+      </item>
      </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>If &quot;Only Transcode&quot; is checked, Video transcoding will only occur when a format change is necessary</string>
+     </property>
     </widget>
    </item>
    <item>
@@ -375,8 +389,12 @@
  </widget>
  <tabstops>
   <tabstop>convertToH265</tabstop>
-  <tabstop>useCRF</tabstop>
+  <tabstop>intelGPUTranscode</tabstop>
+  <tabstop>nvidiaGPUTranscode</tabstop>
+  <tabstop>softwareTranscode</tabstop>
+  <tabstop>losslessTranscoding</tabstop>
   <tabstop>useExplicitCRF</tabstop>
+  <tabstop>useCRF</tabstop>
   <tabstop>explicitCRF</tabstop>
   <tabstop>usePreset</tabstop>
   <tabstop>preset</tabstop>

@@ -121,6 +121,22 @@ namespace NMediaManager
             };
             QString toString( EMakeMKVProfile profile );
 
+            struct STranscodeNeeded
+            {
+                STranscodeNeeded( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo );
+
+                bool transcodeNeeded() const
+                {
+                    return fVideo || fAudio || fFormat;
+                }
+                bool formatOnly() const
+                {
+                    return fFormat && !fVideo && !fAudio;
+                }
+                bool fVideo{ false };
+                bool fAudio{ false };
+                bool fFormat{ false };
+            };
 
             class CPreferences : public QObject
             {
@@ -149,8 +165,7 @@ namespace NMediaManager
 
                 void setTreatAsTVShowByDefault( bool value );
                 bool getTreatAsTVShowByDefault() const;
-                    
-                std::tuple< bool, bool, bool > getTranscodeNeeded( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo ) const;
+                
                 QStringList getTranscodeArgs( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName ) const;
                 QStringList getTranscodeArgs( const QString &srcName, const QString &destName ) const;
 
@@ -163,6 +178,9 @@ namespace NMediaManager
 
                 void setTranscodeAudio( bool value );
                 bool getTranscodeAudio() const;
+
+                void setOnlyTranscodeAudioOnFormatChange( bool value );
+                bool getOnlyTranscodeAudioOnFormatChange() const;
 
                 void setTranscodeToAudioCodec( const QString &value );
                 QString getTranscodeToAudioCodec() const;
@@ -352,6 +370,9 @@ namespace NMediaManager
 
                 bool hasIntelGPU() const;
                 bool hasNVidiaGPU() const;
+
+                void setOnlyTranscodeVideoOnFormatChange( bool value );
+                bool getOnlyTranscodeVideoOnFormatChange() const;
 
                 void setIntelGPUTranscode( bool value );
                 bool getIntelGPUTranscodeDefault() const;

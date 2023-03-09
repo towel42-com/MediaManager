@@ -388,42 +388,6 @@ namespace NMediaManager
                     for ( auto &&ii : fMediaFormatExtensions )
                         videoExtensions << ii.second;
 
-                    //QStringList type2Exts;
-                    //type2Exts = QStringList() << "*.mkv"
-                    //                          << "*.mp4"
-                    //                          << "*.avi"
-                    //                          << "*.mov"
-                    //                          << "*.wmv"
-                    //                          << "*.mpg"
-                    //                          << "*.mpg2";
-                    //QSettings classes( "HKEY_CLASSES_ROOT", QSettings::NativeFormat );
-                    //auto groups = classes.childGroups();
-                    //for ( auto &&group : groups )
-                    //{
-                    //    classes.beginGroup( group );
-                    //    QString type;
-                    //    if ( classes.contains( "Content Type" ) )
-                    //    {
-                    //        type = classes.value( "Content Type" ).toString();
-                    //    }
-                    //    else if ( classes.contains( "PerceivedType" ) )
-                    //    {
-                    //        type = classes.value( "PerceivedType" ).toString();
-                    //    }
-                    //    else if ( group.toLower().startsWith( "vlc." ) && classes.value( "Default" ).toString().toLower().contains( "video" ) )
-                    //    {
-                    //        group = group.mid( 3 );
-                    //        type = "video";
-                    //    }
-
-                    //    if ( type.toLower().startsWith( "video" ) )
-                    //    {
-                    //        type2Exts << "*" + group.toLower();
-                    //        if ( !type1Exts.contains( "*" + group.toLower() ) )
-                    //            int xyz = 0;
-                    //    }
-                    //    classes.endGroup();
-                    //}
                     videoExtensions.removeDuplicates();
                     settings.setValue( "MediaExtensions", videoExtensions );
                 }
@@ -459,7 +423,7 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
-                return settings.setValue( "TreatAsTVShowByDefault", value );
+                settings.setValue( "TreatAsTVShowByDefault", value );
                 emitSigPreferencesChanged( EPreferenceType::eTransformPrefs );
             }
 
@@ -474,7 +438,7 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
-                return settings.setValue( "ExactMatchesOnly", value );
+                settings.setValue( "ExactMatchesOnly", value );
                 emitSigPreferencesChanged( EPreferenceType::eTransformPrefs );
             }
 
@@ -489,7 +453,7 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
-                return settings.setValue( "LoadMediaInfo", value );
+                settings.setValue( "LoadMediaInfo", value );
                 emitSigPreferencesChanged( EPreferenceType::eTransformPrefs );
             }
 
@@ -504,7 +468,7 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
-                return settings.setValue( "OnlyLoadDirectories", value );
+                settings.setValue( "OnlyLoadDirectories", value );
                 emitSigPreferencesChanged( EPreferenceType::eTransformPrefs );
             }
 
@@ -1323,101 +1287,6 @@ namespace NMediaManager
                 return aOK ? retVal : QString();
             }
 
-            bool CPreferences::hasIntelGPU() const
-            {
-                if ( !fHasIntelGPU.has_value() )
-                {
-                    fHasIntelGPU = false;
-                    auto gpus = NSABUtils::detectGPUs();
-                    for ( auto &&ii : gpus )
-                    {
-                        if ( ii->isIntelGPU() )
-                        {
-                            fHasIntelGPU = true;
-                            break;
-                        }
-                    }
-                }
-                return fHasIntelGPU.value();
-            }
-
-            bool CPreferences::hasNVidiaGPU() const
-            {
-                if ( !fHasNVidiaGPU.has_value() )
-                {
-                    fHasNVidiaGPU = false;
-                    auto gpus = NSABUtils::detectGPUs();
-                    for ( auto &&ii : gpus )
-                    {
-                        if ( ii->isNVidiaGPU() )
-                        {
-                            fHasNVidiaGPU = true;
-                            break;
-                        }
-                    }
-                }
-                return fHasNVidiaGPU.value();
-            }
-
-            void CPreferences::setIntelGPUTranscode( bool value )
-            {
-                QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eExtToolsPrefs ) );
-                settings.setValue( "IntelGPUTranscode", value );
-                emitSigPreferencesChanged( EPreferenceType::eExtToolsPrefs );
-            }
-
-            bool CPreferences::getIntelGPUTranscodeDefault() const
-            {
-                return hasIntelGPU() && !hasNVidiaGPU();
-            }
-
-            bool CPreferences::getIntelGPUTranscode() const
-            {
-                QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eExtToolsPrefs ) );
-                return settings.value( "IntelGPUTranscode", getIntelGPUTranscodeDefault() ).toBool();
-            }
-
-            void CPreferences::setNVidiaGPUTranscode( bool value )
-            {
-                QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eExtToolsPrefs ) );
-                settings.setValue( "nVidiaGPUTranscode", value );
-                emitSigPreferencesChanged( EPreferenceType::eExtToolsPrefs );
-            }
-
-            bool CPreferences::getNVidiaGPUTranscodeDefault() const
-            {
-                return hasNVidiaGPU();
-            }
-
-            bool CPreferences::getNVidiaGPUTranscode() const
-            {
-                QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eExtToolsPrefs ) );
-                return settings.value( "nVidiaGPUTranscode", getNVidiaGPUTranscodeDefault() ).toBool();
-            }
-
-            void CPreferences::setSoftwareTranscode( bool value )
-            {
-                QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eExtToolsPrefs ) );
-                settings.setValue( "SoftwareTranscode", value );
-                emitSigPreferencesChanged( EPreferenceType::eExtToolsPrefs );
-            }
-
-            bool CPreferences::getSoftwareTranscodeDefault() const
-            {
-                return !hasIntelGPU() && !hasNVidiaGPU();
-            }
-            bool CPreferences::getSoftwareTranscode() const
-            {
-                QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eExtToolsPrefs ) );
-                return settings.value( "SoftwareTranscode", getSoftwareTranscodeDefault() ).toBool();
-            }
-
             /// ////////////////////////////////////////////////////////
             /// BIF Options
             /// ////////////////////////////////////////////////////////
@@ -1708,24 +1577,29 @@ namespace NMediaManager
                 return getTranscodeArgs( mediaInfo, srcName, destName );
             }
 
-            std::tuple< bool, bool, bool > CPreferences::getTranscodeNeeded( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo ) const
+            STranscodeNeeded::STranscodeNeeded( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo )
             {
-                auto videoTranscodeNeeded = getTranscodeToH265() && mediaInfo && !mediaInfo->isHEVCVideo();
-                auto audioTranscodeNeeded = getTranscodeAudio() && mediaInfo && !mediaInfo->isAudioCodec( getTranscodeToAudioCodec() );
-                auto formatChangeNeeded = getForceMediaFormat() && mediaInfo && !mediaInfo->isFormat( getForceMediaFormatName() );
-                return { videoTranscodeNeeded, audioTranscodeNeeded, formatChangeNeeded };
+                fFormat = NPreferences::NCore::CPreferences::instance()->getForceMediaFormat() && mediaInfo && !mediaInfo->isFormat( NPreferences::NCore::CPreferences::instance()->getForceMediaFormatName() );
+
+                fVideo = NPreferences::NCore::CPreferences::instance()->getTranscodeToH265() && mediaInfo && !mediaInfo->isHEVCVideo();
+                fAudio = NPreferences::NCore::CPreferences::instance()->getTranscodeAudio() && mediaInfo && !mediaInfo->isAudioCodec( NPreferences::NCore::CPreferences::instance()->getTranscodeToAudioCodec() );
+
+                if ( NPreferences::NCore::CPreferences::instance()->getOnlyTranscodeVideoOnFormatChange() )
+                {
+                    fVideo &= fFormat;
+                }
+                
+                if ( NPreferences::NCore::CPreferences::instance()->getOnlyTranscodeAudioOnFormatChange() )
+                {
+                    fAudio &= fFormat;
+                }
             }
 
             QStringList CPreferences::getTranscodeArgs( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName ) const
             {
-                auto videoTranscodeNeeded = false;
-                auto audioTranscodeNeeded = false;
-                auto formatChangeNeeded = false;
+                auto transcodeNeeded = STranscodeNeeded( mediaInfo );
 
-                std::tie( videoTranscodeNeeded, audioTranscodeNeeded, formatChangeNeeded ) = getTranscodeNeeded( mediaInfo );
-                auto transcodeNeeded = videoTranscodeNeeded || audioTranscodeNeeded;
-
-                if ( !videoTranscodeNeeded && !audioTranscodeNeeded && !formatChangeNeeded )
+                if ( !transcodeNeeded.transcodeNeeded() )
                     return {};
 
                 auto retVal = QStringList()   //
@@ -1734,11 +1608,23 @@ namespace NMediaManager
                               << "+genpts"   //
                     ;
 
-                if ( transcodeNeeded )
+                if ( transcodeNeeded.formatOnly() )
+                {
+                    // already HVEC but wrong container, just copy
+                    retVal << "-i" << srcName   //
+                        << "-c:v"
+                        << "copy"   //
+                        << "-c:a"
+                        << "copy"   //
+                        << "-c:s"
+                        << "copy"   //
+                        ;
+                } 
+                else
                 {
                     QString hwAccel;
                     QString videoCodec;
-                    if ( !videoTranscodeNeeded )
+                    if ( !transcodeNeeded.fVideo )
                     {
                         hwAccel.clear();
                         videoCodec = "copy";
@@ -1759,7 +1645,7 @@ namespace NMediaManager
                         videoCodec = "libx265";
                     }
 
-                    if ( videoTranscodeNeeded && !hwAccel.isEmpty() )
+                    if ( transcodeNeeded.fVideo && !hwAccel.isEmpty() )
                     {
                         retVal   //
                             << "-hwaccel" << hwAccel   //
@@ -1767,7 +1653,7 @@ namespace NMediaManager
                             ;
                     }
 
-                    auto audioCodec = audioTranscodeNeeded ? getTranscodeToAudioCodec() : "copy";
+                    auto audioCodec = transcodeNeeded.fAudio ? getTranscodeToAudioCodec() : "copy";
 
                     retVal << "-i" << srcName   //
                            << "-map"
@@ -1779,7 +1665,8 @@ namespace NMediaManager
                            << "-c:a" << audioCodec   //
                            << "-c:v" << videoCodec   //
                         ;
-                    if ( videoTranscodeNeeded )
+
+                    if ( transcodeNeeded.fVideo )
                     {
                         if ( getLosslessTranscoding() )
                             retVal << "-x265-params"
@@ -1797,18 +1684,7 @@ namespace NMediaManager
                             retVal << "-profile:v" << toString( getProfile() );
                     }
                 }
-                else
-                {
-                    // already HVEC but wrong container, just copy
-                    retVal << "-i" << srcName   //
-                           << "-c:v"
-                           << "copy"   //
-                           << "-c:a"
-                           << "copy"   //
-                           << "-c:s"
-                           << "copy"   //
-                        ;
-                }
+                
                 retVal << "-f" << getForceMediaFormatName()   //
                        << destName;
 
@@ -2103,7 +1979,7 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
-                return settings.setValue( "ForceMediaFormat", value );
+                settings.setValue( "ForceMediaFormat", value );
                 emitSigPreferencesChanged( EPreferenceType::eMakeMKVPrefs );
             }
 
@@ -2118,7 +1994,7 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
-                return settings.setValue( "ForceMediaFormatName", value );
+                settings.setValue( "ForceMediaFormatName", value );
                 emitSigPreferencesChanged( EPreferenceType::eMakeMKVPrefs );
             }
 
@@ -2142,7 +2018,7 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
-                return settings.setValue( "TranscodeAudio", value );
+                settings.setValue( "TranscodeAudio", value );
                 emitSigPreferencesChanged( EPreferenceType::eMakeMKVPrefs );
             }
 
@@ -2153,11 +2029,26 @@ namespace NMediaManager
                 return settings.value( "TranscodeAudio", false ).toBool();
             }
 
-            void CPreferences::setTranscodeToAudioCodec( const QString &value )
+            void CPreferences::setOnlyTranscodeVideoOnFormatChange( bool value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
-                return settings.setValue( "AudioCodec", value );
+                settings.setValue( "OnlyTranscodeVideoOnFormatChange", value );
+                emitSigPreferencesChanged( EPreferenceType::eMakeMKVPrefs );
+            }
+
+            bool CPreferences::getOnlyTranscodeVideoOnFormatChange() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
+                return settings.value( "OnlyTranscodeVideoOnFormatChange", false ).toBool();
+            }
+
+            void CPreferences::setTranscodeToAudioCodec( const QString& value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
+                settings.setValue( "AudioCodec", value );
                 emitSigPreferencesChanged( EPreferenceType::eMakeMKVPrefs );
             }
 
@@ -2172,7 +2063,7 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
-                return settings.setValue( "ConvertToH265", value );
+                settings.setValue( "ConvertToH265", value );
                 emitSigPreferencesChanged( EPreferenceType::eMakeMKVPrefs );
             }
 
@@ -2187,7 +2078,7 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
-                return settings.setValue( "LosslessTranscoding", value );
+                settings.setValue( "LosslessTranscoding", value );
                 emitSigPreferencesChanged( EPreferenceType::eMakeMKVPrefs );
             }
 
@@ -2202,7 +2093,7 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
-                return settings.setValue( "UseCRF", value );
+                settings.setValue( "UseCRF", value );
                 emitSigPreferencesChanged( EPreferenceType::eMakeMKVPrefs );
             }
 
@@ -2217,7 +2108,7 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
-                return settings.setValue( "UseConstantRateFactor", value );
+                settings.setValue( "UseConstantRateFactor", value );
                 emitSigPreferencesChanged( EPreferenceType::eMakeMKVPrefs );
             }
 
@@ -2232,7 +2123,7 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
-                return settings.setValue( "ExplicitCRF", value );
+                settings.setValue( "ExplicitCRF", value );
                 emitSigPreferencesChanged( EPreferenceType::eMakeMKVPrefs );
             }
 
@@ -2247,7 +2138,7 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
-                return settings.setValue( "UsePreset", value );
+                settings.setValue( "UsePreset", value );
                 emitSigPreferencesChanged( EPreferenceType::eMakeMKVPrefs );
             }
 
@@ -2262,7 +2153,7 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
-                return settings.setValue( "Preset", value );
+                settings.setValue( "Preset", value );
                 emitSigPreferencesChanged( EPreferenceType::eMakeMKVPrefs );
             }
 
@@ -2277,7 +2168,7 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
-                return settings.setValue( "UseTune", value );
+                settings.setValue( "UseTune", value );
                 emitSigPreferencesChanged( EPreferenceType::eMakeMKVPrefs );
             }
 
@@ -2292,7 +2183,7 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
-                return settings.setValue( "Tune", value );
+                settings.setValue( "Tune", value );
                 emitSigPreferencesChanged( EPreferenceType::eMakeMKVPrefs );
             }
 
@@ -2307,7 +2198,7 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
-                return settings.setValue( "UseProfile", value );
+                settings.setValue( "UseProfile", value );
                 emitSigPreferencesChanged( EPreferenceType::eMakeMKVPrefs );
             }
 
@@ -2322,7 +2213,7 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
-                return settings.setValue( "Profile", value );
+                settings.setValue( "Profile", value );
                 emitSigPreferencesChanged( EPreferenceType::eMakeMKVPrefs );
             }
 
@@ -2332,6 +2223,117 @@ namespace NMediaManager
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
                 return static_cast< EMakeMKVProfile >( settings.value( "Profile", EMakeMKVProfile::eMain422_12 ).toInt() );
             }
+            bool CPreferences::hasIntelGPU() const
+            {
+                if ( !fHasIntelGPU.has_value() )
+                {
+                    fHasIntelGPU = false;
+                    auto gpus = NSABUtils::detectGPUs();
+                    for ( auto&& ii : gpus )
+                    {
+                        if ( ii->isIntelGPU() )
+                        {
+                            fHasIntelGPU = true;
+                            break;
+                        }
+                    }
+                }
+                return fHasIntelGPU.value();
+            }
+
+            bool CPreferences::hasNVidiaGPU() const
+            {
+                if ( !fHasNVidiaGPU.has_value() )
+                {
+                    fHasNVidiaGPU = false;
+                    auto gpus = NSABUtils::detectGPUs();
+                    for ( auto&& ii : gpus )
+                    {
+                        if ( ii->isNVidiaGPU() )
+                        {
+                            fHasNVidiaGPU = true;
+                            break;
+                        }
+                    }
+                }
+                return fHasNVidiaGPU.value();
+            }
+
+            void CPreferences::setIntelGPUTranscode( bool value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
+                settings.setValue( "IntelGPUTranscode", value );
+                emitSigPreferencesChanged( EPreferenceType::eMakeMKVPrefs );
+            }
+
+            bool CPreferences::getIntelGPUTranscodeDefault() const
+            {
+                return hasIntelGPU() && !hasNVidiaGPU();
+            }
+
+            bool CPreferences::getIntelGPUTranscode() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
+                return settings.value( "IntelGPUTranscode", getIntelGPUTranscodeDefault() ).toBool();
+            }
+
+            void CPreferences::setNVidiaGPUTranscode( bool value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
+                settings.setValue( "nVidiaGPUTranscode", value );
+                emitSigPreferencesChanged( EPreferenceType::eMakeMKVPrefs );
+            }
+
+            bool CPreferences::getNVidiaGPUTranscodeDefault() const
+            {
+                return hasNVidiaGPU();
+            }
+
+            bool CPreferences::getNVidiaGPUTranscode() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
+                return settings.value( "nVidiaGPUTranscode", getNVidiaGPUTranscodeDefault() ).toBool();
+            }
+
+            void CPreferences::setSoftwareTranscode( bool value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
+                settings.setValue( "SoftwareTranscode", value );
+                emitSigPreferencesChanged( EPreferenceType::eMakeMKVPrefs );
+            }
+
+            bool CPreferences::getSoftwareTranscodeDefault() const
+            {
+                return !hasIntelGPU() && !hasNVidiaGPU();
+            }
+
+            bool CPreferences::getSoftwareTranscode() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
+                return settings.value( "SoftwareTranscode", getSoftwareTranscodeDefault() ).toBool();
+            }
+
+            void CPreferences::setOnlyTranscodeAudioOnFormatChange( bool value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
+                settings.setValue( "OnlyTranscodeAudioOnFormatChange", value );
+                emitSigPreferencesChanged( EPreferenceType::eMakeMKVPrefs );
+            }
+
+            bool CPreferences::getOnlyTranscodeAudioOnFormatChange() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
+                return settings.value( "OnlyTranscodeAudioOnFormatChange", false ).toBool();
+            }
+
 
             /////////////////////////////////
             /////////////////////////////////
