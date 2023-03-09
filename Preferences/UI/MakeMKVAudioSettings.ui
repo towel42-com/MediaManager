@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>768</width>
+    <width>516</width>
     <height>535</height>
    </rect>
   </property>
@@ -17,7 +17,7 @@
    <item>
     <widget class="QGroupBox" name="transcodeAudio">
      <property name="title">
-      <string>Trancode Audio?</string>
+      <string>Transcode Audio?</string>
      </property>
      <property name="checkable">
       <bool>true</bool>
