@@ -315,8 +315,6 @@ namespace NMediaManager
                 void setSubtitleExtensions( const QStringList &value );
                 QStringList getSubtitleExtensions() const;
 
-                QStringList getNonMKVVideoExtensions() const;
-
                 void addKnownStrings( const QStringList &value );
                 void setKnownStrings( const QStringList &value );
 

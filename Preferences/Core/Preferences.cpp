@@ -432,13 +432,6 @@ namespace NMediaManager
                 return videoExtensions;
             }
 
-            QStringList CPreferences::getNonMKVVideoExtensions() const
-            {
-                auto retVal = getVideoExtensions();
-                //retVal.removeAll( "*.mkv" );
-                return retVal;
-            }
-
             void CPreferences::setSubtitleExtensions( const QString &value )
             {
                 QSettings settings;
