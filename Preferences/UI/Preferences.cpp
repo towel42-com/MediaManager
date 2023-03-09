@@ -40,7 +40,9 @@
 #include "TagAnalysisSettings.h"
 #include "TVShowSettings.h"
 #include "BIFGeneration.h"
-#include "MakeMKVSettings.h"
+#include "MakeMKVGeneralSettings.h"
+#include "MakeMKVAudioSettings.h"
+#include "MakeMKVVideoSettings.h"
 
 #include <QSettings>
 #include <QPushButton>
@@ -116,21 +118,29 @@ namespace NMediaManager
 
             void CPreferences::loadPages()
             {
-                addPage( new CExtendedInfo );
-                addPage( new CExtensions );
                 addPage( new CExternalTools );
+                addPage( new CExtensions );
+
+                addPage( new CMakeMKVGeneralSettings );
+                addPage( new CMakeMKVVideoSettings );
+                addPage( new CMakeMKVAudioSettings );
+
+                addPage( new CExtendedInfo );
                 addPage( new CKnownAbbreviations );
+
+                addPage( new CTransformationSettings );
+                addPage( new CMovieSettings );
+                addPage( new CTVShowSettings );
+
+                addPage( new CSearchSettings );
+
                 addPage( new CPathsToDelete );
                 addPage( new CRemoveFromPaths );
                 addPage( new CKnownHyphenated );
                 addPage( new CSkippedPaths( true ) );
                 addPage( new CSkippedPaths( false ) );
                 addPage( new CIgnoredPaths );
-                addPage( new CSearchSettings );
-                addPage( new CTransformationSettings );
-                addPage( new CMovieSettings );
-                addPage( new CTVShowSettings );
-                addPage( new CMakeMKVSettings );
+
                 addPage( new CTagAnalysisSettings );
                 addPage( new CBIFGeneration );
             }
