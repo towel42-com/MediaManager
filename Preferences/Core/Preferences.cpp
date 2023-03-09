@@ -182,7 +182,7 @@ namespace NMediaManager
                 }
                 return "main";
             }
- 
+
             CPreferences *CPreferences::instance()
             {
                 static CPreferences retVal;
@@ -469,7 +469,7 @@ namespace NMediaManager
                 settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
                 return settings.value( "TreatAsTVShowByDefault", false ).toBool();
             }
-                        
+
             void CPreferences::setExactMatchesOnly( bool value )
             {
                 QSettings settings;
@@ -1699,7 +1699,6 @@ namespace NMediaManager
                 return settings.value( "Delay", 10 ).toInt();
             }
 
-            
             /// ////////////////////////////////////////////////////////
             /// MakeMKV Options
             /// ////////////////////////////////////////////////////////
@@ -1713,7 +1712,7 @@ namespace NMediaManager
             {
                 auto videoTranscodeNeeded = getTranscodeToH265() && mediaInfo && !mediaInfo->isHEVCVideo();
                 auto audioTranscodeNeeded = getTranscodeAudio() && mediaInfo && !mediaInfo->isAudioCodec( getTranscodeToAudioCodec() );
-                auto formatChangeNeeded   = getForceMediaFormat() && mediaInfo && !mediaInfo->isFormat( getForceMediaFormatName() );
+                auto formatChangeNeeded = getForceMediaFormat() && mediaInfo && !mediaInfo->isFormat( getForceMediaFormatName() );
                 return { videoTranscodeNeeded, audioTranscodeNeeded, formatChangeNeeded };
             }
 
@@ -1725,13 +1724,14 @@ namespace NMediaManager
 
                 std::tie( videoTranscodeNeeded, audioTranscodeNeeded, formatChangeNeeded ) = getTranscodeNeeded( mediaInfo );
                 auto transcodeNeeded = videoTranscodeNeeded || audioTranscodeNeeded;
-                
+
                 if ( !videoTranscodeNeeded && !audioTranscodeNeeded && !formatChangeNeeded )
                     return {};
 
-                auto retVal = QStringList() //
-                    << "-y" //
-                    << "-fflags" << "+genpts"   //
+                auto retVal = QStringList()   //
+                              << "-y"   //
+                              << "-fflags"
+                              << "+genpts"   //
                     ;
 
                 if ( transcodeNeeded )
@@ -1747,7 +1747,6 @@ namespace NMediaManager
                     {
                         hwAccel = "cuda";
                         videoCodec = "hevc_nvenc";
-
                     }
                     else if ( NPreferences::NCore::CPreferences::instance()->getIntelGPUTranscode() )
                     {
@@ -1762,20 +1761,23 @@ namespace NMediaManager
 
                     if ( videoTranscodeNeeded && !hwAccel.isEmpty() )
                     {
-                        retVal //
-                            << "-hwaccel" << hwAccel //
-                            << "-hwaccel_output_format" << hwAccel //
+                        retVal   //
+                            << "-hwaccel" << hwAccel   //
+                            << "-hwaccel_output_format" << hwAccel   //
                             ;
                     }
 
                     auto audioCodec = audioTranscodeNeeded ? getTranscodeToAudioCodec() : "copy";
 
                     retVal << "-i" << srcName   //
-                           << "-map" << "0:a?"   //
-                           << "-map" << "0:v?"   // 
-                           << "-map" << "0:s?"   //
+                           << "-map"
+                           << "0:a?"   //
+                           << "-map"
+                           << "0:v?"   //
+                           << "-map"
+                           << "0:s?"   //
                            << "-c:a" << audioCodec   //
-                           << "-c:v" << videoCodec  //
+                           << "-c:v" << videoCodec   //
                         ;
                     if ( videoTranscodeNeeded )
                     {
@@ -1798,20 +1800,21 @@ namespace NMediaManager
                 else
                 {
                     // already HVEC but wrong container, just copy
-                    retVal 
-                        << "-i" << srcName   //
-                        << "-c:v" << "copy"   //
-                        << "-c:a" << "copy"   //
-                        << "-c:s" << "copy"   //
+                    retVal << "-i" << srcName   //
+                           << "-c:v"
+                           << "copy"   //
+                           << "-c:a"
+                           << "copy"   //
+                           << "-c:s"
+                           << "copy"   //
                         ;
                 }
-                retVal << "-f" << getForceMediaFormatName() //
+                retVal << "-f" << getForceMediaFormatName()   //
                        << destName;
 
                 return retVal;
             }
 
-            
             QStringList CPreferences::availableAudioEncoders( bool verbose ) const
             {
                 loadCodecs();
@@ -1875,6 +1878,12 @@ namespace NMediaManager
                            D  3dostr          3DO STR
                             E 3g2             3GP2 (3GPP2 file format)
                         */
+
+                auto tmp = QImageReader::supportedImageFormats();
+                std::unordered_set< QString > imageFormats;
+                for ( auto &&ii : tmp )
+                    imageFormats.insert( "*." + ii );
+
                 auto regEx = QRegularExpression( R"((?<type>[DE]{1,2})\s+(?<name>\S+)\s+(?<desc>.*))" );
                 auto ii = regEx.globalMatch( formats );
                 while ( ii.hasNext() )
@@ -1890,7 +1899,7 @@ namespace NMediaManager
 
                     for ( auto &&name : names )
                     {
-                        auto exts = getExtensionsForMediaFormat( name, ffmpeg, mediaFormatExtensions, reverseMediaFormatExtensions );
+                        auto exts = getExtensionsForMediaFormat( name, ffmpeg, mediaFormatExtensions, reverseMediaFormatExtensions, imageFormats );
                         if ( exts.empty() )
                             continue;
 
@@ -1962,7 +1971,8 @@ namespace NMediaManager
                 Q_ASSERT( fMediaFormatsTerse.count() == fMediaFormatsVerbose.count() );
             }
 
-            QStringList CPreferences::getExtensionsForMediaFormat( const QString &formatName, const QString &ffmpegExe, std::unordered_map< QString, QStringList > &forwardMap, std::unordered_map< QString, QString > &reverseMap )
+            QStringList CPreferences::getExtensionsForMediaFormat(
+                const QString &formatName, const QString &ffmpegExe, std::unordered_map< QString, QStringList > &forwardMap, std::unordered_map< QString, QString > &reverseMap, const std::unordered_set< QString > &imageFormats )
             {
                 if ( ffmpegExe.isEmpty() )
                     return {};
@@ -1973,8 +1983,8 @@ namespace NMediaManager
                     QProcess process;
                     process.start(
                         ffmpegExe, QStringList() << "-hide_banner"
-                                              << "-h"
-                                              << "muxer=" + formatName );
+                                                 << "-h"
+                                                 << "muxer=" + formatName );
                     process.waitForFinished();
                     auto formatHelp = process.readAllStandardOutput();
 
@@ -1990,6 +2000,18 @@ namespace NMediaManager
                             ii = "*." + ii;
                     }
 
+                    bool isImageFormat = false;
+                    for ( auto &&ii : exts )
+                    {
+                        if ( imageFormats.find( ii ) != imageFormats.end() )
+                        {
+                            isImageFormat = true;
+                            break;
+                        }
+                    }
+                    if ( isImageFormat )
+                        return {};
+
                     for ( auto &&ii : exts )
                         reverseMap[ ii ] = formatName;
 
@@ -2000,7 +2022,11 @@ namespace NMediaManager
 
             QStringList CPreferences::getExtensionsForMediaFormat( const QString &formatName ) const
             {
-                return getExtensionsForMediaFormat( formatName, getFFMpegEXE(), fMediaFormatExtensions, fReverseMediaFormatExtensions );
+                auto exts = imageExtensions();
+                std::unordered_set< QString > imageExts;
+                for ( auto &&ii : exts )
+                    imageExts.insert( ii );
+                return getExtensionsForMediaFormat( formatName, getFFMpegEXE(), fMediaFormatExtensions, fReverseMediaFormatExtensions, imageExts );
             }
 
             void CPreferences::loadCodecs() const
@@ -2012,10 +2038,12 @@ namespace NMediaManager
                         return;
 
                     QProcess process;
-                    process.start( ffmpeg, QStringList() << "-hide_banner" << "-encoders" );
+                    process.start(
+                        ffmpeg, QStringList() << "-hide_banner"
+                                              << "-encoders" );
                     process.waitForFinished();
                     auto codecs = process.readAllStandardOutput();
-                    
+
                     auto pos = codecs.indexOf( "------" );
                     if ( pos == -1 )
                         return;
@@ -2070,7 +2098,7 @@ namespace NMediaManager
                     fCodecsLoaded = true;
                 }
             }
-            
+
             void CPreferences::setForceMediaFormat( bool value )
             {
                 QSettings settings;
@@ -2656,27 +2684,25 @@ namespace NMediaManager
 
             QString CPreferences::validateDefaults() const
             {
-                auto items =
-                    QStringList()
-                        << compareValues( "Movie Out Dir Pattern", getDefaultOutDirPattern( false ), getMovieOutDirPattern() ) //
-                        << compareValues( "Movie Out File Pattern", getDefaultOutFilePattern( false ), getMovieOutFilePattern() ) //
-                        << compareValues( "Season Out Dir Pattern", getDefaultSeasonDirPattern(), getSeasonOutDirPattern() ) //
-                        << compareValues( "TV Out Dir Pattern", getDefaultOutDirPattern( true ), getTVOutDirPattern( false ) ) //
-                        << compareValues( "TV Out File Pattern", getDefaultOutFilePattern( true ), getTVOutFilePattern() ) //
-                        << compareValues( "Skipped Paths (Media Transform)", getDefaultSkippedPaths( true ), getSkippedPaths( true ) ) //
-                        << compareValues( "Skipped Paths (Media Tagging)", getDefaultSkippedPaths( false ), getSkippedPaths( false ) ) //
-                        << compareValues( "Ignored Paths", getDefaultIgnoredPaths(), getIgnoredPaths() ) //
-                        << compareValues( "Paths to Delete", getDefaultCustomPathsToDelete(), getCustomPathsToDelete() ) //
-                        << compareValues( "Ripped With MKV RegEX", getDefaultRippedWithMakeMKVRegEX(), getRippedWithMakeMKVRegEX() ) //
-                        << compareValues( "Delete Custom", getDefaultDeleteCustom(), deleteCustom() ) //
-                        << compareValues( "Delete Executables", getDefaultDeleteEXE(), deleteEXE() ) //
-                        << compareValues( "Delete NFO Files", getDefaultDeleteNFO(), deleteNFO() ) // 
-                        << compareValues( "Delete BAK Files", getDefaultDeleteBAK(), deleteBAK() ) //
-                        << compareValues( "Delete Images", getDefaultDeleteImages(), deleteImages() ) //
-                        << compareValues( "Known Strings", getDefaultKnownStrings(), getKnownStrings() ) //
-                        << compareValues( "Known Extended Strings", getDefaultKnownExtendedStrings(), getKnownExtendedStrings() ) //
-                        << compareValues( "Known Abbreviations", getDefaultKnownAbbreviations(), getKnownAbbreviations() ) //
-                        << compareValues( "Known Hyphenated", getDefaultKnownHyphenated(), getKnownHyphenated() );
+                auto items = QStringList() << compareValues( "Movie Out Dir Pattern", getDefaultOutDirPattern( false ), getMovieOutDirPattern() )   //
+                                           << compareValues( "Movie Out File Pattern", getDefaultOutFilePattern( false ), getMovieOutFilePattern() )   //
+                                           << compareValues( "Season Out Dir Pattern", getDefaultSeasonDirPattern(), getSeasonOutDirPattern() )   //
+                                           << compareValues( "TV Out Dir Pattern", getDefaultOutDirPattern( true ), getTVOutDirPattern( false ) )   //
+                                           << compareValues( "TV Out File Pattern", getDefaultOutFilePattern( true ), getTVOutFilePattern() )   //
+                                           << compareValues( "Skipped Paths (Media Transform)", getDefaultSkippedPaths( true ), getSkippedPaths( true ) )   //
+                                           << compareValues( "Skipped Paths (Media Tagging)", getDefaultSkippedPaths( false ), getSkippedPaths( false ) )   //
+                                           << compareValues( "Ignored Paths", getDefaultIgnoredPaths(), getIgnoredPaths() )   //
+                                           << compareValues( "Paths to Delete", getDefaultCustomPathsToDelete(), getCustomPathsToDelete() )   //
+                                           << compareValues( "Ripped With MKV RegEX", getDefaultRippedWithMakeMKVRegEX(), getRippedWithMakeMKVRegEX() )   //
+                                           << compareValues( "Delete Custom", getDefaultDeleteCustom(), deleteCustom() )   //
+                                           << compareValues( "Delete Executables", getDefaultDeleteEXE(), deleteEXE() )   //
+                                           << compareValues( "Delete NFO Files", getDefaultDeleteNFO(), deleteNFO() )   //
+                                           << compareValues( "Delete BAK Files", getDefaultDeleteBAK(), deleteBAK() )   //
+                                           << compareValues( "Delete Images", getDefaultDeleteImages(), deleteImages() )   //
+                                           << compareValues( "Known Strings", getDefaultKnownStrings(), getKnownStrings() )   //
+                                           << compareValues( "Known Extended Strings", getDefaultKnownExtendedStrings(), getKnownExtendedStrings() )   //
+                                           << compareValues( "Known Abbreviations", getDefaultKnownAbbreviations(), getKnownAbbreviations() )   //
+                                           << compareValues( "Known Hyphenated", getDefaultKnownHyphenated(), getKnownHyphenated() );
                 items.removeAll( QString() );
 
                 QString retVal;
@@ -2731,6 +2757,6 @@ namespace NMediaManager
                     QGuiApplication::clipboard()->setText( newFileText.join( "\n" ) );
                 }
             }
-       }
+        }
     }
 }

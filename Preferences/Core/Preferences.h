@@ -462,7 +462,7 @@ namespace NMediaManager
                 void loadCodecs() const;
                 void loadFFmpegFormats( bool forceLoad ) const;
                 static std::tuple< QStringList, QStringList, std::unordered_map< QString, QStringList >, std::unordered_map< QString, QString > > getAllFFmpegFormats( const QString &ffmpegExe );
-                static QStringList getExtensionsForMediaFormat( const QString &format, const QString &ffmpegExe, std::unordered_map< QString, QStringList > &forwardMap, std::unordered_map< QString, QString > &reverseMap );
+                static QStringList getExtensionsForMediaFormat( const QString &format, const QString &ffmpegExe, std::unordered_map< QString, QStringList > &forwardMap, std::unordered_map< QString, QString > &reverseMap, const std::unordered_set< QString > &imageFormats );
                 
                 mutable std::optional< bool > fCodecsLoaded;
                 mutable std::optional< bool > fMediaFormatsLoaded;
