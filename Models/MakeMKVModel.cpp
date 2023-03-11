@@ -76,7 +76,7 @@ namespace NMediaManager
                 if ( transcodeNeeded.fAudio )
                 {
                     auto fileInfo = this->fileInfo( idx );
-                    auto msg = tr( "<p style='white-space:pre'>File <b>'%1'</b> is not using the %2 audio codec</p>" ).arg( fileInfo.fileName() ).arg( NPreferences::NCore::CPreferences::instance()->getTranscodeToAudioCodec() );
+                    auto msg = tr( "<p style='white-space:pre'>File <b>'%1'</b> is not one of the allowed audio codecs</p>" ).arg( fileInfo.fileName() );
                     return TItemStatus( NPreferences::EItemStatus::eWarning, msg );
                 }
             }
