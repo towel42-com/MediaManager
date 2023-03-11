@@ -22,8 +22,9 @@
 
 #include "MakeMKVAudioSettings.h"
 #include "Preferences/Core/Preferences.h"
-
 #include "ui_MakeMKVAudioSettings.h"
+
+#include "SABUtils/UtilityModels.h"
 
 namespace NMediaManager
 {
@@ -37,13 +38,17 @@ namespace NMediaManager
             {
                 fImpl->setupUi( this );
 
-                auto verbose = NPreferences::NCore::CPreferences::instance()->availableAudioEncoders( true );
-                auto terse = NPreferences::NCore::CPreferences::instance()->availableAudioEncoders( false );
+                fVerbose = NPreferences::NCore::CPreferences::instance()->availableAudioEncoders( true );
+                fTerse = NPreferences::NCore::CPreferences::instance()->availableAudioEncoders( false );
 
-                Q_ASSERT( verbose.count() == terse.count() );
-                for ( int ii = 0; ii < terse.count(); ++ii )
+                fModel = new NSABUtils::CCheckableStringListModel( this );
+                fImpl->allowedCodecs->setModel( fModel );
+                fModel->setStringList( fVerbose );
+
+                Q_ASSERT( fVerbose.count() == fTerse.count() );
+                for ( int ii = 0; ii < fTerse.count(); ++ii )
                 {
-                    fImpl->audioCodec->addItem( verbose[ ii ], terse[ ii ] );
+                    fImpl->audioCodec->addItem( fVerbose[ ii ], fTerse[ ii ] );
                 }
             }
 
@@ -57,13 +62,46 @@ namespace NMediaManager
 
                 auto pos = fImpl->audioCodec->findData( NPreferences::NCore::CPreferences::instance()->getTranscodeToAudioCodec() );
                 fImpl->audioCodec->setCurrentIndex( pos );
+
                 fImpl->onlyTranscodeAudioOnFormatChange->setChecked( NPreferences::NCore::CPreferences::instance()->getOnlyTranscodeAudioOnFormatChange() );
+                auto allowed = NPreferences::NCore::CPreferences::instance()->getAllowedAudioCodecs();
+
+                allowed << NPreferences::NCore::CPreferences::instance()->getTranscodeToAudioCodec();
+                for ( auto &&ii : allowed )
+                {
+                    auto pos = fTerse.indexOf( ii );
+                    if ( pos == -1 )
+                        pos = fVerbose.indexOf( ii );
+
+                    Q_ASSERT( pos != -1 );
+                    if ( pos == -1 )
+                        continue;
+
+                    auto verboseValue = fVerbose[ pos ];
+                    fModel->setChecked( verboseValue, true, true );
+                }
             }
 
             void CMakeMKVAudioSettings::save()
             {
-                NPreferences::NCore::CPreferences::instance()->setTranscodeToAudioCodec( fImpl->audioCodec->currentData().toString() );
                 NPreferences::NCore::CPreferences::instance()->setTranscodeAudio( fImpl->transcodeAudio->isChecked() );
+
+                NPreferences::NCore::CPreferences::instance()->setTranscodeToAudioCodec( fImpl->audioCodec->currentData().toString() );
+
+                auto checkedStrings = fModel->getCheckedStrings();
+                QStringList allowedCodecs;
+                for ( auto &&ii : checkedStrings )
+                {
+                    auto pos = fVerbose.indexOf( ii );
+
+                    Q_ASSERT( pos != -1 );
+                    if ( pos == -1 )
+                        continue;
+
+                    allowedCodecs << fTerse[ pos ];
+                }
+
+                NPreferences::NCore::CPreferences::instance()->setAllowedAudioCodecs( allowedCodecs );
                 NPreferences::NCore::CPreferences::instance()->setOnlyTranscodeAudioOnFormatChange( fImpl->onlyTranscodeAudioOnFormatChange->isChecked() );
             }
        }

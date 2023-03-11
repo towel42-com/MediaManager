@@ -23,35 +23,49 @@
       <bool>true</bool>
      </property>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="1" column="0">
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>Codec:</string>
-        </property>
-       </widget>
+      <item row="1" column="0" colspan="2">
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QLabel" name="label_3">
+          <property name="text">
+           <string>Transcode Codec:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="audioCodec"/>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
       </item>
-      <item row="1" column="2">
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item row="1" column="1">
-       <widget class="QComboBox" name="audioCodec"/>
-      </item>
-      <item row="0" column="0" colspan="3">
+      <item row="0" column="0">
        <widget class="QCheckBox" name="onlyTranscodeAudioOnFormatChange">
         <property name="text">
          <string>Only Transcode Audio when Format requires it?</string>
         </property>
        </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Allowed Codecs:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0" rowspan="2">
+       <widget class="QTreeView" name="allowedCodecs"/>
       </item>
      </layout>
     </widget>
@@ -59,7 +73,7 @@
    <item>
     <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>If &quot;Only Transcode&quot; is checked, Audio transcoding will only occur when a format change is necessary</string>
+      <string>If &quot;Only Transcode&quot; is checked, Audio transcoding will only occur when a format change is necessary.</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
@@ -83,8 +97,9 @@
  </widget>
  <tabstops>
   <tabstop>transcodeAudio</tabstop>
-  <tabstop>audioCodec</tabstop>
  </tabstops>
- <resources/>
+ <resources>
+  <include location="../../SABUtils/resources/SABUtils.qrc"/>
+ </resources>
  <connections/>
 </ui>

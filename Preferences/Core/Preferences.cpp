@@ -1571,28 +1571,29 @@ namespace NMediaManager
             /// ////////////////////////////////////////////////////////
             /// MakeMKV Options
             /// ////////////////////////////////////////////////////////
-            QStringList CPreferences::getTranscodeArgs( const QString &srcName, const QString &destName ) const
-            {
-                auto mediaInfo = std::make_shared< NSABUtils::CMediaInfo >( srcName );
-                return getTranscodeArgs( mediaInfo, srcName, destName );
-            }
-
             STranscodeNeeded::STranscodeNeeded( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo )
             {
                 fFormat = NPreferences::NCore::CPreferences::instance()->getForceMediaFormat() && mediaInfo && !mediaInfo->isFormat( NPreferences::NCore::CPreferences::instance()->getForceMediaFormatName() );
 
                 fVideo = NPreferences::NCore::CPreferences::instance()->getTranscodeToH265() && mediaInfo && !mediaInfo->isHEVCVideo();
-                fAudio = NPreferences::NCore::CPreferences::instance()->getTranscodeAudio() && mediaInfo && !mediaInfo->isAudioCodec( NPreferences::NCore::CPreferences::instance()->getTranscodeToAudioCodec() );
+                fAudio = NPreferences::NCore::CPreferences::instance()->getTranscodeAudio() && mediaInfo
+                         && !mediaInfo->isAudioCodec( QStringList() << NPreferences::NCore::CPreferences::instance()->getTranscodeToAudioCodec() << NPreferences::NCore::CPreferences::instance()->getAllowedAudioCodecs() );
 
                 if ( NPreferences::NCore::CPreferences::instance()->getOnlyTranscodeVideoOnFormatChange() )
                 {
                     fVideo &= fFormat;
                 }
-                
+
                 if ( NPreferences::NCore::CPreferences::instance()->getOnlyTranscodeAudioOnFormatChange() )
                 {
                     fAudio &= fFormat;
                 }
+            }
+
+            QStringList CPreferences::getTranscodeArgs( const QString &srcName, const QString &destName ) const
+            {
+                auto mediaInfo = std::make_shared< NSABUtils::CMediaInfo >( srcName );
+                return getTranscodeArgs( mediaInfo, srcName, destName );
             }
 
             QStringList CPreferences::getTranscodeArgs( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName ) const
@@ -2056,7 +2057,22 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
-                return settings.value( "AudioCodec", "aac" ).toString();
+                return settings.value( "AudioCodec", "eac3" ).toString();
+            }
+
+            void CPreferences::setAllowedAudioCodecs( const QStringList &value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
+                settings.setValue( "AllowedAudioCodecs", value );
+                emitSigPreferencesChanged( EPreferenceType::eMakeMKVPrefs );
+            }
+
+            QStringList CPreferences::getAllowedAudioCodecs() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
+                return settings.value( "AllowedAudioCodecs", QStringList() << "aac" ).toStringList();
             }
 
             void CPreferences::setTranscodeToH265( bool value )
