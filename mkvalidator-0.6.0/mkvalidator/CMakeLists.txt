@@ -15,7 +15,7 @@ INSTALL( TARGETS mkvalidator RUNTIME DESTINATION . )
 INSTALL( FILES ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/mkvalidator.pdb DESTINATION . CONFIGURATIONS Debug RelWithDebInfo )
 
 add_custom_command(TARGET mkvalidator POST_BUILD
-    COMMAND "${CMAKE_COMMAND}" -E echo "Copying mkvalidator '$<TARGET_FILE:mkvalidator>' to '$<TARGET_FILE_DIR:MediaManager>'"
-    COMMAND "${CMAKE_COMMAND}" -E copy_if_different \"$<TARGET_FILE:mkvalidator>\" \"$<TARGET_FILE_DIR:MediaManager>\"
+    COMMAND "${CMAKE_COMMAND}" -E echo "Copying mkvalidator '$<TARGET_FILE:mkvalidator>' to '$<TARGET_FILE_DIR:MediaManager>/$<TARGET_FILE_NAME:mkvalidator>'"
+    COMMAND "${CMAKE_COMMAND}" -E copy_if_different \"$<TARGET_FILE:mkvalidator>\" \"$<TARGET_FILE_DIR:MediaManager>/$<TARGET_FILE_NAME:mkvalidator>\"
 )
  
