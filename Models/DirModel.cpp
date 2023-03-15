@@ -2157,5 +2157,10 @@ namespace NMediaManager
                 return {};
             return QFileIconProvider::icon( info );
         }
+
+        void CDirModel::postProcessLog( const QString & /*string*/, NSABUtils::CDoubleProgressDlg * /*progressDlg*/ )
+        {
+        }
+
     }
 }

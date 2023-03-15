@@ -139,5 +139,38 @@ namespace NMediaManager
         {
         }
 
+        void CValidateMKVModel::postProcessLog( const QString &string, NSABUtils::CDoubleProgressDlg *progressDlg )
+        {
+            auto regEx = QRegularExpression( R"(Stage: (?<stageNum>\d+) -)" );
+            auto pos = string.lastIndexOf( regEx );
+            if ( pos != -1 )
+            {
+                auto match = regEx.match( string, pos );
+                if ( !match.hasMatch() )
+                    return;
+
+                auto stage = match.captured( "stageNum" );
+                int stageNum = 0;
+                if ( !stage.isEmpty() )
+                {
+                    bool aOK;
+                    int curr = stage.toInt( &aOK );
+                    if ( aOK )
+                        stageNum = curr;
+                }
+
+                progressDlg->setSecondaryValue( stageNum );
+            }
+
+            auto msgRegEx = QRegularExpression( R"((?<msg>(ERR|WRN)[A-Fa-f0-9]{3}.*))" );
+            auto ii = msgRegEx.globalMatch( string );
+
+            while ( ii.hasNext() )
+            {
+                auto match = ii.next();
+                auto msg = match.captured( "msg" ).trimmed();
+                addMessageForFile( msg );
+            }
+        }
     }
 }

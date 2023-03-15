@@ -886,5 +886,25 @@ namespace NMediaManager
             retVal += QString( "to create %1" ).arg( fname );
             return retVal;
         }
+
+        void CMergeSRTModel::postProcessLog( const QString &string, NSABUtils::CDoubleProgressDlg *progressDlg )
+        {
+            auto regEx = QRegularExpression( "[Pp]rogress\\:\\s*(?<percent>\\d+)\\%" );
+            auto pos = string.lastIndexOf( regEx );
+            if ( pos == -1 )
+                return;
+
+            auto match = regEx.match( string, pos );
+            if ( !match.hasMatch() )
+                return;
+            auto percent = match.captured( "percent" );
+            if ( !percent.isEmpty() )
+            {
+                bool aOK = false;
+                int percentVal = percent.toInt( &aOK );
+                if ( aOK )
+                    progressDlg->setSecondaryValue( percentVal );
+            }
+        }
     }
 }

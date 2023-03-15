@@ -300,6 +300,33 @@ namespace NMediaManager
         void CGenerateBIFModel::attachTreeNodes( QStandardItem * /*nextParent*/, QStandardItem *& /*prevParent*/, const STreeNode & /*treeNode*/ )
         {
         }
+        
+        void CGenerateBIFModel::postProcessLog( const QString &string, NSABUtils::CDoubleProgressDlg *progressDlg )
+        {
+            // Skip-Option - Write output: pkt_pts_time:2570 pkt_dts_time:2570 input_pts_time:2570.2
+            // time=00:00:00.00
+            auto regEx = QRegularExpression( R"((input_pts_[Tt]ime\:(?<secs1>\d+))|(pkt_pts_[Tt]ime\:(?<secs2>\d+)))" );
+            auto pos = string.lastIndexOf( regEx );
+            if ( pos == -1 )
+                return;
 
+            auto match = regEx.match( string, pos );
+            if ( !match.hasMatch() )
+                return;
+
+            auto secs = match.captured( "secs1" );
+            if ( secs.isEmpty() )
+                secs = match.captured( "secs2" );
+            int numSeconds = 0;
+            if ( !secs.isEmpty() )
+            {
+                bool aOK;
+                int curr = secs.toInt( &aOK );
+                if ( aOK )
+                    numSeconds = curr;
+            }
+
+            progressDlg->setSecondaryValue( numSeconds );
+        }
     }
 }

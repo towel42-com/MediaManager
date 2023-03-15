@@ -47,6 +47,7 @@ namespace NSABUtils
     class CMediaInfo;
     class CDoubleProgressDlg;
     enum class EMediaTags;
+    class CDoubleProgressDlg;
 }
 
 class QTreeView;
@@ -258,6 +259,7 @@ namespace NMediaManager
             void addMessageForFile( const QString &msg );
             std::list< QStandardItem * > messageItems( bool andClear );
 
+            virtual void postProcessLog( const QString &string, NSABUtils::CDoubleProgressDlg * progressDlg );
         Q_SIGNALS:
             void sigDirLoadFinished( bool canceled );
             void sigProcessesFinished( bool status, bool showProcessResults, bool cancelled, bool reloadModel );

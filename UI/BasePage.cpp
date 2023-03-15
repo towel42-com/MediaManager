@@ -403,17 +403,13 @@ namespace NMediaManager
                 realMessage += "\n";
 
             NSABUtils::appendToLog( fImpl->log, realMessage, previousText );
-            postProcessLog( realMessage );
+            fModel->postProcessLog( realMessage, fProgressDlg );
         }
 
         void CBasePage::appendToLog( const QString &msg, bool stdOut )
         {
             Q_ASSERT( fModel );
             return appendToLog( msg, stdOut ? fModel->stdOutRemaining() : fModel->stdErrRemaining(), stdOut, false );
-        }
-
-        void CBasePage::postProcessLog( const QString & /*string*/ )
-        {
         }
 
         void CBasePage::editMediaTags( const QModelIndex &idx )

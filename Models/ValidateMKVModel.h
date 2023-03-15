@@ -59,6 +59,7 @@ namespace NMediaManager
             virtual void attachTreeNodes( QStandardItem * /*nextParent*/, QStandardItem *& /*prevParent*/, const STreeNode & /*treeNode*/ ) override;
 
             virtual bool usesQueuedProcessing() const override { return true; }
+            virtual void postProcessLog( const QString &string, NSABUtils::CDoubleProgressDlg *progressDlg ) override;
         };
     }
 }

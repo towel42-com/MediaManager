@@ -74,7 +74,6 @@ namespace NMediaManager
             virtual void appendToLog( const QString &msg, bool stdOut ) final;
             virtual void appendToLog( const QString &msg, std::pair< QString, bool > &previousText, bool stdOut, bool fromProcess );
 
-            virtual void postProcessLog( const QString &string );
             virtual bool extendContextMenu( QMenu *menu, const QModelIndex &idx );
 
             NSABUtils::CDoubleProgressDlg *progressDlg() const { return fProgressDlg; }

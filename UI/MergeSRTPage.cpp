@@ -44,26 +44,6 @@ namespace NMediaManager
             return new NModels::CMergeSRTModel( this );
         }
 
-        void CMergeSRTPage::postProcessLog( const QString &string )
-        {
-            auto regEx = QRegularExpression( "[Pp]rogress\\:\\s*(?<percent>\\d+)\\%" );
-            auto pos = string.lastIndexOf( regEx );
-            if ( pos == -1 )
-                return;
-
-            auto match = regEx.match( string, pos );
-            if ( !match.hasMatch() )
-                return;
-            auto percent = match.captured( "percent" );
-            if ( !percent.isEmpty() )
-            {
-                bool aOK = false;
-                int percentVal = percent.toInt( &aOK );
-                if ( aOK )
-                    fProgressDlg->setSecondaryValue( percentVal );
-            }
-        }
-
         QString CMergeSRTPage::secondaryProgressLabel() const
         {
             return tr( "Current Movie:" );
