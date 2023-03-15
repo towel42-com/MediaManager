@@ -228,7 +228,7 @@ namespace NMediaManager
 
         void CMainWindow::addPages()
         {
-            addPage( std::make_shared< STabDef >( new CMakeMKVPage( nullptr ), tr( "Make MKV" ), QString::fromUtf8( ":/mkv.png" ), fImpl->tabWidget ) );
+            addPage( std::make_shared< STabDef >( new CMakeMKVPage( nullptr ), tr( "Transcode Media" ), QString::fromUtf8( ":/convert.png" ), fImpl->tabWidget ) );
             addPage( std::make_shared< STabDef >( new CMergeSRTPage( nullptr ), tr( "Merge SRT" ), QString::fromUtf8( ":/cc.png" ), fImpl->tabWidget ) );
             addPage( std::make_shared< STabDef >( new CTransformPage( nullptr ), tr( "Media Namer" ), QString::fromUtf8( ":/rename.png" ), fImpl->tabWidget ) );
             addPage( std::make_shared< STabDef >( new CTagsPage( nullptr ), tr( "Media Tags" ), QString::fromUtf8( ":/tag.png" ), fImpl->tabWidget ) );

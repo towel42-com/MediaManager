@@ -139,7 +139,7 @@ namespace NMediaManager
         {
         }
 
-        void CValidateMKVModel::postProcessLog( const QString &string, NSABUtils::CDoubleProgressDlg *progressDlg )
+        void CValidateMKVModel::myProcessLog( const QString &string, NSABUtils::CDoubleProgressDlg *progressDlg )
         {
             auto regEx = QRegularExpression( R"(Stage: (?<stageNum>\d+) -)" );
             auto pos = string.lastIndexOf( regEx );

@@ -209,21 +209,27 @@ namespace NMediaManager
         {
         }
 
-        void CMakeMKVModel::postProcessLog( const QString &string, NSABUtils::CDoubleProgressDlg *progressDlg )
+        void CMakeMKVModel::myProcessLog( const QString &string, NSABUtils::CDoubleProgressDlg *progressDlg )
         {
             // time=00:00:00.00
+            auto numSeconds = getNumSeconds( string );
+            progressDlg->setSecondaryValue( numSeconds );
+        }
+
+        uint64_t CMakeMKVModel::getNumSeconds( const QString &string ) const
+        {
             auto regEx = QRegularExpression( "[Tt]ime\\=\\s*(?<hours>\\d{2}):(?<mins>\\d{2}):(?<secs>\\d{2})" );
 
             QRegularExpressionMatch match;
             auto pos = string.lastIndexOf( regEx, -1, &match );
             if ( ( pos == -1 ) || !match.hasMatch() )
-                return;
+                return 0;
 
             auto hours = match.captured( "hours" );
             auto mins = match.captured( "mins" );
             auto secs = match.captured( "secs" );
 
-            int numSeconds = 0;
+            uint64_t numSeconds = 0;
             if ( !hours.isEmpty() )
             {
                 bool aOK;
@@ -247,28 +253,26 @@ namespace NMediaManager
                 if ( aOK )
                     numSeconds += curr;
             }
+            return numSeconds;
+        }
 
-            progressDlg->setSecondaryValue( numSeconds );
-
-            static QString baseFormat = progressDlg->secondaryFormat().trimmed();
-            progressDlg->setSecondaryFormat( baseFormat + "  " );
-
+        std::optional< std::chrono::milliseconds > CMakeMKVModel::getMSRemaining( const QString &string, NSABUtils::CDoubleProgressDlg *progressDlg ) const
+        {
             auto regEx2 = QRegularExpression( "[Ss]peed\\s*\\=\\s*(?<multiplier>\\d+(\\.\\d+)?)" );
-            pos = string.lastIndexOf( regEx2, -1, &match );
+            QRegularExpressionMatch match;
+            auto pos = string.lastIndexOf( regEx2, -1, &match );
             if ( ( pos == -1 ) || !match.hasMatch() )
-                return;
+                return {};
 
             auto mult = match.captured( "multiplier" );
             bool aOK = false;
             auto multVal = mult.toDouble( &aOK );
             if ( !aOK || ( multVal == 0.0 ) )
-                return;
+                return {};
 
+            auto numSeconds = getNumSeconds( string );
             auto msecsRemaining = std::chrono::milliseconds( static_cast< uint64_t >( std::round( ( progressDlg->secondaryMax() - numSeconds ) * 1000 / multVal ) ) );
-            auto ts = NSABUtils::CTimeString( msecsRemaining );
-
-            auto eta = baseFormat + ts.toString( " ETA: hh:mm:ss.zzz  ", true );
-            progressDlg->setSecondaryFormat( eta );
+            return msecsRemaining;
         }
     }
 }

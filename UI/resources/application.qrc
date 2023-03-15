@@ -1,6 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file>rename.png</file>
+        <file>convert.png</file>
         <file>cc.png</file>
         <file>roku.png</file>
         <file>mkv.png</file>

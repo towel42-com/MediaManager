@@ -301,7 +301,7 @@ namespace NMediaManager
         {
         }
         
-        void CGenerateBIFModel::postProcessLog( const QString &string, NSABUtils::CDoubleProgressDlg *progressDlg )
+        void CGenerateBIFModel::myProcessLog( const QString &string, NSABUtils::CDoubleProgressDlg *progressDlg )
         {
             // Skip-Option - Write output: pkt_pts_time:2570 pkt_dts_time:2570 input_pts_time:2570.2
             // time=00:00:00.00

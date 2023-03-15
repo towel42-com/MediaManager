@@ -62,7 +62,11 @@ namespace NMediaManager
 
             virtual bool usesQueuedProcessing() const override { return true; }
 
-            virtual void postProcessLog( const QString &string, NSABUtils::CDoubleProgressDlg * progressDlg ) override;
+            virtual void myProcessLog( const QString &string, NSABUtils::CDoubleProgressDlg *progressDlg ) override;
+
+            virtual uint64_t getNumSeconds( const QString &string ) const;
+
+            std::optional< std::chrono::milliseconds > getMSRemaining( const QString &string, NSABUtils::CDoubleProgressDlg *progressDlg ) const override;
         };
     }
 }

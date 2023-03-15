@@ -259,7 +259,7 @@ namespace NMediaManager
             void addMessageForFile( const QString &msg );
             std::list< QStandardItem * > messageItems( bool andClear );
 
-            virtual void postProcessLog( const QString &string, NSABUtils::CDoubleProgressDlg * progressDlg );
+            virtual void processLog( const QString &string, NSABUtils::CDoubleProgressDlg * progressDlg ) final;
         Q_SIGNALS:
             void sigDirLoadFinished( bool canceled );
             void sigProcessesFinished( bool status, bool showProcessResults, bool cancelled, bool reloadModel );
@@ -281,6 +281,10 @@ namespace NMediaManager
             virtual void slotDataChanged( const QModelIndex &start, const QModelIndex &end, const QVector< int > &roles );
 
         protected:
+            virtual QString getSecondaryProgressFormat( NSABUtils::CDoubleProgressDlg *progressDlg ) const;
+            virtual void myProcessLog( const QString &/*string*/, NSABUtils::CDoubleProgressDlg * /*progressDlg*/ );
+            virtual std::optional< std::chrono::milliseconds > getMSRemaining( const QString & /*string*/, NSABUtils::CDoubleProgressDlg * /*progressDlg*/ ) const { return {}; }
+
             std::shared_ptr< NSABUtils::CMediaInfo > getMediaInfo( const QFileInfo &fi ) const;
             std::shared_ptr< NSABUtils::CMediaInfo > getMediaInfo( const QModelIndex &idx ) const;
             std::shared_ptr< NSABUtils::CMediaInfo > getMediaInfo( const QString &path ) const;

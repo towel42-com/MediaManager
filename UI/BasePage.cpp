@@ -403,7 +403,7 @@ namespace NMediaManager
                 realMessage += "\n";
 
             NSABUtils::appendToLog( fImpl->log, realMessage, previousText );
-            fModel->postProcessLog( realMessage, fProgressDlg );
+            fModel->processLog( realMessage, fProgressDlg );
         }
 
         void CBasePage::appendToLog( const QString &msg, bool stdOut )

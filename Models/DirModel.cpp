@@ -2158,8 +2158,29 @@ namespace NMediaManager
             return QFileIconProvider::icon( info );
         }
 
-        void CDirModel::postProcessLog( const QString & /*string*/, NSABUtils::CDoubleProgressDlg * /*progressDlg*/ )
+        QString CDirModel::getSecondaryProgressFormat( NSABUtils::CDoubleProgressDlg *progressDlg ) const
         {
+            return progressDlg->defaultSecondaryFormat();
+        }
+
+        void CDirModel::myProcessLog( const QString & /*string*/, NSABUtils::CDoubleProgressDlg * /*progressDlg*/ )
+        {
+        }
+
+        void CDirModel::processLog( const QString &string, NSABUtils::CDoubleProgressDlg *progressDlg )
+        {
+            myProcessLog( string, progressDlg );
+
+            auto msecsRemaining = this->getMSRemaining( string, progressDlg );
+            auto format = getSecondaryProgressFormat( progressDlg );
+            progressDlg->setSecondaryFormat( format );
+            
+            if ( msecsRemaining.has_value() )
+            {
+                auto ts = NSABUtils::CTimeString( msecsRemaining.value() );
+                auto eta = format + ts.toString( " ETA: hh:mm:ss.zzz  ", true );
+                progressDlg->setSecondaryFormat( eta );
+            }
         }
 
     }

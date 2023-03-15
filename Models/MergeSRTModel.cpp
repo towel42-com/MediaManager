@@ -887,7 +887,7 @@ namespace NMediaManager
             return retVal;
         }
 
-        void CMergeSRTModel::postProcessLog( const QString &string, NSABUtils::CDoubleProgressDlg *progressDlg )
+        void CMergeSRTModel::myProcessLog( const QString &string, NSABUtils::CDoubleProgressDlg *progressDlg )
         {
             auto regEx = QRegularExpression( "[Pp]rogress\\:\\s*(?<percent>\\d+)\\%" );
             auto pos = string.lastIndexOf( regEx );
