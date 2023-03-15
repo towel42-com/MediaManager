@@ -185,6 +185,7 @@ namespace NMediaManager
 
             void CExternalTools::load()
             {
+                fImpl->useCustomExternalTools->setChecked( NPreferences::NCore::CPreferences::instance()->getUseCustomExternalTools() );
                 fImpl->mkvMergeExe->setText( NPreferences::NCore::CPreferences::instance()->getMKVMergeEXE() );
                 fImpl->mkvPropEditExe->setText( NPreferences::NCore::CPreferences::instance()->getMKVPropEditEXE() );
                 fImpl->ffmpegExe->setText( NPreferences::NCore::CPreferences::instance()->getFFMpegEXE() );
@@ -193,6 +194,7 @@ namespace NMediaManager
 
             void CExternalTools::save()
             {
+                NPreferences::NCore::CPreferences::instance()->setUseCustomExternalTools( fImpl->useCustomExternalTools->isChecked() );
                 NPreferences::NCore::CPreferences::instance()->setMKVMergeEXE( fImpl->mkvMergeExe->text() );
                 NPreferences::NCore::CPreferences::instance()->setMKVPropEditEXE( fImpl->mkvPropEditExe->text() );
                 NPreferences::NCore::CPreferences::instance()->setFFMpegEXE( fImpl->ffmpegExe->text() );

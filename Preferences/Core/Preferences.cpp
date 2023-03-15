@@ -26,6 +26,7 @@
 #include "SABUtils/MediaInfo.h"
 #include "SABUtils/FileUtils.h"
 #include "SABUtils/GPUDetect.h"
+#include "SABUtils/ScrollMessageBox.h"
 
 #include <QSettings>
 #include <QStringListModel>
@@ -52,6 +53,11 @@ namespace NMediaManager
 {
     namespace NPreferences
     {
+        QString getIndent( int indent )
+        {
+            return QString( 4 * indent, QChar( ' ' ) );
+        }
+
         QString toString( EItemStatus status )
         {
             switch ( status )
@@ -66,26 +72,26 @@ namespace NMediaManager
             return {};
         }
 
-        QString toString( EPreferenceType prefType )
+        QString toString( EPreferenceType prefType, bool forEnum )
         {
             switch ( prefType )
             {
                 case eSystemPrefs:
-                    return "System";
+                    return forEnum ? "NMediaManager::NPreferences::eSystemPrefs" : "System";
                 case eLoadPrefs:
-                    return "Load";
+                    return forEnum ? "NMediaManager::NPreferences::eLoadPrefs" : "Load";
                 case eTransformPrefs:
-                    return "Transform";
+                    return forEnum ? "NMediaManager::NPreferences::eTransformPrefs" : "Transform";
                 case eTagPrefs:
-                    return "Tags";
+                    return forEnum ? "NMediaManager::NPreferences::eTagPrefs" : "Tags";
                 case eExtToolsPrefs:
-                    return "ExternalTools";
+                    return forEnum ? "NMediaManager::NPreferences::eExtToolsPrefs" : "ExternalTools";
                 case eGIFPrefs:
-                    return "GIF";
+                    return forEnum ? "NMediaManager::NPreferences::eGIFPrefs" : "GIF";
                 case eBIFPrefs:
-                    return "BIF";
+                    return forEnum ? "NMediaManager::NPreferences::eBIFPrefs" : "BIF";
                 case eMakeMKVPrefs:
-                    return "MakeMKV";
+                    return forEnum ? "NMediaManager::NPreferences::eMakeMKVPrefs" : "MakeMKV";
                 default:
                     return "";
             }
@@ -93,94 +99,94 @@ namespace NMediaManager
 
         namespace NCore
         {
-            QString toString( EMakeMKVPreset preset )
+            QString toString( EMakeMKVPreset preset, bool forEnum )
             {
                 switch ( preset )
                 {
                     case EMakeMKVPreset::eUltraFast:
-                        return "ultrafast";
+                        return forEnum ? "NMediaManager::NPreferences::NCore::EMakeMKVPreset::eUltraFast" : "ultrafast";
                     case EMakeMKVPreset::eSuperFast:
-                        return "superfast";
+                        return forEnum ? "NMediaManager::NPreferences::NCore::EMakeMKVPreset::eSuperFast" : "superfast";
                     case EMakeMKVPreset::eVeryFast:
-                        return "veryfast";
+                        return forEnum ? "NMediaManager::NPreferences::NCore::EMakeMKVPreset::eVeryFast" : "veryfast";
                     case EMakeMKVPreset::eFaster:
-                        return "faster";
+                        return forEnum ? "NMediaManager::NPreferences::NCore::EMakeMKVPreset::eFaster" : "faster";
                     case EMakeMKVPreset::eFast:
-                        return "fast";
+                        return forEnum ? "NMediaManager::NPreferences::NCore::EMakeMKVPreset::eFast" : "fast";
                     case EMakeMKVPreset::eMedium:
-                        return "medium";
+                        return forEnum ? "NMediaManager::NPreferences::NCore::EMakeMKVPreset::eMedium" : "medium";
                     case EMakeMKVPreset::eSlow:
-                        return "slow";
+                        return forEnum ? "NMediaManager::NPreferences::NCore::EMakeMKVPreset::eSlow" : "slow";
                     case EMakeMKVPreset::eSlower:
-                        return "slower";
+                        return forEnum ? "NMediaManager::NPreferences::NCore::EMakeMKVPreset::eSlower" : "slower";
                     case EMakeMKVPreset::eVerySlow:
-                        return "verislow";
+                        return forEnum ? "NMediaManager::NPreferences::NCore::EMakeMKVPreset::eVerySlow" : "veryslow";
                 }
-                return "medium";
+                return toString( EMakeMKVPreset::eMedium, forEnum );
             }
 
-            QString toString( EMakeMKVTune preset )
+            QString toString( EMakeMKVTune preset, bool forEnum )
             {
                 switch ( preset )
                 {
                     case EMakeMKVTune::eFilm:
-                        return "film";
+                        return forEnum ? "NMediaManager::NPreferences::NCore::EMakeMKVTune::eFilm" : "film";
                     case EMakeMKVTune::eAnimation:
-                        return "animation";
+                        return forEnum ? "NMediaManager::NPreferences::NCore::EMakeMKVTune::eAnimation" : "animation";
                     case EMakeMKVTune::eGrain:
-                        return "grain";
+                        return forEnum ? "NMediaManager::NPreferences::NCore::EMakeMKVTune::eGrain" : "grain";
                     case EMakeMKVTune::eStillImage:
-                        return "stillimage";
+                        return forEnum ? "NMediaManager::NPreferences::NCore::EMakeMKVTune::eStilImage" : "stillimage";
                     case EMakeMKVTune::eFastDecode:
-                        return "fastdecode";
+                        return forEnum ? "NMediaManager::NPreferences::NCore::EMakeMKVTune::eFastDecode" : "fastdecode";
                     case EMakeMKVTune::eZeroLatency:
-                        return "zerolatency";
+                        return forEnum ? "NMediaManager::NPreferences::NCore::EMakeMKVTune::eZeroLatency" : "zerolatency";
                 }
-                return "film";
+                return toString( EMakeMKVTune::eFilm, forEnum );
             }
 
-            QString toString( EMakeMKVProfile profile )
+            QString toString( EMakeMKVProfile profile, bool forEnum )
             {
                 switch ( profile )
                 {
                     case EMakeMKVProfile::eMain:
-                        return "main";
+                        return forEnum ? "NMediaManager::NPreferences::NCore::EMakeMKVProfile::eMain" : "main";
                     case EMakeMKVProfile::eMainIntra:
-                        return "main-intra";
+                        return forEnum ? "NMediaManager::NPreferences::NCore::EMakeMKVProfile::eMainIntra" : "main-intra";
                     case EMakeMKVProfile::eMailStillPicture:
-                        return "mailstillpicture";
+                        return forEnum ? "NMediaManager::NPreferences::NCore::EMakeMKVProfile::eMailStillPicture" : "mailstillpicture";
                     case EMakeMKVProfile::eMain444_8:
-                        return "main444-8";
+                        return forEnum ? "NMediaManager::NPreferences::NCore::EMakeMKVProfile::eMain444_8" : "main444-8";
                     case EMakeMKVProfile::eMain444Intra:
-                        return "main444-intra";
+                        return forEnum ? "NMediaManager::NPreferences::NCore::EMakeMKVProfile::eMain444Intra" : "main444-intra";
                     case EMakeMKVProfile::eMain444StillPicture:
-                        return "main444-stillpicture";
+                        return forEnum ? "NMediaManager::NPreferences::NCore::EMakeMKVProfile::eMain444StillPicture" : "main444-stillpicture";
                     case EMakeMKVProfile::eMain10:
-                        return "main10";
+                        return forEnum ? "NMediaManager::NPreferences::NCore::EMakeMKVProfile::eMain10" : "main10";
                     case EMakeMKVProfile::eMain10Intra:
-                        return "main10-intra";
+                        return forEnum ? "NMediaManager::NPreferences::NCore::EMakeMKVProfile::eMain10Intra" : "main10-intra";
                     case EMakeMKVProfile::eMain422_10:
-                        return "main422-10";
+                        return forEnum ? "NMediaManager::NPreferences::NCore::EMakeMKVProfile::eMain422_10" : "main422-10";
                     case EMakeMKVProfile::eMain422_10Intra:
-                        return "main422-10-intra";
+                        return forEnum ? "NMediaManager::NPreferences::NCore::EMakeMKVProfile::eMain422_10Intra" : "main422-10-intra";
                     case EMakeMKVProfile::eMain444_10:
-                        return "main444-10";
+                        return forEnum ? "NMediaManager::NPreferences::NCore::EMakeMKVProfile::eMain444_10" : "main444-10";
                     case EMakeMKVProfile::eMain444_10Intra:
-                        return "main444-10-intra";
+                        return forEnum ? "NMediaManager::NPreferences::NCore::EMakeMKVProfile::eMain444_10Intra" : "main444-10-intra";
                     case EMakeMKVProfile::eMain12:
-                        return "main12";
+                        return forEnum ? "NMediaManager::NPreferences::NCore::EMakeMKVProfile::eMain12" : "main12";
                     case EMakeMKVProfile::eMain12Intra:
-                        return "main12-intra";
+                        return forEnum ? "NMediaManager::NPreferences::NCore::EMakeMKVProfile::eMain12Intra" : "main12-intra";
                     case EMakeMKVProfile::eMain422_12:
-                        return "main422-12";
+                        return forEnum ? "NMediaManager::NPreferences::NCore::EMakeMKVProfile::eMain422_12" : "main422-12";
                     case EMakeMKVProfile::eMain422_12Intra:
-                        return "main422-12-intra";
+                        return forEnum ? "NMediaManager::NPreferences::NCore::EMakeMKVProfile::eMain422_12Intra" : "main422-12-intra";
                     case EMakeMKVProfile::eMain444_12:
-                        return "main444-12";
+                        return forEnum ? "NMediaManager::NPreferences::NCore::EMakeMKVProfile::eMain444_12" : "main444-12";
                     case EMakeMKVProfile::eMain444_12Intra:
-                        return "main444012-intra";
+                        return forEnum ? "NMediaManager::NPreferences::NCore::EMakeMKVProfile::eMain444_12Intra" : "main444012-intra";
                 }
-                return "main";
+                return toString( EMakeMKVProfile::eMain, forEnum );
             }
 
             CPreferences *CPreferences::instance()
@@ -369,30 +375,21 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
-                auto retVal = settings.value( "MediaExtensions", defaultVideoExtensions( false ) ).toStringList();
+                auto retVal = settings.value( "MediaExtensions", getVideoExtensionsDefault() ).toStringList();
                 for ( auto &&ii : retVal )
                     ii = ii.toLower();
                 return retVal;
             }
 
-            QStringList CPreferences::defaultVideoExtensions( bool forceReset ) const
+            QStringList CPreferences::computeVideoExtensions() const
             {
-                QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
-
                 QStringList videoExtensions;
-                if ( forceReset || !settings.contains( "MediaExtensions" ) )
-                {
-                    loadFFmpegFormats( forceReset );
+                loadFFmpegFormats( true );
 
-                    for ( auto &&ii : fMediaFormatExtensions )
-                        videoExtensions << ii.second;
+                for ( auto &&ii : fMediaFormatExtensions )
+                    videoExtensions << ii.second;
 
-                    videoExtensions.removeDuplicates();
-                    settings.setValue( "MediaExtensions", videoExtensions );
-                }
-                else
-                    videoExtensions = settings.value( "MediaExtensions" ).toStringList();
+                videoExtensions.removeDuplicates();
                 return videoExtensions;
             }
 
@@ -1203,16 +1200,51 @@ namespace NMediaManager
             /// External Tools Options
             /// ////////////////////////////////////////////////////////
 
+            QString CPreferences::getExternalToolPath( const QString &settingsLoc, const QString &exe, const QString &defaultPath ) const
+            {
+                QDir defDir( qApp->applicationDirPath() );
+                if ( getUseCustomExternalTools() )
+                    defDir = QDir( defaultPath );
+
+                auto retVal = defDir.absoluteFilePath( exe );
+
+                if ( !settingsLoc.isEmpty() )
+                {
+                    QSettings settings;
+                    settings.beginGroup( toString( EPreferenceType::eExtToolsPrefs ) );
+                    retVal = settings.value( settingsLoc, retVal ).toString();
+                }
+
+                auto fi = QFileInfo( retVal );
+                bool aOK = !retVal.isEmpty() && fi.isExecutable();
+                return aOK ? retVal : QString();
+            }
+
+            void CPreferences::setUseCustomExternalTools( bool value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eExtToolsPrefs ) );
+                settings.setValue( "UseCustomExternalTools", value );
+                emitSigPreferencesChanged( EPreferenceType::eExtToolsPrefs );
+            }
+
+            bool CPreferences::getUseCustomExternalTools() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eExtToolsPrefs ) );
+                return settings.value( "UseCustomExternalTools", false ).toBool();
+            }
+
             QString CPreferences::getMKVValidatorEXE() const
             {
-                auto exe = QDir( qApp->applicationDirPath() ).absoluteFilePath( "mkvalidator.exe" );
-                auto fi = QFileInfo( exe );
-                bool aOK = !exe.isEmpty() && fi.isExecutable();
-                return aOK ? exe : QString();
+                return getExternalToolPath( "", "mkvalidator.exe", qApp->applicationDirPath() );
             }
 
             void CPreferences::setMKVMergeEXE( const QString &value )
             {
+                if ( value == getMKVMergeEXE() )
+                    return;
+
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eExtToolsPrefs ) );
                 settings.setValue( "MKVMergeEXE", value );
@@ -1221,17 +1253,14 @@ namespace NMediaManager
 
             QString CPreferences::getMKVMergeEXE() const
             {
-                QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eExtToolsPrefs ) );
-                auto retVal = settings.value( "MKVMergeEXE", QString( "C:/Program Files/MKVToolNix/mkvmerge.exe" ) ).toString();
-
-                auto fi = QFileInfo( retVal );
-                bool aOK = !retVal.isEmpty() && fi.isExecutable();
-                return aOK ? retVal : QString();
+                return getExternalToolPath( "MKVMergeEXE", "mkvmerge.exe", "C:/Program Files/MKVToolNix" );
             }
 
             void CPreferences::setMKVPropEditEXE( const QString &value )
             {
+                if ( value == getMKVPropEditEXE() )
+                    return;
+
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eExtToolsPrefs ) );
                 settings.setValue( "MKVPropEditEXE", value );
@@ -1240,17 +1269,14 @@ namespace NMediaManager
 
             QString CPreferences::getMKVPropEditEXE() const
             {
-                QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eExtToolsPrefs ) );
-                auto retVal = settings.value( "MKVPropEditEXE", QString( "C:/Program Files/MKVToolNix/mkvpropedit.exe" ) ).toString();
-
-                auto fi = QFileInfo( retVal );
-                bool aOK = !retVal.isEmpty() && fi.isExecutable();
-                return aOK ? retVal : QString();
+                return getExternalToolPath( "MKVPropEditEXE", "mkvpropedit.exe", "C:/Program Files/MKVToolNix" );
             }
 
             void CPreferences::setFFMpegEXE( const QString &value )
             {
+                if ( value == getFFMpegEXE() )
+                    return;
+
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eExtToolsPrefs ) );
                 settings.setValue( "FFMpegEXE", value );
@@ -1259,17 +1285,14 @@ namespace NMediaManager
 
             QString CPreferences::getFFMpegEXE() const
             {
-                QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eExtToolsPrefs ) );
-                auto retVal = settings.value( "FFMpegEXE", QString() ).toString();
-
-                auto fi = QFileInfo( retVal );
-                bool aOK = !retVal.isEmpty() && fi.isExecutable();
-                return aOK ? retVal : QString();
+                return getExternalToolPath( "FFMpegEXE", "ffmpeg.exe", QString() );
             }
 
             void CPreferences::setFFProbeEXE( const QString &value )
             {
+                if ( value == getFFProbeEXE() )
+                    return;
+
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eExtToolsPrefs ) );
                 settings.setValue( "FFProbeEXE", value );
@@ -1278,13 +1301,7 @@ namespace NMediaManager
 
             QString CPreferences::getFFProbeEXE() const
             {
-                QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eExtToolsPrefs ) );
-                auto retVal = settings.value( "FFProbeEXE", QString() ).toString();
-
-                auto fi = QFileInfo( retVal );
-                bool aOK = !retVal.isEmpty() && fi.isExecutable();
-                return aOK ? retVal : QString();
+                return getExternalToolPath( "FFProbeEXE", "ffprobe.exe", QString() );
             }
 
             /// ////////////////////////////////////////////////////////
@@ -1573,7 +1590,7 @@ namespace NMediaManager
             /// ////////////////////////////////////////////////////////
             STranscodeNeeded::STranscodeNeeded( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo )
             {
-                fFormat = NPreferences::NCore::CPreferences::instance()->getForceMediaFormat() && mediaInfo && !mediaInfo->isFormat( NPreferences::NCore::CPreferences::instance()->getForceMediaFormatName() );
+                fFormat = NPreferences::NCore::CPreferences::instance()->getForceMediaContainer() && mediaInfo && !mediaInfo->isFormat( NPreferences::NCore::CPreferences::instance()->getForceMediaContainerName() );
 
                 fVideo = NPreferences::NCore::CPreferences::instance()->getTranscodeToH265() && mediaInfo && !mediaInfo->isHEVCVideo();
                 fAudio = NPreferences::NCore::CPreferences::instance()->getTranscodeAudio() && mediaInfo
@@ -1686,7 +1703,7 @@ namespace NMediaManager
                     }
                 }
                 
-                retVal << "-f" << getForceMediaFormatName()   //
+                retVal << "-f" << getForceMediaContainerName()   //
                        << destName;
 
                 return retVal;
@@ -1694,7 +1711,7 @@ namespace NMediaManager
 
             QStringList CPreferences::availableAudioEncoders( bool verbose ) const
             {
-                loadCodecs();
+                loadCodecs( false );
                 if ( verbose )
                     return fAudioCodecsVerbose;
                 else
@@ -1703,7 +1720,7 @@ namespace NMediaManager
 
             QStringList CPreferences::availableVideoEncoders( bool verbose ) const
             {
-                loadCodecs();
+                loadCodecs( false );
                 if ( verbose )
                     return fVideoCodecsVerbose;
                 else
@@ -1712,7 +1729,7 @@ namespace NMediaManager
 
             QStringList CPreferences::availableSubtitleEncoders( bool verbose ) const
             {
-                loadCodecs();
+                loadCodecs( false );
                 if ( verbose )
                     return fSubtitleCodecsVerbose;
                 else
@@ -1728,12 +1745,11 @@ namespace NMediaManager
                     return fMediaFormatsTerse;
             }
 
-            std::tuple< QStringList, QStringList, std::unordered_map< QString, QStringList >, std::unordered_map< QString, QString > > CPreferences::getAllFFmpegFormats( const QString &ffmpeg )
+            std::tuple< QStringList, QStringList, std::unordered_map< QString, QStringList > > CPreferences::getAllFFmpegFormats( const QString &ffmpeg )
             {
                 QStringList mediaFormatsTerse;
                 QStringList mediaFormatsVerbose;
                 std::unordered_map< QString, QStringList > mediaFormatExtensions;
-                std::unordered_map< QString, QString > reverseMediaFormatExtensions;
 
                 QProcess process;
                 process.start(
@@ -1744,7 +1760,7 @@ namespace NMediaManager
 
                 auto pos = formats.indexOf( "--" );
                 if ( pos == -1 )
-                    return { mediaFormatsTerse, mediaFormatsVerbose, mediaFormatExtensions, reverseMediaFormatExtensions };
+                    return { mediaFormatsTerse, mediaFormatsVerbose, mediaFormatExtensions };
 
                 formats = formats.mid( pos + 2 );
                 /*
@@ -1772,11 +1788,13 @@ namespace NMediaManager
                     if ( ( type.length() == 2 ) && ( type[ 1 ] != 'E' ) )
                         continue;
                     auto names = match.captured( "name" ).trimmed().split( "," );
+                    for ( auto &&ii : names )
+                        ii = ii.trimmed();
                     auto desc = match.captured( "desc" ).trimmed();
 
                     for ( auto &&name : names )
                     {
-                        auto exts = getExtensionsForMediaFormat( name, ffmpeg, mediaFormatExtensions, reverseMediaFormatExtensions, imageFormats );
+                        auto exts = getExtensionsForMediaFormat( name, ffmpeg, mediaFormatExtensions, imageFormats );
                         if ( exts.empty() )
                             continue;
 
@@ -1785,71 +1803,53 @@ namespace NMediaManager
                     }
                 }
                 Q_ASSERT( mediaFormatsTerse.count() == mediaFormatsVerbose.count() );
-                return { mediaFormatsTerse, mediaFormatsVerbose, mediaFormatExtensions, reverseMediaFormatExtensions };
+                return { mediaFormatsTerse, mediaFormatsVerbose, mediaFormatExtensions };
             }
 
-            void CPreferences::loadFFmpegFormats( bool forceLoad ) const
+            std::unordered_map< QString, QStringList > CPreferences::getVideoExtensionsMap() const
             {
-                if ( !fMediaFormatsLoaded.has_value() )
+                loadFFmpegFormats( false );
+                return fMediaFormatExtensions;
+            }
+
+            void CPreferences::loadFFmpegFormats( bool forceFromFFMpeg ) const
+            {
+                if ( forceFromFFMpeg )
                 {
                     auto ffmpeg = getFFMpegEXE();
                     if ( ffmpeg.isEmpty() )
                         return;
 
-                    QSettings settings;
-                    settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
-                    settings.beginGroup( "MediaFormats" );
-                    auto hasFormats = !settings.childGroups().isEmpty();
-                    settings.endGroup();
+                    std::tie( fMediaFormatsTerse, fMediaFormatsVerbose, fMediaFormatExtensions ) = getAllFFmpegFormats( ffmpeg );
+                    computeReverseExtensionMap();
+                }
+                else if ( !fMediaFormatsLoaded.has_value() )
+                {
+                    fMediaFormatsTerse = availableMediaFormatsDefault( false );
+                    fMediaFormatsVerbose = availableMediaFormatsDefault( true );
+                    fMediaFormatExtensions = getVideoExtensionsMapDefault();
+                    computeReverseExtensionMap();
 
-                    if ( forceLoad || !hasFormats )
-                    {
-                        std::tie( fMediaFormatsTerse, fMediaFormatsVerbose, fMediaFormatExtensions, fReverseMediaFormatExtensions ) = getAllFFmpegFormats( ffmpeg );
-
-                        settings.beginWriteArray( "MediaFormats", fMediaFormatsTerse.size() );
-                        for ( int ii = 0; ii < fMediaFormatsTerse.size(); ++ii )
-                        {
-                            settings.setArrayIndex( ii );
-                            settings.setValue( "terse", fMediaFormatsTerse[ ii ] );
-                            settings.setValue( "verbose", fMediaFormatsVerbose[ ii ] );
-                            auto pos = fMediaFormatExtensions.find( fMediaFormatsTerse[ ii ] );
-                            if ( pos != fMediaFormatExtensions.end() )
-                            {
-                                settings.setValue( "extensions", ( *pos ).second );
-                            }
-                        }
-                        settings.endArray();
-                    }
-                    else
-                    {
-                        fMediaFormatExtensions.clear();
-                        fMediaFormatsTerse.clear();
-                        fMediaFormatsVerbose.clear();
-                        fReverseMediaFormatExtensions.clear();
-
-                        auto arraySize = settings.beginReadArray( "MediaFormats" );
-                        for ( int ii = 0; ii < arraySize; ++ii )
-                        {
-                            settings.setArrayIndex( ii );
-                            auto terse = settings.value( "terse" ).toString();
-                            auto verbose = settings.value( "verbose" ).toString();
-                            auto exts = settings.value( "extensions" ).toStringList();
-
-                            fMediaFormatsTerse.push_back( terse );
-                            fMediaFormatsVerbose.push_back( verbose );
-                            fMediaFormatExtensions[ terse ] = exts;
-                            for ( auto &&ii : exts )
-                                fReverseMediaFormatExtensions[ ii ] = terse;
-                        }
-                        settings.endArray();
-                    }
                     fMediaFormatsLoaded = true;
                 }
+
                 Q_ASSERT( fMediaFormatsTerse.count() == fMediaFormatsVerbose.count() );
             }
 
-            QStringList CPreferences::getExtensionsForMediaFormat(
-                const QString &formatName, const QString &ffmpegExe, std::unordered_map< QString, QStringList > &forwardMap, std::unordered_map< QString, QString > &reverseMap, const std::unordered_set< QString > &imageFormats )
+            void CPreferences::computeReverseExtensionMap() const
+            {
+                fReverseMediaFormatExtensions.clear();
+                for ( auto &&ii : fMediaFormatExtensions )
+                {
+                    for ( auto &&jj : ii.second )
+                    {
+                        if ( fReverseMediaFormatExtensions.find( jj ) == fReverseMediaFormatExtensions.end() )
+                            fReverseMediaFormatExtensions[ jj ] = ii.first;
+                    }
+                }
+            }
+
+            QStringList CPreferences::getExtensionsForMediaFormat( const QString &formatName, const QString &ffmpegExe, std::unordered_map< QString, QStringList > &forwardMap, const std::unordered_set< QString > &imageFormats )
             {
                 if ( ffmpegExe.isEmpty() )
                     return {};
@@ -1874,7 +1874,8 @@ namespace NMediaManager
                         auto tmp = match.captured( "exts" ).trimmed();
                         exts = match.captured( "exts" ).trimmed().split( "," );
                         for ( auto &&ii : exts )
-                            ii = "*." + ii;
+                            ii = "*." + ii.trimmed().toLower();
+                        exts.removeDuplicates();
                     }
 
                     bool isImageFormat = false;
@@ -1889,9 +1890,6 @@ namespace NMediaManager
                     if ( isImageFormat )
                         return {};
 
-                    for ( auto &&ii : exts )
-                        reverseMap[ ii ] = formatName;
-
                     pos = forwardMap.insert( { formatName, exts } ).first;
                 }
                 return ( *pos ).second;
@@ -1903,12 +1901,12 @@ namespace NMediaManager
                 std::unordered_set< QString > imageExts;
                 for ( auto &&ii : exts )
                     imageExts.insert( ii );
-                return getExtensionsForMediaFormat( formatName, getFFMpegEXE(), fMediaFormatExtensions, fReverseMediaFormatExtensions, imageExts );
+                return getExtensionsForMediaFormat( formatName, getFFMpegEXE(), fMediaFormatExtensions, imageExts );
             }
 
-            void CPreferences::loadCodecs() const
+            void CPreferences::loadCodecs( bool forceFromFFMpeg ) const
             {
-                if ( !fCodecsLoaded.has_value() )
+                if ( forceFromFFMpeg )
                 {
                     auto ffmpeg = getFFMpegEXE();
                     if ( ffmpeg.isEmpty() )
@@ -1952,8 +1950,8 @@ namespace NMediaManager
                             continue;
                         if ( ( type[ 0 ] != 'V' ) && ( type[ 0 ] != 'A' ) && ( type[ 0 ] != 'S' ) )
                             continue;
-                        auto name = match.captured( "name" );
-                        auto desc = match.captured( "desc" );
+                        auto name = match.captured( "name" ).trimmed();
+                        auto desc = match.captured( "desc" ).trimmed();
                         switch ( type[ 0 ].toLatin1() )
                         {
                             case 'A':
@@ -1972,11 +1970,22 @@ namespace NMediaManager
                                 break;
                         }
                     }
+                }
+                else if ( !fCodecsLoaded.has_value() )
+                {
+                    fVideoCodecsTerse = availableVideoEncodersDefault( false );
+                    fVideoCodecsVerbose = availableVideoEncodersDefault( true );
+
+                    fAudioCodecsTerse = availableAudioEncodersDefault( false );
+                    fAudioCodecsVerbose = availableAudioEncodersDefault( true );
+
+                    fSubtitleCodecsTerse = availableSubtitleEncodersDefault( false );
+                    fSubtitleCodecsVerbose = availableSubtitleEncodersDefault( true );
                     fCodecsLoaded = true;
                 }
             }
 
-            void CPreferences::setForceMediaFormat( bool value )
+            void CPreferences::setForceMediaContainer( bool value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
@@ -1984,14 +1993,14 @@ namespace NMediaManager
                 emitSigPreferencesChanged( EPreferenceType::eMakeMKVPrefs );
             }
 
-            bool CPreferences::getForceMediaFormat() const
+            bool CPreferences::getForceMediaContainer() const
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
-                return settings.value( "ForceMediaFormat", true ).toBool();
+                return settings.value( "ForceMediaFormat", getForceMediaContainerDefault() ).toBool();
             }
 
-            void CPreferences::setForceMediaFormatName( const QString &value )
+            void CPreferences::setForceMediaContainerName( const QString &value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
@@ -1999,20 +2008,27 @@ namespace NMediaManager
                 emitSigPreferencesChanged( EPreferenceType::eMakeMKVPrefs );
             }
 
-            QString CPreferences::getForceMediaFormatName() const
+            QString CPreferences::getForceMediaContainerName() const
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
-                return settings.value( "ForceMediaFormatName", "matroska" ).toString();
+                return settings.value( "ForceMediaFormatName", getForceMediaContainerNameDefault() ).toString();
             }
 
-            QString CPreferences::getForceMediaFormatExt() const
+            QString CPreferences::getForceMediaContainerExt() const
             {
-                auto format = getForceMediaFormatName();
-                if ( format.toLower() == "matroska" )
-                    return "mkv";
-                else
-                    return format;
+                loadFFmpegFormats( false );
+                auto format = getForceMediaContainerName();
+
+                auto pos = fMediaFormatExtensions.find( format );
+                if ( pos == fMediaFormatExtensions.end() )
+                    return {};
+                if ( ( *pos ).second.isEmpty() )
+                    return {};
+
+                auto retVal = ( *pos ).second.front();
+                retVal.remove( "*." );
+                return retVal;
             }
 
             void CPreferences::setTranscodeAudio( bool value )
@@ -2027,7 +2043,7 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
-                return settings.value( "TranscodeAudio", false ).toBool();
+                return settings.value( "TranscodeAudio", getTranscodeAudioDefault() ).toBool();
             }
 
             void CPreferences::setOnlyTranscodeVideoOnFormatChange( bool value )
@@ -2042,7 +2058,7 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
-                return settings.value( "OnlyTranscodeVideoOnFormatChange", false ).toBool();
+                return settings.value( "OnlyTranscodeVideoOnFormatChange", getOnlyTranscodeVideoOnFormatChangeDefault() ).toBool();
             }
 
             void CPreferences::setTranscodeToAudioCodec( const QString& value )
@@ -2057,7 +2073,7 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
-                return settings.value( "AudioCodec", "eac3" ).toString();
+                return settings.value( "AudioCodec", getTranscodeToAudioCodecDefault() ).toString();
             }
 
             void CPreferences::setAllowedAudioCodecs( const QStringList &value )
@@ -2072,7 +2088,7 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
-                return settings.value( "AllowedAudioCodecs", QStringList() << "aac" ).toStringList();
+                return settings.value( "AllowedAudioCodecs", getAllowedAudioCodecsDefault() ).toStringList();
             }
 
             void CPreferences::setTranscodeToH265( bool value )
@@ -2087,7 +2103,7 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
-                return settings.value( "ConvertToH265", true ).toBool();
+                return settings.value( "ConvertToH265", getTranscodeToH265Default() ).toBool();
             }
 
             void CPreferences::setLosslessTranscoding( bool value )
@@ -2102,7 +2118,7 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
-                return settings.value( "LosslessTranscoding", true ).toBool();
+                return settings.value( "LosslessTranscoding", getLosslessTranscodingDefault() ).toBool();
             }
 
             void CPreferences::setUseCRF( bool value )
@@ -2117,7 +2133,7 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
-                return settings.value( "UseCRF", false ).toBool();
+                return settings.value( "UseCRF", getUseCRFDefault() ).toBool();
             }
 
             void CPreferences::setUseExplicitCRF( bool value )
@@ -2132,7 +2148,7 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
-                return settings.value( "UseConstantRateFactor", false ).toBool();
+                return settings.value( "UseConstantRateFactor", getUseExplicitCRFDefault() ).toBool();
             }
 
             void CPreferences::setExplicitCRF( int value )
@@ -2147,7 +2163,7 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
-                return settings.value( "ExplicitCRF", 28 ).toInt();
+                return settings.value( "ExplicitCRF", getExplicitCRFDefault() ).toInt();
             }
 
             void CPreferences::setUsePreset( bool value )
@@ -2162,7 +2178,7 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
-                return settings.value( "UsePreset", false ).toBool();
+                return settings.value( "UsePreset", getUsePresetDefault() ).toBool();
             }
 
             void CPreferences::setPreset( EMakeMKVPreset value )
@@ -2177,7 +2193,7 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
-                return static_cast< EMakeMKVPreset >( settings.value( "Preset", EMakeMKVPreset::eMedium ).toInt() );
+                return static_cast< EMakeMKVPreset >( settings.value( "Preset", getPresetDefault() ).toInt() );
             }
 
             void CPreferences::setUseTune( bool value )
@@ -2192,7 +2208,7 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
-                return settings.value( "UseTune", false ).toBool();
+                return settings.value( "UseTune", getUseTuneDefault() ).toBool();
             }
 
             void CPreferences::setTune( EMakeMKVTune value )
@@ -2207,7 +2223,7 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
-                return static_cast< EMakeMKVTune >( settings.value( "Tune", EMakeMKVTune::eFilm ).toInt() );
+                return static_cast< EMakeMKVTune >( settings.value( "Tune", getTuneDefault() ).toInt() );
             }
 
             void CPreferences::setUseProfile( bool value )
@@ -2222,7 +2238,7 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
-                return settings.value( "UseProfile", false ).toBool();
+                return settings.value( "UseProfile", getUseProfileDefault() ).toBool();
             }
 
             void CPreferences::setProfile( EMakeMKVProfile value )
@@ -2237,8 +2253,9 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
-                return static_cast< EMakeMKVProfile >( settings.value( "Profile", EMakeMKVProfile::eMain422_12 ).toInt() );
+                return static_cast< EMakeMKVProfile >( settings.value( "Profile", getProfileDefault() ).toInt() );
             }
+
             bool CPreferences::hasIntelGPU() const
             {
                 if ( !fHasIntelGPU.has_value() )
@@ -2347,13 +2364,12 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
-                return settings.value( "OnlyTranscodeAudioOnFormatChange", false ).toBool();
+                return settings.value( "OnlyTranscodeAudioOnFormatChange", getOnlyTranscodeAudioOnFormatChangeDefault() ).toBool();
             }
 
 
             /////////////////////////////////
             /////////////////////////////////
-
             bool CPreferences::isFileWithExtension( const QFileInfo &fi, std::function< QStringList() > getExtensions, std::unordered_set< QString > &hash, std::unordered_map< QString, bool > &cache ) const
             {
                 if ( hash.empty() )
@@ -2445,16 +2461,16 @@ namespace NMediaManager
                 }
             }
 
-            QString getIndent( int indent )
+            QString toString( const QString &value )
             {
-                return QString( 4 * indent, QChar( ' ' ) );
+                return QString( "R\"(%1)\"" ).arg( value );
             }
 
             void replaceText( const QString &txt, QStringList &curr, const QString &funcName, const QString &boolVariable, const QString &trueValue, const QString &falseValue )
             {
                 QStringList function;
                 function << QString( "QString CPreferences::%1( bool %2 ) const" ).arg( funcName ).arg( boolVariable ) << "{" << getIndent( 1 ) + QString( "if ( %2 )" ).arg( boolVariable )
-                         << getIndent( 2 ) + QString( "return R\"(%1)\";" ).arg( trueValue ) << getIndent( 1 ) + QString( "else" ) << getIndent( 2 ) + QString( "return R\"(%1)\";" ).arg( falseValue ) << "}";
+                         << getIndent( 2 ) + QString( "return %1;" ).arg( toString( trueValue ) ) << getIndent( 1 ) + QString( "else" ) << getIndent( 2 ) + QString( "return %1;" ).arg( toString( falseValue ) ) << "}";
                 for ( auto &&ii : function )
                 {
                     ii = getIndent( 3 ) + ii;
@@ -2465,7 +2481,7 @@ namespace NMediaManager
             void replaceText( const QString &txt, QStringList &curr, const QString &funcName, const QString &value )
             {
                 QStringList function;
-                function << QString( "QString CPreferences::%1() const" ).arg( funcName ) << "{" << getIndent( 1 ) + QString( "return R\"(%1)\";" ).arg( value ) << "}";
+                function << QString( "QString CPreferences::%1() const" ).arg( funcName ) << "{" << getIndent( 1 ) + QString( "return %1;" ).arg( toString( value ) ) << "}";
                 for ( auto &&ii : function )
                 {
                     ii = getIndent( 3 ) + ii;
@@ -2484,12 +2500,15 @@ namespace NMediaManager
                 return replaceText( txt, curr, function );
             }
 
-            template< typename T >
-            void replaceText( const QString &txt, QStringList &curr, const QString &funcName, T value )
+            template< typename KEY, typename VALUE >
+            void replaceText( const QString &txt, QStringList &curr, const QString &funcName, const std::unordered_map< KEY, VALUE > &value )
             {
-                static_assert( std::is_same< bool, T >::value, "not bool" );
                 QStringList function;
-                function << QString( "bool CPreferences::%1() const" ).arg( funcName ) << "{" << getIndent( 1 ) + QString( "return %1;" ).arg( value ? "true" : "false" ) << "}";
+                function << QString( "std::unordered_map< %1, %2 > CPreferences::%3() const" ).arg( typeid( KEY ).name() ).arg( typeid( VALUE ).name() ).arg( funcName ) << "{";
+                function << toString( value, 1 );
+
+                function << "}";
+
                 for ( auto &&ii : function )
                 {
                     ii = getIndent( 3 ) + ii;
@@ -2497,7 +2516,89 @@ namespace NMediaManager
                 return replaceText( txt, curr, function );
             }
 
-            QStringList getListDefValue( const QString &retValType, const QStringList &newValues, bool asString, int indent )
+            template< typename T >
+            auto replaceText( const QString &txt, QStringList &curr, const QString &funcName, T value ) -> typename std::enable_if< std::is_same< bool, T >::value, void >::type
+            {
+                QStringList function;
+                function << QString( "%1 CPreferences::%2() const" ).arg( typeid( T ).name() ).arg( funcName ) << "{" << getIndent( 1 ) + QString( "return %1;" ).arg( value ? "true" : "false" ) << "}";
+                for ( auto &&ii : function )
+                {
+                    ii = getIndent( 3 ) + ii;
+                }
+                return replaceText( txt, curr, function );
+            }
+
+            template< typename T >
+            auto replaceText( const QString &txt, QStringList &curr, const QString &funcName, T value ) ->
+                typename std::enable_if< !std::is_same< bool, T >::value && !std::is_enum< T >::value && !std::is_same< QString, T >::value && !std::is_same< char *, T >::value, void >::type
+            {
+                QStringList function;
+                function << QString( "%1 CPreferences::%2() const" ).arg( typeid( T ).name() ).arg( funcName ) << "{" << getIndent( 1 ) + QString( "return %1;" ).arg( value ) << "}";
+                for ( auto &&ii : function )
+                {
+                    ii = getIndent( 3 ) + ii;
+                }
+                return replaceText( txt, curr, function );
+            }
+
+            template< typename T >
+            auto replaceText( const QString &txt, const QString & returnType, QStringList &curr, const QString &funcName, T value ) ->
+                typename std::enable_if< std::is_enum< T >::value, void >::type
+            {
+                QStringList function;
+                function << QString( "%1 CPreferences::%2() const" ).arg( returnType ).arg( funcName ) << "{" << getIndent( 1 ) + QString( "return %1;" ).arg( toString( value, true ) ) << "}";
+                for ( auto &&ii : function )
+                {
+                    ii = getIndent( 3 ) + ii;
+                }
+                return replaceText( txt, curr, function );
+            }
+
+            QString toString( const QStringList &values )
+            {
+                QString retVal = "QStringList( {";
+                bool first = true;
+                for ( auto &&ii : values )
+                {
+                    if ( !first )
+                        retVal += ",";
+                    retVal += " " + toString( ii );
+                    first = false;
+                }
+                retVal += " } )";
+                return retVal;
+            }
+
+            template< typename KEY, typename VALUE >
+            QStringList toString( const std::unordered_map< KEY, VALUE > &values, int indent )
+            {
+                QStringList retVal;
+                retVal << QString( "%1static auto defaultValue =" ).arg( getIndent( indent ) );
+
+                auto retValType = QString( "std::unordered_map< %1, %2>" ).arg( typeid( KEY ).name() ).arg( typeid( VALUE ).name() );
+                if ( values.empty() )
+                {
+                    retVal.back() += " " + retValType + "();";
+                }
+                else
+                {
+                    retVal << getIndent( indent + 1 ) + retValType +"(";
+                    retVal << getIndent( indent + 1 ) + "{";
+
+                    auto first = true;
+                    for( auto && ii : values )
+                    {
+                        retVal << getIndent( indent + 2 ) + QString( "%1{ %2, %3 } //" ).arg( first ? " " : "," ).arg( toString( ii.first ) ).arg( toString( ii.second ) );
+                        first = false;
+                    }
+                    retVal << getIndent( indent + 1 ) + "} );";
+                }
+
+                retVal<< getIndent( 1 ) + QString( "return defaultValue;" );
+                return retVal;
+            }
+
+            QStringList toString( const QString &retValType, const QStringList &newValues, bool asString, int indent )
             {
                 QStringList retVal;
                 retVal << QString( "%1static auto defaultValue =" ).arg( getIndent( indent ) );
@@ -2508,12 +2609,15 @@ namespace NMediaManager
                 }
                 else
                 {
-                    retVal << QString( "%2%1(" ).arg( retValType ).arg( getIndent( indent + 1 ) ) << getIndent( indent + 1 ) + "{";
+                    retVal << getIndent( indent + 1 ) + QString( "%1(" ).arg( retValType ) << getIndent( indent + 1 ) + "{";
 
                     bool first = true;
                     for ( auto &&ii : newValues )
                     {
-                        auto fmt = asString ? QString( "%3%1R\"(%2)\"" ) : QString( "%3%1%2" );
+                        auto stringFmt = QString( "%2" );
+                        if ( asString )
+                            stringFmt = toString( stringFmt );
+                        auto fmt = QString( "%3%1" ) + stringFmt + " //";
                         retVal << fmt.arg( first ? " " : "," ).arg( ii ).arg( getIndent( indent + 2 ) );
                         first = false;
                     }
@@ -2529,7 +2633,7 @@ namespace NMediaManager
             {
                 QStringList function;
                 function << QString( "%3 CPreferences::%1( bool %2 ) const" ).arg( funcName ).arg( boolVariable ).arg( retValType ) << "{" << getIndent( 1 ) + QString( "if ( %2 )" ).arg( boolVariable ) << getIndent( 1 ) + "{"
-                         << getListDefValue( retValType, trueValue, asString, 2 ) << getIndent( 1 ) + "}" << getIndent( 1 ) + "else" << getIndent( 1 ) + "{" << getListDefValue( retValType, falseValue, asString, 2 ) << getIndent( 1 ) + "}"
+                         << toString( retValType, trueValue, asString, 2 ) << getIndent( 1 ) + "}" << getIndent( 1 ) + "else" << getIndent( 1 ) + "{" << toString( retValType, falseValue, asString, 2 ) << getIndent( 1 ) + "}"
                          << "}";
                 for ( auto &&ii : function )
                 {
@@ -2543,7 +2647,7 @@ namespace NMediaManager
                 QStringList function;
                 function << QString( "%2 CPreferences::%1() const" ).arg( funcName ).arg( retValType ) << "{";
 
-                function << getListDefValue( retValType, newValues, asString, 1 ) << "}";
+                function << toString( retValType, newValues, asString, 1 ) << "}";
 
                 for ( auto &&ii : function )
                 {
@@ -2557,7 +2661,7 @@ namespace NMediaManager
                 QStringList varList;
                 for ( auto &&ii = newValues.cbegin(); ii != newValues.cend(); ++ii )
                 {
-                    varList << QString( "{ R\"(%1)\", R\"(%2)\" }" ).arg( ii.key() ).arg( ii.value().toString() );
+                    varList << QString( "{ %1, %2 }" ).arg( toString( ii.key() ) ).arg( toString( ii.value().toString() ) );
                 }
                 replaceText( txt, curr, funcName, varList, "QVariantMap", false );
             }
@@ -2658,11 +2762,11 @@ namespace NMediaManager
                                             << R"(#include "Preferences.h")"
                                             << R"()"
                                             << R"(namespace NMediaManager)"
-                                            << R"({)"
-                                            << R"(    namespace NPreferences)"
-                                            << R"(    {)"
-                                            << R"(        namespace NCore)"
-                                            << R"(        {)"
+                                            << getIndent( 0 ) +R"({)" 
+                                            << getIndent( 1 ) + R"(namespace NPreferences)" 
+                                            << getIndent( 1 ) + R"({)"
+                                            << getIndent( 2 ) + R"(namespace NCore)" 
+                                            << getIndent( 2 ) + R"({)"
                                             << "%DEFAULT_SEASON_DIR_PATTERN%"
                                             << R"()"
                                             << "%DEFAULT_OUT_DIR_PATTERN%"
@@ -2694,9 +2798,58 @@ namespace NMediaManager
                                             << "%DEFAULT_KNOWN_HYPHENATED%"
                                             << R"()"
                                             << "%DEFAULT_SKIPPED_PATHS%"
-                                            << R"(        })"
-                                            << R"(    })"
-                                            << R"(})";
+                                            << R"()"
+                                            << "%AVAILABLE_AUDIO_ENCODERS%"
+                                            << R"()"
+                                            << "%AVAILABLE_VIDEO_ENCODERS%"
+                                            << R"()"
+                                            << "%AVAILABLE_SUBTITLE_ENCODERS%"
+                                            << R"()"
+                                            << "%MEDIA_FORMAT_DEFS%" 
+                                            << R"()"
+                                            << "%MEDIA_FORMAT_EXTENSION%"
+                                            << R"()"
+                                            << "%MEDIA_FORMAT_EXTENSION_MAP%"
+                                            << R"()"
+                                            << "%DEFAULT_FORCE_MEDIA_CONTAINER%"
+                                            << R"()"
+                                            << "%DEFAULT_MEDIA_CONTAINER_NAME%"
+                                            << R"()"
+                                            << "%DEFAULT_TRANSCODE_AUDIO%"
+                                            << R"()"
+                                            << "%DEFAULT_ONLY_TRANSCODE_AUDIO_ON_FORMAT_CHANGE%"
+                                            << R"()"
+                                            << "%DEFAULT_TRANSCODE_TO_AUDIO_CODEC%"
+                                            << R"()"
+                                            << "%ALLOWED_AUDIO_CODECS%"
+                                            << R"()"
+                                            << "%DEFAULT_TRANSCODE_TO_H265%"
+                                            << R"()"
+                                            << "%DEFAULT_ONLY_TRANSCODE_VIDEO_ON_FORMAT_CHANGE%"
+                                            << R"()"
+                                            << "%DEFAULT_LOSSLESS_TRANSCODING%"
+                                            << R"()"
+                                            << "%DEFAULT_USE_CRF%"
+                                            << R"()"
+                                            << "%DEFAULT_USE_EXPLICIT_CRF%"
+                                            << R"()"
+                                            << "%DEFAULT_EXPLICIT_CRF%"
+                                            << R"()"
+                                            << "%DEFAULT_USE_PRESET%"
+                                            << R"()"
+                                            << "%DEFAULT_PRESET%"
+                                            << R"()"
+                                            << "%DEFAULT_USE_TUNE%"
+                                            << R"()"
+                                            << "%DEFAULT_TUNE%"
+                                            << R"()"
+                                            << "%DEFAULT_USE_PROFILE%"
+                                            << R"()"
+                                            << "%DEFAULT_PROFILE%" 
+                                            << getIndent( 2 ) + R"(})"
+                                            << getIndent( 1 ) + R"(})"
+                                            << getIndent( 0 ) + R"(})"
+                                            ;
                 return retVal;
             }
 
@@ -2720,7 +2873,39 @@ namespace NMediaManager
                                            << compareValues( "Known Strings", getDefaultKnownStrings(), getKnownStrings() )   //
                                            << compareValues( "Known Extended Strings", getDefaultKnownExtendedStrings(), getKnownExtendedStrings() )   //
                                            << compareValues( "Known Abbreviations", getDefaultKnownAbbreviations(), getKnownAbbreviations() )   //
-                                           << compareValues( "Known Hyphenated", getDefaultKnownHyphenated(), getKnownHyphenated() );
+                                           << compareValues( "Known Hyphenated", getDefaultKnownHyphenated(), getKnownHyphenated() ) //
+                                           << compareValues( "Audio Encoders - Terse", availableAudioEncodersDefault( false ), availableAudioEncoders( false ) )   //
+                                           << compareValues( "Audio Encoders - Verbose", availableAudioEncodersDefault( true ), availableAudioEncoders( true ) )   //
+                                           << compareValues( "Video Encoders - Terse", availableVideoEncodersDefault( false ), availableVideoEncoders( false ) )   //
+                                           << compareValues( "Video Encoders - Verbose", availableVideoEncodersDefault( true ), availableVideoEncoders( true ) )   //
+                                           << compareValues( "Subtitle Encoders - Terse", availableSubtitleEncodersDefault( false ), availableSubtitleEncoders( false ) )   //
+                                           << compareValues( "Subtitle Encoders - Verbose", availableSubtitleEncodersDefault( true ), availableSubtitleEncoders( true ) )   //
+                                           << compareValues( "Media Formats - Terse", availableMediaFormatsDefault( false ), availableMediaFormats( false ) )   //
+                                           << compareValues( "Media Formats - Verbose", availableMediaFormatsDefault( true ), availableMediaFormats( true ) )   //
+
+                                           << compareValues( "Force Media Format", getForceMediaContainerDefault(), getForceMediaContainer() )   //
+                                           << compareValues( "Force Media Format Name", getForceMediaContainerNameDefault(), getForceMediaContainerName() )   //
+                            
+                                           << compareValues( "Transcode Audio", getTranscodeAudioDefault(), getTranscodeAudio() )   //
+                                           << compareValues( "Transcode Audio on Format Change", getOnlyTranscodeAudioOnFormatChangeDefault(), getOnlyTranscodeAudioOnFormatChange() )   //
+                                           << compareValues( "Transcode Audio Codec", getTranscodeToAudioCodecDefault(), getTranscodeToAudioCodec() )   //
+                                           << compareValues( "Allowed Audio Codecs", getAllowedAudioCodecsDefault(), getAllowedAudioCodecs() )   //
+
+                                           << compareValues( "Transcode To H265", getTranscodeToH265Default(), getTranscodeToH265() )   //
+                                           << compareValues( "Transcode Video on Format Change", getOnlyTranscodeVideoOnFormatChangeDefault(), getOnlyTranscodeVideoOnFormatChange() )   //
+                                           << compareValues( "Lossless Video Transcoding", getLosslessTranscodingDefault(), getLosslessTranscoding() )   //
+                                           << compareValues( "Use CRF", getUseCRFDefault(), getUseCRF() )   //
+                                           << compareValues( "Use Explicit CRF", getUseExplicitCRFDefault(), getUseExplicitCRF() )   //
+                                           << compareValues( "Explicit CRF", getExplicitCRFDefault(), getExplicitCRF() )   //
+                                           << compareValues( "Use Preset", getUsePresetDefault(), getUsePreset() )   //
+                                           << compareValues( "Preset", toString( getPresetDefault() ), toString( getPreset() ) )   //
+                                           << compareValues( "Use Tune", getUseTuneDefault(), getUseTune() )   //
+                                           << compareValues( "Tune", toString( getTuneDefault() ), toString( getTune() ) )   //
+                                           << compareValues( "Use Profile", getUseProfileDefault(), getUseProfile() )   //
+                                           << compareValues( "Profile", toString( getProfileDefault() ), toString( getProfile() ) )   //
+
+                                           << compareValues( "Video Extensions", getVideoExtensionsDefault(), getVideoExtensions() )   //
+                    ;
                 items.removeAll( QString() );
 
                 QString retVal;
@@ -2735,24 +2920,26 @@ namespace NMediaManager
                 if ( diffs.isEmpty() && !showNoChange )
                     return;
 
-                bool replace = false;
+                bool copyDefaults = false;
                 if ( !diffs.isEmpty() )
                 {
-                    QMessageBox dlg( parent );
-                    dlg.setIcon( QMessageBox::Warning );
+                    NSABUtils::CScrollMessageBox dlg( parent );
+                    dlg.setIconLabel( QMessageBox::Warning );
+                    dlg.setLabel( "Warning:" );
                     dlg.setWindowTitle( tr( "Preferences have changed:" ) );
-                    dlg.setText( diffs );
-                    dlg.setStandardButtons( QMessageBox::StandardButton::Ok | QMessageBox::StandardButton::Apply );
-                    dlg.button( QMessageBox::StandardButton::Apply )->setText( tr( "Copy to Clipboard" ) );
-                    replace = ( dlg.exec() == QMessageBox::Apply );
+                    dlg.setHtmlText( diffs );
+                    dlg.setButtons( QDialogButtonBox::StandardButton::Ok | QDialogButtonBox::StandardButton::Apply );
+                    dlg.button( QDialogButtonBox::StandardButton::Apply )->setText( tr( "Copy to Clipboard" ) );
+                    dlg.exec();
+                    copyDefaults = dlg.buttonClicked() == dlg.button( QDialogButtonBox::StandardButton::Apply );
                 }
                 else if ( showNoChange )
                 {
-                    replace = QMessageBox::information( parent, tr( "Default Preferences are the Same" ), tr( "The defaults are up to date.\nWould you like to copy the defaults to the Clipboard" ), QMessageBox::Yes, QMessageBox::No )
+                    copyDefaults = QMessageBox::information( parent, tr( "Default Preferences are the Same" ), tr( "The defaults are up to date.\nWould you like to copy the defaults to the Clipboard" ), QMessageBox::Yes, QMessageBox::No )
                               == QMessageBox::Yes;
                 }
 
-                if ( replace )
+                if ( copyDefaults )
                 {
                     auto newFileText = getDefaultFile();
                     replaceText( "%DEFAULT_SEASON_DIR_PATTERN%", newFileText, "getDefaultSeasonDirPattern", getSeasonOutDirPattern() );
@@ -2771,6 +2958,35 @@ namespace NMediaManager
                     replaceText( "%DEFAULT_KNOWN_ABBREVIATIONS%", newFileText, "getDefaultKnownAbbreviations", getKnownAbbreviations() );
                     replaceText( "%DEFAULT_KNOWN_HYPHENATED%", newFileText, "getDefaultKnownHyphenated", getKnownHyphenated() );
                     replaceText( "%DEFAULT_SKIPPED_PATHS%", newFileText, "getDefaultSkippedPaths", "forMediaNaming", getSkippedPaths( true ), getSkippedPaths( false ) );
+
+                    replaceText( "%AVAILABLE_AUDIO_ENCODERS%", newFileText, "availableAudioEncodersDefault", "verbose", availableAudioEncoders( true ), availableAudioEncoders( false ) );
+                    replaceText( "%AVAILABLE_VIDEO_ENCODERS%", newFileText, "availableVideoEncodersDefault", "verbose", availableVideoEncoders( true ), availableVideoEncoders( false ) );
+                    replaceText( "%AVAILABLE_SUBTITLE_ENCODERS%", newFileText, "availableSubtitleEncodersDefault", "verbose", availableSubtitleEncoders( true ), availableSubtitleEncoders( false ) );
+
+                    replaceText( "%MEDIA_FORMAT_DEFS%", newFileText, "availableMediaFormatsDefault", "verbose", availableMediaFormats( true ), availableMediaFormats( false ) );
+                    replaceText( "%MEDIA_FORMAT_EXTENSION%", newFileText, "getVideoExtensionsDefault", getVideoExtensions() );
+                    replaceText( "%MEDIA_FORMAT_EXTENSION_MAP%", newFileText, "getVideoExtensionsMapDefault", getVideoExtensionsMap() );
+
+                    replaceText( "%DEFAULT_FORCE_MEDIA_CONTAINER%", newFileText, "getForceMediaContainerDefault", getForceMediaContainer() );
+                    replaceText( "%DEFAULT_MEDIA_CONTAINER_NAME%", newFileText, "getForceMediaContainerNameDefault", getForceMediaContainerName() );
+                    replaceText( "%DEFAULT_TRANSCODE_AUDIO%", newFileText, "getTranscodeAudioDefault", getTranscodeAudio() );
+                    replaceText( "%DEFAULT_ONLY_TRANSCODE_AUDIO_ON_FORMAT_CHANGE%", newFileText, "getOnlyTranscodeAudioOnFormatChangeDefault", getOnlyTranscodeAudioOnFormatChange() );
+                    replaceText( "%DEFAULT_TRANSCODE_TO_AUDIO_CODEC%", newFileText, "getTranscodeToAudioCodecDefault", getTranscodeToAudioCodec() );
+                    replaceText( "%ALLOWED_AUDIO_CODECS%", newFileText, "getAllowedAudioCodecsDefault", getAllowedAudioCodecs() );
+
+
+                    replaceText( "%DEFAULT_TRANSCODE_TO_H265%", newFileText, "getTranscodeToH265Default", getTranscodeToH265() );
+                    replaceText( "%DEFAULT_ONLY_TRANSCODE_VIDEO_ON_FORMAT_CHANGE%", newFileText, "getOnlyTranscodeVideoOnFormatChangeDefault", getOnlyTranscodeVideoOnFormatChange() );
+                    replaceText( "%DEFAULT_LOSSLESS_TRANSCODING%", newFileText, "getLosslessTranscodingDefault", getLosslessTranscoding() );
+                    replaceText( "%DEFAULT_USE_CRF%", newFileText, "getUseCRFDefault", getUseCRF() );
+                    replaceText( "%DEFAULT_USE_EXPLICIT_CRF%", newFileText, "getUseExplicitCRFDefault", getUseExplicitCRF() );
+                    replaceText( "%DEFAULT_EXPLICIT_CRF%", newFileText, "getExplicitCRFDefault", getExplicitCRF() );
+                    replaceText( "%DEFAULT_USE_PRESET%", newFileText, "getUsePresetDefault", getUsePreset() );
+                    replaceText( "%DEFAULT_PRESET%", "EMakeMKVPreset", newFileText, "getPresetDefault", getPreset() );
+                    replaceText( "%DEFAULT_USE_TUNE%", newFileText, "getUseTuneDefault", getUseTune() );
+                    replaceText( "%DEFAULT_TUNE%", "EMakeMKVTune",  newFileText, "getTuneDefault", getTune() );
+                    replaceText( "%DEFAULT_USE_PROFILE%", newFileText, "getUseProfileDefault", getUseProfile() );
+                    replaceText( "%DEFAULT_PROFILE%", "EMakeMKVProfile", newFileText, "getProfileDefault", getProfile() );
 
                     QGuiApplication::clipboard()->setText( newFileText.join( "\n" ) );
                 }

@@ -69,7 +69,7 @@ namespace NMediaManager
         };
         Q_DECLARE_FLAGS( EPreferenceTypes, EPreferenceType );
         Q_DECLARE_OPERATORS_FOR_FLAGS( EPreferenceTypes );
-        QString toString( EPreferenceType prefType );
+        QString toString( EPreferenceType prefType, bool forEnum=false );
 
         namespace NCore
         {
@@ -85,7 +85,7 @@ namespace NMediaManager
                 eSlower,
                 eVerySlow
             };
-            QString toString( EMakeMKVPreset preset );
+            QString toString( EMakeMKVPreset preset, bool forEnum = false );
 
             enum EMakeMKVTune
             {
@@ -96,7 +96,7 @@ namespace NMediaManager
                 eFastDecode,
                 eZeroLatency
             };
-            QString toString( EMakeMKVTune preset );
+            QString toString( EMakeMKVTune preset, bool forEnum = false );
 
             enum EMakeMKVProfile
             {
@@ -119,7 +119,7 @@ namespace NMediaManager
                 eMain444_12,
                 eMain444_12Intra
             };
-            QString toString( EMakeMKVProfile profile );
+            QString toString( EMakeMKVProfile profile, bool forEnum = false );
 
             struct STranscodeNeeded
             {
@@ -148,12 +148,6 @@ namespace NMediaManager
                 static CPreferences *instance();
                 virtual ~CPreferences() override;
 
-                QStringList availableAudioEncoders( bool verbose ) const;   // if true returns name - desc, otherwise name only
-                QStringList availableVideoEncoders( bool verbose ) const;   // if true returns name - desc, otherwise name only
-                QStringList availableSubtitleEncoders( bool verbose ) const;   // if true returns name - desc, otherwise name only
-                QStringList availableMediaFormats( bool verbose ) const;   // if true returns name - desc, otherwise name only
-                QStringList getExtensionsForMediaFormat( const QString & format ) const;
-                
                 QString validateDefaults() const;
                 void showValidateDefaults( QWidget *parent, bool showNoChange );
 
@@ -169,56 +163,94 @@ namespace NMediaManager
                 QStringList getTranscodeArgs( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName ) const;
                 QStringList getTranscodeArgs( const QString &srcName, const QString &destName ) const;
 
-                void setForceMediaFormat( bool value );
-                bool getForceMediaFormat() const;
+                // ffmpeg results
+                QStringList availableAudioEncoders( bool verbose ) const;   // if true returns name - desc, otherwise name only
+                QStringList availableVideoEncoders( bool verbose ) const;   // if true returns name - desc, otherwise name only
+                QStringList availableSubtitleEncoders( bool verbose ) const;   // if true returns name - desc, otherwise name only
+                QStringList availableMediaFormats( bool verbose ) const;   // if true returns name - desc, otherwise name only
+                QStringList getExtensionsForMediaFormat( const QString &format ) const;
+                std::unordered_map< QString, QStringList > getVideoExtensionsMap() const;
 
-                void setForceMediaFormatName( const QString &value );
-                QString getForceMediaFormatName() const;
-                QString getForceMediaFormatExt() const;
+                QStringList availableAudioEncodersDefault( bool verbose ) const;
+                QStringList availableVideoEncodersDefault( bool verbose ) const;
+                QStringList availableSubtitleEncodersDefault( bool verbose ) const;
+                QStringList availableMediaFormatsDefault( bool verbose ) const;
+                std::unordered_map< QString, QStringList > getVideoExtensionsMapDefault() const;
 
+                // container transcode arguments
+                void setForceMediaContainer( bool value );
+                bool getForceMediaContainerDefault() const;
+                bool getForceMediaContainer() const;
+
+                void setForceMediaContainerName( const QString &value );
+                QString getForceMediaContainerName() const;
+                QString getForceMediaContainerNameDefault() const;
+                QString getForceMediaContainerExt() const;
+
+                // audio codec transcode arguments
                 void setTranscodeAudio( bool value );
+                bool getTranscodeAudioDefault() const;
                 bool getTranscodeAudio() const;
 
                 void setOnlyTranscodeAudioOnFormatChange( bool value );
+                bool getOnlyTranscodeAudioOnFormatChangeDefault() const;
                 bool getOnlyTranscodeAudioOnFormatChange() const;
 
                 void setTranscodeToAudioCodec( const QString &value );
+                QString getTranscodeToAudioCodecDefault() const;
                 QString getTranscodeToAudioCodec() const;
 
                 void setAllowedAudioCodecs( const QStringList &value );
+                QStringList getAllowedAudioCodecsDefault() const;
                 QStringList getAllowedAudioCodecs() const;
 
+                // video codec transcode arguments
                 void setTranscodeToH265( bool value );
+                bool getTranscodeToH265Default() const;
                 bool getTranscodeToH265() const;
 
+                void setOnlyTranscodeVideoOnFormatChange( bool value );
+                bool getOnlyTranscodeVideoOnFormatChangeDefault() const;
+                bool getOnlyTranscodeVideoOnFormatChange() const;
+
                 void setLosslessTranscoding( bool value );
+                bool getLosslessTranscodingDefault() const;
                 bool getLosslessTranscoding() const;
 
                 void setUseCRF( bool value );
+                bool getUseCRFDefault() const;
                 bool getUseCRF() const;
 
                 void setUseExplicitCRF( bool value );
+                bool getUseExplicitCRFDefault() const;
                 bool getUseExplicitCRF() const;
 
                 void setExplicitCRF( int value );
+                int getExplicitCRFDefault() const;
                 int getExplicitCRF() const;
 
                 void setUsePreset( bool value );
+                bool getUsePresetDefault() const;
                 bool getUsePreset() const;
 
                 void setPreset( EMakeMKVPreset value );
+                EMakeMKVPreset getPresetDefault() const;
                 EMakeMKVPreset getPreset() const;
 
                 void setUseTune( bool value );
+                bool getUseTuneDefault() const;
                 bool getUseTune() const;
 
                 void setTune( EMakeMKVTune value );
+                EMakeMKVTune getTuneDefault() const;
                 EMakeMKVTune getTune() const;
 
                 void setUseProfile( bool value );
+                bool getUseProfileDefault() const;
                 bool getUseProfile() const;
 
                 void setProfile( EMakeMKVProfile value );
+                EMakeMKVProfile getProfileDefault() const;
                 EMakeMKVProfile getProfile() const;
 
                 void setExactMatchesOnly( bool value );
@@ -328,9 +360,10 @@ namespace NMediaManager
 
                 void setMediaExtensions( const QString &value );
                 void setMediaExtensions( const QStringList &value );
-                QStringList getVideoExtensions() const;
 
-                QStringList defaultVideoExtensions( bool forceReset ) const;
+                QStringList getVideoExtensions() const;
+                QStringList getVideoExtensionsDefault() const;
+                QStringList computeVideoExtensions() const;
 
                 void setSubtitleExtensions( const QString &value );
                 void setSubtitleExtensions( const QStringList &value );
@@ -357,8 +390,12 @@ namespace NMediaManager
                 QStringList getKnownHyphenated() const;
                 std::list< std::pair< QString, int > > getKnownHyphenatedData() const;
 
+                void setUseCustomExternalTools( bool value );
+                bool getUseCustomExternalTools() const;
+                QString  getExternalToolPath( const QString &settingsLoc, const QString &exe, const QString &defaultPath ) const;
+
                 QString getMKVValidatorEXE() const;
-                                
+
                 void setMKVMergeEXE( const QString &value );
                 QString getMKVMergeEXE() const;
 
@@ -373,9 +410,6 @@ namespace NMediaManager
 
                 bool hasIntelGPU() const;
                 bool hasNVidiaGPU() const;
-
-                void setOnlyTranscodeVideoOnFormatChange( bool value );
-                bool getOnlyTranscodeVideoOnFormatChange() const;
 
                 void setIntelGPUTranscode( bool value );
                 bool getIntelGPUTranscodeDefault() const;
@@ -483,11 +517,13 @@ namespace NMediaManager
                 QTimer *fPrefChangeTimer{ nullptr };
                 EPreferenceTypes fPending;
 
-                void loadCodecs() const;
-                void loadFFmpegFormats( bool forceLoad ) const;
-                static std::tuple< QStringList, QStringList, std::unordered_map< QString, QStringList >, std::unordered_map< QString, QString > > getAllFFmpegFormats( const QString &ffmpegExe );
-                static QStringList getExtensionsForMediaFormat( const QString &format, const QString &ffmpegExe, std::unordered_map< QString, QStringList > &forwardMap, std::unordered_map< QString, QString > &reverseMap, const std::unordered_set< QString > &imageFormats );
-                
+                void loadCodecs( bool forceFromFFMpeg ) const;
+                void loadFFmpegFormats( bool forceFromFFMpeg ) const;
+
+                void computeReverseExtensionMap() const;
+
+                static std::tuple< QStringList, QStringList, std::unordered_map< QString, QStringList > > CPreferences::getAllFFmpegFormats( const QString &ffmpeg );
+                static QStringList getExtensionsForMediaFormat( const QString &formatName, const QString &ffmpegExe, std::unordered_map< QString, QStringList > &forwardMap, const std::unordered_set< QString > &imageFormats );
                 mutable std::optional< bool > fCodecsLoaded;
                 mutable std::optional< bool > fMediaFormatsLoaded;
                 
@@ -501,10 +537,11 @@ namespace NMediaManager
                 mutable QStringList fMediaFormatsVerbose;
                 mutable std::unordered_map< QString, QStringList > fMediaFormatExtensions;
                 mutable std::unordered_map< QString, QString > fReverseMediaFormatExtensions;
-                mutable std::optional< bool > fHasIntelGPU;
-                mutable std::optional< bool > fHasNVidiaGPU;
                 mutable std::unordered_set< QString > fMediaExtensionsHash;
                 mutable std::unordered_map< QString, bool > fIsMediaExtension;
+
+                mutable std::optional< bool > fHasIntelGPU;
+                mutable std::optional< bool > fHasNVidiaGPU;
 
                 mutable std::unordered_set< QString > fSubtitleExtensionsHash;
                 mutable std::unordered_map< QString, bool > fIsSubtitleExtension;

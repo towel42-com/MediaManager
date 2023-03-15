@@ -64,9 +64,8 @@ namespace NMediaManager
                 fImpl->audioCodec->setCurrentIndex( pos );
 
                 fImpl->onlyTranscodeAudioOnFormatChange->setChecked( NPreferences::NCore::CPreferences::instance()->getOnlyTranscodeAudioOnFormatChange() );
-                auto allowed = NPreferences::NCore::CPreferences::instance()->getAllowedAudioCodecs();
 
-                allowed << NPreferences::NCore::CPreferences::instance()->getTranscodeToAudioCodec();
+                auto allowed = NPreferences::NCore::CPreferences::instance()->getAllowedAudioCodecs();
                 for ( auto &&ii : allowed )
                 {
                     auto pos = fTerse.indexOf( ii );

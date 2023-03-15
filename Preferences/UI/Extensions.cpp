@@ -41,14 +41,10 @@ namespace NMediaManager
                 new NSABUtils::CButtonEnabler( fImpl->videoExtensions, fImpl->delVideoExt );
                 new NSABUtils::CButtonEnabler( fImpl->subtitleExtensions, fImpl->delSubExt );
 
-                connect( fImpl->recomputeBtn, &QPushButton::clicked, [ this ]() { loadExtensions( fImpl->videoExtensions, NPreferences::NCore::CPreferences::instance()->defaultVideoExtensions( true ) ); } );
-
+                connect( fImpl->recomputeBtn, &QPushButton::clicked, [ this ]() { loadExtensions( fImpl->videoExtensions, NPreferences::NCore::CPreferences::instance()->computeVideoExtensions() ); } );
                 connect( fImpl->addVideoExt, &QPushButton::clicked, [ this ]() { addExtension( tr( "Video Extension" ), tr( "Extension:" ), fImpl->videoExtensions ); } );
-
                 connect( fImpl->delVideoExt, &QPushButton::clicked, [ this ]() { delExtension( fImpl->videoExtensions ); } );
-
                 connect( fImpl->addSubExt, &QPushButton::clicked, [ this ]() { addExtension( tr( "Subtitle Extension" ), tr( "Extension:" ), fImpl->subtitleExtensions ); } );
-
                 connect( fImpl->delSubExt, &QPushButton::clicked, [ this ]() { delExtension( fImpl->subtitleExtensions ); } );
             }
 
