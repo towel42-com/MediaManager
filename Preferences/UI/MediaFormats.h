@@ -20,8 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef __UI_EXTENSIONS_H
-#define __UI_EXTENSIONS_H
+#ifndef __UI_MEDIAFORMATS_H
+#define __UI_MEDIAFORMATS_H
 
 class QListWidget;
 #include "BasePrefPage.h"
@@ -33,28 +33,25 @@ namespace NMediaManager
         {
             namespace Ui
             {
-                class CExtensions;
+                class CMediaFormats;
             };
-            class CExtensions : public CBasePrefPage
+            class CMediaFormats : public CBasePrefPage
             {
                 Q_OBJECT
             public:
-                CExtensions( QWidget *parent = nullptr );
+                CMediaFormats( QWidget *parent = nullptr );
 
-                virtual ~CExtensions() override;
+                virtual ~CMediaFormats() override;
 
                 virtual void load() override;
 
                 virtual void save() override;
-                virtual QStringList pageName() const override { return QStringList( { "Extensions" } ); }
+                virtual QStringList pageName() const override { return QStringList( { "Media Formats" } ); }
             public Q_SLOTS:
             private:
-                void loadExtensions( QListWidget *listWidget, QStringList &videoExtensions );
-                QStringList getExtensions( QListWidget *listWidget );
-                void addExtension( const QString &title, const QString &label, QListWidget *listWidget );
-                void delExtension( QListWidget *listWidget );
+                void loadMediaFormats( QListWidget *listWidget, QStringList &formats );
 
-                std::unique_ptr< Ui::CExtensions > fImpl;
+                std::unique_ptr< Ui::CMediaFormats > fImpl;
             };
         }
     }

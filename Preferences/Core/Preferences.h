@@ -39,8 +39,12 @@ namespace NSABUtils
 {
     class CMediaInfo;
     enum class EMediaTags;
+    class CFFMpegFormats;
+    enum class EFormatType;
+    using TFormatMap = std::unordered_map< EFormatType, std::unordered_map< QString, QStringList > >;
 }
 
+class QProgressDialog;
 class QTimer;
 namespace NMediaManager
 {
@@ -148,6 +152,7 @@ namespace NMediaManager
                 static CPreferences *instance();
                 virtual ~CPreferences() override;
 
+                void recomputeSupportedFormats( QProgressDialog * dlg );
                 QString validateDefaults() const;
                 void showValidateDefaults( QWidget *parent, bool showNoChange );
 
@@ -169,13 +174,13 @@ namespace NMediaManager
                 QStringList availableSubtitleEncoders( bool verbose ) const;   // if true returns name - desc, otherwise name only
                 QStringList availableMediaFormats( bool verbose ) const;   // if true returns name - desc, otherwise name only
                 QStringList getExtensionsForMediaFormat( const QString &format ) const;
-                std::unordered_map< QString, QStringList > getVideoExtensionsMap() const;
+                NSABUtils::TFormatMap getFormatExtensionsMap() const;
 
                 QStringList availableAudioEncodersDefault( bool verbose ) const;
                 QStringList availableVideoEncodersDefault( bool verbose ) const;
                 QStringList availableSubtitleEncodersDefault( bool verbose ) const;
                 QStringList availableMediaFormatsDefault( bool verbose ) const;
-                std::unordered_map< QString, QStringList > getVideoExtensionsMapDefault() const;
+                NSABUtils::TFormatMap getVideoExtensionsMapDefault() const;
 
                 // container transcode arguments
                 void setForceMediaContainer( bool value );
@@ -358,15 +363,7 @@ namespace NMediaManager
                 QStringList getExtensionsToDelete() const;
                 bool isPathToDelete( const QString &path ) const;
 
-                void setMediaExtensions( const QString &value );
-                void setMediaExtensions( const QStringList &value );
-
                 QStringList getVideoExtensions() const;
-                QStringList getVideoExtensionsDefault() const;
-                QStringList computeVideoExtensions() const;
-
-                void setSubtitleExtensions( const QString &value );
-                void setSubtitleExtensions( const QStringList &value );
                 QStringList getSubtitleExtensions() const;
 
                 void addKnownStrings( const QStringList &value );
@@ -514,29 +511,14 @@ namespace NMediaManager
                 QString getDefaultOutDirPattern( bool forTV ) const;
                 QString getDefaultOutFilePattern( bool forTV ) const;
 
+                NSABUtils::CFFMpegFormats *getMediaFormats() const;
+                void loadMediaFormats( bool forceFromFFMpeg, QProgressDialog * dlg = nullptr ) const;
+
                 QTimer *fPrefChangeTimer{ nullptr };
                 EPreferenceTypes fPending;
 
-                void loadCodecs( bool forceFromFFMpeg ) const;
-                void loadFFmpegFormats( bool forceFromFFMpeg ) const;
+                mutable std::unique_ptr< NSABUtils::CFFMpegFormats > fMediaFormats;
 
-                void computeReverseExtensionMap() const;
-
-                static std::tuple< QStringList, QStringList, std::unordered_map< QString, QStringList > > CPreferences::getAllFFmpegFormats( const QString &ffmpeg );
-                static QStringList getExtensionsForMediaFormat( const QString &formatName, const QString &ffmpegExe, std::unordered_map< QString, QStringList > &forwardMap, const std::unordered_set< QString > &imageFormats );
-                mutable std::optional< bool > fCodecsLoaded;
-                mutable std::optional< bool > fMediaFormatsLoaded;
-                
-                mutable QStringList fAudioCodecsTerse;
-                mutable QStringList fAudioCodecsVerbose;
-                mutable QStringList fVideoCodecsTerse;
-                mutable QStringList fVideoCodecsVerbose;
-                mutable QStringList fSubtitleCodecsTerse;
-                mutable QStringList fSubtitleCodecsVerbose;
-                mutable QStringList fMediaFormatsTerse;
-                mutable QStringList fMediaFormatsVerbose;
-                mutable std::unordered_map< QString, QStringList > fMediaFormatExtensions;
-                mutable std::unordered_map< QString, QString > fReverseMediaFormatExtensions;
                 mutable std::unordered_set< QString > fMediaExtensionsHash;
                 mutable std::unordered_map< QString, bool > fIsMediaExtension;
 

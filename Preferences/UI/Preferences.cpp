@@ -26,7 +26,7 @@
 #include "ui_Preferences.h"
 
 #include "ExtendedInfo.h"
-#include "Extensions.h"
+#include "MediaFormats.h"
 #include "ExternalTools.h"
 #include "IgnoredPaths.h"
 #include "KnownAbbreviations.h"
@@ -119,7 +119,7 @@ namespace NMediaManager
             void CPreferences::loadPages()
             {
                 addPage( new CExternalTools );
-                addPage( new CExtensions );
+                addPage( new CMediaFormats );
 
                 addPage( new CMakeMKVGeneralSettings );
                 addPage( new CMakeMKVVideoSettings );

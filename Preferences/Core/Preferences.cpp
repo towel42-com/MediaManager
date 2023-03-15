@@ -27,6 +27,7 @@
 #include "SABUtils/FileUtils.h"
 #include "SABUtils/GPUDetect.h"
 #include "SABUtils/ScrollMessageBox.h"
+#include "SABUtils/FFMpegFormats.h"
 
 #include <QSettings>
 #include <QStringListModel>
@@ -48,6 +49,7 @@
 
 #include <optional>
 #include <unordered_set>
+#include <typeinfo>
 
 namespace NMediaManager
 {
@@ -197,6 +199,7 @@ namespace NMediaManager
 
             CPreferences::CPreferences()
             {
+                fMediaFormats = std::make_unique< NSABUtils::CFFMpegFormats >( getFFMpegEXE() );
             }
 
             CPreferences::~CPreferences()
@@ -358,59 +361,15 @@ namespace NMediaManager
                 return retVal;
             }
 
-            void CPreferences::setMediaExtensions( const QStringList &value )
-            {
-                QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
-                settings.setValue( "MediaExtensions", value );
-                emitSigPreferencesChanged( EPreferenceType::eSystemPrefs );
-            }
-
-            void CPreferences::setMediaExtensions( const QString &value )
-            {
-                setMediaExtensions( value.toLower().split( ";" ) );
-            }
-
             QStringList CPreferences::getVideoExtensions() const
             {
-                QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
-                auto retVal = settings.value( "MediaExtensions", getVideoExtensionsDefault() ).toStringList();
-                for ( auto &&ii : retVal )
-                    ii = ii.toLower();
-                return retVal;
+                return getMediaFormats()->getVideoExtensions();
             }
 
-            QStringList CPreferences::computeVideoExtensions() const
-            {
-                QStringList videoExtensions;
-                loadFFmpegFormats( true );
-
-                for ( auto &&ii : fMediaFormatExtensions )
-                    videoExtensions << ii.second;
-
-                videoExtensions.removeDuplicates();
-                return videoExtensions;
-            }
-
-            void CPreferences::setSubtitleExtensions( const QString &value )
-            {
-                QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
-                settings.setValue( "SubtitleExtensions", value );
-                emitSigPreferencesChanged( EPreferenceType::eSystemPrefs );
-            }
-
-            void CPreferences::setSubtitleExtensions( const QStringList &value )
-            {
-                setSubtitleExtensions( value.join( ";" ) );
-            }
 
             QStringList CPreferences::getSubtitleExtensions() const
             {
-                QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
-                return settings.value( "SubtitleExtensions", QString( "*.idx;*.sub;*.srt" ) ).toString().split( ";" );
+                return getMediaFormats()->getSubtitleExtensions();
             }
 
             /// ////////////////////////////////////////////////////////
@@ -1277,6 +1236,8 @@ namespace NMediaManager
                 if ( value == getFFMpegEXE() )
                     return;
 
+                fMediaFormats->setFFMpegExecutable( value );
+
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eExtToolsPrefs ) );
                 settings.setValue( "FFMpegEXE", value );
@@ -1711,278 +1672,65 @@ namespace NMediaManager
 
             QStringList CPreferences::availableAudioEncoders( bool verbose ) const
             {
-                loadCodecs( false );
-                if ( verbose )
-                    return fAudioCodecsVerbose;
-                else
-                    return fAudioCodecsTerse;
+                return getMediaFormats()->audioCodecs( verbose );
             }
 
             QStringList CPreferences::availableVideoEncoders( bool verbose ) const
             {
-                loadCodecs( false );
-                if ( verbose )
-                    return fVideoCodecsVerbose;
-                else
-                    return fVideoCodecsTerse;
+                return getMediaFormats()->videoCodecs( verbose );
             }
 
             QStringList CPreferences::availableSubtitleEncoders( bool verbose ) const
             {
-                loadCodecs( false );
-                if ( verbose )
-                    return fSubtitleCodecsVerbose;
-                else
-                    return fSubtitleCodecsTerse;
+                return getMediaFormats()->subtitleCodecs( verbose );
             }
 
             QStringList CPreferences::availableMediaFormats( bool verbose ) const
             {
-                loadFFmpegFormats( false );
-                if ( verbose )
-                    return fMediaFormatsVerbose;
-                else
-                    return fMediaFormatsTerse;
+                return getMediaFormats()->formats( verbose );
             }
 
-            std::tuple< QStringList, QStringList, std::unordered_map< QString, QStringList > > CPreferences::getAllFFmpegFormats( const QString &ffmpeg )
+            NSABUtils::TFormatMap CPreferences::getFormatExtensionsMap() const
             {
-                QStringList mediaFormatsTerse;
-                QStringList mediaFormatsVerbose;
-                std::unordered_map< QString, QStringList > mediaFormatExtensions;
-
-                QProcess process;
-                process.start(
-                    ffmpeg, QStringList() << "-hide_banner"
-                                          << "-formats" );
-                process.waitForFinished();
-                auto formats = process.readAllStandardOutput();
-
-                auto pos = formats.indexOf( "--" );
-                if ( pos == -1 )
-                    return { mediaFormatsTerse, mediaFormatsVerbose, mediaFormatExtensions };
-
-                formats = formats.mid( pos + 2 );
-                /*
-                        * Encoders:
-                           D. = Demuxing supported
-                           .E = Muxing supported
-                        
-                           D  3dostr          3DO STR
-                            E 3g2             3GP2 (3GPP2 file format)
-                        */
-
-                auto tmp = QImageReader::supportedImageFormats();
-                std::unordered_set< QString > imageFormats;
-                for ( auto &&ii : tmp )
-                    imageFormats.insert( "*." + ii );
-
-                auto regEx = QRegularExpression( R"((?<type>[DE]{1,2})\s+(?<name>\S+)\s+(?<desc>.*))" );
-                auto ii = regEx.globalMatch( formats );
-                while ( ii.hasNext() )
-                {
-                    auto match = ii.next();
-                    auto type = match.captured( "type" );
-                    if ( ( type.length() == 1 ) && ( type[ 0 ] != 'E' ) )
-                        continue;
-                    if ( ( type.length() == 2 ) && ( type[ 1 ] != 'E' ) )
-                        continue;
-                    auto names = match.captured( "name" ).trimmed().split( "," );
-                    for ( auto &&ii : names )
-                        ii = ii.trimmed();
-                    auto desc = match.captured( "desc" ).trimmed();
-
-                    for ( auto &&name : names )
-                    {
-                        auto exts = getExtensionsForMediaFormat( name, ffmpeg, mediaFormatExtensions, imageFormats );
-                        if ( exts.empty() )
-                            continue;
-
-                        mediaFormatsTerse.push_back( name );
-                        mediaFormatsVerbose.push_back( name + " - " + desc + " (" + exts.join( ";" ) + ")" );
-                    }
-                }
-                Q_ASSERT( mediaFormatsTerse.count() == mediaFormatsVerbose.count() );
-                return { mediaFormatsTerse, mediaFormatsVerbose, mediaFormatExtensions };
+                return getMediaFormats()->mediaFormatExtensions();
             }
 
-            std::unordered_map< QString, QStringList > CPreferences::getVideoExtensionsMap() const
+            void CPreferences::recomputeSupportedFormats( QProgressDialog *dlg )
             {
-                loadFFmpegFormats( false );
-                return fMediaFormatExtensions;
+                loadMediaFormats( true, dlg );
             }
 
-            void CPreferences::loadFFmpegFormats( bool forceFromFFMpeg ) const
+            void CPreferences::loadMediaFormats( bool forceFromFFMpeg, QProgressDialog * dlg ) const
             {
+                auto ffmpeg = getFFMpegEXE();
+                if ( ffmpeg.isEmpty() )
+                    return;
+
                 if ( forceFromFFMpeg )
                 {
-                    auto ffmpeg = getFFMpegEXE();
-                    if ( ffmpeg.isEmpty() )
-                        return;
-
-                    std::tie( fMediaFormatsTerse, fMediaFormatsVerbose, fMediaFormatExtensions ) = getAllFFmpegFormats( ffmpeg );
-                    computeReverseExtensionMap();
+                    fMediaFormats->setFFMpegExecutable( ffmpeg );
+                    fMediaFormats->recompute( dlg );
                 }
-                else if ( !fMediaFormatsLoaded.has_value() )
+                else if ( !fMediaFormats->loaded() )
                 {
-                    fMediaFormatsTerse = availableMediaFormatsDefault( false );
-                    fMediaFormatsVerbose = availableMediaFormatsDefault( true );
-                    fMediaFormatExtensions = getVideoExtensionsMapDefault();
-                    computeReverseExtensionMap();
-
-                    fMediaFormatsLoaded = true;
-                }
-
-                Q_ASSERT( fMediaFormatsTerse.count() == fMediaFormatsVerbose.count() );
-            }
-
-            void CPreferences::computeReverseExtensionMap() const
-            {
-                fReverseMediaFormatExtensions.clear();
-                for ( auto &&ii : fMediaFormatExtensions )
-                {
-                    for ( auto &&jj : ii.second )
-                    {
-                        if ( fReverseMediaFormatExtensions.find( jj ) == fReverseMediaFormatExtensions.end() )
-                            fReverseMediaFormatExtensions[ jj ] = ii.first;
-                    }
+                    fMediaFormats = std::move( std::make_unique< NSABUtils::CFFMpegFormats >() );
+                    fMediaFormats->setFFMpegExecutable( ffmpeg );
+                    fMediaFormats->initFormatsFromDefaults( availableMediaFormatsDefault( false ), availableMediaFormatsDefault( true ), getVideoExtensionsMapDefault() );
+                    fMediaFormats->initVideoCodecsFromDefaults( availableVideoEncodersDefault( false ), availableVideoEncodersDefault( true ) );
+                    fMediaFormats->initAudioCodecsFromDefaults( availableAudioEncodersDefault( false ), availableAudioEncodersDefault( true ) );
+                    fMediaFormats->initSubtitleCodecsFromDefaults( availableSubtitleEncodersDefault( false ), availableSubtitleEncodersDefault( true ) );
                 }
             }
 
-            QStringList CPreferences::getExtensionsForMediaFormat( const QString &formatName, const QString &ffmpegExe, std::unordered_map< QString, QStringList > &forwardMap, const std::unordered_set< QString > &imageFormats )
+            NSABUtils::CFFMpegFormats * CPreferences::getMediaFormats() const
             {
-                if ( ffmpegExe.isEmpty() )
-                    return {};
-
-                auto pos = forwardMap.find( formatName );
-                if ( pos == forwardMap.end() )
-                {
-                    QProcess process;
-                    process.start(
-                        ffmpegExe, QStringList() << "-hide_banner"
-                                                 << "-h"
-                                                 << "muxer=" + formatName );
-                    process.waitForFinished();
-                    auto formatHelp = process.readAllStandardOutput();
-
-                    // Common extensions: 3g2.
-                    auto regEx = QRegularExpression( R"(Common extensions\:\s(?<exts>.*)\.)" );
-                    auto match = regEx.match( formatHelp );
-                    QStringList exts;
-                    if ( match.hasMatch() )
-                    {
-                        auto tmp = match.captured( "exts" ).trimmed();
-                        exts = match.captured( "exts" ).trimmed().split( "," );
-                        for ( auto &&ii : exts )
-                            ii = "*." + ii.trimmed().toLower();
-                        exts.removeDuplicates();
-                    }
-
-                    bool isImageFormat = false;
-                    for ( auto &&ii : exts )
-                    {
-                        if ( imageFormats.find( ii ) != imageFormats.end() )
-                        {
-                            isImageFormat = true;
-                            break;
-                        }
-                    }
-                    if ( isImageFormat )
-                        return {};
-
-                    pos = forwardMap.insert( { formatName, exts } ).first;
-                }
-                return ( *pos ).second;
+                loadMediaFormats( false );
+                return fMediaFormats.get();
             }
 
             QStringList CPreferences::getExtensionsForMediaFormat( const QString &formatName ) const
             {
-                auto exts = imageExtensions();
-                std::unordered_set< QString > imageExts;
-                for ( auto &&ii : exts )
-                    imageExts.insert( ii );
-                return getExtensionsForMediaFormat( formatName, getFFMpegEXE(), fMediaFormatExtensions, imageExts );
-            }
-
-            void CPreferences::loadCodecs( bool forceFromFFMpeg ) const
-            {
-                if ( forceFromFFMpeg )
-                {
-                    auto ffmpeg = getFFMpegEXE();
-                    if ( ffmpeg.isEmpty() )
-                        return;
-
-                    QProcess process;
-                    process.start(
-                        ffmpeg, QStringList() << "-hide_banner"
-                                              << "-encoders" );
-                    process.waitForFinished();
-                    auto codecs = process.readAllStandardOutput();
-
-                    auto pos = codecs.indexOf( "------" );
-                    if ( pos == -1 )
-                        return;
-
-                    codecs = codecs.mid( pos + 6 );
-                    /*
-                        * Encoders:
-                           V..... = Video
-                           A..... = Audio
-                           S..... = Subtitle
-                        .   F.... = Frame-level multithreading
-                            .S... = Slice-level multithreading
-                         ...  X.. = Codec is experimental
-                        ....   B. = Supports draw_horiz_band
-                        .....   D = Supports direct rendering method 1
-                        
-                        
-                           V....D a64multi             Multicolor charset for Commodore 64 (codec a64_multi)
-                        */
-                    auto regEx = QRegularExpression( R"((?<type>[VAS][FSXBD\.]{5})\s+(?<name>\S+)\s+(?<desc>.*))" );
-                    auto ii = regEx.globalMatch( codecs );
-                    while ( ii.hasNext() )
-                    {
-                        auto match = ii.next();
-                        auto type = match.captured( "type" );
-                        if ( type.length() != 6 )
-                            continue;
-                        if ( type[ 3 ] == 'X' )
-                            continue;
-                        if ( ( type[ 0 ] != 'V' ) && ( type[ 0 ] != 'A' ) && ( type[ 0 ] != 'S' ) )
-                            continue;
-                        auto name = match.captured( "name" ).trimmed();
-                        auto desc = match.captured( "desc" ).trimmed();
-                        switch ( type[ 0 ].toLatin1() )
-                        {
-                            case 'A':
-                                fAudioCodecsTerse.push_back( name );
-                                fAudioCodecsVerbose.push_back( name + " - " + desc );
-                                break;
-                            case 'V':
-                                fVideoCodecsTerse.push_back( name );
-                                fVideoCodecsVerbose.push_back( name + " - " + desc );
-                                break;
-                            case 'S':
-                                fSubtitleCodecsTerse.push_back( name );
-                                fSubtitleCodecsVerbose.push_back( name + " - " + desc );
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                }
-                else if ( !fCodecsLoaded.has_value() )
-                {
-                    fVideoCodecsTerse = availableVideoEncodersDefault( false );
-                    fVideoCodecsVerbose = availableVideoEncodersDefault( true );
-
-                    fAudioCodecsTerse = availableAudioEncodersDefault( false );
-                    fAudioCodecsVerbose = availableAudioEncodersDefault( true );
-
-                    fSubtitleCodecsTerse = availableSubtitleEncodersDefault( false );
-                    fSubtitleCodecsVerbose = availableSubtitleEncodersDefault( true );
-                    fCodecsLoaded = true;
-                }
+                return getMediaFormats()->getExtensionsForFormat( formatName );
             }
 
             void CPreferences::setForceMediaContainer( bool value )
@@ -2017,18 +1765,7 @@ namespace NMediaManager
 
             QString CPreferences::getForceMediaContainerExt() const
             {
-                loadFFmpegFormats( false );
-                auto format = getForceMediaContainerName();
-
-                auto pos = fMediaFormatExtensions.find( format );
-                if ( pos == fMediaFormatExtensions.end() )
-                    return {};
-                if ( ( *pos ).second.isEmpty() )
-                    return {};
-
-                auto retVal = ( *pos ).second.front();
-                retVal.remove( "*." );
-                return retVal;
+                return getMediaFormats()->getPrimaryExtensionForFormat( getForceMediaContainerName() );
             }
 
             void CPreferences::setTranscodeAudio( bool value )
@@ -2398,7 +2135,7 @@ namespace NMediaManager
             bool CPreferences::isMediaFile( const QFileInfo &fi ) const
             {
                 return isFileWithExtension(
-                    fi, [ this ]() { return getVideoExtensions(); }, fMediaExtensionsHash, fIsMediaExtension );
+                    fi, [ this ]() { return getMediaFormats()->getVideoExtensions(); }, fMediaExtensionsHash, fIsMediaExtension );
             }
 
             // only return true for X_Lang.srt files or subs directories
@@ -2410,7 +2147,7 @@ namespace NMediaManager
                 }
 
                 return isFileWithExtension(
-                    fi, [ this ]() { return getSubtitleExtensions(); }, fSubtitleExtensionsHash, fIsSubtitleExtension );
+                    fi, [ this ]() { return getMediaFormats()->getSubtitleExtensions(); }, fSubtitleExtensionsHash, fIsSubtitleExtension );
             }
 
             void CPreferences::emitSigPreferencesChanged( EPreferenceTypes preferenceTypes )
@@ -2466,6 +2203,56 @@ namespace NMediaManager
                 return QString( "R\"(%1)\"" ).arg( value );
             }
 
+            QString toString( const QStringList &values )
+            {
+                QString retVal = "QStringList( {";
+                bool first = true;
+                for ( auto &&ii : values )
+                {
+                    if ( !first )
+                        retVal += ",";
+                    retVal += " " + toString( ii );
+                    first = false;
+                }
+                retVal += " } )";
+                return retVal;
+            }
+
+            template< typename FIRST, typename SECOND >
+            QString toString( const std::pair< FIRST, SECOND > &value )
+            {
+                return QString( "{ %1, %2 }" ).arg( toString( value.first ) ).arg( toString( value.second ) );
+            }
+
+            QStringList toString( const QString &retValType, const QStringList &newValues, bool asString, int indent )
+            {
+                QStringList retVal;
+                retVal << getIndent( indent ) + QString( "static auto defaultValue =" );
+
+                if ( newValues.empty() )
+                {
+                    retVal.back() += QString( " %1();" ).arg( retValType );
+                }
+                else
+                {
+                    retVal << getIndent( indent + 1 ) + QString( "%1(" ).arg( retValType ) << getIndent( indent + 1 ) + "{";
+
+                    bool first = true;
+                    for ( auto &&ii : newValues )
+                    {
+                        auto stringFmt = QString( "%2" );
+                        if ( asString )
+                            stringFmt = toString( stringFmt );
+                        auto fmt = QString( "%3%1" ) + stringFmt + " //";
+                        retVal << fmt.arg( first ? " " : "," ).arg( ii ).arg( getIndent( indent + 2 ) );
+                        first = false;
+                    }
+                    retVal << QString( "%1} );" ).arg( ( getIndent( indent + 1 ) ) );
+                }
+
+                retVal << QString( "%1return defaultValue;" ).arg( getIndent( indent ) );
+                return retVal;
+            }
             void replaceText( const QString &txt, QStringList &curr, const QString &funcName, const QString &boolVariable, const QString &trueValue, const QString &falseValue )
             {
                 QStringList function;
@@ -2500,14 +2287,42 @@ namespace NMediaManager
                 return replaceText( txt, curr, function );
             }
 
-            template< typename KEY, typename VALUE >
-            void replaceText( const QString &txt, QStringList &curr, const QString &funcName, const std::unordered_map< KEY, VALUE > &value )
+            void replaceText( const QString &txt, QStringList &curr, const QString &funcName, const NSABUtils::TFormatMap &value )
             {
                 QStringList function;
-                function << QString( "std::unordered_map< %1, %2 > CPreferences::%3() const" ).arg( typeid( KEY ).name() ).arg( typeid( VALUE ).name() ).arg( funcName ) << "{";
-                function << toString( value, 1 );
+                function //
+                    << QString( "NSABUtils::TFormatMap CPreferences::%1() const" ).arg( funcName ) //
+                    << "{"
+                    ;
 
-                function << "}";
+                int indent = 1;
+                function   //
+                    << getIndent( indent++ ) + QString( "static auto defaultValue = NSABUtils::TFormatMap(" )   //
+                    << getIndent( indent++ ) + "{";
+                    ;
+
+                auto first = true;
+                for( auto && ii : value )
+                {
+                    function << getIndent( indent++ ) + ( first ? " " : "," ) + "{";
+                    function << getIndent( indent ) + toString( ii.first ) + ", std::unordered_map< QString, QStringList >";
+                    function << getIndent( indent++ ) + " ( {";
+                    bool innerFirst = true;
+                    for( auto && jj : ii.second )
+                    {
+                        function << getIndent( indent ) + ( innerFirst ? " " : "," ) + "{ " + toString( jj.first ) + ", " + toString( jj.second ) + " } //"; //
+                        innerFirst = false;
+                    }
+                    function << getIndent( --indent ) + "} )";
+                    function << getIndent( --indent ) + "}";
+                    first = false;
+                }
+                //function << toString( value, 1 );
+
+                function << getIndent( --indent ) + "} );";
+                function << getIndent( --indent ) + QString( "return defaultValue;" );
+                function << getIndent( --indent ) + "}";
+                Q_ASSERT( indent == 0 );
 
                 for ( auto &&ii : function )
                 {
@@ -2554,82 +2369,7 @@ namespace NMediaManager
                 return replaceText( txt, curr, function );
             }
 
-            QString toString( const QStringList &values )
-            {
-                QString retVal = "QStringList( {";
-                bool first = true;
-                for ( auto &&ii : values )
-                {
-                    if ( !first )
-                        retVal += ",";
-                    retVal += " " + toString( ii );
-                    first = false;
-                }
-                retVal += " } )";
-                return retVal;
-            }
-
-            template< typename KEY, typename VALUE >
-            QStringList toString( const std::unordered_map< KEY, VALUE > &values, int indent )
-            {
-                QStringList retVal;
-                retVal << QString( "%1static auto defaultValue =" ).arg( getIndent( indent ) );
-
-                auto retValType = QString( "std::unordered_map< %1, %2>" ).arg( typeid( KEY ).name() ).arg( typeid( VALUE ).name() );
-                if ( values.empty() )
-                {
-                    retVal.back() += " " + retValType + "();";
-                }
-                else
-                {
-                    retVal << getIndent( indent + 1 ) + retValType +"(";
-                    retVal << getIndent( indent + 1 ) + "{";
-
-                    auto first = true;
-                    for( auto && ii : values )
-                    {
-                        retVal << getIndent( indent + 2 ) + QString( "%1{ %2, %3 } //" ).arg( first ? " " : "," ).arg( toString( ii.first ) ).arg( toString( ii.second ) );
-                        first = false;
-                    }
-                    retVal << getIndent( indent + 1 ) + "} );";
-                }
-
-                retVal<< getIndent( 1 ) + QString( "return defaultValue;" );
-                return retVal;
-            }
-
-            QStringList toString( const QString &retValType, const QStringList &newValues, bool asString, int indent )
-            {
-                QStringList retVal;
-                retVal << QString( "%1static auto defaultValue =" ).arg( getIndent( indent ) );
-
-                if ( newValues.empty() )
-                {
-                    retVal.back() += QString( " %1();" ).arg( retValType );
-                }
-                else
-                {
-                    retVal << getIndent( indent + 1 ) + QString( "%1(" ).arg( retValType ) << getIndent( indent + 1 ) + "{";
-
-                    bool first = true;
-                    for ( auto &&ii : newValues )
-                    {
-                        auto stringFmt = QString( "%2" );
-                        if ( asString )
-                            stringFmt = toString( stringFmt );
-                        auto fmt = QString( "%3%1" ) + stringFmt + " //";
-                        retVal << fmt.arg( first ? " " : "," ).arg( ii ).arg( getIndent( indent + 2 ) );
-                        first = false;
-                    }
-                    retVal << QString( "%1} );" ).arg( ( getIndent( indent + 1 ) ) );
-                }
-
-                retVal << QString( "%1return defaultValue;" ).arg( getIndent( indent ) );
-                return retVal;
-            }
-
-            void replaceText(
-                const QString &txt, QStringList &curr, const QString &funcName, const QString &boolVariable, const QStringList &trueValue, const QStringList &falseValue, const QString &retValType = "QStringList", bool asString = true )
+            void replaceText( const QString &txt, QStringList &curr, const QString &funcName, const QString &boolVariable, const QStringList &trueValue, const QStringList &falseValue, const QString &retValType = "QStringList", bool asString = true )
             {
                 QStringList function;
                 function << QString( "%3 CPreferences::%1( bool %2 ) const" ).arg( funcName ).arg( boolVariable ).arg( retValType ) << "{" << getIndent( 1 ) + QString( "if ( %2 )" ).arg( boolVariable ) << getIndent( 1 ) + "{"
@@ -2760,6 +2500,7 @@ namespace NMediaManager
                                             << R"(// SOFTWARE.)"
                                             << R"()"
                                             << R"(#include "Preferences.h")"
+                                            << R"(#include "SABUtils/FFMpegFormats.h")"
                                             << R"()"
                                             << R"(namespace NMediaManager)"
                                             << getIndent( 0 ) +R"({)" 
@@ -2806,8 +2547,6 @@ namespace NMediaManager
                                             << "%AVAILABLE_SUBTITLE_ENCODERS%"
                                             << R"()"
                                             << "%MEDIA_FORMAT_DEFS%" 
-                                            << R"()"
-                                            << "%MEDIA_FORMAT_EXTENSION%"
                                             << R"()"
                                             << "%MEDIA_FORMAT_EXTENSION_MAP%"
                                             << R"()"
@@ -2903,8 +2642,6 @@ namespace NMediaManager
                                            << compareValues( "Tune", toString( getTuneDefault() ), toString( getTune() ) )   //
                                            << compareValues( "Use Profile", getUseProfileDefault(), getUseProfile() )   //
                                            << compareValues( "Profile", toString( getProfileDefault() ), toString( getProfile() ) )   //
-
-                                           << compareValues( "Video Extensions", getVideoExtensionsDefault(), getVideoExtensions() )   //
                     ;
                 items.removeAll( QString() );
 
@@ -2964,8 +2701,7 @@ namespace NMediaManager
                     replaceText( "%AVAILABLE_SUBTITLE_ENCODERS%", newFileText, "availableSubtitleEncodersDefault", "verbose", availableSubtitleEncoders( true ), availableSubtitleEncoders( false ) );
 
                     replaceText( "%MEDIA_FORMAT_DEFS%", newFileText, "availableMediaFormatsDefault", "verbose", availableMediaFormats( true ), availableMediaFormats( false ) );
-                    replaceText( "%MEDIA_FORMAT_EXTENSION%", newFileText, "getVideoExtensionsDefault", getVideoExtensions() );
-                    replaceText( "%MEDIA_FORMAT_EXTENSION_MAP%", newFileText, "getVideoExtensionsMapDefault", getVideoExtensionsMap() );
+                    replaceText( "%MEDIA_FORMAT_EXTENSION_MAP%", newFileText, "getVideoExtensionsMapDefault", getFormatExtensionsMap() );
 
                     replaceText( "%DEFAULT_FORCE_MEDIA_CONTAINER%", newFileText, "getForceMediaContainerDefault", getForceMediaContainer() );
                     replaceText( "%DEFAULT_MEDIA_CONTAINER_NAME%", newFileText, "getForceMediaContainerNameDefault", getForceMediaContainerName() );
