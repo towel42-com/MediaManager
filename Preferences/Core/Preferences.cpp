@@ -1569,7 +1569,7 @@ namespace NMediaManager
 
                 if ( prefs->getOnlyTranscodeAudioOnFormatChange() )
                 {
-                    fAudio = fFormat && mediaInfo && !mediaInfo->isAudioCodec( QStringList() << prefs->getTranscodeToAudioCodec() );
+                    fAudio = fFormat && prefs->getTranscodeAudio() && mediaInfo && !mediaInfo->isAudioCodec( QStringList() << prefs->getTranscodeToAudioCodec() );
                 }
             }
 
