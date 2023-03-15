@@ -390,6 +390,11 @@ namespace NMediaManager
                 return settings.value( "TreatAsTVShowByDefault", false ).toBool();
             }
 
+            bool CPreferences::isFormat( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &formatName ) const
+            {
+                return fMediaFormats->isFormat( QFileInfo( mediaInfo->fileName() ).suffix(), formatName );
+            }
+
             void CPreferences::setExactMatchesOnly( bool value )
             {
                 QSettings settings;
@@ -1549,23 +1554,28 @@ namespace NMediaManager
             /// ////////////////////////////////////////////////////////
             /// MakeMKV Options
             /// ////////////////////////////////////////////////////////
-            STranscodeNeeded::STranscodeNeeded( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo )
+            STranscodeNeeded::STranscodeNeeded( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const CPreferences * prefs )
             {
-                fFormat = NPreferences::NCore::CPreferences::instance()->getForceMediaContainer() && mediaInfo && !mediaInfo->isFormat( NPreferences::NCore::CPreferences::instance()->getForceMediaContainerName() );
+                fFormat = prefs->getForceMediaContainer() && mediaInfo && !prefs->isFormat( mediaInfo, prefs->getForceMediaContainerName() );
 
-                fVideo = NPreferences::NCore::CPreferences::instance()->getTranscodeToH265() && mediaInfo && !mediaInfo->isHEVCVideo();
-                fAudio = NPreferences::NCore::CPreferences::instance()->getTranscodeAudio() && mediaInfo
-                         && !mediaInfo->isAudioCodec( QStringList() << NPreferences::NCore::CPreferences::instance()->getTranscodeToAudioCodec() << NPreferences::NCore::CPreferences::instance()->getAllowedAudioCodecs() );
+                fVideo = prefs->getTranscodeToH265() && mediaInfo && !mediaInfo->isHEVCVideo();
+                fAudio = prefs->getTranscodeAudio() && mediaInfo
+                         && !mediaInfo->isAudioCodec( QStringList() << prefs->getTranscodeToAudioCodec() << prefs->getAllowedAudioCodecs() );
 
-                if ( NPreferences::NCore::CPreferences::instance()->getOnlyTranscodeVideoOnFormatChange() )
+                if ( prefs->getOnlyTranscodeVideoOnFormatChange() )
                 {
                     fVideo &= fFormat;
                 }
 
-                if ( NPreferences::NCore::CPreferences::instance()->getOnlyTranscodeAudioOnFormatChange() )
+                if ( prefs->getOnlyTranscodeAudioOnFormatChange() )
                 {
-                    fAudio &= fFormat;
+                    fAudio = fFormat && mediaInfo && !mediaInfo->isAudioCodec( QStringList() << prefs->getTranscodeToAudioCodec() );
                 }
+            }
+
+            STranscodeNeeded::STranscodeNeeded( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo ) :
+                STranscodeNeeded( mediaInfo, CPreferences::instance() )
+            {
             }
 
             QStringList CPreferences::getTranscodeArgs( const QString &srcName, const QString &destName ) const
@@ -1576,7 +1586,7 @@ namespace NMediaManager
 
             QStringList CPreferences::getTranscodeArgs( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName ) const
             {
-                auto transcodeNeeded = STranscodeNeeded( mediaInfo );
+                auto transcodeNeeded = STranscodeNeeded( mediaInfo, this );
 
                 if ( !transcodeNeeded.transcodeNeeded() )
                     return {};
@@ -1608,17 +1618,17 @@ namespace NMediaManager
                         hwAccel.clear();
                         videoCodec = "copy";
                     }
-                    else if ( NPreferences::NCore::CPreferences::instance()->getNVidiaGPUTranscode() )
+                    else if ( getNVidiaGPUTranscode() )
                     {
                         hwAccel = "cuda";
                         videoCodec = "hevc_nvenc";
                     }
-                    else if ( NPreferences::NCore::CPreferences::instance()->getIntelGPUTranscode() )
+                    else if ( getIntelGPUTranscode() )
                     {
                         hwAccel = "qsv";
                         videoCodec = "hevc_qsv";
                     }
-                    else if ( NPreferences::NCore::CPreferences::instance()->getSoftwareTranscode() )
+                    else if ( getSoftwareTranscode() )
                     {
                         hwAccel.clear();
                         videoCodec = "libx265";

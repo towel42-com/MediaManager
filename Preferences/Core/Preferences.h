@@ -125,9 +125,11 @@ namespace NMediaManager
             };
             QString toString( EMakeMKVProfile profile, bool forEnum = false );
 
+            class CPreferences;
             struct STranscodeNeeded
             {
-                STranscodeNeeded( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo );
+                STranscodeNeeded( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const CPreferences *prefs );
+                STranscodeNeeded( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo  );
 
                 bool transcodeNeeded() const
                 {
@@ -165,6 +167,7 @@ namespace NMediaManager
                 void setTreatAsTVShowByDefault( bool value );
                 bool getTreatAsTVShowByDefault() const;
                 
+                bool isFormat( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &formatName ) const;
                 QStringList getTranscodeArgs( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName ) const;
                 QStringList getTranscodeArgs( const QString &srcName, const QString &destName ) const;
 
