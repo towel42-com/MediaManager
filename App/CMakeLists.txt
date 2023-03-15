@@ -83,3 +83,24 @@ DeployOpenSSL( ${PROJECT_NAME} . )
 INSTALL( TARGETS ${PROJECT_NAME} RUNTIME DESTINATION . )
 INSTALL( FILES ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.pdb DESTINATION . CONFIGURATIONS Debug RelWithDebInfo )
 
+find_program( FFMPEG_EXEC ffmpeg.exe
+    PATHS d:/EmbyServer/System
+    REQUIRED )
+find_program( FFPROBE_EXEC ffprobe.exe
+    PATHS d:/EmbyServer/System
+    REQUIRED )
+find_program( MKVMERGE_EXEC mkvmerge.exe
+    PATHS "C:/Program Files/MKVToolNix"
+    REQUIRED )
+find_program( MKVPROPEDIT_EXEC mkvpropedit.exe
+    PATHS "C:/Program Files/MKVToolNix"
+    REQUIRED )
+
+INSTALL( FILES "${FFMPEG_EXEC}" "${FFPROBE_EXEC}" "${MKVMERGE_EXEC}" "${MKVPROPEDIT_EXEC}"  DESTINATION . )
+
+
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND "${CMAKE_COMMAND}" -E echo "Copying External Executables to '$<TARGET_FILE_DIR:MediaManager>'"
+    COMMAND "${CMAKE_COMMAND}" -E copy_if_different \"${FFMPEG_EXEC}\" \"${FFPROBE_EXEC}\" \"${MKVMERGE_EXEC}\" \"${MKVPROPEDIT_EXEC}\" \"$<TARGET_FILE_DIR:MediaManager>\"
+)
+ 
