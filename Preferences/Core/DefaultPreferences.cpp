@@ -1986,7 +1986,7 @@ namespace NMediaManager
 
             bool CPreferences::getOnlyTranscodeVideoOnFormatChangeDefault() const
             {
-                return false;
+                return true;
             }
 
             bool CPreferences::getLosslessTranscodingDefault() const
