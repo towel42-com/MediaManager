@@ -1969,16 +1969,6 @@ namespace NMediaManager
                 return R"(eac3)";
             }
 
-            QStringList CPreferences::getAllowedAudioCodecsDefault() const
-            {
-                static auto defaultValue =
-                    QStringList(
-                    {
-                         R"(aac)" //
-                    } );
-                return defaultValue;
-            }
-
             bool CPreferences::getTranscodeToH265Default() const
             {
                 return true;

@@ -1554,23 +1554,25 @@ namespace NMediaManager
             /// ////////////////////////////////////////////////////////
             /// MakeMKV Options
             /// ////////////////////////////////////////////////////////
+            /*
+                 TransCode Enabled | Is Format | Format Change | Only On Format || transcode
+                         0              X          X                X           ||   0
+                         1              1          X                X           ||   0
+
+                         1              0          0                0           ||   1
+                         1              0          0                1           ||   0
+                         1              0          1                0           ||   1
+                         1              0          1                1           ||   1
+*/
             STranscodeNeeded::STranscodeNeeded( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const CPreferences * prefs )
             {
-                fFormat = prefs->getForceMediaContainer() && mediaInfo && !prefs->isFormat( mediaInfo, prefs->getForceMediaContainerName() );
+                fFormat = fVideo = fAudio = false;
+                if ( !mediaInfo )
+                    return;
 
-                fVideo = prefs->getTranscodeToH265() && mediaInfo && !mediaInfo->isHEVCVideo();
-                fAudio = prefs->getTranscodeAudio() && mediaInfo
-                         && !mediaInfo->isAudioCodec( QStringList() << prefs->getTranscodeToAudioCodec() << prefs->getAllowedAudioCodecs() );
-
-                if ( prefs->getOnlyTranscodeVideoOnFormatChange() )
-                {
-                    fVideo &= fFormat;
-                }
-
-                if ( prefs->getOnlyTranscodeAudioOnFormatChange() )
-                {
-                    fAudio = fFormat && prefs->getTranscodeAudio() && mediaInfo && !mediaInfo->isAudioCodec( QStringList() << prefs->getTranscodeToAudioCodec() );
-                }
+                fFormat = prefs->getForceMediaContainer() && !prefs->isFormat( mediaInfo, prefs->getForceMediaContainerName() );
+                fVideo = prefs->getTranscodeToH265() && !mediaInfo->isHEVCVideo() && ( fFormat || !prefs->getOnlyTranscodeVideoOnFormatChange() );
+                fAudio = prefs->getTranscodeAudio() && !mediaInfo->isAudioCodec( QStringList() << prefs->getTranscodeToAudioCodec() ) && ( fFormat || !prefs->getOnlyTranscodeAudioOnFormatChange() );
             }
 
             STranscodeNeeded::STranscodeNeeded( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo ) :
@@ -1821,21 +1823,6 @@ namespace NMediaManager
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
                 return settings.value( "AudioCodec", getTranscodeToAudioCodecDefault() ).toString();
-            }
-
-            void CPreferences::setAllowedAudioCodecs( const QStringList &value )
-            {
-                QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
-                settings.setValue( "AllowedAudioCodecs", value );
-                emitSigPreferencesChanged( EPreferenceType::eMakeMKVPrefs );
-            }
-
-            QStringList CPreferences::getAllowedAudioCodecs() const
-            {
-                QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
-                return settings.value( "AllowedAudioCodecs", getAllowedAudioCodecsDefault() ).toStringList();
             }
 
             void CPreferences::setTranscodeToH265( bool value )
@@ -2570,8 +2557,6 @@ namespace NMediaManager
                                             << R"()"
                                             << "%DEFAULT_TRANSCODE_TO_AUDIO_CODEC%"
                                             << R"()"
-                                            << "%ALLOWED_AUDIO_CODECS%"
-                                            << R"()"
                                             << "%DEFAULT_TRANSCODE_TO_H265%"
                                             << R"()"
                                             << "%DEFAULT_ONLY_TRANSCODE_VIDEO_ON_FORMAT_CHANGE%"
@@ -2638,8 +2623,7 @@ namespace NMediaManager
                                            << compareValues( "Transcode Audio", getTranscodeAudioDefault(), getTranscodeAudio() )   //
                                            << compareValues( "Transcode Audio on Format Change", getOnlyTranscodeAudioOnFormatChangeDefault(), getOnlyTranscodeAudioOnFormatChange() )   //
                                            << compareValues( "Transcode Audio Codec", getTranscodeToAudioCodecDefault(), getTranscodeToAudioCodec() )   //
-                                           << compareValues( "Allowed Audio Codecs", getAllowedAudioCodecsDefault(), getAllowedAudioCodecs() )   //
-
+                    
                                            << compareValues( "Transcode To H265", getTranscodeToH265Default(), getTranscodeToH265() )   //
                                            << compareValues( "Transcode Video on Format Change", getOnlyTranscodeVideoOnFormatChangeDefault(), getOnlyTranscodeVideoOnFormatChange() )   //
                                            << compareValues( "Lossless Video Transcoding", getLosslessTranscodingDefault(), getLosslessTranscoding() )   //
@@ -2718,7 +2702,6 @@ namespace NMediaManager
                     replaceText( "%DEFAULT_TRANSCODE_AUDIO%", newFileText, "getTranscodeAudioDefault", getTranscodeAudio() );
                     replaceText( "%DEFAULT_ONLY_TRANSCODE_AUDIO_ON_FORMAT_CHANGE%", newFileText, "getOnlyTranscodeAudioOnFormatChangeDefault", getOnlyTranscodeAudioOnFormatChange() );
                     replaceText( "%DEFAULT_TRANSCODE_TO_AUDIO_CODEC%", newFileText, "getTranscodeToAudioCodecDefault", getTranscodeToAudioCodec() );
-                    replaceText( "%ALLOWED_AUDIO_CODECS%", newFileText, "getAllowedAudioCodecsDefault", getAllowedAudioCodecs() );
 
 
                     replaceText( "%DEFAULT_TRANSCODE_TO_H265%", newFileText, "getTranscodeToH265Default", getTranscodeToH265() );

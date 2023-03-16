@@ -23,6 +23,13 @@
       <bool>true</bool>
      </property>
      <layout class="QGridLayout" name="gridLayout">
+      <item row="0" column="0">
+       <widget class="QCheckBox" name="onlyTranscodeAudioOnFormatChange">
+        <property name="text">
+         <string>Only Transcode Audio when Format requires it?</string>
+        </property>
+       </widget>
+      </item>
       <item row="1" column="0" colspan="2">
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
@@ -49,23 +56,6 @@
          </spacer>
         </item>
        </layout>
-      </item>
-      <item row="0" column="0">
-       <widget class="QCheckBox" name="onlyTranscodeAudioOnFormatChange">
-        <property name="text">
-         <string>Only Transcode Audio when Format requires it?</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>Allowed Codecs:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0" rowspan="2">
-       <widget class="QTreeView" name="allowedCodecs"/>
       </item>
      </layout>
     </widget>

@@ -208,10 +208,6 @@ namespace NMediaManager
                 QString getTranscodeToAudioCodecDefault() const;
                 QString getTranscodeToAudioCodec() const;
 
-                void setAllowedAudioCodecs( const QStringList &value );
-                QStringList getAllowedAudioCodecsDefault() const;
-                QStringList getAllowedAudioCodecs() const;
-
                 // video codec transcode arguments
                 void setTranscodeToH265( bool value );
                 bool getTranscodeToH265Default() const;

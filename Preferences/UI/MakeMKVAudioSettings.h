@@ -25,11 +25,6 @@
 
 #include "BasePrefPage.h"
 
-namespace NSABUtils
-{
-    class CCheckableStringListModel;
-}
-
 namespace NMediaManager
 {
     namespace NPreferences
@@ -55,7 +50,6 @@ namespace NMediaManager
                 std::unique_ptr< Ui::CMakeMKVAudioSettings > fImpl;
                 QStringList fVerbose;
                 QStringList fTerse;
-                NSABUtils::CCheckableStringListModel *fModel{ nullptr };
             };
         }
     }

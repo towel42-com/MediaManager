@@ -41,10 +41,6 @@ namespace NMediaManager
                 fVerbose = NPreferences::NCore::CPreferences::instance()->availableAudioEncoders( true );
                 fTerse = NPreferences::NCore::CPreferences::instance()->availableAudioEncoders( false );
 
-                fModel = new NSABUtils::CCheckableStringListModel( this );
-                fImpl->allowedCodecs->setModel( fModel );
-                fModel->setStringList( fVerbose );
-
                 Q_ASSERT( fVerbose.count() == fTerse.count() );
                 for ( int ii = 0; ii < fTerse.count(); ++ii )
                 {
@@ -64,43 +60,12 @@ namespace NMediaManager
                 fImpl->audioCodec->setCurrentIndex( pos );
 
                 fImpl->onlyTranscodeAudioOnFormatChange->setChecked( NPreferences::NCore::CPreferences::instance()->getOnlyTranscodeAudioOnFormatChange() );
-
-                auto allowed = NPreferences::NCore::CPreferences::instance()->getAllowedAudioCodecs();
-                for ( auto &&ii : allowed )
-                {
-                    auto pos = fTerse.indexOf( ii );
-                    if ( pos == -1 )
-                        pos = fVerbose.indexOf( ii );
-
-                    Q_ASSERT( pos != -1 );
-                    if ( pos == -1 )
-                        continue;
-
-                    auto verboseValue = fVerbose[ pos ];
-                    fModel->setChecked( verboseValue, true, true );
-                }
             }
 
             void CMakeMKVAudioSettings::save()
             {
                 NPreferences::NCore::CPreferences::instance()->setTranscodeAudio( fImpl->transcodeAudio->isChecked() );
-
                 NPreferences::NCore::CPreferences::instance()->setTranscodeToAudioCodec( fImpl->audioCodec->currentData().toString() );
-
-                auto checkedStrings = fModel->getCheckedStrings();
-                QStringList allowedCodecs;
-                for ( auto &&ii : checkedStrings )
-                {
-                    auto pos = fVerbose.indexOf( ii );
-
-                    Q_ASSERT( pos != -1 );
-                    if ( pos == -1 )
-                        continue;
-
-                    allowedCodecs << fTerse[ pos ];
-                }
-
-                NPreferences::NCore::CPreferences::instance()->setAllowedAudioCodecs( allowedCodecs );
                 NPreferences::NCore::CPreferences::instance()->setOnlyTranscodeAudioOnFormatChange( fImpl->onlyTranscodeAudioOnFormatChange->isChecked() );
             }
        }
