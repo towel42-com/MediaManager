@@ -2169,12 +2169,7 @@ namespace NMediaManager
                     newProgress.value().second = progressDlg->secondaryMax();
 
                 auto msecsRemaining = this->getMSRemaining( string, newProgress.value() );
-                if ( msecsRemaining.has_value() )
-                {
-                    auto ts = NSABUtils::CTimeString( msecsRemaining.value() );
-                    format = format + ts.toString( " ETA: hh:mm:ss.zzz  ", true );
-                }
-                else
+                if ( !msecsRemaining.has_value() )
                 {
                     if ( fLastProgress.has_value() )
                     {
@@ -2183,10 +2178,15 @@ namespace NMediaManager
                         auto msecsPerStep = static_cast< double >( msecs ) / static_cast< double >( numSteps );
                         auto remainingMsecs = static_cast< uint64_t >( msecsPerStep * ( newProgress.value().second.value() - newProgress.value().first ) );
 
-                        auto ts = NSABUtils::CTimeString( remainingMsecs );
-                        format = format + ts.toString( " ETA: hh:mm:ss.zzz  ", true );
+                        msecsRemaining = std::chrono::milliseconds( remainingMsecs ); 
                     }
                     fLastProgress = std::make_pair( QDateTime::currentDateTime(), newProgress.value().first );
+                }
+
+                if ( msecsRemaining.has_value() )
+                {
+                    auto ts = NSABUtils::CTimeString( msecsRemaining.value() );
+                    format = format + ts.toString( " ETA: hh:mm:ss  ", true );
                 }
             }
             progressDlg->setSecondaryFormat( format );
