@@ -88,7 +88,7 @@ namespace NMediaManager
             QStandardItem *getLanguageItem( const QStandardItem *parent ) const;
             virtual void clear() override;
 
-            virtual void myProcessLog( const QString &string, NSABUtils::CDoubleProgressDlg *progressDlg ) override;
+            virtual std::optional< std::pair< uint64_t, std::optional< uint64_t > > > getCurrentProgress( const QString &string ) override;
 
             mutable std::unordered_map< QString, std::optional< QList< QFileInfo > > > fSRTFileCache;
         };

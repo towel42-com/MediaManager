@@ -1463,6 +1463,7 @@ namespace NMediaManager
                 fProcess->setCreateProcessArgumentsModifier( NSABUtils::getForceUnbufferedProcessModifier() );
             else
                 fProcess->setCreateProcessArgumentsModifier( {} );
+            fLastProgress.reset();
             fProcess->start( curr.fCmd, curr.fArgs, QProcess::ReadWrite );
         }
 
@@ -1655,6 +1656,7 @@ namespace NMediaManager
                         model->fProcessResults.first = false;
                         return;
                     }
+                    ii = newName;
                 }
             }
 
@@ -2163,25 +2165,47 @@ namespace NMediaManager
             return progressDlg->defaultSecondaryFormat();
         }
 
-        void CDirModel::myProcessLog( const QString & /*string*/, NSABUtils::CDoubleProgressDlg * /*progressDlg*/ )
-        {
-        }
-
         void CDirModel::processLog( const QString &string, NSABUtils::CDoubleProgressDlg *progressDlg )
         {
-            myProcessLog( string, progressDlg );
-
-            auto msecsRemaining = this->getMSRemaining( string, progressDlg );
-            auto format = getSecondaryProgressFormat( progressDlg );
-            progressDlg->setSecondaryFormat( format );
-            
-            if ( msecsRemaining.has_value() )
+            auto newProgress = getCurrentProgress( string );
+            if ( newProgress.has_value() )
             {
-                auto ts = NSABUtils::CTimeString( msecsRemaining.value() );
-                auto eta = format + ts.toString( " ETA: hh:mm:ss.zzz  ", true );
-                progressDlg->setSecondaryFormat( eta );
+                if ( newProgress.value().second.has_value() )
+                {
+                    progressDlg->setSecondaryMaximum( newProgress.value().second.value() );
+                }
+                progressDlg->setSecondaryValue( newProgress.value().first );
             }
-        }
 
+            auto format = getSecondaryProgressFormat( progressDlg );
+            
+            if ( newProgress.has_value() )
+            {
+                if ( !newProgress.value().second.has_value() )
+                    newProgress.value().second = progressDlg->secondaryMax();
+
+                auto msecsRemaining = this->getMSRemaining( string, newProgress.value() );
+                if ( msecsRemaining.has_value() )
+                {
+                    auto ts = NSABUtils::CTimeString( msecsRemaining.value() );
+                    format = format + ts.toString( " ETA: hh:mm:ss.zzz  ", true );
+                }
+                else
+                {
+                    if ( fLastProgress.has_value() )
+                    {
+                        auto msecs = fLastProgress.value().first.msecsTo( QDateTime::currentDateTime() );
+                        auto numSteps = newProgress.value().first - fLastProgress.value().second;
+                        auto percent = static_cast< double >( numSteps ) / static_cast< double >( newProgress.value().second.value() );
+                        msecs = msecs / percent;
+
+                        auto ts = NSABUtils::CTimeString( msecs );
+                        format = format + ts.toString( " ETA: hh:mm:ss.zzz  ", true );
+                    }
+                    fLastProgress = std::make_pair( QDateTime::currentDateTime(), newProgress.value().first );
+                }
+            }
+            progressDlg->setSecondaryFormat( format );
+        }
     }
 }

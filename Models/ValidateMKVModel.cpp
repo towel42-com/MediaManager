@@ -79,15 +79,14 @@ namespace NMediaManager
 
                 aOK = aOK && checkProcessItemExists( processInfo.fOldName, processInfo.fItem );
 
-                processInfo.fArgs = QStringList() 
-                    //<< "--no-warn"
-                    << "--stage"
-                    << "--quiet"
-                    << "--ignore-mkv-errors"
-                    //<< "--quick"
-                    //<< "--quiet"
-                    << processInfo.fOldName
-                    ;
+                processInfo.fArgs = QStringList()
+                                    //<< "--no-warn"
+                                    << "--stage"
+                                    << "--quiet"
+                                    << "--ignore-mkv-errors"
+                                    //<< "--quick"
+                                    //<< "--quiet"
+                                    << processInfo.fOldName;
                 if ( aOK )
                 {
                     fProcessQueue.push_back( processInfo );
@@ -139,29 +138,8 @@ namespace NMediaManager
         {
         }
 
-        void CValidateMKVModel::myProcessLog( const QString &string, NSABUtils::CDoubleProgressDlg *progressDlg )
+        std::optional< std::pair< uint64_t, std::optional< uint64_t > > > CValidateMKVModel::getCurrentProgress( const QString &string )
         {
-            auto regEx = QRegularExpression( R"(Stage: (?<stageNum>\d+) -)" );
-            auto pos = string.lastIndexOf( regEx );
-            if ( pos != -1 )
-            {
-                auto match = regEx.match( string, pos );
-                if ( !match.hasMatch() )
-                    return;
-
-                auto stage = match.captured( "stageNum" );
-                int stageNum = 0;
-                if ( !stage.isEmpty() )
-                {
-                    bool aOK;
-                    int curr = stage.toInt( &aOK );
-                    if ( aOK )
-                        stageNum = curr;
-                }
-
-                progressDlg->setSecondaryValue( stageNum );
-            }
-
             auto msgRegEx = QRegularExpression( R"((?<msg>(ERR|WRN)[A-Fa-f0-9]{3}.*))" );
             auto ii = msgRegEx.globalMatch( string );
 
@@ -171,6 +149,25 @@ namespace NMediaManager
                 auto msg = match.captured( "msg" ).trimmed();
                 addMessageForFile( msg );
             }
+
+            auto regEx = QRegularExpression( R"(Stage: (?<stageNum>\d+) -)" );
+
+            QRegularExpressionMatch match;
+            auto pos = string.lastIndexOf( regEx, -1, &match );
+            if ( pos == -1 || !match.hasMatch() )
+                return {};
+
+            auto stage = match.captured( "stageNum" );
+            int stageNum = 0;
+            if ( !stage.isEmpty() )
+            {
+                bool aOK;
+                int curr = stage.toInt( &aOK );
+                if ( aOK )
+                    stageNum = curr;
+            }
+
+            return std::pair< uint64_t, std::optional< uint64_t > >( stageNum, {} );
         }
     }
 }

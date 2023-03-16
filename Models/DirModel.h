@@ -282,8 +282,8 @@ namespace NMediaManager
 
         protected:
             virtual QString getSecondaryProgressFormat( NSABUtils::CDoubleProgressDlg *progressDlg ) const;
-            virtual void myProcessLog( const QString &/*string*/, NSABUtils::CDoubleProgressDlg * /*progressDlg*/ );
-            virtual std::optional< std::chrono::milliseconds > getMSRemaining( const QString & /*string*/, NSABUtils::CDoubleProgressDlg * /*progressDlg*/ ) const { return {}; }
+            virtual std::optional< std::pair< uint64_t, std::optional< uint64_t > > > getCurrentProgress( const QString & /*string*/ ) { return {}; }
+            virtual std::optional< std::chrono::milliseconds > getMSRemaining( const QString & /*string*/, const std::pair< uint64_t, std::optional< uint64_t > > & /*currProgress*/ ) const { return {}; }
 
             std::shared_ptr< NSABUtils::CMediaInfo > getMediaInfo( const QFileInfo &fi ) const;
             std::shared_ptr< NSABUtils::CMediaInfo > getMediaInfo( const QModelIndex &idx ) const;
@@ -450,6 +450,7 @@ namespace NMediaManager
             mutable std::unordered_map< QString, std::unordered_map< int, std::optional< TItemStatus > > > fItemStatusCache;
             mutable std::unordered_map< QFileInfo, bool > fIsRootPathCache;
             mutable std::unordered_map< QString, QString > fDispNameCache;
+            std::optional< std::pair< QDateTime, uint64_t > > fLastProgress;
         };
     }
 }

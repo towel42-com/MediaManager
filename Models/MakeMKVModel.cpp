@@ -209,14 +209,16 @@ namespace NMediaManager
         {
         }
 
-        void CMakeMKVModel::myProcessLog( const QString &string, NSABUtils::CDoubleProgressDlg *progressDlg )
+        std::optional< std::pair< uint64_t, std::optional< uint64_t > > > CMakeMKVModel::getCurrentProgress( const QString &string )
         {
             // time=00:00:00.00
             auto numSeconds = getNumSeconds( string );
-            progressDlg->setSecondaryValue( numSeconds );
+            if ( !numSeconds.has_value() )
+                return {};
+            return std::pair< uint64_t, std::optional< uint64_t > >( numSeconds.value(), {} );
         }
 
-        uint64_t CMakeMKVModel::getNumSeconds( const QString &string ) const
+        std::optional< uint64_t > CMakeMKVModel::getNumSeconds( const QString &string ) const
         {
             auto regEx = QRegularExpression( "[Tt]ime\\=\\s*(?<hours>\\d{2}):(?<mins>\\d{2}):(?<secs>\\d{2})" );
 
@@ -256,8 +258,11 @@ namespace NMediaManager
             return numSeconds;
         }
 
-        std::optional< std::chrono::milliseconds > CMakeMKVModel::getMSRemaining( const QString &string, NSABUtils::CDoubleProgressDlg *progressDlg ) const
+        std::optional< std::chrono::milliseconds > CMakeMKVModel::getMSRemaining( const QString &string, const std::pair< uint64_t, std::optional< uint64_t > > &currProgress ) const
         {
+            if ( !currProgress.second.has_value() )
+                return {};
+
             auto regEx2 = QRegularExpression( "[Ss]peed\\s*\\=\\s*(?<multiplier>\\d+(\\.\\d+)?)" );
             QRegularExpressionMatch match;
             auto pos = string.lastIndexOf( regEx2, -1, &match );
@@ -270,8 +275,7 @@ namespace NMediaManager
             if ( !aOK || ( multVal == 0.0 ) )
                 return {};
 
-            auto numSeconds = getNumSeconds( string );
-            auto msecsRemaining = std::chrono::milliseconds( static_cast< uint64_t >( std::round( ( progressDlg->secondaryMax() - numSeconds ) * 1000 / multVal ) ) );
+            auto msecsRemaining = std::chrono::milliseconds( static_cast< uint64_t >( std::round( ( currProgress.second.value() - currProgress.first ) * 1000 / multVal ) ) );
             return msecsRemaining;
         }
     }

@@ -301,18 +301,15 @@ namespace NMediaManager
         {
         }
         
-        void CGenerateBIFModel::myProcessLog( const QString &string, NSABUtils::CDoubleProgressDlg *progressDlg )
+        std::optional< std::pair< uint64_t, std::optional< uint64_t > > > CGenerateBIFModel::getCurrentProgress( const QString &string )
         {
             // Skip-Option - Write output: pkt_pts_time:2570 pkt_dts_time:2570 input_pts_time:2570.2
             // time=00:00:00.00
             auto regEx = QRegularExpression( R"((input_pts_[Tt]ime\:(?<secs1>\d+))|(pkt_pts_[Tt]ime\:(?<secs2>\d+)))" );
-            auto pos = string.lastIndexOf( regEx );
-            if ( pos == -1 )
-                return;
-
-            auto match = regEx.match( string, pos );
-            if ( !match.hasMatch() )
-                return;
+            QRegularExpressionMatch match;
+            auto pos = string.lastIndexOf( regEx, -1, &match );
+            if ( pos == -1 || !match.hasMatch() )
+                return {};
 
             auto secs = match.captured( "secs1" );
             if ( secs.isEmpty() )
@@ -326,7 +323,7 @@ namespace NMediaManager
                     numSeconds = curr;
             }
 
-            progressDlg->setSecondaryValue( numSeconds );
+            return std::pair< uint64_t, std::optional< uint64_t > >( numSeconds, {} );
         }
     }
 }

@@ -268,6 +268,9 @@ namespace NMediaManager
 
         bool CMergeSRTModel::nameMatch( const QString &mkvBaseName, const QString &origSubtitleFile ) const
         {
+            if ( origSubtitleFile.startsWith( mkvBaseName ) && ( origSubtitleFile.length() > mkvBaseName.length() ) && ( origSubtitleFile[ mkvBaseName.length() ] == '.' ) )
+                return true;
+
             auto subtitleFile = origSubtitleFile;
             subtitleFile.remove( mkvBaseName, Qt::CaseInsensitive );
             if ( subtitleFile == origSubtitleFile )
@@ -290,7 +293,7 @@ namespace NMediaManager
             {
                 auto dir = mkvFile.absoluteDir();
 
-                auto relPath = dir.relativeFilePath( srtFile.absolutePath() );
+                auto relPath = dir.relativeFilePath( srtFile.absoluteFilePath() );
                 auto dirs = relPath.split( QRegularExpression( R"([\/\\])" ) );
                 for ( auto &curr : dirs )
                 {
@@ -679,19 +682,6 @@ namespace NMediaManager
         bool CMergeSRTModel::postExtProcess( const SProcessInfo &info, QStringList &msgList )
         {
             bool aOK = CDirModel::postExtProcess( info, msgList );
-            QStringList retVal;
-            if ( aOK && !NSABUtils::NFileUtils::backup( info.fOldName ) )
-            {
-                msgList << QString( "ERROR: %1: FAILED TO BACKUP ITEM" ).arg( getDispName( info.fOldName ) );
-                aOK = false;
-            }
-
-            if ( aOK && !QFile::rename( info.fNewNames.front(), info.fOldName ) )
-            {
-                msgList << QString( "ERROR: %1: FAILED TO MOVE ITEM TO %2" ).arg( getDispName( info.fNewNames.front() ) ).arg( getDispName( info.fOldName ) );
-                aOK = false;
-            }
-
             return aOK;
         }
 
@@ -887,24 +877,25 @@ namespace NMediaManager
             return retVal;
         }
 
-        void CMergeSRTModel::myProcessLog( const QString &string, NSABUtils::CDoubleProgressDlg *progressDlg )
+        std::optional< std::pair< uint64_t, std::optional< uint64_t > > > CMergeSRTModel::getCurrentProgress( const QString &string )
         {
             auto regEx = QRegularExpression( "[Pp]rogress\\:\\s*(?<percent>\\d+)\\%" );
             auto pos = string.lastIndexOf( regEx );
             if ( pos == -1 )
-                return;
+                return {};
 
             auto match = regEx.match( string, pos );
             if ( !match.hasMatch() )
-                return;
+                return {};
             auto percent = match.captured( "percent" );
             if ( !percent.isEmpty() )
             {
                 bool aOK = false;
                 int percentVal = percent.toInt( &aOK );
                 if ( aOK )
-                    progressDlg->setSecondaryValue( percentVal );
+                    return std::pair< uint64_t, std::optional< uint64_t > >( percentVal, {} );
             }
+            return {};
         }
     }
 }
