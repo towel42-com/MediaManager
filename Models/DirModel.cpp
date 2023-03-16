@@ -92,7 +92,7 @@ namespace NMediaManager
 {
     namespace NModels
     {
-        bool useCache()
+        bool useStatusCache()
         {
 #ifdef _DEBUG
 //#define DISABLE_CACHE
@@ -1123,33 +1123,17 @@ namespace NMediaManager
             return mediaInfo->getMediaTags( tags );
         }
 
-        std::shared_ptr< NSABUtils::CMediaInfo > CDirModel::getMediaInfo( const QFileInfo &fi ) const
+        std::shared_ptr< NSABUtils::CMediaInfo > CDirModel::getMediaInfo( const QString &path ) const
         {
-            return getMediaInfo( fi.absoluteFilePath() );
+            return getMediaInfo( QFileInfo( path ) );
         }
 
-        std::shared_ptr< NSABUtils::CMediaInfo > CDirModel::getMediaInfo( const QString & path ) const
+        std::shared_ptr< NSABUtils::CMediaInfo > CDirModel::getMediaInfo( const QFileInfo & fi ) const
         {
-            if ( !isMediaFile( path ) )
+            if ( !isMediaFile( fi ) )
                 return {};
 
-            auto pos = fMediaInfoCache.find( path );
-            auto dt = QFileInfo( path ).fileTime( QFileDevice::FileModificationTime );
-            auto needsAdding = ( pos == fMediaInfoCache.end() );
-            if ( !needsAdding )
-            {
-                needsAdding = dt != ( *pos ).second.first;
-                if ( needsAdding )
-                    fMediaInfoCache.erase( pos );
-            }
-
-            if ( needsAdding )
-            {
-                auto mediaInfo = std::make_shared< NSABUtils::CMediaInfo >( path );
-                pos = fMediaInfoCache.insert( { path, { dt, mediaInfo } } ).first;
-            }
-
-            return ( *pos ).second.second;
+            return std::make_shared< NSABUtils::CMediaInfo >( fi );
         }
 
         std::shared_ptr< NSABUtils::CMediaInfo > CDirModel::getMediaInfo( const QModelIndex &idx ) const
@@ -1999,7 +1983,7 @@ namespace NMediaManager
             auto fi = fileInfo( idx );
 
             auto pos = fItemStatusCache.find( fi.absoluteFilePath() );
-            if ( useCache() && ( pos != fItemStatusCache.end() ) )
+            if ( useStatusCache() && ( pos != fItemStatusCache.end() ) )
             {
                 auto pos2 = ( *pos ).second.find( idx.column() );
                 if ( pos2 != ( *pos ).second.end() )
@@ -2023,7 +2007,7 @@ namespace NMediaManager
         std::optional< TItemStatus > CDirModel::getPathStatus( const QFileInfo &fi ) const
         {
             auto pos = fPathStatusCache.find( fi.absoluteFilePath() );
-            if ( useCache() && ( pos != fPathStatusCache.end() ) )
+            if ( useStatusCache() && ( pos != fPathStatusCache.end() ) )
                 return ( *pos ).second;
 
             if ( !canComputeStatus() )
@@ -2196,10 +2180,10 @@ namespace NMediaManager
                     {
                         auto msecs = fLastProgress.value().first.msecsTo( QDateTime::currentDateTime() );
                         auto numSteps = newProgress.value().first - fLastProgress.value().second;
-                        auto percent = static_cast< double >( numSteps ) / static_cast< double >( newProgress.value().second.value() );
-                        msecs = msecs / percent;
+                        auto msecsPerStep = static_cast< double >( msecs ) / static_cast< double >( numSteps );
+                        auto remainingMsecs = static_cast< uint64_t >( msecsPerStep * ( newProgress.value().second.value() - newProgress.value().first ) );
 
-                        auto ts = NSABUtils::CTimeString( msecs );
+                        auto ts = NSABUtils::CTimeString( remainingMsecs );
                         format = format + ts.toString( " ETA: hh:mm:ss.zzz  ", true );
                     }
                     fLastProgress = std::make_pair( QDateTime::currentDateTime(), newProgress.value().first );

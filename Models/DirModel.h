@@ -422,13 +422,13 @@ namespace NMediaManager
 
             void addProcessError( const QString &msg );
 
+        protected:
+
             QDir fRootPath;
 
             CIconProvider *fIconProvider{ nullptr };
 
             std::map< QString, QStandardItem * > fPathMapping;
-            
-            mutable std::unordered_map< QString, std::pair< QDateTime, std::shared_ptr< NSABUtils::CMediaInfo > > > fMediaInfoCache;
 
             QTimer * fReloadTimer{ nullptr };
             NUi::CBasePage *fBasePage{ nullptr };
@@ -443,7 +443,6 @@ namespace NMediaManager
             mutable bool fFirstProcess{ true };
             mutable bool fIsLoading{ false };
 
-        protected:
             std::unordered_map< QString, QStringList > fMessagesForFiles;
             std::list< QStandardItem * > fMsgItems;
             mutable std::unordered_map< QString, std::optional< TItemStatus > > fPathStatusCache;
