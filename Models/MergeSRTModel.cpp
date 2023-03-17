@@ -284,8 +284,8 @@ namespace NMediaManager
 
         bool CMergeSRTModel::isNameBasedMatch( const QFileInfo &mkvFile, const QFileInfo &srtFile ) const
         {
-            qDebug() << mkvFile;
-            qDebug() << srtFile;
+            //qDebug() << mkvFile;
+            //qDebug() << srtFile;
             auto langInfo = NCore::SLanguageInfo( srtFile );
             if ( !langInfo.knownLanguage() && nameMatch( mkvFile.completeBaseName(), langInfo.baseName() ) )
                 return true;
@@ -328,7 +328,7 @@ namespace NMediaManager
             auto ii = fSRTFileCache.find( dir.absolutePath() );
             if ( ii == fSRTFileCache.end() )
             {
-                qDebug().noquote().nospace() << "Finding SRT files for '" << getDispName( mkvFile ) << "' in dir '" << getDispName( dir.absolutePath() ) << "'";
+                //qDebug().noquote().nospace() << "Finding SRT files for '" << getDispName( mkvFile ) << "' in dir '" << getDispName( dir.absolutePath() ) << "'";
                 srtFiles = NSABUtils::NFileUtils::findAllFiles( dir, QStringList() << "*.srt", true );
                 fSRTFileCache[ dir.absolutePath() ] = srtFiles;
             }
@@ -658,7 +658,7 @@ namespace NMediaManager
             fFirstProcess = true;
 
             auto path = item->data( ECustomRoles::eAbsFilePath ).toString();
-            qDebug() << path;
+            //qDebug() << path;
 
             auto srtFiles = getChildSRTFiles( item, false );
             if ( !srtFiles.empty() )
@@ -808,9 +808,9 @@ namespace NMediaManager
                     alreadyAdded.insert( ii.absoluteFilePath() );
                     auto srtRow = getItemRow( ii );
 
-                    qDebug() << dir;
-                    qDebug() << srtRow.fileInfo();
-                    qDebug() << srtRow.fileInfo().absoluteDir();
+                    //qDebug() << dir;
+                    //qDebug() << srtRow.fileInfo();
+                    //qDebug() << srtRow.fileInfo().absoluteDir();
 
                     if ( dir != srtRow.fileInfo().absoluteDir() )
                     {

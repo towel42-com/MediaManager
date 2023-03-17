@@ -222,7 +222,7 @@ namespace NMediaManager
         std::shared_ptr< CNetworkReply > CSearchTMDB::sendRequest( const QNetworkRequest &request, ERequestType requestType )
         {
             auto key = CNetworkReply::key( request, requestType );
-            qDebug() << "Sending request: Key" << key;
+            //qDebug() << "Sending request: Key" << key;
             auto pos = fURLResultsCache.find( key );
             if ( pos != fURLResultsCache.end() )
             {
@@ -641,7 +641,7 @@ namespace NMediaManager
             fSearchReply.reset();
 
             auto doc = QJsonDocument::fromJson( data );
-            qDebug().noquote().nospace() << doc.toJson( QJsonDocument::Indented );
+            //qDebug().noquote().nospace() << doc.toJson( QJsonDocument::Indented );
             bool found = false;
             if ( doc.object().contains( "results" ) )
             {
@@ -717,7 +717,7 @@ namespace NMediaManager
             fGetTVReply.reset();
 
             auto doc = QJsonDocument::fromJson( data );
-            qDebug().nospace().noquote() << doc.toJson( QJsonDocument::Indented );
+            //qDebug().nospace().noquote() << doc.toJson( QJsonDocument::Indented );
 
             if ( !loadSearchResult( doc.object() ) )
             {

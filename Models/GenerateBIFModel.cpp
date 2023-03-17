@@ -120,7 +120,7 @@ namespace NMediaManager
                     processInfo.fTempDir = std::make_shared< QTemporaryDir >( QFileInfo( processInfo.fOldName ).absoluteDir().absoluteFilePath( "./TempDir-XXXXXX" ) );
                     processInfo.fTempDir->setAutoRemove( true );
                 }
-                qDebug() << processInfo.fTempDir->path();
+                //qDebug() << processInfo.fTempDir->path();
 
                 // eg -f matroska -threads 1 -skip_interval 10 -copyts -i file:"/volume2/video/Movies/Westworld (1973) [tmdbid=2362]/Westworld.mkv" -an -sn -vf "scale=w=320:h=133" -vsync cfr -r 0.1 -f image2 "/var/packages/EmbyServer/var/cache/temp/112d22a09fea457eaea27c4b0c88f790/img_%05d.jpg"
                 processInfo.fArgs = QStringList() << "-f"

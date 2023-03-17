@@ -338,7 +338,7 @@ namespace NMediaManager
 
         void CDirModel::iterateEveryFile( const QFileInfo &fileInfo, const SIterateInfo &iterInfo, std::optional< QDateTime > &lastUpdateUI, bool countOnly ) const
         {
-            qDebug() << fileInfo;
+            //qDebug() << fileInfo;
             if ( progressCanceled() )
                 return;
 
@@ -481,11 +481,10 @@ namespace NMediaManager
                 //qDebug().noquote().nospace() << "Pre File A: " << fileInfo.absoluteFilePath() << tree;
 
                 if ( attachFile )
-                {
                     attachTreeNodes( tree );
-                    if ( progressDlg() )
-                        progressDlg()->setValue( progressDlg()->value() + 1 );
-                }
+                
+                if ( progressDlg() )
+                    progressDlg()->setValue( progressDlg()->value() + 1 );
 
                 //qDebug().noquote().nospace() << "Pre File B: " << fileInfo.absoluteFilePath() << tree;
 
@@ -1006,7 +1005,7 @@ namespace NMediaManager
             if ( !item )
                 return false;
 
-            qDebug() << item->text() << item->checkState();
+            //qDebug() << item->text() << item->checkState();
             if ( ( item != invisibleRootItem() ) && ( item->checkState() == Qt::CheckState::Unchecked ) )
                 return true;
 

@@ -149,7 +149,7 @@ namespace NMediaManager
             {
                 fImpl->stackedWidget->addWidget( page );
                 auto name = page->pageName();
-                qDebug() << name;
+                //qDebug() << name;
                 Q_ASSERT( !name.isEmpty() );
                 if ( name.isEmpty() )
                     return;
