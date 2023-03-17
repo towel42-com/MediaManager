@@ -35,7 +35,7 @@
         <item>
          <widget class="QLabel" name="label_3">
           <property name="text">
-           <string>Transcode Codec:</string>
+           <string>Audio Codec:</string>
           </property>
          </widget>
         </item>

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>466</width>
+    <width>590</width>
     <height>434</height>
    </rect>
   </property>
@@ -36,16 +36,6 @@
       <bool>true</bool>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
-      <item row="0" column="0">
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>mkvmerge Executable:</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-       </widget>
-      </item>
       <item row="0" column="1">
        <widget class="NSABUtils::CPathBasedDelayLineEdit" name="mkvMergeExe">
         <property name="sizePolicy">
@@ -53,17 +43,6 @@
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="2">
-       <widget class="QToolButton" name="btnSelectMKVMergeExe">
-        <property name="text">
-         <string>...</string>
-        </property>
-        <property name="icon">
-         <iconset resource="../../SABUtils/resources/SABUtils.qrc">
-          <normaloff>:/SABUtilsResources/open.png</normaloff>:/SABUtilsResources/open.png</iconset>
         </property>
        </widget>
       </item>
@@ -77,13 +56,49 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
-       <widget class="NSABUtils::CPathBasedDelayLineEdit" name="mkvPropEditExe">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
+      <item row="5" column="1">
+       <widget class="NSABUtils::CPathBasedDelayLineEdit" name="ffprobeExe"/>
+      </item>
+      <item row="6" column="0" colspan="3">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;ffmpeg and ffprobe need to come from the Emby distribution for BIF creation. &lt;br/&gt;Download from here &lt;a href=&quot;https://emby.media/windows-server.html&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;https://emby.media/windows-server.htm&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="textFormat">
+         <enum>Qt::AutoText</enum>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+        <property name="wordWrap">
+         <bool>false</bool>
+        </property>
+        <property name="openExternalLinks">
+         <bool>true</bool>
+        </property>
+        <property name="textInteractionFlags">
+         <set>Qt::TextBrowserInteraction</set>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_11">
+        <property name="text">
+         <string>ffmpeg Executable:</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QToolButton" name="btnSelectMKVMergeExe">
+        <property name="text">
+         <string>...</string>
+        </property>
+        <property name="icon">
+         <iconset resource="../../SABUtils/resources/SABUtils.qrc">
+          <normaloff>:/SABUtilsResources/open.png</normaloff>:/SABUtilsResources/open.png</iconset>
         </property>
        </widget>
       </item>
@@ -117,18 +132,25 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="label_11">
+      <item row="5" column="0">
+       <widget class="QLabel" name="label_12">
         <property name="text">
-         <string>ffmpeg Executable:</string>
+         <string>ffprobe Executable:</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
        </widget>
       </item>
-      <item row="3" column="1">
-       <widget class="NSABUtils::CPathBasedDelayLineEdit" name="ffmpegExe"/>
+      <item row="1" column="1">
+       <widget class="NSABUtils::CPathBasedDelayLineEdit" name="mkvPropEditExe">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
       </item>
       <item row="3" column="2">
        <widget class="QToolButton" name="btnSelectFFMpegExe">
@@ -141,20 +163,7 @@
         </property>
        </widget>
       </item>
-      <item row="4" column="0">
-       <widget class="QLabel" name="label_12">
-        <property name="text">
-         <string>ffprobe Executable:</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="1">
-       <widget class="NSABUtils::CPathBasedDelayLineEdit" name="ffprobeExe"/>
-      </item>
-      <item row="4" column="2">
+      <item row="5" column="2">
        <widget class="QToolButton" name="btnSelectFFProbeExe">
         <property name="text">
          <string>...</string>
@@ -165,25 +174,37 @@
         </property>
        </widget>
       </item>
-      <item row="5" column="0" colspan="3">
-       <widget class="QLabel" name="label_2">
+      <item row="3" column="1">
+       <widget class="NSABUtils::CPathBasedDelayLineEdit" name="ffmpegExe"/>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label">
         <property name="text">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;ffmpeg and ffprobe need to come from the Emby distribution for BIF creation. &lt;br/&gt;Download from here &lt;a href=&quot;https://emby.media/windows-server.html&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;https://emby.media/windows-server.htm&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-        <property name="textFormat">
-         <enum>Qt::AutoText</enum>
+         <string>mkvmerge Executable:</string>
         </property>
         <property name="alignment">
-         <set>Qt::AlignCenter</set>
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
-        <property name="wordWrap">
-         <bool>false</bool>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>ffmpeg (Emby) Executable:</string>
         </property>
-        <property name="openExternalLinks">
-         <bool>true</bool>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QLineEdit" name="ffmpegEmbyExe"/>
+      </item>
+      <item row="4" column="2">
+       <widget class="QToolButton" name="btnSelectFFMpegEmbyExe">
+        <property name="text">
+         <string>...</string>
         </property>
-        <property name="textInteractionFlags">
-         <set>Qt::TextBrowserInteraction</set>
+        <property name="icon">
+         <iconset resource="../../SABUtils/resources/SABUtils.qrc">
+          <normaloff>:/SABUtilsResources/open.png</normaloff>:/SABUtilsResources/open.png</iconset>
         </property>
        </widget>
       </item>

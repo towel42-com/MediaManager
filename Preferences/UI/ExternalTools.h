@@ -57,6 +57,7 @@ namespace NMediaManager
                 void slotSelectMKVMergeExe();
                 void slotSelectMKVPropEditExe();
                 void slotSelectFFMpegExe();
+                void slotSelectFFMpegEmbyExe();
                 void slotSelectFFProbeExe();
 
                 void slotFFToolChanged();

@@ -20,10 +20,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef __UI_MEDIAFORMATS_H
-#define __UI_MEDIAFORMATS_H
+#ifndef __UI_FFMPEGINFO_H
+#define __UI_FFMPEGINFO_H
 
 class QListWidget;
+class QGroupBox;
 #include "BasePrefPage.h"
 namespace NMediaManager
 {
@@ -33,25 +34,25 @@ namespace NMediaManager
         {
             namespace Ui
             {
-                class CMediaFormats;
+                class CFFMpegInfo;
             };
-            class CMediaFormats : public CBasePrefPage
+            class CFFMpegInfo : public CBasePrefPage
             {
                 Q_OBJECT
             public:
-                CMediaFormats( QWidget *parent = nullptr );
+                CFFMpegInfo( QWidget *parent = nullptr );
 
-                virtual ~CMediaFormats() override;
+                virtual ~CFFMpegInfo() override;
 
                 virtual void load() override;
 
                 virtual void save() override;
-                virtual QStringList pageName() const override { return QStringList( { "Media Formats" } ); }
+                virtual QStringList pageName() const override { return QStringList( { "FFMpeg Information" } ); }
             public Q_SLOTS:
             private:
-                void loadMediaFormats( QListWidget *listWidget, QStringList &formats );
+                void loadInfo( QListWidget *listWidget, QGroupBox * gb, QStringList formats );
 
-                std::unique_ptr< Ui::CMediaFormats > fImpl;
+                std::unique_ptr< Ui::CFFMpegInfo > fImpl;
             };
         }
     }

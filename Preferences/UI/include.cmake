@@ -28,7 +28,7 @@ set(qtproject_SRCS
     BasePrefPage.cpp
     BIFGeneration.cpp
     ExtendedInfo.cpp
-    MediaFormats.cpp
+    FFMpegInfo.cpp
     ExternalTools.cpp
     IgnoredPaths.cpp
     KnownAbbreviations.cpp
@@ -51,7 +51,7 @@ set(qtproject_H
     BasePrefPage.h
     BIFGeneration.h
     ExtendedInfo.h
-    MediaFormats.h
+    FFMpegInfo.h
     ExternalTools.h
     IgnoredPaths.h
     KnownAbbreviations.h
@@ -76,7 +76,7 @@ set(project_H
 set(qtproject_UIS
     BIFGeneration.ui
     ExtendedInfo.ui
-    MediaFormats.ui
+    FFMpegInfo.ui
     ExternalTools.ui
     IgnoredPaths.ui
     KnownAbbreviations.ui

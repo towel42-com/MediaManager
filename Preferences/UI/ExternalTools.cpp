@@ -55,6 +55,11 @@ namespace NMediaManager
                 fImpl->ffmpegExe->setCheckIsFile( true );
                 fImpl->ffmpegExe->setCheckIsExecutable( true );
 
+                connect( fImpl->btnSelectFFMpegEmbyExe, &QToolButton::clicked, this, &CExternalTools::slotSelectFFMpegEmbyExe );
+                fImpl->ffmpegExe->setCheckExists( true );
+                fImpl->ffmpegExe->setCheckIsFile( true );
+                fImpl->ffmpegExe->setCheckIsExecutable( true );
+
                 connect( fImpl->btnSelectFFProbeExe, &QToolButton::clicked, this, &CExternalTools::slotSelectFFProbeExe );
                 fImpl->ffprobeExe->setCheckExists( true );
                 fImpl->ffprobeExe->setCheckIsFile( true );
@@ -112,6 +117,19 @@ namespace NMediaManager
 
                 if ( !exe.isEmpty() )
                     fImpl->ffmpegExe->setText( exe );
+            }
+
+            void CExternalTools::slotSelectFFMpegEmbyExe()
+            {
+                auto exe = QFileDialog::getOpenFileName( this, tr( "Select ffmpeg (From Emby) Executable:" ), fImpl->ffmpegEmbyExe->text(), "ffmpeg Executable (ffmpeg.exe);;All Executables (*.exe);;All Files (*.*)" );
+                if ( !exe.isEmpty() && !QFileInfo( exe ).isExecutable() )
+                {
+                    QMessageBox::critical( this, "Not an Executable", tr( "The file '%1' is not an executable" ).arg( exe ) );
+                    return;
+                }
+
+                if ( !exe.isEmpty() )
+                    fImpl->ffmpegEmbyExe->setText( exe );
             }
 
             void CExternalTools::slotSelectFFProbeExe()
@@ -189,6 +207,7 @@ namespace NMediaManager
                 fImpl->mkvMergeExe->setText( NPreferences::NCore::CPreferences::instance()->getMKVMergeEXE() );
                 fImpl->mkvPropEditExe->setText( NPreferences::NCore::CPreferences::instance()->getMKVPropEditEXE() );
                 fImpl->ffmpegExe->setText( NPreferences::NCore::CPreferences::instance()->getFFMpegEXE() );
+                fImpl->ffmpegEmbyExe->setText( NPreferences::NCore::CPreferences::instance()->getFFMpegEmbyEXE() );
                 fImpl->ffprobeExe->setText( NPreferences::NCore::CPreferences::instance()->getFFProbeEXE() );
             }
 
@@ -198,6 +217,7 @@ namespace NMediaManager
                 NPreferences::NCore::CPreferences::instance()->setMKVMergeEXE( fImpl->mkvMergeExe->text() );
                 NPreferences::NCore::CPreferences::instance()->setMKVPropEditEXE( fImpl->mkvPropEditExe->text() );
                 NPreferences::NCore::CPreferences::instance()->setFFMpegEXE( fImpl->ffmpegExe->text() );
+                NPreferences::NCore::CPreferences::instance()->setFFMpegEmbyEXE( fImpl->ffmpegEmbyExe->text() );
                 NPreferences::NCore::CPreferences::instance()->setFFProbeEXE( fImpl->ffprobeExe->text() );
             }
         }

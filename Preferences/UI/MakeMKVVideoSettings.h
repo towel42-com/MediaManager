@@ -62,8 +62,17 @@ namespace NMediaManager
                 void slotUsePresetChanged();
                 void slotUseTuneChanged();
                 void slotUseProfileChanged();
+                void slotCodecChanged();
+                void slotHWAccelChanged();
+                void slotExplicitCodecChanged();
             private:
+                void selectVideoCodec( const QString & curr );
+
                 std::unique_ptr< Ui::CMakeMKVVideoSettings > fImpl;
+                QStringList fVerboseEncoders;
+                QStringList fTerseEncoders;
+                QStringList fVerboseHWAccels;
+                QStringList fTerseHWAccels;
             };
         }
     }

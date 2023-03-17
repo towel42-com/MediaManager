@@ -22,6 +22,7 @@
 
 #include "MakeMKVVideoSettings.h"
 #include "Preferences/Core/Preferences.h"
+#include "SABUtils/MediaInfo.h"
 
 #include "ui_MakeMKVVideoSettings.h"
 
@@ -43,16 +44,34 @@ namespace NMediaManager
                 connect( fImpl->usePreset, &QCheckBox::toggled, this, &CMakeMKVVideoSettings::slotUsePresetChanged );
                 connect( fImpl->useTune, &QCheckBox::toggled, this, &CMakeMKVVideoSettings::slotUseTuneChanged );
                 connect( fImpl->useProfile, &QCheckBox::toggled, this, &CMakeMKVVideoSettings::slotUseProfileChanged );
+                connect( fImpl->videoCodec, qOverload< int >( &QComboBox::currentIndexChanged ), this, &CMakeMKVVideoSettings::slotCodecChanged );
+                connect( fImpl->hwAccel, qOverload< int >( &QComboBox::currentIndexChanged ), this, &CMakeMKVVideoSettings::slotHWAccelChanged );
 
                 fImpl->intelGPUTranscode->setEnabled( NPreferences::NCore::CPreferences::instance()->hasIntelGPU() );
                 fImpl->nvidiaGPUTranscode->setEnabled( NPreferences::NCore::CPreferences::instance()->hasNVidiaGPU() );
+                fImpl->amdGPUTranscode->setEnabled( NPreferences::NCore::CPreferences::instance()->hasAMDGPU() );
 
-                slotLosslessChanged();
-                slotCRFChanged();
-                slotUseExplicitCRFChanged();
-                slotUsePresetChanged();
-                slotUseTuneChanged();
-                slotUseProfileChanged();
+                connect( fImpl->intelGPUTranscode, &QRadioButton::toggled, this, &CMakeMKVVideoSettings::slotExplicitCodecChanged );
+                connect( fImpl->nvidiaGPUTranscode, &QRadioButton::toggled, this, &CMakeMKVVideoSettings::slotExplicitCodecChanged );
+                connect( fImpl->amdGPUTranscode, &QRadioButton::toggled, this, &CMakeMKVVideoSettings::slotExplicitCodecChanged );
+                connect( fImpl->softwareTranscode, &QRadioButton::toggled, this, &CMakeMKVVideoSettings::slotExplicitCodecChanged );
+
+                fVerboseEncoders = NPreferences::NCore::CPreferences::instance()->availableVideoEncoders( true );
+                fTerseEncoders = NPreferences::NCore::CPreferences::instance()->availableVideoEncoders( false );
+                Q_ASSERT( fVerboseEncoders.count() == fTerseEncoders.count() );
+                for ( int ii = 0; ii < fTerseEncoders.count(); ++ii )
+                {
+                    fImpl->videoCodec->addItem( fVerboseEncoders[ ii ], fTerseEncoders[ ii ] );
+                }
+
+                fVerboseHWAccels = NPreferences::NCore::CPreferences::instance()->availableHWAccels( true );
+                fTerseHWAccels = NPreferences::NCore::CPreferences::instance()->availableHWAccels( false );
+
+                Q_ASSERT( fTerseHWAccels.count() == fVerboseHWAccels.count() );
+                for ( int ii = 0; ii < fVerboseHWAccels.count(); ++ii )
+                {
+                    fImpl->hwAccel->addItem( fVerboseHWAccels[ ii ], fTerseHWAccels[ ii ] );
+                }
             }
 
             CMakeMKVVideoSettings::~CMakeMKVVideoSettings()
@@ -61,11 +80,7 @@ namespace NMediaManager
 
             void CMakeMKVVideoSettings::load()
             {
-                fImpl->intelGPUTranscode->setChecked( NPreferences::NCore::CPreferences::instance()->getIntelGPUTranscode() );
-                fImpl->nvidiaGPUTranscode->setChecked( NPreferences::NCore::CPreferences::instance()->getNVidiaGPUTranscode() );
-                fImpl->softwareTranscode->setChecked( NPreferences::NCore::CPreferences::instance()->getSoftwareTranscode() );
-
-                fImpl->convertToH265->setChecked( NPreferences::NCore::CPreferences::instance()->getTranscodeToH265() );
+                fImpl->transcodeVideo->setChecked( NPreferences::NCore::CPreferences::instance()->getTranscodeVideo() );
                 fImpl->losslessTranscoding->setChecked( NPreferences::NCore::CPreferences::instance()->getLosslessTranscoding() );
                 fImpl->useCRF->setChecked( NPreferences::NCore::CPreferences::instance()->getUseCRF() );
                 fImpl->useExplicitCRF->setChecked( NPreferences::NCore::CPreferences::instance()->getUseExplicitCRF() );
@@ -77,15 +92,30 @@ namespace NMediaManager
                 fImpl->useProfile->setChecked( NPreferences::NCore::CPreferences::instance()->getUseProfile() );
                 fImpl->profile->setCurrentIndex( NPreferences::NCore::CPreferences::instance()->getProfile() );
                 fImpl->onlyTranscodeVideoOnFormatChange->setChecked( NPreferences::NCore::CPreferences::instance()->getOnlyTranscodeVideoOnFormatChange() );
+
+                selectVideoCodec( NPreferences::NCore::CPreferences::instance()->getTranscodeToVideoCodec() );
+
+                slotLosslessChanged();
+                slotCRFChanged();
+                slotUseExplicitCRFChanged();
+                slotUsePresetChanged();
+                slotUseTuneChanged();
+                slotUseProfileChanged();
+                slotCodecChanged();
+                slotHWAccelChanged();
+            }
+
+            void CMakeMKVVideoSettings::selectVideoCodec( const QString & curr )
+            {
+                auto pos = fImpl->videoCodec->findData( curr );
+                fImpl->videoCodec->setCurrentIndex( pos );
             }
 
             void CMakeMKVVideoSettings::save()
             {
-                NPreferences::NCore::CPreferences::instance()->setIntelGPUTranscode( fImpl->intelGPUTranscode->isChecked() );
-                NPreferences::NCore::CPreferences::instance()->setNVidiaGPUTranscode( fImpl->nvidiaGPUTranscode->isChecked() );
-                NPreferences::NCore::CPreferences::instance()->setSoftwareTranscode( fImpl->softwareTranscode->isChecked() );
+                NPreferences::NCore::CPreferences::instance()->setTranscodeToVideoCodec( fImpl->videoCodec->currentData().toString() );
 
-                NPreferences::NCore::CPreferences::instance()->setTranscodeToH265( fImpl->convertToH265->isChecked() );
+                NPreferences::NCore::CPreferences::instance()->setTranscodeVideo( fImpl->transcodeVideo->isChecked() );
                 NPreferences::NCore::CPreferences::instance()->setLosslessTranscoding( fImpl->losslessTranscoding->isChecked() );
                 NPreferences::NCore::CPreferences::instance()->setUseCRF( fImpl->useCRF->isChecked() );
                 NPreferences::NCore::CPreferences::instance()->setUseExplicitCRF( fImpl->useExplicitCRF->isChecked() );
@@ -130,6 +160,72 @@ namespace NMediaManager
                 fImpl->profile->setEnabled( fImpl->useProfile->isChecked() );
             }
 
+            void CMakeMKVVideoSettings::slotCodecChanged()
+            {
+                auto currentCodec = fImpl->videoCodec->currentData().toString();
+                bool isH265 = NSABUtils::CMediaInfo::isHEVCCodec( currentCodec );
+                fImpl->h265Options->setEnabled( isH265 );
+
+                auto hwAccel = NPreferences::NCore::CPreferences::instance()->getTranscodeHWAccel( currentCodec );
+                auto pos = fImpl->hwAccel->findData( hwAccel );
+                fImpl->hwAccel->setCurrentIndex( pos );
+
+
+                if ( currentCodec == "hevc_qsv" )
+                {
+                    fImpl->intelGPUTranscode->setChecked( true );
+                }
+                else if ( currentCodec == "hevc_nvenc" )
+                {
+                    fImpl->nvidiaGPUTranscode->setChecked( true );
+                }
+                else if ( currentCodec == "hevc_amf" )
+                {
+                    fImpl->amdGPUTranscode->setChecked( true );
+                }
+                else if ( currentCodec == "libx265" )
+                {
+                    fImpl->softwareTranscode->setChecked( true );
+                }
+                else
+                {
+                    fImpl->intelGPUTranscode->setAutoExclusive( false );
+                    fImpl->nvidiaGPUTranscode->setAutoExclusive( false );
+                    fImpl->amdGPUTranscode->setAutoExclusive( false );
+                    fImpl->softwareTranscode->setAutoExclusive( false );
+
+                    fImpl->intelGPUTranscode->setChecked( false );
+                    fImpl->nvidiaGPUTranscode->setChecked( false );
+                    fImpl->amdGPUTranscode->setChecked( false );
+                    fImpl->softwareTranscode->setChecked( false );
+
+                    fImpl->intelGPUTranscode->setAutoExclusive( true );
+                    fImpl->nvidiaGPUTranscode->setAutoExclusive( true );
+                    fImpl->amdGPUTranscode->setAutoExclusive( true );
+                    fImpl->softwareTranscode->setAutoExclusive( true );
+                }
+            }
+
+            void CMakeMKVVideoSettings::slotExplicitCodecChanged()
+            {
+                if ( fImpl->intelGPUTranscode->isChecked() )
+                    selectVideoCodec( "hevc_qsv" );
+                if ( fImpl->nvidiaGPUTranscode->isChecked() )
+                    selectVideoCodec( "hevc_nvenc" );
+                if ( fImpl->amdGPUTranscode->isChecked() )
+                    selectVideoCodec( "hevc_amf" );
+                if ( fImpl->softwareTranscode->isChecked() )
+                    selectVideoCodec( "libx265" );
+            }
+
+            void CMakeMKVVideoSettings::slotHWAccelChanged()
+            {
+                auto hwAccel = fImpl->hwAccel->currentData().toString();
+                if ( hwAccel.isEmpty() )
+                    return;
+                auto codec = NPreferences::NCore::CPreferences::instance()->getCodecForHWAccel( hwAccel );
+                selectVideoCodec( codec );
+            }
         }
     }
 }

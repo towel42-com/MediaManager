@@ -37,8 +37,8 @@ namespace NMediaManager
             {
                 fImpl->setupUi( this );
 
-                auto verbose = NPreferences::NCore::CPreferences::instance()->availableMediaFormats( true );
-                auto terse = NPreferences::NCore::CPreferences::instance()->availableMediaFormats( false );
+                auto verbose = NPreferences::NCore::CPreferences::instance()->availableEncoderMediaFormats( true );
+                auto terse = NPreferences::NCore::CPreferences::instance()->availableEncoderMediaFormats( false );
 
                 Q_ASSERT( verbose.count() == terse.count() );
                 for ( int ii = 0; ii < terse.count(); ++ii )
