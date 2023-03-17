@@ -83,10 +83,15 @@ DeployOpenSSL( ${PROJECT_NAME} . )
 INSTALL( TARGETS ${PROJECT_NAME} RUNTIME DESTINATION . )
 INSTALL( FILES ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.pdb DESTINATION . CONFIGURATIONS Debug RelWithDebInfo )
 
+file( REAL_PATH ~/Dropbox/home/bin BINDIR EXPAND_TILDE)
+
 find_program( FFMPEG_EXEC ffmpeg.exe
-    PATHS d:/EmbyServer/System
+    PATHS ${BINDIR}/ffmpeg/bin
     REQUIRED )
 find_program( FFPROBE_EXEC ffprobe.exe
+    PATHS ${BINDIR}/ffmpeg/bin
+    REQUIRED )
+find_program( FFMPEG_EMBY_EXEC ffmpeg.exe
     PATHS d:/EmbyServer/System
     REQUIRED )
 find_program( MKVMERGE_EXEC mkvmerge.exe
@@ -97,10 +102,12 @@ find_program( MKVPROPEDIT_EXEC mkvpropedit.exe
     REQUIRED )
 
 INSTALL( FILES "${FFMPEG_EXEC}" "${FFPROBE_EXEC}" "${MKVMERGE_EXEC}" "${MKVPROPEDIT_EXEC}"  DESTINATION . )
+INSTALL( FILES "${FFMPEG_EMBY_EXEC}"  DESTINATION . RENAME ffmpeg-emby.exe )
 
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND "${CMAKE_COMMAND}" -E echo "Copying External Executables to '$<TARGET_FILE_DIR:MediaManager>'"
     COMMAND "${CMAKE_COMMAND}" -E copy_if_different \"${FFMPEG_EXEC}\" \"${FFPROBE_EXEC}\" \"${MKVMERGE_EXEC}\" \"${MKVPROPEDIT_EXEC}\" \"$<TARGET_FILE_DIR:MediaManager>\"
+    COMMAND "${CMAKE_COMMAND}" -E copy_if_different \"${FFMPEG_EMBY_EXEC}\" \"$<TARGET_FILE_DIR:MediaManager>/ffmpeg-emby.exe\"
 )
  

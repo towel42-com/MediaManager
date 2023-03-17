@@ -58,7 +58,7 @@ namespace NMediaManager
 
         QStringList CTransformModel::dirModelFilter() const
         {
-            auto retVal = NPreferences::NCore::CPreferences::instance()->getVideoExtensions() << NPreferences::NCore::CPreferences::instance()->getSubtitleExtensions();
+            auto retVal = NPreferences::NCore::CPreferences::instance()->getVideoEncoderExtensions() << NPreferences::NCore::CPreferences::instance()->getSubtitleEncoderExtensions();
             retVal << NPreferences::NCore::CPreferences::instance()->getExtensionsToDelete();
             return retVal;
         }

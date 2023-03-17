@@ -167,7 +167,8 @@ namespace NMediaManager
                 void setTreatAsTVShowByDefault( bool value );
                 bool getTreatAsTVShowByDefault() const;
                 
-                bool isFormat( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &formatName ) const;
+                bool isEncoderFormat( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &formatName ) const;
+                bool isDecoderFormat( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &formatName ) const;
                 QStringList getTranscodeArgs( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName ) const;
                 QStringList getTranscodeArgs( const QString &srcName, const QString &destName ) const;
 
@@ -175,15 +176,36 @@ namespace NMediaManager
                 QStringList availableAudioEncoders( bool verbose ) const;   // if true returns name - desc, otherwise name only
                 QStringList availableVideoEncoders( bool verbose ) const;   // if true returns name - desc, otherwise name only
                 QStringList availableSubtitleEncoders( bool verbose ) const;   // if true returns name - desc, otherwise name only
-                QStringList availableMediaFormats( bool verbose ) const;   // if true returns name - desc, otherwise name only
-                QStringList getExtensionsForMediaFormat( const QString &format ) const;
-                NSABUtils::TFormatMap getFormatExtensionsMap() const;
+
+                QStringList availableAudioDecoders( bool verbose ) const;   // if true returns name - desc, otherwise name only
+                QStringList availableVideoDecoders( bool verbose ) const;   // if true returns name - desc, otherwise name only
+                QStringList availableSubtitleDecoders( bool verbose ) const;   // if true returns name - desc, otherwise name only
+
+                QStringList availableEncoderMediaFormats( bool verbose ) const;   // if true returns name - desc, otherwise name only
+                QStringList getExtensionsForEncoderMediaFormat( const QString &format ) const;
+                QStringList availableDecoderMediaFormats( bool verbose ) const;   // if true returns name - desc, otherwise name only
+                QStringList getExtensionsForDecoderMediaFormat( const QString &format ) const;
+
+                NSABUtils::TFormatMap getEncoderFormatExtensionsMap() const;
+                NSABUtils::TFormatMap getDecoderFormatExtensionsMap() const;
+
+                QStringList availableHWAccels( bool verbose ) const;   // if true returns name - desc, otherwise name only
 
                 QStringList availableAudioEncodersDefault( bool verbose ) const;
                 QStringList availableVideoEncodersDefault( bool verbose ) const;
                 QStringList availableSubtitleEncodersDefault( bool verbose ) const;
-                QStringList availableMediaFormatsDefault( bool verbose ) const;
-                NSABUtils::TFormatMap getVideoExtensionsMapDefault() const;
+
+                QStringList availableAudioDecodersDefault( bool verbose ) const;
+                QStringList availableVideoDecodersDefault( bool verbose ) const;
+                QStringList availableSubtitleDecodersDefault( bool verbose ) const;
+
+                QStringList availableMediaEncoderFormatsDefault( bool verbose ) const;
+                NSABUtils::TFormatMap getEncoderFormatExtensionsMapDefault() const;
+
+                QStringList availableMediaDecoderFormatsDefault( bool verbose ) const;
+                NSABUtils::TFormatMap getDecoderFormatExtensionsMapDefault() const;
+
+                QStringList availableHWAccelsDefault( bool verbose ) const;
 
                 // container transcode arguments
                 void setForceMediaContainer( bool value );
@@ -209,13 +231,22 @@ namespace NMediaManager
                 QString getTranscodeToAudioCodec() const;
 
                 // video codec transcode arguments
-                void setTranscodeToH265( bool value );
-                bool getTranscodeToH265Default() const;
-                bool getTranscodeToH265() const;
+                void setTranscodeVideo( bool value );
+                bool getTranscodeVideoDefault() const;
+                bool getTranscodeVideo() const;
 
+                QString getTranscodeHWAccel() const;
+                QString getTranscodeHWAccel( const QString &codec ) const;
+
+                QString getCodecForHWAccel( const QString &codec ) const;
+                
                 void setOnlyTranscodeVideoOnFormatChange( bool value );
                 bool getOnlyTranscodeVideoOnFormatChangeDefault() const;
                 bool getOnlyTranscodeVideoOnFormatChange() const;
+
+                void setTranscodeToVideoCodec( const QString &value );
+                QString getTranscodeToVideoCodecDefault() const;
+                QString getTranscodeToVideoCodec() const;
 
                 void setLosslessTranscoding( bool value );
                 bool getLosslessTranscodingDefault() const;
@@ -362,8 +393,13 @@ namespace NMediaManager
                 QStringList getExtensionsToDelete() const;
                 bool isPathToDelete( const QString &path ) const;
 
-                QStringList getVideoExtensions() const;
-                QStringList getSubtitleExtensions() const;
+                QStringList getVideoEncoderExtensions() const;
+                QStringList getAudioEncoderExtensions() const;
+                QStringList getSubtitleEncoderExtensions() const;
+
+                QStringList getVideoDecoderExtensions() const;
+                QStringList getAudioDecoderExtensions() const;
+                QStringList getSubtitleDecoderExtensions() const;
 
                 void addKnownStrings( const QStringList &value );
                 void setKnownStrings( const QStringList &value );
@@ -401,23 +437,32 @@ namespace NMediaManager
                 void setFFMpegEXE( const QString &value );
                 QString getFFMpegEXE() const;
 
+                void setFFMpegEmbyEXE( const QString &value );
+                QString getFFMpegEmbyEXE() const;
+
                 void setFFProbeEXE( const QString &value );
                 QString getFFProbeEXE() const;
 
                 bool hasIntelGPU() const;
                 bool hasNVidiaGPU() const;
+                bool hasAMDGPU() const;
+                int getGPUCount() const;
 
-                void setIntelGPUTranscode( bool value );
-                bool getIntelGPUTranscodeDefault() const;
-                bool getIntelGPUTranscode() const;
+                //void setAMDGPUTranscode( bool value );
+                //bool getAMDGPUTranscodeDefault() const;
+                //bool getAMDGPUTranscode() const;
 
-                void setNVidiaGPUTranscode( bool value );
-                bool getNVidiaGPUTranscodeDefault() const;
-                bool getNVidiaGPUTranscode() const;
+                //void setIntelGPUTranscode( bool value );
+                //bool getIntelGPUTranscodeDefault() const;
+                //bool getIntelGPUTranscode() const;
 
-                void setSoftwareTranscode( bool value );
-                bool getSoftwareTranscodeDefault() const;
-                bool getSoftwareTranscode() const;
+                //void setNVidiaGPUTranscode( bool value );
+                //bool getNVidiaGPUTranscodeDefault() const;
+                //bool getNVidiaGPUTranscode() const;
+
+                //void setSoftwareTranscode( bool value );
+                //bool getSoftwareTranscodeDefault() const;
+                //bool getSoftwareTranscode() const;
 
                 bool isMediaFile( const QFileInfo &fi ) const;
                 bool isSubtitleFile( const QFileInfo &info, bool *isLangFileFormat = nullptr ) const;
@@ -523,6 +568,7 @@ namespace NMediaManager
 
                 mutable std::optional< bool > fHasIntelGPU;
                 mutable std::optional< bool > fHasNVidiaGPU;
+                mutable std::optional< bool > fHasAMDGPU;
 
                 mutable std::unordered_set< QString > fSubtitleExtensionsHash;
                 mutable std::unordered_map< QString, bool > fIsSubtitleExtension;

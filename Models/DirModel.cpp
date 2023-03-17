@@ -779,7 +779,7 @@ namespace NMediaManager
                 auto mediaInfo = getMediaInfo( idx );
                 if ( !mediaInfo )
                     return {};
-                return mediaInfo->isHEVCVideo();
+                return mediaInfo->isHEVCCodec();
             }
 
             return QStandardItemModel::data( idx, role );

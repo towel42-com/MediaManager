@@ -68,7 +68,7 @@ namespace NMediaManager
                 if ( transcodeNeeded.fVideo )
                 {
                     auto fileInfo = this->fileInfo( idx );
-                    auto msg = tr( "<p style='white-space:pre'>File <b>'%1'</b> is not using the H.265 video codec</p>" ).arg( fileInfo.fileName() );
+                    auto msg = tr( "<p style='white-space:pre'>File <b>'%1'</b> is not using the '%2' video codec</p>" ).arg( fileInfo.fileName() ).arg( NPreferences::NCore::CPreferences::instance()->getTranscodeToVideoCodec() );
                     return TItemStatus( NPreferences::EItemStatus::eWarning, msg );
                 }
             }
@@ -87,7 +87,7 @@ namespace NMediaManager
 
         QStringList CMakeMKVModel::dirModelFilter() const
         {
-            return NPreferences::NCore::CPreferences::instance()->getVideoExtensions();
+            return NPreferences::NCore::CPreferences::instance()->getVideoDecoderExtensions();
         }
 
         std::pair< bool, QStandardItem * > CMakeMKVModel::processItem( const QStandardItem *item, bool displayOnly )
