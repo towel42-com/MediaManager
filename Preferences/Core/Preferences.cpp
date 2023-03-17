@@ -1303,6 +1303,8 @@ namespace NMediaManager
                 settings.beginGroup( toString( EPreferenceType::eExtToolsPrefs ) );
                 settings.setValue( "FFProbeEXE", value );
                 emitSigPreferencesChanged( EPreferenceType::eExtToolsPrefs );
+
+                NSABUtils::CMediaInfo::setFFProbeEXE( value );
             }
 
             QString CPreferences::getFFProbeEXE() const

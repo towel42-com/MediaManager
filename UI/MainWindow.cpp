@@ -37,6 +37,7 @@
 #include "Core/SearchTMDBInfo.h"
 #include "Core/SearchTMDB.h"
 #include "SABUtils/FileUtils.h"
+#include "SABUtils/MediaInfo.h"
 
 #include "SABUtils/QtUtils.h"
 #include "SABUtils/utils.h"
@@ -130,6 +131,8 @@ namespace NMediaManager
 
             fFileChecker = new NSABUtils::CBackgroundFileCheck( this );
             connect( fFileChecker, &NSABUtils::CBackgroundFileCheck::sigFinished, this, &CMainWindow::slotFileCheckFinished );
+
+            NSABUtils::CMediaInfo::setFFProbeEXE( NPreferences::NCore::CPreferences::instance()->getFFProbeEXE() );
 
             addPages();
 
