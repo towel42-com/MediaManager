@@ -114,14 +114,17 @@ namespace NMediaManager
 
             processInfo.fNewNames << fi.absoluteDir().absoluteFilePath( newBaseName );
 
-            auto msg = tr( "Convert file from '%1' => '%2'" ).arg( getDispName( processInfo.fOldName ) ).arg( getDispName( processInfo.fNewNames.front() ) );
-            if ( transcodeNeeded.fVideo && transcodeNeeded.fAudio )
-                msg += tr( ", transcode into H.265, and transcode to %1." ).arg( NPreferences::NCore::CPreferences::instance()->getTranscodeToAudioCodec() );
-            else if ( transcodeNeeded.fVideo && !transcodeNeeded.fAudio )
-                msg += tr( " and transcode into H.265." );
-            else if ( !transcodeNeeded.fVideo && transcodeNeeded.fAudio )
-                msg += tr( " transcode to %1." ).arg( NPreferences::NCore::CPreferences::instance()->getTranscodeToAudioCodec() );
+            QStringList msgs;
+            msgs << tr( "Convert file from '%1' => '%2'" ).arg( getDispName( processInfo.fOldName ) ).arg( getDispName( processInfo.fNewNames.front() ) );
+            if ( transcodeNeeded.fVideo )
+                msgs << tr( "transcode video to the %1 codec." ).arg( NPreferences::NCore::CPreferences::instance()->getTranscodeToVideoCodec() );
+            if ( transcodeNeeded.fAudio )
+                msgs << tr( "transcode audio to %1 codec." ).arg( NPreferences::NCore::CPreferences::instance()->getTranscodeToAudioCodec() );
 
+            if ( msgs.length() > 2 )
+                msgs.back() = " and " + msgs.back();
+            auto msg = msgs.join( ", " );
+            
             processInfo.fItem = new QStandardItem( msg );
             processInfo.fItem->setData( processInfo.fOldName, ECustomRoles::eOldName );
             processInfo.fItem->setData( processInfo.fNewNames, ECustomRoles::eNewName );
