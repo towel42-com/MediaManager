@@ -97,8 +97,7 @@ namespace NMediaManager
             eMediaTagTypeRole,
             eYesNoCheckableOnly,
             eIsSeasonDirRole,
-            eIsSeasonDirCorrectRole,
-            eIsHEVCCodecRole
+            eIsSeasonDirCorrectRole
         };
 
         enum class EType

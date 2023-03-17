@@ -773,14 +773,6 @@ namespace NMediaManager
                 bool aOK = isSeasonDir( idx, &isNameOK );
                 return aOK && isNameOK;
             }
-            else if ( role == ECustomRoles::eIsHEVCCodecRole )
-            {
-                auto fileInfo = this->fileInfo( idx );
-                auto mediaInfo = getMediaInfo( idx );
-                if ( !mediaInfo )
-                    return {};
-                return mediaInfo->isHEVCCodec();
-            }
 
             return QStandardItemModel::data( idx, role );
         }
