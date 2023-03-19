@@ -1606,15 +1606,15 @@ namespace NMediaManager
                          1              0          1                0           ||   1
                          1              0          1                1           ||   1
 */
-            STranscodeNeeded::STranscodeNeeded( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const CPreferences * prefs )
+            STranscodeNeeded::STranscodeNeeded( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const CPreferences *prefs )
             {
                 fFormat = fVideo = fAudio = false;
                 if ( !mediaInfo )
                     return;
 
-                fFormat = prefs->getForceMediaContainer() && !prefs->isEncoderFormat( mediaInfo, prefs->getForceMediaContainerName() );
-                fVideo = prefs->getTranscodeVideo() && !mediaInfo->isVideoCodec( prefs->getTranscodeToVideoCodec() ) && ( fFormat || !prefs->getOnlyTranscodeVideoOnFormatChange() );
-                fAudio = prefs->getTranscodeAudio() && !mediaInfo->isAudioCodec( prefs->getTranscodeToAudioCodec() ) && ( fFormat || !prefs->getOnlyTranscodeAudioOnFormatChange() );
+                fFormat = prefs->getConvertMediaContainer() && !prefs->isEncoderFormat( mediaInfo, prefs->getConvertMediaToContainer() );
+                fVideo = prefs->getTranscodeVideo() && !mediaInfo->isVideoCodec( prefs->getTranscodeToVideoCodec(), prefs->getMediaFormats() ) && ( fFormat || !prefs->getOnlyTranscodeVideoOnFormatChange() );
+                fAudio = prefs->getTranscodeAudio() && !mediaInfo->isAudioCodec( prefs->getTranscodeToAudioCodec(), prefs->getMediaFormats() ) && ( fFormat || !prefs->getOnlyTranscodeAudioOnFormatChange() );
             }
 
             STranscodeNeeded::STranscodeNeeded( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo ) :
@@ -1646,14 +1646,14 @@ namespace NMediaManager
                 {
                     // already HVEC but wrong container, just copy
                     retVal << "-i" << srcName   //
-                        << "-c:v"
-                        << "copy"   //
-                        << "-c:a"
-                        << "copy"   //
-                        << "-c:s"
-                        << "copy"   //
+                           << "-c:v"
+                           << "copy"   //
+                           << "-c:a"
+                           << "copy"   //
+                           << "-c:s"
+                           << "copy"   //
                         ;
-                } 
+                }
                 else
                 {
                     QString hwAccel;
@@ -1688,10 +1688,10 @@ namespace NMediaManager
                            << "0:s?"   //
                            << "-c:a" << audioCodec   //
                            << "-c:v" << videoCodec   //
-                           << "-c:s" << "copy"
-                        ;
+                           << "-c:s"
+                           << "copy";
 
-                    if ( transcodeNeeded.fVideo && NSABUtils::CMediaInfo::isHEVCCodec( videoCodec ) )
+                    if ( transcodeNeeded.fVideo && mediaInfo->isHEVCCodec( videoCodec, NPreferences::NCore::CPreferences::instance()->getMediaFormats() ) )
                     {
                         if ( getLosslessTranscoding() )
                             retVal << "-x265-params"
@@ -1709,46 +1709,11 @@ namespace NMediaManager
                             retVal << "-profile:v" << toString( getProfile() );
                     }
                 }
-                
-                retVal << "-f" << getForceMediaContainerName()   //
+
+                retVal << "-f" << getConvertMediaToContainer()   //
                        << destName;
 
                 return retVal;
-            }
-
-            QStringList CPreferences::availableAudioEncoders( bool verbose ) const
-            {
-                return getMediaFormats()->audioEncoderCodecs( verbose );
-            }
-
-            QStringList CPreferences::availableVideoEncoders( bool verbose ) const
-            {
-                return getMediaFormats()->videoEncoderCodecs( verbose );
-            }
-
-            QStringList CPreferences::availableSubtitleEncoders( bool verbose ) const
-            {
-                return getMediaFormats()->subtitleEncoderCodecs( verbose );
-            }
-
-            QStringList CPreferences::availableAudioDecoders( bool verbose ) const
-            {
-                return getMediaFormats()->audioDecoderCodecs( verbose );
-            }
-
-            QStringList CPreferences::availableVideoDecoders( bool verbose ) const
-            {
-                return getMediaFormats()->videoDecoderCodecs( verbose );
-            }
-
-            QStringList CPreferences::availableSubtitleDecoders( bool verbose ) const
-            {
-                return getMediaFormats()->subtitleDecoderCodecs( verbose );
-            }
-
-            QStringList CPreferences::availableHWAccels( bool verbose ) const
-            {
-                return getMediaFormats()->hwAccels( verbose );
             }
 
             QStringList CPreferences::availableEncoderMediaFormats( bool verbose ) const
@@ -1756,14 +1721,14 @@ namespace NMediaManager
                 return getMediaFormats()->encoderFormats( verbose );
             }
 
-            QStringList CPreferences::availableDecoderMediaFormats( bool verbose ) const
-            {
-                return getMediaFormats()->decoderFormats( verbose );
-            }
-
             NSABUtils::TFormatMap CPreferences::getEncoderFormatExtensionsMap() const
             {
                 return getMediaFormats()->mediaEncoderFormatExtensions();
+            }
+
+            QStringList CPreferences::availableDecoderMediaFormats( bool verbose ) const
+            {
+                return getMediaFormats()->decoderFormats( verbose );
             }
 
             NSABUtils::TFormatMap CPreferences::getDecoderFormatExtensionsMap() const
@@ -1771,12 +1736,87 @@ namespace NMediaManager
                 return getMediaFormats()->mediaDecoderFormatExtensions();
             }
 
+            QStringList CPreferences::availableVideoDecodingCodecs( bool verbose ) const
+            {
+                return getMediaFormats()->videoDecodingCodecs( verbose );
+            }
+
+            QStringList CPreferences::availableVideoEncodingCodecs( bool verbose ) const
+            {
+                return getMediaFormats()->videoEncodingCodecs( verbose );
+            }
+
+            QStringList CPreferences::availableAudioEncodingCodecs( bool verbose ) const
+            {
+                return getMediaFormats()->audioEncodingCodecs( verbose );
+            }
+
+            QStringList CPreferences::availableAudioDecodingCodecs( bool verbose ) const
+            {
+                return getMediaFormats()->audioDecodingCodecs( verbose );
+            }
+
+            QStringList CPreferences::availableSubtitleEncodingCodecs( bool verbose ) const
+            {
+                return getMediaFormats()->subtitleEncodingCodecs( verbose );
+            }
+
+            QStringList CPreferences::availableSubtitleDecodingCodecs( bool verbose ) const
+            {
+                return getMediaFormats()->subtitleDecodingCodecs( verbose );
+            }
+
+            QStringList CPreferences::availableVideoDecoders( bool verbose ) const
+            {
+                return getMediaFormats()->videoDecoders( verbose );
+            }
+
+            QStringList CPreferences::availableVideoEncoders( bool verbose ) const
+            {
+                return getMediaFormats()->videoEncoders( verbose );
+            }
+
+            QStringList CPreferences::availableAudioEncoders( bool verbose ) const
+            {
+                return getMediaFormats()->audioEncoders( verbose );
+            }
+
+            QStringList CPreferences::availableAudioDecoders( bool verbose ) const
+            {
+                return getMediaFormats()->audioDecoders( verbose );
+            }
+
+            QStringList CPreferences::availableSubtitleEncoders( bool verbose ) const
+            {
+                return getMediaFormats()->subtitleEncoders( verbose );
+            }
+
+            QStringList CPreferences::availableSubtitleDecoders( bool verbose ) const
+            {
+                return getMediaFormats()->subtitleDecoders( verbose );
+            }
+
+            NSABUtils::TCodecToEncoderDecoderMap CPreferences::getCodecToEncoderMap() const
+            {
+                return getMediaFormats()->codecToEncoderMap();
+            }
+
+            NSABUtils::TCodecToEncoderDecoderMap CPreferences::getCodecToDecoderMap() const
+            {
+                return getMediaFormats()->codecToDecoderMap();
+            }
+
+            QStringList CPreferences::availableHWAccels( bool verbose ) const
+            {
+                return getMediaFormats()->hwAccels( verbose );
+            }
+
             void CPreferences::recomputeSupportedFormats( QProgressDialog *dlg )
             {
                 loadMediaFormats( true, dlg );
             }
 
-            void CPreferences::loadMediaFormats( bool forceFromFFMpeg, QProgressDialog * dlg ) const
+            void CPreferences::loadMediaFormats( bool forceFromFFMpeg, QProgressDialog *dlg ) const
             {
                 auto ffmpeg = getFFMpegEXE();
                 if ( ffmpeg.isEmpty() )
@@ -1791,21 +1831,36 @@ namespace NMediaManager
                 {
                     fMediaFormats = std::move( std::make_unique< NSABUtils::CFFMpegFormats >() );
                     fMediaFormats->setFFMpegExecutable( ffmpeg );
-                    fMediaFormats->initEncoderFormatsFromDefaults( availableMediaEncoderFormatsDefault( false ), availableMediaEncoderFormatsDefault( true ), getEncoderFormatExtensionsMapDefault() );
-                    fMediaFormats->initVideoEncoderCodecsFromDefaults( availableVideoEncodersDefault( false ), availableVideoEncodersDefault( true ) );
-                    fMediaFormats->initAudioEncoderCodecsFromDefaults( availableAudioEncodersDefault( false ), availableAudioEncodersDefault( true ) );
-                    fMediaFormats->initSubtitleEncoderCodecsFromDefaults( availableSubtitleEncodersDefault( false ), availableSubtitleEncodersDefault( true ) );
 
-                    fMediaFormats->initDecoderFormatsFromDefaults( availableMediaDecoderFormatsDefault( false ), availableMediaDecoderFormatsDefault( true ), getDecoderFormatExtensionsMapDefault() );
-                    fMediaFormats->initVideoDecoderCodecsFromDefaults( availableVideoDecodersDefault( false ), availableVideoDecodersDefault( true ) );
-                    fMediaFormats->initAudioDecoderCodecsFromDefaults( availableAudioDecodersDefault( false ), availableAudioDecodersDefault( true ) );
-                    fMediaFormats->initSubtitleDecoderCodecsFromDefaults( availableSubtitleDecodersDefault( false ), availableSubtitleDecodersDefault( true ) );
+                    fMediaFormats->initEncoderFormatsFromDefaults( availableMediaEncoderFormatsStatic( false ), availableMediaEncoderFormatsStatic( true ), getEncoderFormatExtensionsMapStatic() );
+                    fMediaFormats->initDecoderFormatsFromDefaults( availableMediaDecoderFormatsStatic( false ), availableMediaDecoderFormatsStatic( true ), getDecoderFormatExtensionsMapStatic() );
 
-                    fMediaFormats->initHWAccelsFromDefaults( availableHWAccelsDefault( false ), availableHWAccelsDefault( true ) );
+                    fMediaFormats->initVideoEncodingCodecsFromDefaults( availableVideoEncodingCodecsStatic( false ), availableVideoEncodingCodecsStatic( true ) );
+                    fMediaFormats->initVideoDecodingCodecsFromDefaults( availableVideoDecodingCodecsStatic( false ), availableVideoDecodingCodecsStatic( true ) );
+
+                    fMediaFormats->initAudioEncodingCodecsFromDefaults( availableAudioEncodingCodecsStatic( false ), availableAudioEncodingCodecsStatic( true ) );
+                    fMediaFormats->initAudioDecodingCodecsFromDefaults( availableAudioDecodingCodecsStatic( false ), availableAudioDecodingCodecsStatic( true ) );
+
+                    fMediaFormats->initSubtitleEncodingCodecsFromDefaults( availableSubtitleEncodingCodecsStatic( false ), availableSubtitleEncodingCodecsStatic( true ) );
+                    fMediaFormats->initSubtitleDecodingCodecsFromDefaults( availableSubtitleDecodingCodecsStatic( false ), availableSubtitleDecodingCodecsStatic( true ) );
+
+                    fMediaFormats->initVideoEncodersFromDefaults( availableVideoEncodersStatic( false ), availableVideoEncodersStatic( true ) );
+                    fMediaFormats->initVideoDecodersFromDefaults( availableVideoDecodersStatic( false ), availableVideoDecodersStatic( true ) );
+
+                    fMediaFormats->initAudioEncodersFromDefaults( availableAudioEncodersStatic( false ), availableAudioEncodersStatic( true ) );
+                    fMediaFormats->initAudioDecodersFromDefaults( availableAudioDecodersStatic( false ), availableAudioDecodersStatic( true ) );
+
+                    fMediaFormats->initSubtitleEncodersFromDefaults( availableSubtitleEncodersStatic( false ), availableSubtitleEncodersStatic( true ) );
+                    fMediaFormats->initSubtitleDecodersFromDefaults( availableSubtitleDecodersStatic( false ), availableSubtitleDecodersStatic( true ) );
+
+                    fMediaFormats->initCodecToEncoderMapDefaults( getCodecToEncoderMapStatic() );
+                    fMediaFormats->initCodecToDecoderMapDefaults( getCodecToDecoderMapStatic() );
+
+                    fMediaFormats->initHWAccelsFromDefaults( availableHWAccelsStatic( false ), availableHWAccelsStatic( true ) );
                 }
             }
 
-            NSABUtils::CFFMpegFormats * CPreferences::getMediaFormats() const
+            NSABUtils::CFFMpegFormats *CPreferences::getMediaFormats() const
             {
                 loadMediaFormats( false );
                 return fMediaFormats.get();
@@ -1821,39 +1876,39 @@ namespace NMediaManager
                 return getMediaFormats()->getDecoderExtensionsForFormat( formatName );
             }
 
-            void CPreferences::setForceMediaContainer( bool value )
+            void CPreferences::setConvertMediaContainer( bool value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
-                settings.setValue( "ForceMediaFormat", value );
+                settings.setValue( "ConvertMediaFormat", value );
                 emitSigPreferencesChanged( EPreferenceType::eMakeMKVPrefs );
             }
 
-            bool CPreferences::getForceMediaContainer() const
+            bool CPreferences::getConvertMediaContainer() const
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
-                return settings.value( "ForceMediaFormat", getForceMediaContainerDefault() ).toBool();
+                return settings.value( "ConvertMediaFormat", getConvertMediaToContainerDefault() ).toBool();
             }
 
-            void CPreferences::setForceMediaContainerName( const QString &value )
+            void CPreferences::setConvertMediaToContainer( const QString &value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
-                settings.setValue( "ForceMediaFormatName", value );
+                settings.setValue( "ConvertMediaToContainer", value );
                 emitSigPreferencesChanged( EPreferenceType::eMakeMKVPrefs );
             }
 
-            QString CPreferences::getForceMediaContainerName() const
+            QString CPreferences::getConvertMediaToContainer() const
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
-                return settings.value( "ForceMediaFormatName", getForceMediaContainerNameDefault() ).toString();
+                return settings.value( "ConvertMediaToContainer", getConvertMediaToContainerDefault() ).toString();
             }
 
-            QString CPreferences::getForceMediaContainerExt() const
+            QString CPreferences::getMediaContainerExt() const
             {
-                return getMediaFormats()->getPrimaryEncoderExtensionForFormat( getForceMediaContainerName() );
+                return getMediaFormats()->getPrimaryEncoderExtensionForFormat( getConvertMediaToContainer() );
             }
 
             void CPreferences::setTranscodeAudio( bool value )
@@ -1886,7 +1941,7 @@ namespace NMediaManager
                 return settings.value( "OnlyTranscodeVideoOnFormatChange", getOnlyTranscodeVideoOnFormatChangeDefault() ).toBool();
             }
 
-            void CPreferences::setTranscodeToAudioCodec( const QString& value )
+            void CPreferences::setTranscodeToAudioCodec( const QString &value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
@@ -1937,7 +1992,7 @@ namespace NMediaManager
                 return getTranscodeHWAccel( videoCodec );
             }
 
-            QString CPreferences::getTranscodeHWAccel( const QString & codec ) const
+            QString CPreferences::getTranscodeHWAccel( const QString &codec ) const
             {
                 return getMediaFormats()->getTranscodeHWAccel( codec );
             }
@@ -2103,7 +2158,7 @@ namespace NMediaManager
                 {
                     fHasIntelGPU = false;
                     auto gpus = NSABUtils::detectGPUs();
-                    for ( auto&& ii : gpus )
+                    for ( auto &&ii : gpus )
                     {
                         if ( ii->isIntelGPU() )
                         {
@@ -2121,7 +2176,7 @@ namespace NMediaManager
                 {
                     fHasNVidiaGPU = false;
                     auto gpus = NSABUtils::detectGPUs();
-                    for ( auto&& ii : gpus )
+                    for ( auto &&ii : gpus )
                     {
                         if ( ii->isNVidiaGPU() )
                         {
@@ -2173,7 +2228,6 @@ namespace NMediaManager
                 settings.beginGroup( toString( EPreferenceType::eMakeMKVPrefs ) );
                 return settings.value( "OnlyTranscodeAudioOnFormatChange", getOnlyTranscodeAudioOnFormatChangeDefault() ).toBool();
             }
-
 
             /////////////////////////////////
             /////////////////////////////////
@@ -2360,27 +2414,69 @@ namespace NMediaManager
             void replaceText( const QString &txt, QStringList &curr, const QString &funcName, const NSABUtils::TFormatMap &value )
             {
                 QStringList function;
-                function //
-                    << QString( "NSABUtils::TFormatMap CPreferences::%1() const" ).arg( funcName ) //
-                    << "{"
-                    ;
+                function   //
+                    << QString( "NSABUtils::TFormatMap CPreferences::%1() const" ).arg( funcName )   //
+                    << "{";
 
                 int indent = 1;
                 function   //
                     << getIndent( indent++ ) + QString( "static auto defaultValue = NSABUtils::TFormatMap(" )   //
                     << getIndent( indent++ ) + "{";
-                    ;
+                ;
 
                 auto first = true;
-                for( auto && ii : value )
+                for ( auto &&ii : value )
                 {
                     function << getIndent( indent++ ) + ( first ? " " : "," ) + "{";
                     function << getIndent( indent ) + toString( ii.first ) + ", std::unordered_map< QString, QStringList >";
                     function << getIndent( indent++ ) + " ( {";
                     bool innerFirst = true;
-                    for( auto && jj : ii.second )
+                    for ( auto &&jj : ii.second )
                     {
-                        function << getIndent( indent ) + ( innerFirst ? " " : "," ) + "{ " + toString( jj.first ) + ", " + toString( jj.second ) + " } //"; //
+                        function << getIndent( indent ) + ( innerFirst ? " " : "," ) + "{ " + toString( jj.first ) + ", " + toString( jj.second ) + " } //";   //
+                        innerFirst = false;
+                    }
+                    function << getIndent( --indent ) + "} )";
+                    function << getIndent( --indent ) + "}";
+                    first = false;
+                }
+                //function << toString( value, 1 );
+
+                function << getIndent( --indent ) + "} );";
+                function << getIndent( --indent ) + QString( "return defaultValue;" );
+                function << getIndent( --indent ) + "}";
+                Q_ASSERT( indent == 0 );
+
+                for ( auto &&ii : function )
+                {
+                    ii = getIndent( 3 ) + ii;
+                }
+                return replaceText( txt, curr, function );
+            }
+
+            void replaceText( const QString &txt, QStringList &curr, const QString &funcName, const NSABUtils::TCodecToEncoderDecoderMap &value )
+            {
+                QStringList function;
+                function   //
+                    << QString( "NSABUtils::TCodecToEncoderDecoderMap CPreferences::%1() const" ).arg( funcName )   //
+                    << "{";
+
+                int indent = 1;
+                function   //
+                    << getIndent( indent++ ) + QString( "static auto defaultValue = NSABUtils::TCodecToEncoderDecoderMap(" )   //
+                    << getIndent( indent++ ) + "{";
+                ;
+
+                auto first = true;
+                for ( auto &&ii : value )
+                {
+                    function << getIndent( indent++ ) + ( first ? " " : "," ) + "{";
+                    function << getIndent( indent ) + toString( ii.first ) + ", std::unordered_multimap< QString, QString >";
+                    function << getIndent( indent++ ) + " ( {";
+                    bool innerFirst = true;
+                    for ( auto &&jj : ii.second )
+                    {
+                        function << getIndent( indent ) + ( innerFirst ? " " : "," ) + "{ " + toString( jj.first ) + ", " + toString( jj.second ) + " } //";   //
                         innerFirst = false;
                     }
                     function << getIndent( --indent ) + "} )";
@@ -2427,8 +2523,7 @@ namespace NMediaManager
             }
 
             template< typename T >
-            auto replaceText( const QString &txt, const QString & returnType, QStringList &curr, const QString &funcName, T value ) ->
-                typename std::enable_if< std::is_enum< T >::value, void >::type
+            auto replaceText( const QString &txt, const QString &returnType, QStringList &curr, const QString &funcName, T value ) -> typename std::enable_if< std::is_enum< T >::value, void >::type
             {
                 QStringList function;
                 function << QString( "%1 CPreferences::%2() const" ).arg( returnType ).arg( funcName ) << "{" << getIndent( 1 ) + QString( "return %1;" ).arg( toString( value, true ) ) << "}";
@@ -2439,7 +2534,8 @@ namespace NMediaManager
                 return replaceText( txt, curr, function );
             }
 
-            void replaceText( const QString &txt, QStringList &curr, const QString &funcName, const QString &boolVariable, const QStringList &trueValue, const QStringList &falseValue, const QString &retValType = "QStringList", bool asString = true )
+            void replaceText(
+                const QString &txt, QStringList &curr, const QString &funcName, const QString &boolVariable, const QStringList &trueValue, const QStringList &falseValue, const QString &retValType = "QStringList", bool asString = true )
             {
                 QStringList function;
                 function << QString( "%3 CPreferences::%1( bool %2 ) const" ).arg( funcName ).arg( boolVariable ).arg( retValType ) << "{" << getIndent( 1 ) + QString( "if ( %2 )" ).arg( boolVariable ) << getIndent( 1 ) + "{"
@@ -2572,11 +2668,7 @@ namespace NMediaManager
                                             << R"(#include "Preferences.h")"
                                             << R"(#include "SABUtils/FFMpegFormats.h")"
                                             << R"()"
-                                            << R"(namespace NMediaManager)"
-                                            << getIndent( 0 ) +R"({)" 
-                                            << getIndent( 1 ) + R"(namespace NPreferences)" 
-                                            << getIndent( 1 ) + R"({)"
-                                            << getIndent( 2 ) + R"(namespace NCore)" 
+                                            << R"(namespace NMediaManager)" << getIndent( 0 ) + R"({)" << getIndent( 1 ) + R"(namespace NPreferences)" << getIndent( 1 ) + R"({)" << getIndent( 2 ) + R"(namespace NCore)"
                                             << getIndent( 2 ) + R"({)"
                                             << "%DEFAULT_SEASON_DIR_PATTERN%"
                                             << R"()"
@@ -2611,29 +2703,6 @@ namespace NMediaManager
                                             << "%DEFAULT_SKIPPED_PATHS%"
                                             << R"()"
 
-                                            << "%AVAILABLE_AUDIO_ENCODERS%"
-                                            << R"()"
-                                            << "%AVAILABLE_AUDIO_DECODERS%"
-                                            << R"()"
-                                            << "%AVAILABLE_VIDEO_ENCODERS%"
-                                            << R"()"
-                                            << "%AVAILABLE_VIDEO_DECODERS%"
-                                            << R"()"
-                                            << "%AVAILABLE_SUBTITLE_ENCODERS%"
-                                            << R"()"
-                                            << "%AVAILABLE_SUBTITLE_DECODERS%"
-                                            << R"()"
-
-                                            << "%AVAILABLE_HW_ACCELS%"
-                                            << R"()"
-                                            << "%MEDIA_FORMAT_ENCODER_DEFS%" 
-                                            << R"()"
-                                            << "%MEDIA_FORMAT_DECODER_DEFS%"
-                                            << R"()"
-                                            << "%MEDIA_FORMAT_ENCODER_EXTENSION_MAP%"
-                                            << R"()"
-                                            << "%MEDIA_FORMAT_DECODER_EXTENSION_MAP%"
-                                            << R"()"
                                             << "%DEFAULT_FORCE_MEDIA_CONTAINER%"
                                             << R"()"
                                             << "%DEFAULT_MEDIA_CONTAINER_NAME%"
@@ -2668,11 +2737,53 @@ namespace NMediaManager
                                             << R"()"
                                             << "%DEFAULT_USE_PROFILE%"
                                             << R"()"
-                                            << "%DEFAULT_PROFILE%" 
-                                            << getIndent( 2 ) + R"(})"
-                                            << getIndent( 1 ) + R"(})"
-                                            << getIndent( 0 ) + R"(})"
-                                            ;
+                                            << "%DEFAULT_PROFILE%"
+                                            << R"()"
+
+                                            << "%MEDIA_FORMAT_ENCODER%"
+                                            << R"()"
+                                            << "%MEDIA_FORMAT_ENCODER_EXTENSION_MAP%"
+                                            << R"()"
+                                            << "%MEDIA_FORMAT_DECODER%"
+                                            << R"()"
+                                            << "%MEDIA_FORMAT_DECODER_EXTENSION_MAP%"
+                                            << R"()"
+
+                                            << "%AVAILABLE_VIDEO_ENCODING_CODECS%"
+                                            << R"()"
+                                            << "%AVAILABLE_VIDEO_DECODING_CODECS%"
+                                            << R"()"
+                                            << "%AVAILABLE_AUDIO_ENCODING_CODECS%"
+                                            << R"()"
+                                            << "%AVAILABLE_AUDIO_DECODING_CODECS%"
+                                            << R"()"
+                                            << "%AVAILABLE_SUBTITLE_ENCODING_CODECS%"
+                                            << R"()"
+                                            << "%AVAILABLE_SUBTITLE_DECODING_CODECS%"
+                                            << R"()"
+
+                                            << "%AVAILABLE_VIDEO_ENCODERS%"
+                                            << R"()"
+                                            << "%AVAILABLE_VIDEO_DECODERS%"
+                                            << R"()"
+                                            << "%AVAILABLE_AUDIO_ENCODERS%"
+                                            << R"()"
+                                            << "%AVAILABLE_AUDIO_DECODERS%"
+                                            << R"()"
+                                            << "%AVAILABLE_SUBTITLE_ENCODERS%"
+                                            << R"()"
+                                            << "%AVAILABLE_SUBTITLE_DECODERS%"
+                                            << R"()"
+
+                                            << "%CODEC_TO_ENCODER_MAP%"
+                                            << R"()"
+                                            << "%CODEC_TO_DECODER_MAP%"
+                                            << R"()"
+
+                                            << "%AVAILABLE_HW_ACCELS%"
+                                            << R"()"
+
+                                            << getIndent( 2 ) + R"(})" << getIndent( 1 ) + R"(})" << getIndent( 0 ) + R"(})";
                 return retVal;
             }
 
@@ -2696,35 +2807,15 @@ namespace NMediaManager
                                            << compareValues( "Known Strings", getDefaultKnownStrings(), getKnownStrings() )   //
                                            << compareValues( "Known Extended Strings", getDefaultKnownExtendedStrings(), getKnownExtendedStrings() )   //
                                            << compareValues( "Known Abbreviations", getDefaultKnownAbbreviations(), getKnownAbbreviations() )   //
-                                           << compareValues( "Known Hyphenated", getDefaultKnownHyphenated(), getKnownHyphenated() ) //
-                                           << compareValues( "Audio Encoders - Terse", availableAudioEncodersDefault( false ), availableAudioEncoders( false ) )   //
-                                           << compareValues( "Audio Encoders - Verbose", availableAudioEncodersDefault( true ), availableAudioEncoders( true ) )   //
-                                           << compareValues( "Video Encoders - Terse", availableVideoEncodersDefault( false ), availableVideoEncoders( false ) )   //
-                                           << compareValues( "Video Encoders - Verbose", availableVideoEncodersDefault( true ), availableVideoEncoders( true ) )   //
-                                           << compareValues( "Subtitle Encoders - Terse", availableSubtitleEncodersDefault( false ), availableSubtitleEncoders( false ) )   //
-                                           << compareValues( "Subtitle Encoders - Verbose", availableSubtitleEncodersDefault( true ), availableSubtitleEncoders( true ) )   //
-                                           << compareValues( "Media Encoder Formats - Terse", availableMediaEncoderFormatsDefault( false ), availableEncoderMediaFormats( false ) )   //
-                                           << compareValues( "Media Encoder Formats - Verbose", availableMediaEncoderFormatsDefault( true ), availableEncoderMediaFormats( true ) )   //
+                                           << compareValues( "Known Hyphenated", getDefaultKnownHyphenated(), getKnownHyphenated() )   //
 
-                                           << compareValues( "Audio Decoders - Terse", availableAudioDecodersDefault( false ), availableAudioDecoders( false ) )   //
-                                           << compareValues( "Audio Decoders - Verbose", availableAudioDecodersDefault( true ), availableAudioDecoders( true ) )   //
-                                           << compareValues( "Video Decoders - Terse", availableVideoDecodersDefault( false ), availableVideoDecoders( false ) )   //
-                                           << compareValues( "Video Decoders - Verbose", availableVideoDecodersDefault( true ), availableVideoDecoders( true ) )   //
-                                           << compareValues( "Subtitle Decoders - Terse", availableSubtitleDecodersDefault( false ), availableSubtitleDecoders( false ) )   //
-                                           << compareValues( "Subtitle Decoders - Verbose", availableSubtitleDecodersDefault( true ), availableSubtitleDecoders( true ) )   //
-                                           << compareValues( "Media Decoder Formats - Terse", availableMediaDecoderFormatsDefault( false ), availableDecoderMediaFormats( false ) )   //
-                                           << compareValues( "Media Decoder Formats - Verbose", availableMediaDecoderFormatsDefault( true ), availableDecoderMediaFormats( true ) )   //
-                                           
-                                            << compareValues( "HW Accels - Terse", availableHWAccelsDefault( false ), availableHWAccels( false ) )   //
-                                           << compareValues( "HW Accels - Verbose", availableHWAccelsDefault( true ), availableHWAccels( true ) )   //
+                                           << compareValues( "Convert Media Format", getConvertMediaContainerDefault(), getConvertMediaContainer() )   //
+                                           << compareValues( "Convert Media To Format", getConvertMediaToContainerDefault(), getConvertMediaToContainer() )   //
 
-                                           << compareValues( "Force Media Format", getForceMediaContainerDefault(), getForceMediaContainer() )   //
-                                           << compareValues( "Force Media Format Name", getForceMediaContainerNameDefault(), getForceMediaContainerName() )   //
-                            
                                            << compareValues( "Transcode Audio", getTranscodeAudioDefault(), getTranscodeAudio() )   //
                                            << compareValues( "Transcode Audio on Format Change", getOnlyTranscodeAudioOnFormatChangeDefault(), getOnlyTranscodeAudioOnFormatChange() )   //
                                            << compareValues( "Transcode Audio Codec", getTranscodeToAudioCodecDefault(), getTranscodeToAudioCodec() )   //
-                    
+
                                            << compareValues( "Transcode Video", getTranscodeVideoDefault(), getTranscodeVideo() )   //
                                            << compareValues( "Transcode Video on Format Change", getOnlyTranscodeVideoOnFormatChangeDefault(), getOnlyTranscodeVideoOnFormatChange() )   //
                                            << compareValues( "Lossless Video Transcoding", getLosslessTranscodingDefault(), getLosslessTranscoding() )   //
@@ -2768,7 +2859,7 @@ namespace NMediaManager
                 else if ( showNoChange )
                 {
                     copyDefaults = QMessageBox::information( parent, tr( "Default Preferences are the Same" ), tr( "The defaults are up to date.\nWould you like to copy the defaults to the Clipboard" ), QMessageBox::Yes, QMessageBox::No )
-                              == QMessageBox::Yes;
+                                   == QMessageBox::Yes;
                 }
 
                 if ( copyDefaults )
@@ -2791,25 +2882,11 @@ namespace NMediaManager
                     replaceText( "%DEFAULT_KNOWN_HYPHENATED%", newFileText, "getDefaultKnownHyphenated", getKnownHyphenated() );
                     replaceText( "%DEFAULT_SKIPPED_PATHS%", newFileText, "getDefaultSkippedPaths", "forMediaNaming", getSkippedPaths( true ), getSkippedPaths( false ) );
 
-                    replaceText( "%AVAILABLE_AUDIO_ENCODERS%", newFileText, "availableAudioEncodersDefault", "verbose", availableAudioEncoders( true ), availableAudioEncoders( false ) );
-                    replaceText( "%AVAILABLE_VIDEO_ENCODERS%", newFileText, "availableVideoEncodersDefault", "verbose", availableVideoEncoders( true ), availableVideoEncoders( false ) );
-                    replaceText( "%AVAILABLE_SUBTITLE_ENCODERS%", newFileText, "availableSubtitleEncodersDefault", "verbose", availableSubtitleEncoders( true ), availableSubtitleEncoders( false ) );
-                    replaceText( "%AVAILABLE_AUDIO_DECODERS%", newFileText, "availableAudioDecodersDefault", "verbose", availableAudioDecoders( true ), availableAudioDecoders( false ) );
-                    replaceText( "%AVAILABLE_VIDEO_DECODERS%", newFileText, "availableVideoDecodersDefault", "verbose", availableVideoDecoders( true ), availableVideoDecoders( false ) );
-                    replaceText( "%AVAILABLE_SUBTITLE_DECODERS%", newFileText, "availableSubtitleDecodersDefault", "verbose", availableSubtitleDecoders( true ), availableSubtitleDecoders( false ) );
-                    replaceText( "%AVAILABLE_HW_ACCELS%", newFileText, "availableHWAccelsDefault", "verbose", availableHWAccels( true ), availableHWAccels( false ) );
-
-                    replaceText( "%MEDIA_FORMAT_ENCODER_DEFS%", newFileText, "availableMediaEncoderFormatsDefault", "verbose", availableEncoderMediaFormats( true ), availableEncoderMediaFormats( false ) );
-                    replaceText( "%MEDIA_FORMAT_DECODER_DEFS%", newFileText, "availableMediaDecoderFormatsDefault", "verbose", availableDecoderMediaFormats( true ), availableDecoderMediaFormats( false ) );
-                    replaceText( "%MEDIA_FORMAT_ENCODER_EXTENSION_MAP%", newFileText, "getEncoderFormatExtensionsMapDefault", getEncoderFormatExtensionsMap() );
-                    replaceText( "%MEDIA_FORMAT_DECODER_EXTENSION_MAP%", newFileText, "getDecoderFormatExtensionsMapDefault", getDecoderFormatExtensionsMap() );
-
-                    replaceText( "%DEFAULT_FORCE_MEDIA_CONTAINER%", newFileText, "getForceMediaContainerDefault", getForceMediaContainer() );
-                    replaceText( "%DEFAULT_MEDIA_CONTAINER_NAME%", newFileText, "getForceMediaContainerNameDefault", getForceMediaContainerName() );
+                    replaceText( "%DEFAULT_FORCE_MEDIA_CONTAINER%", newFileText, "getConvertMediaContainerDefault", getConvertMediaContainer() );
+                    replaceText( "%DEFAULT_MEDIA_CONTAINER_NAME%", newFileText, "getConvertMediaToContainerDefault", getConvertMediaToContainer() );
                     replaceText( "%DEFAULT_TRANSCODE_AUDIO%", newFileText, "getTranscodeAudioDefault", getTranscodeAudio() );
                     replaceText( "%DEFAULT_ONLY_TRANSCODE_AUDIO_ON_FORMAT_CHANGE%", newFileText, "getOnlyTranscodeAudioOnFormatChangeDefault", getOnlyTranscodeAudioOnFormatChange() );
                     replaceText( "%DEFAULT_TRANSCODE_TO_AUDIO_CODEC%", newFileText, "getTranscodeToAudioCodecDefault", getTranscodeToAudioCodec() );
-
 
                     replaceText( "%DEFAULT_TRANSCODE_VIDEO%", newFileText, "getTranscodeVideoDefault", getTranscodeVideo() );
                     replaceText( "%DEFAULT_ONLY_TRANSCODE_VIDEO_ON_FORMAT_CHANGE%", newFileText, "getOnlyTranscodeVideoOnFormatChangeDefault", getOnlyTranscodeVideoOnFormatChange() );
@@ -2821,9 +2898,33 @@ namespace NMediaManager
                     replaceText( "%DEFAULT_USE_PRESET%", newFileText, "getUsePresetDefault", getUsePreset() );
                     replaceText( "%DEFAULT_PRESET%", "EMakeMKVPreset", newFileText, "getPresetDefault", getPreset() );
                     replaceText( "%DEFAULT_USE_TUNE%", newFileText, "getUseTuneDefault", getUseTune() );
-                    replaceText( "%DEFAULT_TUNE%", "EMakeMKVTune",  newFileText, "getTuneDefault", getTune() );
+                    replaceText( "%DEFAULT_TUNE%", "EMakeMKVTune", newFileText, "getTuneDefault", getTune() );
                     replaceText( "%DEFAULT_USE_PROFILE%", newFileText, "getUseProfileDefault", getUseProfile() );
                     replaceText( "%DEFAULT_PROFILE%", "EMakeMKVProfile", newFileText, "getProfileDefault", getProfile() );
+
+                    replaceText( "%MEDIA_FORMAT_ENCODER%", newFileText, "availableMediaEncoderFormatsStatic", "verbose", availableEncoderMediaFormats( true ), availableEncoderMediaFormats( false ) );
+                    replaceText( "%MEDIA_FORMAT_ENCODER_EXTENSION_MAP%", newFileText, "getEncoderFormatExtensionsMapStatic", getEncoderFormatExtensionsMap() );
+                    replaceText( "%MEDIA_FORMAT_DECODER%", newFileText, "availableMediaDecoderFormatsStatic", "verbose", availableDecoderMediaFormats( true ), availableDecoderMediaFormats( false ) );
+                    replaceText( "%MEDIA_FORMAT_DECODER_EXTENSION_MAP%", newFileText, "getDecoderFormatExtensionsMapStatic", getDecoderFormatExtensionsMap() );
+
+                    replaceText( "%AVAILABLE_VIDEO_ENCODING_CODECS%", newFileText, "availableVideoEncodingCodecsStatic", "verbose", availableVideoEncodingCodecs( true ), availableVideoEncodingCodecs( false ) );
+                    replaceText( "%AVAILABLE_VIDEO_DECODING_CODECS%", newFileText, "availableVideoDecodingCodecsStatic", "verbose", availableVideoDecodingCodecs( true ), availableVideoDecodingCodecs( false ) );
+                    replaceText( "%AVAILABLE_AUDIO_ENCODING_CODECS%", newFileText, "availableAudioEncodingCodecsStatic", "verbose", availableAudioEncodingCodecs( true ), availableAudioEncodingCodecs( false ) );
+                    replaceText( "%AVAILABLE_AUDIO_DECODING_CODECS%", newFileText, "availableAudioDecodingCodecsStatic", "verbose", availableAudioDecodingCodecs( true ), availableAudioDecodingCodecs( false ) );
+                    replaceText( "%AVAILABLE_SUBTITLE_ENCODING_CODECS%", newFileText, "availableSubtitleEncodingCodecsStatic", "verbose", availableSubtitleEncodingCodecs( true ), availableSubtitleEncodingCodecs( false ) );
+                    replaceText( "%AVAILABLE_SUBTITLE_DECODING_CODECS%", newFileText, "availableSubtitleDecodingCodecsStatic", "verbose", availableSubtitleDecodingCodecs( true ), availableSubtitleDecodingCodecs( false ) );
+
+                    replaceText( "%AVAILABLE_VIDEO_ENCODERS%", newFileText, "availableVideoEncodersStatic", "verbose", availableVideoEncoders( true ), availableVideoEncoders( false ) );
+                    replaceText( "%AVAILABLE_VIDEO_DECODERS%", newFileText, "availableVideoDecodersStatic", "verbose", availableVideoDecoders( true ), availableVideoDecoders( false ) );
+                    replaceText( "%AVAILABLE_AUDIO_ENCODERS%", newFileText, "availableAudioEncodersStatic", "verbose", availableAudioEncoders( true ), availableAudioEncoders( false ) );
+                    replaceText( "%AVAILABLE_AUDIO_DECODERS%", newFileText, "availableAudioDecodersStatic", "verbose", availableAudioDecoders( true ), availableAudioDecoders( false ) );
+                    replaceText( "%AVAILABLE_SUBTITLE_ENCODERS%", newFileText, "availableSubtitleEncodersStatic", "verbose", availableSubtitleEncoders( true ), availableSubtitleEncoders( false ) );
+                    replaceText( "%AVAILABLE_SUBTITLE_DECODERS%", newFileText, "availableSubtitleDecodersStatic", "verbose", availableSubtitleDecoders( true ), availableSubtitleDecoders( false ) );
+
+                    replaceText( "%CODEC_TO_ENCODER_MAP%", newFileText, "getCodecToEncoderMapStatic", getCodecToEncoderMap() );
+                    replaceText( "%CODEC_TO_DECODER_MAP%", newFileText, "getCodecToDecoderMapStatic", getCodecToDecoderMap() );
+
+                    replaceText( "%AVAILABLE_HW_ACCELS%", newFileText, "availableHWAccelsStatic", "verbose", availableHWAccels( true ), availableHWAccels( false ) );
 
                     QGuiApplication::clipboard()->setText( newFileText.join( "\n" ) );
                 }

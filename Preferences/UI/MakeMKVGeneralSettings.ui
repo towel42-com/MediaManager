@@ -15,9 +15,9 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QGroupBox" name="forceMediaFormat">
+    <widget class="QGroupBox" name="convertMediaFormat">
      <property name="title">
-      <string>Force Media files into Format?</string>
+      <string>Convert Media files into Format?</string>
      </property>
      <property name="checkable">
       <bool>true</bool>
@@ -75,7 +75,7 @@
   </layout>
  </widget>
  <tabstops>
-  <tabstop>forceMediaFormat</tabstop>
+  <tabstop>convertMediaFormat</tabstop>
  </tabstops>
  <resources/>
  <connections/>

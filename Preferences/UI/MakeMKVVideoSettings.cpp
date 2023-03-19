@@ -23,6 +23,7 @@
 #include "MakeMKVVideoSettings.h"
 #include "Preferences/Core/Preferences.h"
 #include "SABUtils/MediaInfo.h"
+#include "SABUtils/FFMpegFormats.h"
 
 #include "ui_MakeMKVVideoSettings.h"
 
@@ -163,7 +164,7 @@ namespace NMediaManager
             void CMakeMKVVideoSettings::slotCodecChanged()
             {
                 auto currentCodec = fImpl->videoCodec->currentData().toString();
-                bool isH265 = NSABUtils::CMediaInfo::isHEVCCodec( currentCodec );
+                bool isH265 = NPreferences::NCore::CPreferences::instance()->getMediaFormats()->isHEVCCodec( currentCodec );
                 fImpl->h265Options->setEnabled( isH265 );
 
                 auto hwAccel = NPreferences::NCore::CPreferences::instance()->getTranscodeHWAccel( currentCodec );

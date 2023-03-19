@@ -53,16 +53,16 @@ namespace NMediaManager
 
             void CMakeMKVGeneralSettings::load()
             {
-                fImpl->forceMediaFormat->setChecked( NPreferences::NCore::CPreferences::instance()->getForceMediaContainer() );
+                fImpl->convertMediaFormat->setChecked( NPreferences::NCore::CPreferences::instance()->getConvertMediaContainer() );
 
-                auto pos = fImpl->mediaFormats->findData( NPreferences::NCore::CPreferences::instance()->getForceMediaContainerName() );
+                auto pos = fImpl->mediaFormats->findData( NPreferences::NCore::CPreferences::instance()->getConvertMediaToContainer() );
                 fImpl->mediaFormats->setCurrentIndex( pos );
             }
 
             void CMakeMKVGeneralSettings::save()
             {
-                NPreferences::NCore::CPreferences::instance()->setForceMediaContainerName( fImpl->mediaFormats->currentData().toString() );
-                NPreferences::NCore::CPreferences::instance()->setForceMediaContainer( fImpl->forceMediaFormat->isChecked() );
+                NPreferences::NCore::CPreferences::instance()->setConvertMediaToContainer( fImpl->mediaFormats->currentData().toString() );
+                NPreferences::NCore::CPreferences::instance()->setConvertMediaContainer( fImpl->convertMediaFormat->isChecked() );
             }
        }
     }

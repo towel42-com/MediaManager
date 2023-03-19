@@ -42,6 +42,7 @@ namespace NSABUtils
     class CFFMpegFormats;
     enum class EFormatType;
     using TFormatMap = std::unordered_map< EFormatType, std::unordered_map< QString, QStringList > >;
+    using TCodecToEncoderDecoderMap = std::unordered_map< EFormatType, std::unordered_multimap< QString, QString > >;
 }
 
 class QProgressDialog;
@@ -173,49 +174,76 @@ namespace NMediaManager
                 QStringList getTranscodeArgs( const QString &srcName, const QString &destName ) const;
 
                 // ffmpeg results
-                QStringList availableAudioEncoders( bool verbose ) const;   // if true returns name - desc, otherwise name only
-                QStringList availableVideoEncoders( bool verbose ) const;   // if true returns name - desc, otherwise name only
-                QStringList availableSubtitleEncoders( bool verbose ) const;   // if true returns name - desc, otherwise name only
-
-                QStringList availableAudioDecoders( bool verbose ) const;   // if true returns name - desc, otherwise name only
-                QStringList availableVideoDecoders( bool verbose ) const;   // if true returns name - desc, otherwise name only
-                QStringList availableSubtitleDecoders( bool verbose ) const;   // if true returns name - desc, otherwise name only
-
                 QStringList availableEncoderMediaFormats( bool verbose ) const;   // if true returns name - desc, otherwise name only
+                NSABUtils::TFormatMap getEncoderFormatExtensionsMap() const;
                 QStringList getExtensionsForEncoderMediaFormat( const QString &format ) const;
+
                 QStringList availableDecoderMediaFormats( bool verbose ) const;   // if true returns name - desc, otherwise name only
+                NSABUtils::TFormatMap getDecoderFormatExtensionsMap() const;
                 QStringList getExtensionsForDecoderMediaFormat( const QString &format ) const;
 
-                NSABUtils::TFormatMap getEncoderFormatExtensionsMap() const;
-                NSABUtils::TFormatMap getDecoderFormatExtensionsMap() const;
+                QStringList availableVideoEncodingCodecs( bool verbose ) const;   // if true returns name - desc, otherwise name only
+                QStringList availableVideoDecodingCodecs( bool verbose ) const;   // if true returns name - desc, otherwise name only
+
+                QStringList availableAudioEncodingCodecs( bool verbose ) const;   // if true returns name - desc, otherwise name only
+                QStringList availableAudioDecodingCodecs( bool verbose ) const;   // if true returns name - desc, otherwise name only
+
+                QStringList availableSubtitleEncodingCodecs( bool verbose ) const;   // if true returns name - desc, otherwise name only
+                QStringList availableSubtitleDecodingCodecs( bool verbose ) const;   // if true returns name - desc, otherwise name only
+
+                QStringList availableVideoEncoders( bool verbose ) const;   // if true returns name - desc, otherwise name only
+                QStringList availableVideoDecoders( bool verbose ) const;   // if true returns name - desc, otherwise name only
+
+                QStringList availableAudioEncoders( bool verbose ) const;   // if true returns name - desc, otherwise name only
+                QStringList availableAudioDecoders( bool verbose ) const;   // if true returns name - desc, otherwise name only
+
+                QStringList availableSubtitleEncoders( bool verbose ) const;   // if true returns name - desc, otherwise name only
+                QStringList availableSubtitleDecoders( bool verbose ) const;   // if true returns name - desc, otherwise name only
+
+                NSABUtils::TCodecToEncoderDecoderMap getCodecToEncoderMap() const;
+                NSABUtils::TCodecToEncoderDecoderMap getCodecToDecoderMap() const;
 
                 QStringList availableHWAccels( bool verbose ) const;   // if true returns name - desc, otherwise name only
 
-                QStringList availableAudioEncodersDefault( bool verbose ) const;
-                QStringList availableVideoEncodersDefault( bool verbose ) const;
-                QStringList availableSubtitleEncodersDefault( bool verbose ) const;
+                QStringList availableMediaEncoderFormatsStatic( bool verbose ) const;
+                NSABUtils::TFormatMap getEncoderFormatExtensionsMapStatic() const;
 
-                QStringList availableAudioDecodersDefault( bool verbose ) const;
-                QStringList availableVideoDecodersDefault( bool verbose ) const;
-                QStringList availableSubtitleDecodersDefault( bool verbose ) const;
+                QStringList availableMediaDecoderFormatsStatic( bool verbose ) const;
+                NSABUtils::TFormatMap getDecoderFormatExtensionsMapStatic() const;
 
-                QStringList availableMediaEncoderFormatsDefault( bool verbose ) const;
-                NSABUtils::TFormatMap getEncoderFormatExtensionsMapDefault() const;
+                QStringList availableVideoEncodingCodecsStatic( bool verbose ) const;
+                QStringList availableVideoDecodingCodecsStatic( bool verbose ) const;
 
-                QStringList availableMediaDecoderFormatsDefault( bool verbose ) const;
-                NSABUtils::TFormatMap getDecoderFormatExtensionsMapDefault() const;
+                QStringList availableAudioEncodingCodecsStatic( bool verbose ) const;
+                QStringList availableAudioDecodingCodecsStatic( bool verbose ) const;
 
-                QStringList availableHWAccelsDefault( bool verbose ) const;
+                QStringList availableSubtitleEncodingCodecsStatic( bool verbose ) const;
+                QStringList availableSubtitleDecodingCodecsStatic( bool verbose ) const;
+
+                QStringList availableVideoEncodersStatic( bool verbose ) const;
+                QStringList availableVideoDecodersStatic( bool verbose ) const;
+
+                QStringList availableAudioEncodersStatic( bool verbose ) const;
+                QStringList availableAudioDecodersStatic( bool verbose ) const;
+
+                QStringList availableSubtitleEncodersStatic( bool verbose ) const;
+                QStringList availableSubtitleDecodersStatic( bool verbose ) const;
+
+                NSABUtils::TCodecToEncoderDecoderMap getCodecToEncoderMapStatic() const;
+                NSABUtils::TCodecToEncoderDecoderMap getCodecToDecoderMapStatic() const;
+
+                QStringList availableHWAccelsStatic( bool verbose ) const;
 
                 // container transcode arguments
-                void setForceMediaContainer( bool value );
-                bool getForceMediaContainerDefault() const;
-                bool getForceMediaContainer() const;
+                void setConvertMediaContainer( bool value );
+                bool getConvertMediaContainerDefault() const;
+                bool getConvertMediaContainer() const;
 
-                void setForceMediaContainerName( const QString &value );
-                QString getForceMediaContainerName() const;
-                QString getForceMediaContainerNameDefault() const;
-                QString getForceMediaContainerExt() const;
+                void setConvertMediaToContainer( const QString &value );
+                QString getConvertMediaToContainer() const;
+                QString getConvertMediaToContainerDefault() const;
+
+                QString getMediaContainerExt() const;
 
                 // audio codec transcode arguments
                 void setTranscodeAudio( bool value );
@@ -237,7 +265,6 @@ namespace NMediaManager
 
                 QString getTranscodeHWAccel() const;
                 QString getTranscodeHWAccel( const QString &codec ) const;
-
                 QString getCodecForHWAccel( const QString &codec ) const;
                 
                 void setOnlyTranscodeVideoOnFormatChange( bool value );
@@ -448,21 +475,7 @@ namespace NMediaManager
                 bool hasAMDGPU() const;
                 int getGPUCount() const;
 
-                //void setAMDGPUTranscode( bool value );
-                //bool getAMDGPUTranscodeDefault() const;
-                //bool getAMDGPUTranscode() const;
-
-                //void setIntelGPUTranscode( bool value );
-                //bool getIntelGPUTranscodeDefault() const;
-                //bool getIntelGPUTranscode() const;
-
-                //void setNVidiaGPUTranscode( bool value );
-                //bool getNVidiaGPUTranscodeDefault() const;
-                //bool getNVidiaGPUTranscode() const;
-
-                //void setSoftwareTranscode( bool value );
-                //bool getSoftwareTranscodeDefault() const;
-                //bool getSoftwareTranscode() const;
+                NSABUtils::CFFMpegFormats *getMediaFormats() const;
 
                 bool isMediaFile( const QFileInfo &fi ) const;
                 bool isSubtitleFile( const QFileInfo &info, bool *isLangFileFormat = nullptr ) const;
@@ -555,7 +568,6 @@ namespace NMediaManager
                 QString getDefaultOutDirPattern( bool forTV ) const;
                 QString getDefaultOutFilePattern( bool forTV ) const;
 
-                NSABUtils::CFFMpegFormats *getMediaFormats() const;
                 void loadMediaFormats( bool forceFromFFMpeg, QProgressDialog * dlg = nullptr ) const;
 
                 QTimer *fPrefChangeTimer{ nullptr };
