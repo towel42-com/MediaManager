@@ -59,7 +59,7 @@ namespace NMediaManager
             {
                 if ( transcodeNeeded.fFormat )
                 {
-                    auto msg = tr( "<p style='white-space:pre'>File <b>'%1'</b> is not using a %2 container</p>" ).arg( fileInfo.fileName() ).arg( NPreferences::NCore::CPreferences::instance()->getForceMediaContainerName() );
+                    auto msg = tr( "<p style='white-space:pre'>File <b>'%1'</b> is not using a %2 container</p>" ).arg( fileInfo.fileName() ).arg( NPreferences::NCore::CPreferences::instance()->getConvertMediaToContainer() );
                     return TItemStatus( NPreferences::EItemStatus::eWarning, msg );
                 }
             }
@@ -108,7 +108,7 @@ namespace NMediaManager
             processInfo.fSetMKVTagsOnSuccess = true;
             processInfo.fOldName = path;
 
-            auto newBaseName = fi.completeBaseName() + "." + NPreferences::NCore::CPreferences::instance()->getForceMediaContainerExt();
+            auto newBaseName = fi.completeBaseName() + "." + NPreferences::NCore::CPreferences::instance()->getMediaContainerExt();
             if ( !transcodeNeeded.fFormat )
                 newBaseName += ".new";
 
@@ -163,7 +163,7 @@ namespace NMediaManager
 
         QString CMakeMKVModel::getProgressLabel( const SProcessInfo &processInfo ) const
         {
-            auto retVal = QString( "Converting to H.265 %3<ul><li>%1</li>to<li>%2</li></ul>" ).arg( getDispName( processInfo.fOldName ) ).arg( getDispName( processInfo.fNewNames.front() ) ).arg( NPreferences::NCore::CPreferences::instance()->getForceMediaContainerName() );
+            auto retVal = QString( "Converting to H.265 %3<ul><li>%1</li>to<li>%2</li></ul>" ).arg( getDispName( processInfo.fOldName ) ).arg( getDispName( processInfo.fNewNames.front() ) ).arg( NPreferences::NCore::CPreferences::instance()->getConvertMediaToContainer() );
             return retVal;
         }
 
