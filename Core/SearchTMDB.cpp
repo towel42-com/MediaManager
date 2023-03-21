@@ -611,10 +611,18 @@ namespace NMediaManager
             fSearchInfo->setPageNumber( fSearchPageNumber.first );
             auto searchInfo = fSearchInfo->getSearchURL();
             if ( !searchInfo.has_value() )
+            {
+                fSearchInfo.reset();
+                QTimer::singleShot( 100, this, &CSearchTMDB::slotSearch );
                 return;
+            }
 
             if ( fStopSearching )
+            {
+                fSearchInfo.reset();
+                QTimer::singleShot( 100, this, &CSearchTMDB::slotSearch );
                 return;
+            }
 
             //qDebug() << searchInfo.value().first.toString();
             switch ( searchInfo.value().second )
