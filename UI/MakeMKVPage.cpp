@@ -64,17 +64,17 @@ namespace NMediaManager
 
         QString CMakeMKVPage::actionTitleName() const
         {
-            return tr( "Creating H.265 MKV..." );
+            return tr( "Transcoding Videos..." );
         }
 
         QString CMakeMKVPage::actionCancelName() const
         {
-            return tr( "Abort Creating H.265 MKV" );
+            return tr( "Abort Transcoding Videos" );
         }
 
         QString CMakeMKVPage::actionErrorName() const
         {
-            return tr( "Error while Creating H.265 MKV:" );
+            return tr( "Error while Transcoding Videos:" );
         }
     }
 }
