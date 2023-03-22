@@ -84,21 +84,23 @@ INSTALL( TARGETS ${PROJECT_NAME} RUNTIME DESTINATION . )
 INSTALL( FILES ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.pdb DESTINATION . CONFIGURATIONS Debug RelWithDebInfo )
 
 file( REAL_PATH ~/Dropbox/home/bin BINDIR EXPAND_TILDE)
+file( REAL_PATH $ENV{APPDATA} APPDATA EXPAND_TILDE)
+file( REAL_PATH $ENV{PROGRAMFILES} PROGRAMFILES EXPAND_TILDE)
 
 find_program( FFMPEG_EXEC ffmpeg.exe
-    PATHS ${BINDIR}/ffmpeg/bin
+    PATHS "${BINDIR}/ffmpeg/bin"
     REQUIRED )
 find_program( FFPROBE_EXEC ffprobe.exe
-    PATHS ${BINDIR}/ffmpeg/bin
+    PATHS "${BINDIR}/ffmpeg/bin"
     REQUIRED )
 find_program( FFMPEG_EMBY_EXEC ffmpeg.exe
-    PATHS d:/EmbyServer/System
+    PATHS "${APPDATA}/Emby-Server/system"
     REQUIRED )
 find_program( MKVMERGE_EXEC mkvmerge.exe
-    PATHS "C:/Program Files/MKVToolNix"
+    PATHS "${PROGRAMFILES}/MKVToolNix"
     REQUIRED )
 find_program( MKVPROPEDIT_EXEC mkvpropedit.exe
-    PATHS "C:/Program Files/MKVToolNix"
+    PATHS "${PROGRAMFILES}/MKVToolNix"
     REQUIRED )
 
 INSTALL( FILES "${FFMPEG_EXEC}" "${FFPROBE_EXEC}" "${MKVMERGE_EXEC}" "${MKVPROPEDIT_EXEC}"  DESTINATION . )
