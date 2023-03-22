@@ -30,6 +30,7 @@ set(qtproject_SRCS
     ExtendedInfo.cpp
     FFMpegInfo.cpp
     ExternalTools.cpp
+    GeneralSettings.cpp
     IgnoredPaths.cpp
     KnownAbbreviations.cpp
     KnownHyphenated.cpp
@@ -43,7 +44,7 @@ set(qtproject_SRCS
     SearchSettings.cpp
     SkippedPaths.cpp
     TagAnalysisSettings.cpp
-    TransformationSettings.cpp
+    MediaNamingSettings.cpp
     TVShowSettings.cpp
 )
 
@@ -52,6 +53,7 @@ set(qtproject_H
     BIFGeneration.h
     ExtendedInfo.h
     FFMpegInfo.h
+    GeneralSettings.h
     ExternalTools.h
     IgnoredPaths.h
     KnownAbbreviations.h
@@ -66,7 +68,7 @@ set(qtproject_H
     SearchSettings.h
     SkippedPaths.h
     TagAnalysisSettings.h
-    TransformationSettings.h
+    MediaNamingSettings.h
     TVShowSettings.h
 )
 
@@ -78,6 +80,7 @@ set(qtproject_UIS
     ExtendedInfo.ui
     FFMpegInfo.ui
     ExternalTools.ui
+    GeneralSettings.ui
     IgnoredPaths.ui
     KnownAbbreviations.ui
     KnownHyphenated.ui
@@ -91,7 +94,7 @@ set(qtproject_UIS
     SearchSettings.ui
     SkippedPaths.ui
     TagAnalysisSettings.ui
-    TransformationSettings.ui
+    MediaNamingSettings.ui
     TVShowSettings.ui   
 )
 

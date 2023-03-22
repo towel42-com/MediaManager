@@ -20,44 +20,48 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef __UI_MOVIESETTINGS_H
-#define __UI_MOVIESETTINGS_H
+#include "GeneralSettings.h"
+#include "Preferences/Core/Preferences.h"
 
-#include "BasePrefPage.h"
+#include "ui_GeneralSettings.h"
 
-namespace NSABUtils
-{
-    class CKeyValuePairModel;
-}
-class QStringListModel;
-class QLineEdit;
-class QListView;
-class QTreeWidgetItem;
+#include <QSettings>
+#include <QStringListModel>
+#include <QInputDialog>
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QRegularExpression>
+#include <QRegularExpressionValidator>
+#include "SABUtils/ButtonEnabler.h"
+#include "SABUtils/UtilityModels.h"
+#include "SABUtils/QtUtils.h"
+
 namespace NMediaManager
 {
     namespace NPreferences
     {
         namespace NUi
         {
-            namespace Ui
+            CGeneralSettings::CGeneralSettings( QWidget *parent ) :
+                CBasePrefPage( parent ),
+                fImpl( new Ui::CGeneralSettings )
             {
-                class CMovieSettings;
-            };
-            class CMovieSettings : public CBasePrefPage
-            {
-                Q_OBJECT
-            public:
-                CMovieSettings( QWidget *parent = nullptr );
-                ~CMovieSettings() override;
+                fImpl->setupUi( this );
+            }
 
-                virtual void load() override;
-                virtual void save() override;
-                virtual QStringList pageName() const override { return QStringList( { "Media Naming Settings", "Movies" } ); }
-            public Q_SLOTS:
-            private:
-                std::unique_ptr< Ui::CMovieSettings > fImpl;
-            };
+            CGeneralSettings::~CGeneralSettings()
+            {
+            }
+
+            void CGeneralSettings::load()
+            {
+                fImpl->loadMediaInfo->setChecked( NPreferences::NCore::CPreferences::instance()->getLoadMediaInfo() );
+            }
+
+            void CGeneralSettings::save()
+            {
+                NPreferences::NCore::CPreferences::instance()->setLoadMediaInfo( fImpl->loadMediaInfo->isChecked() );
+            }
         }
     }
 }
-#endif

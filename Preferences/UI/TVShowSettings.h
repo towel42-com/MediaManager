@@ -52,7 +52,7 @@ namespace NMediaManager
 
                 virtual void load() override;
                 virtual void save() override;
-                virtual QStringList pageName() const override { return QStringList( { "Transformation Settings", "TV Shows" } ); }
+                virtual QStringList pageName() const override { return QStringList( { "Media Naming Settings", "TV Shows" } ); }
             public Q_SLOTS:
             private:
                 std::unique_ptr< Ui::CTVShowSettings > fImpl;

@@ -34,7 +34,7 @@ set(qtproject_SRCS
     SelectTMDB.cpp
     ProcessConfirm.cpp
     TagsPage.cpp
-    TransformPage.cpp
+    MediaNamingPage.cpp
     ValidateMKVPage.cpp
 )
 
@@ -48,7 +48,7 @@ set(qtproject_H
     SelectTMDB.h
     ProcessConfirm.h
     TagsPage.h
-    TransformPage.h
+    MediaNamingPage.h
     ValidateMKVPage.h
 )
 

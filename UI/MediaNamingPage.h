@@ -20,8 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef _TRANSFORMSPAGE_H
-#define _TRANSFORMSPAGE_H
+#ifndef _MEDIANAMINGPAGE_H
+#define _MEDIANAMINGPAGE_H
 
 #include "BasePage.h"
 
@@ -32,7 +32,7 @@ namespace NMediaManager
 {
     namespace NModels
     {
-        class CTransformModel;
+        class CMediaNamingModel;
     }
 
     namespace NCore
@@ -45,12 +45,12 @@ namespace NMediaManager
 
     namespace NUi
     {
-        class CTransformPage : public CBasePage
+        class CMediaNamingPage : public CBasePage
         {
             Q_OBJECT
         public:
-            CTransformPage( QWidget *parent = nullptr );
-            virtual ~CTransformPage() override;
+            CMediaNamingPage( QWidget *parent = nullptr );
+            virtual ~CMediaNamingPage() override;
 
             virtual bool useSecondaryProgressBar() const override { return false; }
 
@@ -84,7 +84,7 @@ namespace NMediaManager
             virtual void loadSettings() override;
             bool autoSearchForNewNames( const QModelIndex &rootIdx, bool searchChildren, std::optional< NCore::EMediaType > mediaType );
 
-            NModels::CTransformModel *model();
+            NModels::CMediaNamingModel *model();
 
             NCore::CSearchTMDB *fSearchTMDB{ nullptr };
             uint64_t fSearchesCompleted{ 0 };

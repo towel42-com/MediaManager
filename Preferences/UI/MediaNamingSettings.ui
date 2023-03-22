@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>NMediaManager::NPreferences::NUi::CTransformationSettings</class>
- <widget class="QWidget" name="NMediaManager::NPreferences::NUi::CTransformationSettings">
+ <class>NMediaManager::NPreferences::NUi::CMediaNamingSettings</class>
+ <widget class="QWidget" name="NMediaManager::NPreferences::NUi::CMediaNamingSettings">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -25,13 +25,6 @@
     <widget class="QCheckBox" name="exactMatchesOnly">
      <property name="text">
       <string>Exact Matches Only?</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QCheckBox" name="loadMediaInfo">
-     <property name="text">
-      <string>Load Media Information?</string>
      </property>
     </widget>
    </item>

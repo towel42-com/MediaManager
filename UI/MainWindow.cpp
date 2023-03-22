@@ -24,7 +24,7 @@
 #include "MakeMKVPage.h"
 #include "ValidateMKVPage.h"
 #include "MergeSRTPage.h"
-#include "TransformPage.h"
+#include "MediaNamingPage.h"
 #include "TagsPage.h"
 #include "BIFViewerPage.h"
 #include "GenerateBIFPage.h"
@@ -233,7 +233,7 @@ namespace NMediaManager
         {
             addPage( std::make_shared< STabDef >( new CMakeMKVPage( nullptr ), tr( "Transcode Media" ), QString::fromUtf8( ":/convert.png" ), fImpl->tabWidget ) );
             addPage( std::make_shared< STabDef >( new CMergeSRTPage( nullptr ), tr( "Merge SRT" ), QString::fromUtf8( ":/cc.png" ), fImpl->tabWidget ) );
-            addPage( std::make_shared< STabDef >( new CTransformPage( nullptr ), tr( "Media Namer" ), QString::fromUtf8( ":/rename.png" ), fImpl->tabWidget ) );
+            addPage( std::make_shared< STabDef >( new CMediaNamingPage( nullptr ), tr( "Media Namer" ), QString::fromUtf8( ":/rename.png" ), fImpl->tabWidget ) );
             addPage( std::make_shared< STabDef >( new CTagsPage( nullptr ), tr( "Media Tags" ), QString::fromUtf8( ":/tag.png" ), fImpl->tabWidget ) );
             addPage( std::make_shared< STabDef >( new CValidateMKVPage( nullptr ), tr( "Validate MKV" ), QString::fromUtf8( ":/mkv.png" ), fImpl->tabWidget ) );
             addPage( std::make_shared< STabDef >( new CGenerateBIFPage( nullptr ), tr( "Generate Thumbnail Videos" ), QString::fromUtf8( ":/roku.png" ), fImpl->tabWidget ) );
@@ -318,7 +318,7 @@ namespace NMediaManager
             int index = -1;
             for ( auto &&ii : fUIComponentMap )
             {
-                if ( dynamic_cast< CTransformPage * >( ii->fPage ) )
+                if ( dynamic_cast< CMediaNamingPage * >( ii->fPage ) )
                 {
                     index = fImpl->tabWidget->indexOf( ii->fTab );
                     break;

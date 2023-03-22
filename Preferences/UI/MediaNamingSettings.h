@@ -20,8 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef __UI_TRANSFORMATIONSETTINGS_H
-#define __UI_TRANSFORMATIONSETTINGS_H
+#ifndef __UI_MEDIANAMINGSETTINGS_H
+#define __UI_MEDIANAMINGSETTINGS_H
 
 #include "BasePrefPage.h"
 
@@ -42,23 +42,23 @@ namespace NMediaManager
         {
             namespace Ui
             {
-                class CTransformationSettings;
+                class CMediaNamingSettings;
             };
-            class CTransformationSettings : public CBasePrefPage
+            class CMediaNamingSettings : public CBasePrefPage
             {
                 Q_OBJECT
             public:
-                CTransformationSettings( QWidget *parent = nullptr );
-                virtual ~CTransformationSettings() override;
+                CMediaNamingSettings( QWidget *parent = nullptr );
+                virtual ~CMediaNamingSettings() override;
 
                 virtual void load() override;
                 virtual void save() override;
-                virtual QStringList pageName() const override { return QStringList( { "Transformation Settings" } ); }
+                virtual QStringList pageName() const override { return QStringList( { "Media Naming Settings" } ); }
             public Q_SLOTS:
                 void slotRippedRegEXChanged();
 
             private:
-                std::unique_ptr< Ui::CTransformationSettings > fImpl;
+                std::unique_ptr< Ui::CMediaNamingSettings > fImpl;
                 QValidator *fValidator{ nullptr };
             };
         }

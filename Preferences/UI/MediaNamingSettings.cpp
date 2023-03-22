@@ -20,10 +20,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "TransformationSettings.h"
+#include "MediaNamingSettings.h"
 #include "Preferences/Core/Preferences.h"
 
-#include "ui_TransformationSettings.h"
+#include "ui_MediaNamingSettings.h"
 
 #include <QSettings>
 #include <QStringListModel>
@@ -42,39 +42,37 @@ namespace NMediaManager
     {
         namespace NUi
         {
-            CTransformationSettings::CTransformationSettings( QWidget *parent ) :
+            CMediaNamingSettings::CMediaNamingSettings( QWidget *parent ) :
                 CBasePrefPage( parent ),
-                fImpl( new Ui::CTransformationSettings )
+                fImpl( new Ui::CMediaNamingSettings )
             {
                 fImpl->setupUi( this );
                 fValidator = new QRegularExpressionValidator( QRegularExpression( R"(.*\?\<num\>.*)" ), this );
-                connect( fImpl->rippedWithMakeMKVRegEX, &QLineEdit::textChanged, this, &CTransformationSettings::slotRippedRegEXChanged );
+                connect( fImpl->rippedWithMakeMKVRegEX, &QLineEdit::textChanged, this, &CMediaNamingSettings::slotRippedRegEXChanged );
                 fImpl->rippedWithMakeMKVRegEX->setValidator( fValidator );
             }
 
-            CTransformationSettings::~CTransformationSettings()
+            CMediaNamingSettings::~CMediaNamingSettings()
             {
             }
 
-            void CTransformationSettings::load()
+            void CMediaNamingSettings::load()
             {
                 fImpl->treatAsTVShowByDefault->setChecked( NPreferences::NCore::CPreferences::instance()->getTreatAsTVShowByDefault() );
                 fImpl->exactMatchesOnly->setChecked( NPreferences::NCore::CPreferences::instance()->getExactMatchesOnly() );
-                fImpl->loadMediaInfo->setChecked( NPreferences::NCore::CPreferences::instance()->getLoadMediaInfo() );
                 fImpl->onlyTransformDirectories->setChecked( NPreferences::NCore::CPreferences::instance()->getOnlyTransformDirectories() );
                 fImpl->rippedWithMakeMKVRegEX->setText( NPreferences::NCore::CPreferences::instance()->getRippedWithMakeMKVRegEX() );
             }
 
-            void CTransformationSettings::save()
+            void CMediaNamingSettings::save()
             {
                 NPreferences::NCore::CPreferences::instance()->setTreatAsTVShowByDefault( fImpl->treatAsTVShowByDefault->isChecked() );
                 NPreferences::NCore::CPreferences::instance()->setExactMatchesOnly( fImpl->exactMatchesOnly->isChecked() );
-                NPreferences::NCore::CPreferences::instance()->setLoadMediaInfo( fImpl->loadMediaInfo->isChecked() );
                 NPreferences::NCore::CPreferences::instance()->setOnlyTransformDirectories( fImpl->onlyTransformDirectories->isChecked() );
                 NPreferences::NCore::CPreferences::instance()->setRippedWithMakeMKVRegEX( fImpl->rippedWithMakeMKVRegEX->text() );
             }
 
-            void CTransformationSettings::slotRippedRegEXChanged()
+            void CMediaNamingSettings::slotRippedRegEXChanged()
             {
                 int pos = -1;
                 auto state = fValidator->validate( fImpl->rippedWithMakeMKVRegEX->text(), pos );

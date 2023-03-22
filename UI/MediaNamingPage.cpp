@@ -20,10 +20,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "TransformPage.h"
+#include "MediaNamingPage.h"
 #include "SelectTMDB.h"
 #include "Preferences/Core/Preferences.h"
-#include "Models/TransformModel.h"
+#include "Models/MediaNamingModel.h"
 #include "Core/TransformResult.h"
 #include "Core/SearchTMDBInfo.h"
 #include "Core/SearchTMDB.h"
@@ -42,40 +42,40 @@ namespace NMediaManager
 {
     namespace NUi
     {
-        CTransformPage::CTransformPage( QWidget *parent ) :
+        CMediaNamingPage::CMediaNamingPage( QWidget *parent ) :
             CBasePage( "Transform", parent )
         {
             fSearchTMDB = new NCore::CSearchTMDB( nullptr, std::optional< QString >(), this );
             fSearchTMDB->setSkipImages( true );
-            connect( fSearchTMDB, &NCore::CSearchTMDB::sigAutoSearchFinished, this, &CTransformPage::slotAutoSearchFinished );
+            connect( fSearchTMDB, &NCore::CSearchTMDB::sigAutoSearchFinished, this, &CMediaNamingPage::slotAutoSearchFinished );
         }
 
-        CTransformPage::~CTransformPage()
+        CMediaNamingPage::~CMediaNamingPage()
         {
             saveSettings();
         }
 
-        void CTransformPage::loadSettings()
+        void CMediaNamingPage::loadSettings()
         {
             CBasePage::loadSettings();
         }
 
-        NMediaManager::NModels::CTransformModel *CTransformPage::model()
+        NMediaManager::NModels::CMediaNamingModel *CMediaNamingPage::model()
         {
             if ( !fModel )
                 return nullptr;
 
-            return dynamic_cast< NModels::CTransformModel * >( fModel.get() );
+            return dynamic_cast< NModels::CMediaNamingModel * >( fModel.get() );
         }
 
-        void CTransformPage::postNonQueuedRun( bool finalStep, bool canceled )
+        void CMediaNamingPage::postNonQueuedRun( bool finalStep, bool canceled )
         {
             emit sigStopStayAwake();
             if ( finalStep && !canceled )
                 load( true );
         }
 
-        bool CTransformPage::extendContextMenu( QMenu *menu, const QModelIndex &idx )
+        bool CMediaNamingPage::extendContextMenu( QMenu *menu, const QModelIndex &idx )
         {
             if ( !idx.isValid() )
                 return false;
@@ -108,7 +108,7 @@ namespace NMediaManager
             return true;
         }
 
-        void CTransformPage::slotAutoSearchForNewNames()
+        void CMediaNamingPage::slotAutoSearchForNewNames()
         {
             if ( !model() || !model()->rowCount() )
             {
@@ -139,7 +139,7 @@ namespace NMediaManager
             }
         }
 
-        bool CTransformPage::autoSearchForNewNames( const QModelIndex &index, bool searchChildren, std::optional< NCore::EMediaType > mediaType )
+        bool CMediaNamingPage::autoSearchForNewNames( const QModelIndex &index, bool searchChildren, std::optional< NCore::EMediaType > mediaType )
         {
             bool retVal = false;
 
@@ -220,7 +220,7 @@ namespace NMediaManager
             return retVal;
         }
 
-        void CTransformPage::slotAutoSearchFinished( const QString &path, NCore::SSearchTMDBInfo *searchInfo, bool searchesRemaining )
+        void CMediaNamingPage::slotAutoSearchFinished( const QString &path, NCore::SSearchTMDBInfo *searchInfo, bool searchesRemaining )
         {
             auto results = fSearchTMDB->getResult( path );
             bool notFound = ( results.size() == 1 ) && results.front()->isNotFoundResult();
@@ -320,44 +320,44 @@ namespace NMediaManager
             }
         }
 
-        void CTransformPage::postLoadFinished( bool canceled )
+        void CMediaNamingPage::postLoadFinished( bool canceled )
         {
             if ( !canceled )
-                QTimer::singleShot( 0, this, &CTransformPage::slotAutoSearchForNewNames );
+                QTimer::singleShot( 0, this, &CMediaNamingPage::slotAutoSearchForNewNames );
             CBasePage::postLoadFinished( canceled );
         }
 
-        NModels::CDirModel *CTransformPage::createDirModel()
+        NModels::CDirModel *CMediaNamingPage::createDirModel()
         {
-            return new NModels::CTransformModel( this );
+            return new NModels::CMediaNamingModel( this );
         }
 
-        QString CTransformPage::loadTitleName() const
+        QString CMediaNamingPage::loadTitleName() const
         {
             return tr( "Finding Files" );
         }
 
-        QString CTransformPage::loadCancelName() const
+        QString CMediaNamingPage::loadCancelName() const
         {
             return tr( "Cancel" );
         }
 
-        QString CTransformPage::actionTitleName() const
+        QString CMediaNamingPage::actionTitleName() const
         {
             return tr( "Renaming Files..." );
         }
 
-        QString CTransformPage::actionCancelName() const
+        QString CMediaNamingPage::actionCancelName() const
         {
             return tr( "Abort Rename" );
         }
 
-        QString CTransformPage::actionErrorName() const
+        QString CMediaNamingPage::actionErrorName() const
         {
             return tr( "Error while Transforming Media:" );
         }
 
-        void CTransformPage::setupModel()
+        void CMediaNamingPage::setupModel()
         {
             model()->slotTVOutputFilePatternChanged( NPreferences::NCore::CPreferences::instance()->getTVOutFilePattern() );
             model()->slotTVOutputDirPatternChanged( NPreferences::NCore::CPreferences::instance()->getTVOutDirPattern( true ) );
@@ -367,7 +367,7 @@ namespace NMediaManager
             CBasePage::setupModel();
         }
 
-        void CTransformPage::manualSearch( const QModelIndex &idx )
+        void CMediaNamingPage::manualSearch( const QModelIndex &idx )
         {
             auto baseIdx = model()->index( idx.row(), NModels::EColumns::eFSName, idx.parent() );
             auto titleInfo = model()->getTransformResult( idx, true );
@@ -392,14 +392,14 @@ namespace NMediaManager
             emit sigDialogClosed();
         }
 
-        QMenu *CTransformPage::menu()
+        QMenu *CMediaNamingPage::menu()
         {
             if ( !fMenu )
             {
                 fMenu = new QMenu( this );
                 fMenu->setObjectName( "Media Namer Menu " );
                 fMenu->setTitle( tr( "Media Namer" ) );
-                connect( fMenu, &QMenu::aboutToShow, this, &CTransformPage::slotMenuAboutToShow );
+                connect( fMenu, &QMenu::aboutToShow, this, &CMediaNamingPage::slotMenuAboutToShow );
 
                 fExactMatchesOnlyAction = new QAction( this );
                 fExactMatchesOnlyAction->setObjectName( QString::fromUtf8( "actionExactMatchesOnly" ) );
@@ -465,7 +465,7 @@ namespace NMediaManager
             return fMenu;
         }
 
-        void CTransformPage::slotMenuAboutToShow()
+        void CMediaNamingPage::slotMenuAboutToShow()
         {
             fTreatAsTVShowByDefaultAction->setChecked( NPreferences::NCore::CPreferences::instance()->getTreatAsTVShowByDefault() );
             fExactMatchesOnlyAction->setChecked( NPreferences::NCore::CPreferences::instance()->getExactMatchesOnly() );
@@ -476,9 +476,9 @@ namespace NMediaManager
             fDeleteCustom->setChecked( NPreferences::NCore::CPreferences::instance()->deleteCustom() );
         }
 
-        void CTransformPage::slotPreferencesChanged( NPreferences::EPreferenceTypes prefTypes )
+        void CMediaNamingPage::slotPreferencesChanged( NPreferences::EPreferenceTypes prefTypes )
         {
-            if ( prefTypes & NPreferences::EPreferenceType::eTransformPrefs )
+            if ( prefTypes & NPreferences::EPreferenceType::eMediaRenamerPrefs )
             {
                 if ( model() )
                     model()->reloadModel();

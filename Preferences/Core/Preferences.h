@@ -65,7 +65,7 @@ namespace NMediaManager
             eSystemPrefs = 1,
             eColorsPrefs = 2,
             eLoadPrefs = 4,
-            eTransformPrefs = 8,
+            eMediaRenamerPrefs = 8,
             eTagPrefs = 16,
             eExtToolsPrefs = 32,
             eBIFPrefs = 64,

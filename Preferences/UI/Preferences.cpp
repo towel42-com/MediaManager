@@ -26,6 +26,7 @@
 #include "ui_Preferences.h"
 
 #include "ExtendedInfo.h"
+#include "GeneralSettings.h"
 #include "FFMpegInfo.h"
 #include "ExternalTools.h"
 #include "IgnoredPaths.h"
@@ -36,7 +37,7 @@
 #include "KnownHyphenated.h"
 #include "SkippedPaths.h"
 #include "SearchSettings.h"
-#include "TransformationSettings.h"
+#include "MediaNamingSettings.h"
 #include "TagAnalysisSettings.h"
 #include "TVShowSettings.h"
 #include "BIFGeneration.h"
@@ -118,6 +119,7 @@ namespace NMediaManager
 
             void CPreferences::loadPages()
             {
+                addPage( new CGeneralSettings );
                 addPage( new CExternalTools );
                 addPage( new CFFMpegInfo );
 
@@ -128,7 +130,7 @@ namespace NMediaManager
                 addPage( new CExtendedInfo );
                 addPage( new CKnownAbbreviations );
 
-                addPage( new CTransformationSettings );
+                addPage( new CMediaNamingSettings );
                 addPage( new CMovieSettings );
                 addPage( new CTVShowSettings );
 

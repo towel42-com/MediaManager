@@ -20,19 +20,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef __UI_MOVIESETTINGS_H
-#define __UI_MOVIESETTINGS_H
+#ifndef __UI_GENERALSETTINGS_H
+#define __UI_GENERALSETTINGS_H
 
 #include "BasePrefPage.h"
 
-namespace NSABUtils
-{
-    class CKeyValuePairModel;
-}
-class QStringListModel;
-class QLineEdit;
-class QListView;
-class QTreeWidgetItem;
 namespace NMediaManager
 {
     namespace NPreferences
@@ -41,21 +33,22 @@ namespace NMediaManager
         {
             namespace Ui
             {
-                class CMovieSettings;
+                class CGeneralSettings;
             };
-            class CMovieSettings : public CBasePrefPage
+            class CGeneralSettings : public CBasePrefPage
             {
                 Q_OBJECT
             public:
-                CMovieSettings( QWidget *parent = nullptr );
-                ~CMovieSettings() override;
+                CGeneralSettings( QWidget *parent = nullptr );
+                virtual ~CGeneralSettings() override;
 
                 virtual void load() override;
                 virtual void save() override;
-                virtual QStringList pageName() const override { return QStringList( { "Media Naming Settings", "Movies" } ); }
+                virtual QStringList pageName() const override { return QStringList( { "General Settings" } ); }
             public Q_SLOTS:
+
             private:
-                std::unique_ptr< Ui::CMovieSettings > fImpl;
+                std::unique_ptr< Ui::CGeneralSettings > fImpl;
             };
         }
     }

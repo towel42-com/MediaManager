@@ -82,8 +82,8 @@ namespace NMediaManager
                     return forEnum ? "NMediaManager::NPreferences::eSystemPrefs" : "System";
                 case eLoadPrefs:
                     return forEnum ? "NMediaManager::NPreferences::eLoadPrefs" : "Load";
-                case eTransformPrefs:
-                    return forEnum ? "NMediaManager::NPreferences::eTransformPrefs" : "Transform";
+                case eMediaRenamerPrefs:
+                    return forEnum ? "NMediaManager::NPreferences::eMediaRenamerPrefs" : "MediaRenamer";
                 case eTagPrefs:
                     return forEnum ? "NMediaManager::NPreferences::eTagPrefs" : "Tags";
                 case eExtToolsPrefs:
@@ -390,6 +390,22 @@ namespace NMediaManager
             {
                 return getMediaFormats()->getSubtitleDecoderExtensions();
             }
+            
+            void CPreferences::setLoadMediaInfo( bool value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
+                settings.setValue( "LoadMediaInfo", value );
+                emitSigPreferencesChanged( EPreferenceType::eSystemPrefs );
+            }
+
+            bool CPreferences::getLoadMediaInfo() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
+                return settings.value( "LoadMediaInfo", true ).toBool();
+            }
+
 
             /// ////////////////////////////////////////////////////////
             /// transform Options
@@ -397,15 +413,15 @@ namespace NMediaManager
             void CPreferences::setTreatAsTVShowByDefault( bool value )
             {
                 QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
                 settings.setValue( "TreatAsTVShowByDefault", value );
-                emitSigPreferencesChanged( EPreferenceType::eTransformPrefs );
+                emitSigPreferencesChanged( EPreferenceType::eMediaRenamerPrefs );
             }
 
             bool CPreferences::getTreatAsTVShowByDefault() const
             {
                 QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
                 return settings.value( "TreatAsTVShowByDefault", false ).toBool();
             }
 
@@ -422,61 +438,46 @@ namespace NMediaManager
             void CPreferences::setExactMatchesOnly( bool value )
             {
                 QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
                 settings.setValue( "ExactMatchesOnly", value );
-                emitSigPreferencesChanged( EPreferenceType::eTransformPrefs );
+                emitSigPreferencesChanged( EPreferenceType::eMediaRenamerPrefs );
             }
 
             bool CPreferences::getExactMatchesOnly() const
             {
                 QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
                 return settings.value( "ExactMatchesOnly", false ).toBool();
-            }
-
-            void CPreferences::setLoadMediaInfo( bool value )
-            {
-                QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
-                settings.setValue( "LoadMediaInfo", value );
-                emitSigPreferencesChanged( EPreferenceType::eTransformPrefs );
-            }
-
-            bool CPreferences::getLoadMediaInfo() const
-            {
-                QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
-                return settings.value( "LoadMediaInfo", true ).toBool();
             }
 
             void CPreferences::setOnlyTransformDirectories( bool value )
             {
                 QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
                 settings.setValue( "OnlyLoadDirectories", value );
-                emitSigPreferencesChanged( EPreferenceType::eTransformPrefs );
+                emitSigPreferencesChanged( EPreferenceType::eMediaRenamerPrefs );
             }
 
             bool CPreferences::getOnlyTransformDirectories() const
             {
                 QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
                 return settings.value( "OnlyLoadDirectories", false ).toBool();
             }
 
             void CPreferences::setTVOutFilePattern( const QString &value )
             {
                 QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
                 settings.beginGroup( "ForTV" );
                 settings.setValue( "OutFilePattern", value );
-                emitSigPreferencesChanged( EPreferenceType::eTransformPrefs );
+                emitSigPreferencesChanged( EPreferenceType::eMediaRenamerPrefs );
             }
 
             QString CPreferences::getTVOutFilePattern() const
             {
                 QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
                 settings.beginGroup( "ForTV" );
 
                 return settings.value( "OutFilePattern", getDefaultOutFilePattern( true ) ).toString();
@@ -485,16 +486,16 @@ namespace NMediaManager
             void CPreferences::setSeasonOutDirPattern( const QString &value )
             {
                 QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
                 settings.beginGroup( "ForTV" );
                 settings.setValue( "SeasonDirPattern", value );
-                emitSigPreferencesChanged( EPreferenceType::eTransformPrefs );
+                emitSigPreferencesChanged( EPreferenceType::eMediaRenamerPrefs );
             }
 
             QString CPreferences::getSeasonOutDirPattern() const
             {
                 QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
                 settings.beginGroup( "ForTV" );
 
                 return settings.value( "SeasonDirPattern", getDefaultSeasonDirPattern() ).toString();
@@ -503,16 +504,16 @@ namespace NMediaManager
             void CPreferences::setTVOutDirPattern( const QString &value )
             {
                 QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
                 settings.beginGroup( "ForTV" );
                 settings.setValue( "OutDirPattern", value );
-                emitSigPreferencesChanged( EPreferenceType::eTransformPrefs );
+                emitSigPreferencesChanged( EPreferenceType::eMediaRenamerPrefs );
             }
 
             QString CPreferences::getTVOutDirPattern( bool expandSeasonDir ) const
             {
                 QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
                 settings.beginGroup( "ForTV" );
 
                 auto retVal = settings.value( "OutDirPattern", getDefaultOutDirPattern( true ) ).toString();
@@ -524,16 +525,16 @@ namespace NMediaManager
             void CPreferences::setMovieOutFilePattern( const QString &value )
             {
                 QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
                 settings.beginGroup( "ForMovies" );
                 settings.setValue( "OutFilePattern", value );
-                emitSigPreferencesChanged( EPreferenceType::eTransformPrefs );
+                emitSigPreferencesChanged( EPreferenceType::eMediaRenamerPrefs );
             }
 
             QString CPreferences::getMovieOutFilePattern() const
             {
                 QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
                 settings.beginGroup( "ForMovies" );
 
                 return settings.value( "OutFilePattern", getDefaultOutFilePattern( false ) ).toString();
@@ -542,16 +543,16 @@ namespace NMediaManager
             void CPreferences::setMovieOutDirPattern( const QString &value )
             {
                 QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
                 settings.beginGroup( "ForMovies" );
                 settings.setValue( "OutDirPattern", value );
-                emitSigPreferencesChanged( EPreferenceType::eTransformPrefs );
+                emitSigPreferencesChanged( EPreferenceType::eMediaRenamerPrefs );
             }
 
             QString CPreferences::getMovieOutDirPattern() const
             {
                 QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
                 settings.beginGroup( "ForMovies" );
 
                 return settings.value( "OutDirPattern", getDefaultOutDirPattern( false ) ).toString();
@@ -560,75 +561,75 @@ namespace NMediaManager
             void CPreferences::setDeleteCustom( bool value )
             {
                 QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
                 settings.setValue( "DeleteCustom", value );
-                emitSigPreferencesChanged( EPreferenceType::eTransformPrefs );
+                emitSigPreferencesChanged( EPreferenceType::eMediaRenamerPrefs );
             }
 
             bool CPreferences::deleteCustom() const
             {
                 QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
                 return settings.value( "DeleteCustom", true ).toBool();
             }
 
             void CPreferences::setDeleteEXE( bool value )
             {
                 QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
                 settings.setValue( "DeleteEXE", value );
-                emitSigPreferencesChanged( EPreferenceType::eTransformPrefs );
+                emitSigPreferencesChanged( EPreferenceType::eMediaRenamerPrefs );
             }
 
             bool CPreferences::deleteEXE() const
             {
                 QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
                 return settings.value( "DeleteEXE", true ).toBool();
             }
 
             void CPreferences::setDeleteNFO( bool value )
             {
                 QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
                 settings.setValue( "DeleteNFO", value );
-                emitSigPreferencesChanged( EPreferenceType::eTransformPrefs );
+                emitSigPreferencesChanged( EPreferenceType::eMediaRenamerPrefs );
             }
 
             bool CPreferences::deleteNFO() const
             {
                 QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
                 return settings.value( "DeleteNFO", true ).toBool();
             }
 
             void CPreferences::setDeleteBAK( bool value )
             {
                 QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
                 settings.setValue( "DeleteBAK", value );
-                emitSigPreferencesChanged( EPreferenceType::eTransformPrefs );
+                emitSigPreferencesChanged( EPreferenceType::eMediaRenamerPrefs );
             }
 
             bool CPreferences::deleteBAK() const
             {
                 QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
                 return settings.value( "DeleteBAK", true ).toBool();
             }
 
             void CPreferences::setDeleteImages( bool value )
             {
                 QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
                 settings.setValue( "DeleteImages", value );
-                emitSigPreferencesChanged( EPreferenceType::eTransformPrefs );
+                emitSigPreferencesChanged( EPreferenceType::eMediaRenamerPrefs );
             }
 
             bool CPreferences::deleteImages() const
             {
                 QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
                 return settings.value( "DeleteImages", true ).toBool();
             }
 
@@ -646,46 +647,46 @@ namespace NMediaManager
             void CPreferences::setDeleteTXT( bool value )
             {
                 QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
                 settings.setValue( "DeleteTXT", value );
-                emitSigPreferencesChanged( EPreferenceType::eTransformPrefs );
+                emitSigPreferencesChanged( EPreferenceType::eMediaRenamerPrefs );
             }
 
             bool CPreferences::deleteTXT() const
             {
                 QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
                 return settings.value( "DeleteTXT", true ).toBool();
             }
 
             void CPreferences::setCustomPathsToDelete( const QStringList &values )
             {
                 QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
                 const QStringList &realValues = values;
                 settings.setValue( "CustomToDelete", realValues );
-                emitSigPreferencesChanged( EPreferenceType::eTransformPrefs );
+                emitSigPreferencesChanged( EPreferenceType::eMediaRenamerPrefs );
             }
 
             QStringList CPreferences::getCustomPathsToDelete() const
             {
                 QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
                 return settings.value( "CustomToDelete", getDefaultCustomPathsToDelete() ).toStringList();
             }
 
             void CPreferences::setRippedWithMakeMKVRegEX( const QString &value )
             {
                 QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
                 settings.setValue( "RippedWithMKVRegEX", value );
-                emitSigPreferencesChanged( EPreferenceType::eTransformPrefs );
+                emitSigPreferencesChanged( EPreferenceType::eMediaRenamerPrefs );
             }
 
             QString CPreferences::getRippedWithMakeMKVRegEX() const
             {
                 QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
                 auto retVal = settings.value( "RippedWithMKVRegEX", getDefaultRippedWithMakeMKVRegEX() ).toString();
 #ifdef _DEBUG
                 Q_ASSERT_X( retVal.indexOf( "?<num>" ) >= 0, "getRippedWithMKVRegEX", "Invalid setting must contain the capture of num" );
@@ -744,7 +745,7 @@ namespace NMediaManager
             void CPreferences::setKnownStrings( const QStringList &value )
             {
                 QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
                 QSet< QString > tmp;
                 QStringList realValues;
                 for ( auto &&ii : value )
@@ -754,7 +755,7 @@ namespace NMediaManager
                 }
 
                 settings.setValue( "KnownStrings", realValues );
-                emitSigPreferencesChanged( EPreferenceType::eTransformPrefs );
+                emitSigPreferencesChanged( EPreferenceType::eMediaRenamerPrefs );
             }
 
             struct SCmp
@@ -772,7 +773,7 @@ namespace NMediaManager
             QStringList CPreferences::getKnownStrings() const
             {
                 QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
                 auto tmp = settings.value( "KnownStrings", getDefaultKnownStrings() ).toStringList();
                 auto tmp2 = std::set< QString, SCmp >( { tmp.begin(), tmp.end() } );
                 QStringList retVal;
@@ -806,15 +807,15 @@ namespace NMediaManager
             void CPreferences::setKnownExtendedStrings( const QStringList &value )
             {
                 QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
                 settings.setValue( "KnownExtendedStrings", value );
-                emitSigPreferencesChanged( EPreferenceType::eTransformPrefs );
+                emitSigPreferencesChanged( EPreferenceType::eMediaRenamerPrefs );
             }
 
             QStringList CPreferences::getKnownExtendedStrings() const
             {
                 QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
                 return settings.value( "KnownExtendedStrings", getDefaultKnownExtendedStrings() ).toStringList();
             }
 
@@ -831,30 +832,30 @@ namespace NMediaManager
             void CPreferences::setKnownAbbreviations( const QVariantMap &value )
             {
                 QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
                 settings.setValue( "KnownAbbreviations", value );
-                emitSigPreferencesChanged( EPreferenceType::eTransformPrefs );
+                emitSigPreferencesChanged( EPreferenceType::eMediaRenamerPrefs );
             }
 
             QVariantMap CPreferences::getKnownAbbreviations() const
             {
                 QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
                 return settings.value( "KnownAbbreviations", getDefaultKnownAbbreviations() ).toMap();
             };
 
             void CPreferences::setKnownHyphenated( const QStringList &value )
             {
                 QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
                 settings.setValue( "KnownHyphenated", value );
-                emitSigPreferencesChanged( EPreferenceType::eTransformPrefs );
+                emitSigPreferencesChanged( EPreferenceType::eMediaRenamerPrefs );
             }
 
             QStringList CPreferences::getKnownHyphenated() const
             {
                 QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eTransformPrefs ) );
+                settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
                 return settings.value( "KnownHyphenated", getDefaultKnownHyphenated() ).toStringList();
             };
 
@@ -2293,7 +2294,7 @@ namespace NMediaManager
                                 fSubtitleExtensionsHash.clear();
                                 fIsSubtitleExtension.clear();
                             }
-                            if ( ( fPending & eTransformPrefs ) != 0 )
+                            if ( ( fPending & eMediaRenamerPrefs ) != 0 )
                             {
                                 fKnownStringRegExsCache.clear();
                             }
