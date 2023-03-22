@@ -1124,6 +1124,9 @@ namespace NMediaManager
             if ( !isMediaFile( fi ) )
                 return {};
 
+            if ( !NPreferences::NCore::CPreferences::instance()->getLoadMediaInfo() )
+                return {};
+
             return std::make_shared< NSABUtils::CMediaInfo >( fi );
         }
 
@@ -1356,7 +1359,8 @@ namespace NMediaManager
 
                 std::unordered_map< NSABUtils::EMediaTags, QString > tags = { { NSABUtils::EMediaTags::eTitle, title }, { NSABUtils::EMediaTags::eDate, year }, { NSABUtils::EMediaTags::eComment, comment } };
 
-                aOK = NSABUtils::setMediaTags( fileName, tags, NPreferences::NCore::CPreferences::instance()->getMKVPropEditEXE(), &localMsg );
+                if ( NPreferences::NCore::CPreferences::instance()->getLoadMediaInfo() )
+                    aOK = NSABUtils::setMediaTags( fileName, tags, NPreferences::NCore::CPreferences::instance()->getMKVPropEditEXE(), &localMsg );
             }
 
             if ( !aOK )
