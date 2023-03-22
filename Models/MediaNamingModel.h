@@ -20,8 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef _TRANSFORMMODEL_H
-#define _TRANSFORMMODEL_H
+#ifndef _MEDIANAMINGMODEL_H
+#define _MEDIANAMINGMODEL_H
 
 #include "DirModel.h"
 #include "Core/PatternInfo.h"
@@ -37,7 +37,7 @@ namespace NMediaManager
         // title -> season -> disk -> title num, path
         using TTitleMap = std::unordered_map< QString, std::map< int, std::map< int, std::map< int, QString > > > >;
 
-        class CTransformModel : public CDirModel
+        class CMediaNamingModel : public CDirModel
         {
             Q_OBJECT
         public:
@@ -48,8 +48,8 @@ namespace NMediaManager
                 eMediaColumnLoc
             };
 
-            CTransformModel( NUi::CBasePage *page, QObject *parent = nullptr );
-            virtual ~CTransformModel() override;
+            CMediaNamingModel( NUi::CBasePage *page, QObject *parent = nullptr );
+            virtual ~CMediaNamingModel() override;
 
             virtual bool ignoreExtrasOnSearch() const override { return true; }
 

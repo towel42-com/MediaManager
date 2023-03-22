@@ -31,7 +31,7 @@ set(qtproject_SRCS
     MergeSRTModel.cpp
     MakeMKVModel.cpp
     TagsModel.cpp
-    TransformModel.cpp
+    MediaNamingModel.cpp
     ValidateMKVModel.cpp
 )
 
@@ -41,7 +41,7 @@ set(qtproject_H
     MergeSRTModel.h
     MakeMKVModel.h
     TagsModel.h
-    TransformModel.h
+    MediaNamingModel.h
     ValidateMKVModel.h
 )
 
