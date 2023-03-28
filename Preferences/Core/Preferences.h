@@ -78,7 +78,7 @@ namespace NMediaManager
 
         namespace NCore
         {
-            enum EMakeMKVPreset
+            enum ETranscodePreset
             {
                 eUltraFast,
                 eSuperFast,
@@ -90,9 +90,9 @@ namespace NMediaManager
                 eSlower,
                 eVerySlow
             };
-            QString toString( EMakeMKVPreset preset, bool forEnum = false );
+            QString toString( ETranscodePreset preset, bool forEnum = false );
 
-            enum EMakeMKVTune
+            enum ETranscodeTune
             {
                 eFilm,
                 eAnimation,
@@ -101,9 +101,9 @@ namespace NMediaManager
                 eFastDecode,
                 eZeroLatency
             };
-            QString toString( EMakeMKVTune preset, bool forEnum = false );
+            QString toString( ETranscodeTune preset, bool forEnum = false );
 
-            enum EMakeMKVProfile
+            enum ETranscodeProfile
             {
                 eMain,
                 eMainIntra,
@@ -124,26 +124,7 @@ namespace NMediaManager
                 eMain444_12,
                 eMain444_12Intra
             };
-            QString toString( EMakeMKVProfile profile, bool forEnum = false );
-
-            class CPreferences;
-            struct STranscodeNeeded
-            {
-                STranscodeNeeded( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const CPreferences *prefs );
-                STranscodeNeeded( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo  );
-
-                bool transcodeNeeded() const
-                {
-                    return fVideo || fAudio || fFormat;
-                }
-                bool formatOnly() const
-                {
-                    return fFormat && !fVideo && !fAudio;
-                }
-                bool fVideo{ false };
-                bool fAudio{ false };
-                bool fFormat{ false };
-            };
+            QString toString( ETranscodeProfile profile, bool forEnum = false );
 
             class CPreferences : public QObject
             {
@@ -253,9 +234,9 @@ namespace NMediaManager
                 bool getTranscodeAudioDefault() const;
                 bool getTranscodeAudio() const;
 
-                void setAlwaysAddAACAudioCodec( bool value );
-                bool getAlwaysAddAACAudioCodecDefault() const;
-                bool getAlwaysAddAACAudioCodec() const;
+                void setAddAACAudioCodec( bool value );
+                bool getAddAACAudioCodecDefault() const;
+                bool getAddAACAudioCodec() const;
 
                 void setOnlyTranscodeAudioOnFormatChange( bool value );
                 bool getOnlyTranscodeAudioOnFormatChangeDefault() const;
@@ -302,25 +283,25 @@ namespace NMediaManager
                 bool getUsePresetDefault() const;
                 bool getUsePreset() const;
 
-                void setPreset( EMakeMKVPreset value );
-                EMakeMKVPreset getPresetDefault() const;
-                EMakeMKVPreset getPreset() const;
+                void setPreset( ETranscodePreset value );
+                ETranscodePreset getPresetDefault() const;
+                ETranscodePreset getPreset() const;
 
                 void setUseTune( bool value );
                 bool getUseTuneDefault() const;
                 bool getUseTune() const;
 
-                void setTune( EMakeMKVTune value );
-                EMakeMKVTune getTuneDefault() const;
-                EMakeMKVTune getTune() const;
+                void setTune( ETranscodeTune value );
+                ETranscodeTune getTuneDefault() const;
+                ETranscodeTune getTune() const;
 
                 void setUseProfile( bool value );
                 bool getUseProfileDefault() const;
                 bool getUseProfile() const;
 
-                void setProfile( EMakeMKVProfile value );
-                EMakeMKVProfile getProfileDefault() const;
-                EMakeMKVProfile getProfile() const;
+                void setProfile( ETranscodeProfile value );
+                ETranscodeProfile getProfileDefault() const;
+                ETranscodeProfile getProfile() const;
 
                 void setExactMatchesOnly( bool value );
                 bool getExactMatchesOnly() const;
@@ -565,11 +546,6 @@ namespace NMediaManager
 
             private:
                 QStringList getDefaultFile() const;
-                QString compareValues( const QString &title, const QStringList &defaultValues, const QStringList &currValues ) const;
-                QString compareValues( const QString &title, const QString &defaultValues, const QString &currValues ) const;
-                QString compareValues( const QString &title, bool defaultValue, bool currValue ) const;
-                QString compareValues( const QString &title, const QVariantMap &defaultValues, const QVariantMap &currValues ) const;
-                QStringList variantMapToStringList( const QVariantMap &data ) const;
                 bool isFileWithExtension( const QFileInfo &fi, std::function< QStringList() > getExtensions, std::unordered_set< QString > &hash, std::unordered_map< QString, bool > &cache ) const;
 
                 QStringList cleanUpPaths( const QStringList &paths, bool areDirs ) const;
