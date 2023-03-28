@@ -1,4 +1,4 @@
-// The MIT License( MIT )
+//// The MIT License( MIT )
 //
 // Copyright( c ) 2020-2021 Scott Aron Bloom
 //
@@ -40,6 +40,7 @@ class QTemporaryDir;
 #include <QDate>
 #include <functional>
 #include <optional>
+#include <QMutex>
 #include <QFileIconProvider>
 
 namespace NSABUtils
@@ -236,6 +237,7 @@ namespace NMediaManager
             virtual std::unordered_map< NSABUtils::EMediaTags, QString > getMediaTags( const QFileInfo &fi, const std::list< NSABUtils::EMediaTags > &tags = {} ) const;
             virtual void reloadMediaTags( const QModelIndex &idx );
             virtual void reloadMediaTags( const QModelIndex &idx, bool force );
+
             virtual bool autoSetMediaTags( const QModelIndex &idx, QString *msg = nullptr ) final;
             virtual bool areMediaTagsSameAsAutoSet( const QModelIndex &idx ) const final;
 
@@ -278,7 +280,7 @@ namespace NMediaManager
             void slotProcesssStateChanged( QProcess::ProcessState newState );
             void slotProgressCanceled();
             virtual void slotDataChanged( const QModelIndex &start, const QModelIndex &end, const QVector< int > &roles );
-
+            virtual void slotUpdateMediaInfo( const QString & path );
         protected:
             virtual QString getSecondaryProgressFormat( NSABUtils::CDoubleProgressDlg *progressDlg ) const;
             virtual std::optional< std::pair< uint64_t, std::optional< uint64_t > > > getCurrentProgress( const QString & /*string*/ ) { return {}; }
@@ -327,11 +329,15 @@ namespace NMediaManager
             virtual int getMediaTitleLoc() const;
             virtual int getMediaLengthLoc() const;
             virtual int getMediaDateLoc() const;
+            virtual int getMediaNumVideoStreamsLoc() const;
             virtual int getMediaResolutionLoc() const;
             virtual int getMediaVideoCodecLoc() const;
             virtual int getMediaVideoBitrateLoc() const;
+            virtual int getMediaNumAudioStreamsLoc() const;
             virtual int getMediaAudioCodecLoc() const;
             virtual int getMediaAudioSampleRateLoc() const;
+            virtual int getMediaNumSubtitleStreamsLoc() const;
+            virtual int getMediaSubtitlesLoc() const;
             virtual int getMediaCommentLoc() const;
             virtual std::list< SDirNodeItem > addAdditionalItems( const QFileInfo &fileInfo ) const;
             virtual std::list< SDirNodeItem > getMediaInfoItems( const QFileInfo &fileInfo, int firstColumn ) const;
@@ -347,7 +353,9 @@ namespace NMediaManager
             virtual bool isLoading() const final { return fIsLoading; }
             virtual void setIsLoading( bool isLoading );
 
+            std::unordered_map< NSABUtils::EMediaTags, QString > getDefaultMediaTags( const QFileInfo &fi ) const;
             QStringList getMediaHeaders() const;
+            std::tuple < QStringList, std::list< NSABUtils::EMediaTags >, std::list< std::function< int() > > > getMediaDataInfo() const;
 
             virtual void resizeColumns() const;
 
@@ -422,7 +430,6 @@ namespace NMediaManager
             void addProcessError( const QString &msg );
 
         protected:
-
             QDir fRootPath;
 
             CIconProvider *fIconProvider{ nullptr };

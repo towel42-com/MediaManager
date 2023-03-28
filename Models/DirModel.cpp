@@ -56,6 +56,7 @@
 #include <QDirIterator>
 #include <QPlainTextEdit>
 #include <QMessageBox>
+#include <QThreadPool>
 
 #include <QProcess>
 
@@ -178,6 +179,8 @@ namespace NMediaManager
             connect( fProcess, &QProcess::stateChanged, this, &CDirModel::slotProcesssStateChanged );
 
             connect( this, &QStandardItemModel::dataChanged, this, &CDirModel::slotDataChanged );
+
+            connect( NPreferences::NCore::CPreferences::instance(), &NPreferences::NCore::CPreferences::sigMediaInfoLoaded, this, &CDirModel::slotUpdateMediaInfo );
         }
 
         CDirModel::~CDirModel()
@@ -482,7 +485,7 @@ namespace NMediaManager
 
                 if ( attachFile )
                     attachTreeNodes( tree );
-                
+
                 if ( progressDlg() )
                     progressDlg()->setValue( progressDlg()->value() + 1 );
 
@@ -1111,29 +1114,44 @@ namespace NMediaManager
             auto mediaInfo = getMediaInfo( fi );
             if ( !mediaInfo )
                 return {};
+            if ( !mediaInfo->aOK() )
+                return {};
             return mediaInfo->getMediaTags( tags );
         }
 
         std::shared_ptr< NSABUtils::CMediaInfo > CDirModel::getMediaInfo( const QString &path ) const
         {
-            return getMediaInfo( QFileInfo( path ) );
+            return NPreferences::NCore::CPreferences::instance()->getMediaInfo( path );
         }
 
-        std::shared_ptr< NSABUtils::CMediaInfo > CDirModel::getMediaInfo( const QFileInfo & fi ) const
+        std::shared_ptr< NSABUtils::CMediaInfo > CDirModel::getMediaInfo( const QFileInfo &fi ) const
         {
-            if ( !isMediaFile( fi ) )
-                return {};
-
-            if ( !NPreferences::NCore::CPreferences::instance()->getLoadMediaInfo() )
-                return {};
-
-            return std::make_shared< NSABUtils::CMediaInfo >( fi );
+            return NPreferences::NCore::CPreferences::instance()->getMediaInfo( fi );
         }
 
         std::shared_ptr< NSABUtils::CMediaInfo > CDirModel::getMediaInfo( const QModelIndex &idx ) const
         {
             auto fileInfo = this->fileInfo( idx );
             return getMediaInfo( fileInfo );
+        }
+
+        void CDirModel::slotUpdateMediaInfo( const QString &path )
+        {
+            if ( path.isEmpty() )
+                return;
+
+            qDebug() << "Updating media info for" << path;
+            auto item = getItemFromPath( path );
+            if ( item )
+            {
+                auto idx = indexFromItem( item );
+
+                reloadMediaTags( idx );
+
+                auto lhs = index( idx.row(), 0, idx.parent() );
+                auto rhs = index( idx.row(), columnCount() - 1, idx.parent() );
+                emit dataChanged( lhs, rhs );
+            }
         }
 
         bool CDirModel::canShowMediaInfo() const
@@ -1155,20 +1173,18 @@ namespace NMediaManager
             if ( !NPreferences::NCore::CPreferences::instance()->isMediaFile( fi ) )
                 return;
 
-            auto mediaInfo =
-                getMediaTags( fi, { NSABUtils::EMediaTags::eTitle, NSABUtils::EMediaTags::eLength, NSABUtils::EMediaTags::eDate, NSABUtils::EMediaTags::eWidth, NSABUtils::EMediaTags::eHeight, NSABUtils::EMediaTags::eComment } );
+            auto mediaInfo = getDefaultMediaTags( fi );
+            auto mediaTags = getMediaDataInfo();
+            auto mediaTagIter = std::get< 1 >( mediaTags ).begin();
+            auto columnPosIter = std::get< 2 >( mediaTags ).begin();
+            for ( ; ( mediaTagIter != std::get< 1 >( mediaTags ).end() ) && ( columnPosIter != std::get< 2 >( mediaTags ).end() ); ++mediaTagIter, ++columnPosIter )
+            {
+                auto item = itemFromIndex( index( idx.row(), ( *columnPosIter )(), idx.parent() ) );
+                if ( !item )
+                    continue;
 
-            QStandardItem *item = itemFromIndex( index( idx.row(), getMediaTitleLoc(), idx.parent() ) );
-            item->setText( mediaInfo[ NSABUtils::EMediaTags::eTitle ] );
-
-            item = itemFromIndex( index( idx.row(), getMediaLengthLoc(), idx.parent() ) );
-            item->setText( mediaInfo[ NSABUtils::EMediaTags::eLength ] );
-
-            item = itemFromIndex( index( idx.row(), getMediaDateLoc(), idx.parent() ) );
-            item->setText( mediaInfo[ NSABUtils::EMediaTags::eDate ] );
-
-            item = itemFromIndex( index( idx.row(), getMediaCommentLoc(), idx.parent() ) );
-            item->setText( mediaInfo[ NSABUtils::EMediaTags::eComment ] );
+                item->setText( mediaInfo[ *mediaTagIter ] );
+            }
 
             clearItemStatusCache( idx );
             clearPathStatusCache( fi );
@@ -1180,36 +1196,15 @@ namespace NMediaManager
                 return {};
 
             std::list< SDirNodeItem > retVal;
-            auto mediaInfo = 
-                getMediaTags(
-                fileInfo, { NSABUtils::EMediaTags::eTitle, NSABUtils::EMediaTags::eLength, NSABUtils::EMediaTags::eDate, NSABUtils::EMediaTags::eResolution, NSABUtils::EMediaTags::eVideoCodec, NSABUtils::EMediaTags::eVideoBitrateString,
-                            NSABUtils::EMediaTags::eAudioCodec, NSABUtils::EMediaTags::eAudioSampleRateString, NSABUtils::EMediaTags::eComment } );
+            auto mediaInfo = getDefaultMediaTags( fileInfo );
 
-            retVal.emplace_back( mediaInfo[ NSABUtils::EMediaTags::eTitle ], offset++ );
-            retVal.back().fEditable = std::make_pair( EType::eMediaTag, NSABUtils::EMediaTags::eTitle );
-
-            retVal.emplace_back( mediaInfo[ NSABUtils::EMediaTags::eLength ], offset++ );
-
-            retVal.emplace_back( mediaInfo[ NSABUtils::EMediaTags::eDate ], offset++ );
-            retVal.back().fEditable = std::make_pair( EType::eMediaTag, NSABUtils::EMediaTags::eDate );
-
-            auto resolution = mediaInfo[ NSABUtils::EMediaTags::eResolution ];
-            retVal.emplace_back( resolution, offset++ );
-
-            auto videoCodec = mediaInfo[ NSABUtils::EMediaTags::eVideoCodec ];
-            retVal.emplace_back( videoCodec, offset++ );
-
-            auto bitrate = mediaInfo[ NSABUtils::EMediaTags::eVideoBitrateString ];
-            retVal.emplace_back( bitrate, offset++ );
-
-            auto audioCodec = mediaInfo[ NSABUtils::EMediaTags::eAudioCodec ];
-            retVal.emplace_back( audioCodec, offset++ );
-
-            auto sampleRate = mediaInfo[ NSABUtils::EMediaTags::eAudioSampleRateString ];
-            retVal.emplace_back( sampleRate, offset++ );
-
-            retVal.emplace_back( mediaInfo[ NSABUtils::EMediaTags::eComment ], offset++ );
-            retVal.back().fEditable = std::make_pair( EType::eMediaTag, NSABUtils::EMediaTags::eComment );
+            auto mediaTags = std::get< 1 >( getMediaDataInfo() );
+            for ( auto &&ii : mediaTags )
+            {
+                retVal.emplace_back( mediaInfo[ ii ], offset++ );
+                if ( ( ii == NSABUtils::EMediaTags::eTitle ) || ( ii == NSABUtils::EMediaTags::eDate ) || ( ii == NSABUtils::EMediaTags::eComment ) )
+                    retVal.back().fEditable = std::make_pair( EType::eMediaTag, ii );
+            }
             return retVal;
         }
 
@@ -1489,13 +1484,6 @@ namespace NMediaManager
             fProcess->kill();
         }
 
-        QStringList CDirModel::getMediaHeaders() const
-        {
-            if ( !canShowMediaInfo() )
-                return {};
-            return QStringList() << tr( "Title" ) << tr( "Length" ) << tr( "Media Date" ) << tr( "Resolution" ) << tr( "Video Codec" ) << tr( "Video Bitrate" ) << tr( "Audio Codec" ) << tr( "Audio Sample Rate" ) << tr( "Comment" );
-        }
-
         std::list< SDirNodeItem > CDirModel::addAdditionalItems( const QFileInfo &fileInfo ) const
         {
             if ( showMediaItems() && canShowMediaInfo() && NPreferences::NCore::CPreferences::instance()->getLoadMediaInfo() )
@@ -1619,7 +1607,7 @@ namespace NMediaManager
                 if ( QFileInfo( ii ).suffix() == "new" )
                 {
                     auto newName = ii.mid( 0, ii.length() - 4 );
-                    if (QFileInfo(newName).exists())
+                    if ( QFileInfo( newName ).exists() )
                     {
                         if ( !NSABUtils::NFileUtils::backup( newName ) )
                         {
@@ -1755,11 +1743,18 @@ namespace NMediaManager
             return getMediaLengthLoc() + 1;
         }
 
-        int CDirModel::getMediaResolutionLoc() const
+        int CDirModel::getMediaNumVideoStreamsLoc() const
         {
             if ( !canShowMediaInfo() )
                 return -1;
             return getMediaDateLoc() + 1;
+        }
+
+        int CDirModel::getMediaResolutionLoc() const
+        {
+            if ( !canShowMediaInfo() )
+                return -1;
+            return getMediaNumVideoStreamsLoc() + 1;
         }
 
         int CDirModel::getMediaVideoCodecLoc() const
@@ -1776,11 +1771,18 @@ namespace NMediaManager
             return getMediaVideoCodecLoc() + 1;
         }
 
-        int CDirModel::getMediaAudioCodecLoc() const
+        int CDirModel::getMediaNumAudioStreamsLoc() const
         {
             if ( !canShowMediaInfo() )
                 return -1;
             return getMediaVideoBitrateLoc() + 1;
+        }
+
+        int CDirModel::getMediaAudioCodecLoc() const
+        {
+            if ( !canShowMediaInfo() )
+                return -1;
+            return getMediaNumAudioStreamsLoc() + 1;
         }
 
         int CDirModel::getMediaAudioSampleRateLoc() const
@@ -1790,11 +1792,25 @@ namespace NMediaManager
             return getMediaAudioCodecLoc() + 1;
         }
 
-        int CDirModel::getMediaCommentLoc() const
+        int CDirModel::getMediaNumSubtitleStreamsLoc() const
         {
             if ( !canShowMediaInfo() )
                 return -1;
             return getMediaAudioSampleRateLoc() + 1;
+        }
+
+        int CDirModel::getMediaSubtitlesLoc() const
+        {
+            if ( !canShowMediaInfo() )
+                return -1;
+            return getMediaNumSubtitleStreamsLoc() + 1;
+        }
+
+        int CDirModel::getMediaCommentLoc() const
+        {
+            if ( !canShowMediaInfo() )
+                return -1;
+            return getMediaSubtitlesLoc() + 1;
         }
 
         QTreeView *CDirModel::filesView() const
@@ -2112,7 +2128,7 @@ namespace NMediaManager
             fMessagesForFiles.clear();
             fMsgItems.clear();
         }
-        
+
         void CDirModel::addMessageForFile( const QString &msg )
         {
             if ( fProcessQueue.empty() )
@@ -2123,7 +2139,7 @@ namespace NMediaManager
             auto fi = QFileInfo( fProcessQueue.front().fOldName );
             fMessagesForFiles[ fi.absoluteFilePath() ] << msg;
         }
-        
+
         std::list< QStandardItem * > CDirModel::messageItems( bool andClear )
         {
             auto retVal = fMsgItems;
@@ -2137,6 +2153,125 @@ namespace NMediaManager
             if ( NSABUtils::NFileUtils::isIPAddressNetworkPath( info ) )
                 return {};
             return QFileIconProvider::icon( info );
+        }
+
+        QStringList CDirModel::getMediaHeaders() const
+        {
+            if ( !canShowMediaInfo() )
+                return {};
+            return std::get< 0 >( getMediaDataInfo() );
+        }
+
+        std::unordered_map< NSABUtils::EMediaTags, QString > CDirModel::getDefaultMediaTags( const QFileInfo &fi ) const
+        {
+            return getMediaTags( fi, std::get< 1 >( getMediaDataInfo() ) );
+        }
+
+        std::tuple< QStringList, std::list< NSABUtils::EMediaTags >, std::list< std::function< int() > > > CDirModel::getMediaDataInfo() const
+        {
+            static auto sDefaultHeaders =   //
+                QStringList()   //
+                << tr( "Title" )   //
+                << tr( "Length" )   //
+                << tr( "Media Date" )   //
+                << tr( "# Video Streams" )   //
+                << tr( "Resolution" )   //
+                << tr( "Video Codec(s)" )   //
+                << tr( "Video Bitrate" )   //
+                << tr( "# Audio Streams" )   //
+                << tr( "Audio Codec(s)" )   //
+                << tr( "Audio Sample Rate" )   //
+                << tr( "# Subtitle Streams" )   //
+                << tr( "Subtitles(s)" )   //
+                << tr( "Comment" );
+
+            static auto sDefaultTags =   //
+                std::list< NSABUtils::EMediaTags >( {
+                    NSABUtils::EMediaTags::eTitle,   //
+                    NSABUtils::EMediaTags::eLength,   //
+                    NSABUtils::EMediaTags::eDate,   //
+                    NSABUtils::EMediaTags::eNumVideoStreams,   //
+                    NSABUtils::EMediaTags::eResolution,   //
+                    NSABUtils::EMediaTags::eAllVideoCodecs,   //
+                    NSABUtils::EMediaTags::eVideoBitrateString,   //
+                    NSABUtils::EMediaTags::eNumAudioStreams,   //
+                    NSABUtils::EMediaTags::eAllAudioCodecs,   //
+                    NSABUtils::EMediaTags::eAudioSampleRateString,   //
+                    NSABUtils::EMediaTags::eNumSubtitleStreams,   //
+                    NSABUtils::EMediaTags::eAllSubtitles,   //
+                    NSABUtils::EMediaTags::eComment   //
+                } );
+
+            static auto sGetPosFuncs = std::list< std::function< int() > >( {
+                { [ this ]()
+                  {
+                      return getMediaTitleLoc();
+                  } }   //
+                ,
+                { [ this ]()
+                  {
+                      return getMediaLengthLoc();
+                  } }   //
+                ,
+                { [ this ]()
+                  {
+                      return getMediaDateLoc();
+                  } }   //
+                ,
+                { [ this ]()
+                  {
+                      return getMediaNumVideoStreamsLoc();
+                  } }   //
+                ,
+                { [ this ]()
+                  {
+                      return getMediaResolutionLoc();
+                  } }   //
+                ,
+                { [ this ]()
+                  {
+                      return getMediaVideoCodecLoc();
+                  } }   //
+                ,
+                { [ this ]()
+                  {
+                      return getMediaVideoBitrateLoc();
+                  } }   //
+                ,
+                { [ this ]()
+                  {
+                      return getMediaNumAudioStreamsLoc();
+                  } }   //
+                ,
+                { [ this ]()
+                  {
+                      return getMediaAudioCodecLoc();
+                  } }   //
+                ,
+                { [ this ]()
+                  {
+                      return getMediaAudioSampleRateLoc();
+                  } }   //
+                ,
+                { [ this ]()
+                  {
+                      return getMediaNumSubtitleStreamsLoc();
+                  } }   //
+                ,
+                { [ this ]()
+                  {
+                      return getMediaSubtitlesLoc();
+                  } }   //
+                ,
+                { [ this ]()
+                  {
+                      return getMediaCommentLoc();
+                  } }   //
+            } );
+
+            Q_ASSERT( sDefaultHeaders.count() == sDefaultTags.size() );
+            Q_ASSERT( sDefaultHeaders.count() == sGetPosFuncs.size() );
+            return std::make_tuple( sDefaultHeaders, sDefaultTags, sGetPosFuncs );
         }
 
         QString CDirModel::getSecondaryProgressFormat( NSABUtils::CDoubleProgressDlg *progressDlg ) const
@@ -2157,7 +2292,7 @@ namespace NMediaManager
             }
 
             auto format = getSecondaryProgressFormat( progressDlg );
-            
+
             if ( newProgress.has_value() )
             {
                 if ( !newProgress.value().second.has_value() )
@@ -2173,7 +2308,7 @@ namespace NMediaManager
                         auto msecsPerStep = static_cast< double >( msecs ) / static_cast< double >( numSteps );
                         auto remainingMsecs = static_cast< uint64_t >( msecsPerStep * ( newProgress.value().second.value() - newProgress.value().first ) );
 
-                        msecsRemaining = std::chrono::milliseconds( remainingMsecs ); 
+                        msecsRemaining = std::chrono::milliseconds( remainingMsecs );
                     }
                     fLastProgress = std::make_pair( QDateTime::currentDateTime(), newProgress.value().first );
                 }
@@ -2181,7 +2316,7 @@ namespace NMediaManager
                 if ( msecsRemaining.has_value() )
                 {
                     auto ts = NSABUtils::CTimeString( msecsRemaining.value() );
-                    format = format + ts.toString( " ETA: hh:mm:ss  ", true );
+                    format = format + ts.toString( " ETA: hh:mm:ss  ", false );
                 }
             }
             progressDlg->setSecondaryFormat( format );
