@@ -57,13 +57,13 @@ namespace NMediaManager
             STranscodeNeeded::STranscodeNeeded( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const CPreferences *prefs ) :
                 fMediaInfo( mediaInfo )
             {
-                fFormat = fVideo = fAudio = false;
+                fFormat = fVideo = fAudio = fMissingAAC = false;
                 if ( !mediaInfo )
                     return;
 
                 fFormat = prefs->getConvertMediaContainer() && !prefs->isEncoderFormat( mediaInfo, prefs->getConvertMediaToContainer() );
                 fVideo = prefs->getTranscodeVideo() && !mediaInfo->hasVideoCodec( prefs->getTranscodeToVideoCodec(), prefs->getMediaFormats() ) && ( fFormat || !prefs->getOnlyTranscodeVideoOnFormatChange() );
-                fMissingAAC = prefs->getTranscodeAudio() && !mediaInfo->hasAACCodec( prefs->getMediaFormats() );
+                fMissingAAC = prefs->getTranscodeAudio() && prefs->getAddAACAudioCodec() && !mediaInfo->hasAACCodec( prefs->getMediaFormats() );
                 fAudio = prefs->getTranscodeAudio() && ( !mediaInfo->isCodec( "aac", prefs->getTranscodeToAudioCodec(), prefs->getMediaFormats() ) && !mediaInfo->hasAudioCodec( prefs->getTranscodeToAudioCodec(), prefs->getMediaFormats() ) && ( fFormat || !prefs->getOnlyTranscodeAudioOnFormatChange() ) );
             }
 
