@@ -56,11 +56,13 @@ namespace NMediaManager
             void CGeneralSettings::load()
             {
                 fImpl->loadMediaInfo->setChecked( NPreferences::NCore::CPreferences::instance()->getLoadMediaInfo() );
+                fImpl->backgroundLoadMediaInfo->setChecked( NPreferences::NCore::CPreferences::instance()->getBackgroundLoadMediaInfo() );
             }
 
             void CGeneralSettings::save()
             {
                 NPreferences::NCore::CPreferences::instance()->setLoadMediaInfo( fImpl->loadMediaInfo->isChecked() );
+                NPreferences::NCore::CPreferences::instance()->setBackgroundLoadMediaInfo( fImpl->backgroundLoadMediaInfo->isChecked() );
             }
         }
     }

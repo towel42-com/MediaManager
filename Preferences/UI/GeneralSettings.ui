@@ -15,10 +15,22 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QCheckBox" name="loadMediaInfo">
-     <property name="text">
+    <widget class="QGroupBox" name="loadMediaInfo">
+     <property name="title">
       <string>Load Media Information?</string>
      </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <widget class="QCheckBox" name="backgroundLoadMediaInfo">
+        <property name="text">
+         <string>Load Media Information in the Background?</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
    <item>

@@ -38,9 +38,6 @@ namespace NMediaManager
                 fImpl( new Ui::CMakeMKVVideoSettings )
             {
                 fImpl->setupUi( this );
-                connect( fImpl->losslessTranscoding, &QCheckBox::toggled, this, &CMakeMKVVideoSettings::slotLosslessChanged );
-                connect( fImpl->useCRF, &QGroupBox::toggled, this, &CMakeMKVVideoSettings::slotCRFChanged );
-
                 connect( fImpl->useExplicitCRF, &QCheckBox::toggled, this, &CMakeMKVVideoSettings::slotUseExplicitCRFChanged );
                 connect( fImpl->usePreset, &QCheckBox::toggled, this, &CMakeMKVVideoSettings::slotUsePresetChanged );
                 connect( fImpl->useTune, &QCheckBox::toggled, this, &CMakeMKVVideoSettings::slotUseTuneChanged );
@@ -82,7 +79,7 @@ namespace NMediaManager
             void CMakeMKVVideoSettings::load()
             {
                 fImpl->transcodeVideo->setChecked( NPreferences::NCore::CPreferences::instance()->getTranscodeVideo() );
-                fImpl->losslessTranscoding->setChecked( NPreferences::NCore::CPreferences::instance()->getLosslessTranscoding() );
+                fImpl->losslessEncoding->setChecked( NPreferences::NCore::CPreferences::instance()->getLosslessEncoding() );
                 fImpl->useCRF->setChecked( NPreferences::NCore::CPreferences::instance()->getUseCRF() );
                 fImpl->useExplicitCRF->setChecked( NPreferences::NCore::CPreferences::instance()->getUseExplicitCRF() );
                 fImpl->explicitCRF->setValue( NPreferences::NCore::CPreferences::instance()->getExplicitCRF() );
@@ -96,8 +93,6 @@ namespace NMediaManager
 
                 selectVideoCodec( NPreferences::NCore::CPreferences::instance()->getTranscodeToVideoCodec() );
 
-                slotLosslessChanged();
-                slotCRFChanged();
                 slotUseExplicitCRFChanged();
                 slotUsePresetChanged();
                 slotUseTuneChanged();
@@ -117,7 +112,7 @@ namespace NMediaManager
                 NPreferences::NCore::CPreferences::instance()->setTranscodeToVideoCodec( fImpl->videoCodec->currentData().toString() );
 
                 NPreferences::NCore::CPreferences::instance()->setTranscodeVideo( fImpl->transcodeVideo->isChecked() );
-                NPreferences::NCore::CPreferences::instance()->setLosslessTranscoding( fImpl->losslessTranscoding->isChecked() );
+                NPreferences::NCore::CPreferences::instance()->setLosslessEncoding( fImpl->losslessEncoding->isChecked() );
                 NPreferences::NCore::CPreferences::instance()->setUseCRF( fImpl->useCRF->isChecked() );
                 NPreferences::NCore::CPreferences::instance()->setUseExplicitCRF( fImpl->useExplicitCRF->isChecked() );
                 NPreferences::NCore::CPreferences::instance()->setExplicitCRF( fImpl->explicitCRF->value() );
@@ -129,16 +124,6 @@ namespace NMediaManager
                 NPreferences::NCore::CPreferences::instance()->setProfile( static_cast< NMediaManager::NPreferences::NCore::EMakeMKVProfile >( fImpl->profile->currentIndex() ) );
 
                 NPreferences::NCore::CPreferences::instance()->setOnlyTranscodeVideoOnFormatChange( fImpl->onlyTranscodeVideoOnFormatChange->isChecked() );
-            }
-
-            void CMakeMKVVideoSettings::slotLosslessChanged()
-            {
-                fImpl->useCRF->setChecked( !fImpl->losslessTranscoding->isChecked() );
-            }
-
-            void CMakeMKVVideoSettings::slotCRFChanged()
-            {
-                fImpl->losslessTranscoding->setChecked( !fImpl->useCRF->isChecked() );
             }
 
             void CMakeMKVVideoSettings::slotUseExplicitCRFChanged()

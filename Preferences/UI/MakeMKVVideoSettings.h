@@ -55,9 +55,6 @@ namespace NMediaManager
                 virtual void save() override;
                 virtual QStringList pageName() const override { return QStringList( { "Make MKV Settings", "Video" } ); }
             public Q_SLOTS:
-                void slotLosslessChanged();
-                void slotCRFChanged();
-
                 void slotUseExplicitCRFChanged();
                 void slotUsePresetChanged();
                 void slotUseTuneChanged();

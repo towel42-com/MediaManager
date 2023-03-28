@@ -60,6 +60,7 @@ namespace NMediaManager
                 fImpl->audioCodec->setCurrentIndex( pos );
 
                 fImpl->onlyTranscodeAudioOnFormatChange->setChecked( NPreferences::NCore::CPreferences::instance()->getOnlyTranscodeAudioOnFormatChange() );
+                fImpl->alwaysAddAACAudioCodec->setChecked( NPreferences::NCore::CPreferences::instance()->getAlwaysAddAACAudioCodec() );
             }
 
             void CMakeMKVAudioSettings::save()
@@ -67,6 +68,7 @@ namespace NMediaManager
                 NPreferences::NCore::CPreferences::instance()->setTranscodeAudio( fImpl->transcodeAudio->isChecked() );
                 NPreferences::NCore::CPreferences::instance()->setTranscodeToAudioCodec( fImpl->audioCodec->currentData().toString() );
                 NPreferences::NCore::CPreferences::instance()->setOnlyTranscodeAudioOnFormatChange( fImpl->onlyTranscodeAudioOnFormatChange->isChecked() );
+                NPreferences::NCore::CPreferences::instance()->setAlwaysAddAACAudioCodec( fImpl->alwaysAddAACAudioCodec->isChecked() );
             }
        }
     }
