@@ -22,6 +22,7 @@
 
 #include "MakeMKVModel.h"
 #include "Preferences/Core/Preferences.h"
+#include "Preferences/Core/TranscodeNeeded.h"
 #include "SABUtils/FileUtils.h"
 #include "SABUtils/DoubleProgressDlg.h"
 #include "SABUtils/MediaInfo.h"
@@ -52,35 +53,29 @@ namespace NMediaManager
             if ( !mediaInfo )
                 return {};
 
+            if ( !mediaInfo->aOK() )
+                return {};
+
             auto transcodeNeeded = NMediaManager::NPreferences::NCore::STranscodeNeeded( mediaInfo );
             auto fileInfo = this->fileInfo( idx );
 
             if ( idx.column() == 0 )   // filename
             {
-                if ( transcodeNeeded.fFormat )
-                {
-                    auto msg = tr( "<p style='white-space:pre'>File <b>'%1'</b> is not using a %2 container</p>" ).arg( fileInfo.fileName() ).arg( NPreferences::NCore::CPreferences::instance()->getConvertMediaToContainer() );
-                    return TItemStatus( NPreferences::EItemStatus::eWarning, msg );
-                }
+                auto msg = transcodeNeeded.getFormatMessage();
+                if ( msg.has_value() )
+                    return TItemStatus( NPreferences::EItemStatus::eWarning, msg.value() );
             }
             else if ( idx.column() == getMediaVideoCodecLoc() )
             {
-                if ( transcodeNeeded.fVideo )
-                {
-                    auto fileInfo = this->fileInfo( idx );
-                    auto msg = tr( "<p style='white-space:pre'>File <b>'%1'</b> is not using the '%2' video codec</p>" ).arg( fileInfo.fileName() ).arg( NPreferences::NCore::CPreferences::instance()->getTranscodeToVideoCodec() );
-                    return TItemStatus( NPreferences::EItemStatus::eWarning, msg );
-                }
+                auto msg = transcodeNeeded.getVideoCodecMessage();
+                if ( msg.has_value() )
+                    return TItemStatus( NPreferences::EItemStatus::eWarning, msg.value() );
             }
             else if ( idx.column() == getMediaAudioCodecLoc() )
             {
-                if ( transcodeNeeded.fAudio )
-                {
-                    auto fileInfo = this->fileInfo( idx );
-                    auto msg = tr( "<p style='white-space:pre'>File <b>'%2'</b> is not using the '%1' audio codec</p>" ).arg( NPreferences::NCore::CPreferences::instance()->getTranscodeToAudioCodec() );
-                    msg = msg.arg( fileInfo.fileName() );
-                    return TItemStatus( NPreferences::EItemStatus::eWarning, msg );
-                }
+                auto msg = transcodeNeeded.getAudioCodecMessage();
+                if ( msg.has_value() )
+                    return TItemStatus( NPreferences::EItemStatus::eWarning, msg.value() );
             }
             return {};
         }
@@ -109,16 +104,18 @@ namespace NMediaManager
             processInfo.fOldName = path;
 
             auto newBaseName = fi.completeBaseName() + "." + NPreferences::NCore::CPreferences::instance()->getMediaContainerExt();
-            if ( !transcodeNeeded.fFormat )
+            if ( !transcodeNeeded.formatChangeNeeded() )
                 newBaseName += ".new";
 
             processInfo.fNewNames << fi.absoluteDir().absoluteFilePath( newBaseName );
 
             QStringList msgs;
             msgs << tr( "Convert file from '%1' => '%2'" ).arg( getDispName( processInfo.fOldName ) ).arg( getDispName( processInfo.fNewNames.front() ) );
-            if ( transcodeNeeded.fVideo )
+            if ( transcodeNeeded.videoTranscodeNeeded() )
                 msgs << tr( "transcode video to the %1 codec." ).arg( NPreferences::NCore::CPreferences::instance()->getTranscodeToVideoCodec() );
-            if ( transcodeNeeded.fAudio )
+            if ( transcodeNeeded.addAACAudioCodec() )
+                msgs << tr( "add the AAC codec to audio." );
+            if ( transcodeNeeded.audioTranscodeNeeded() )
                 msgs << tr( "transcode audio to %1 codec." ).arg( NPreferences::NCore::CPreferences::instance()->getTranscodeToAudioCodec() );
 
             if ( msgs.length() > 2 )
