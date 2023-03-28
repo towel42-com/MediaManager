@@ -20,8 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef _MAKEMKVPAGE_H
-#define _MAKEMKVPAGE_H
+#ifndef _TRANSCODEPAGE_H
+#define _TRANSCODEPAGE_H
 
 #include "BasePage.h"
 
@@ -29,12 +29,12 @@ namespace NMediaManager
 {
     namespace NUi
     {
-        class CMakeMKVPage : public CBasePage
+        class CTranscodePage : public CBasePage
         {
             Q_OBJECT
         public:
-            CMakeMKVPage( QWidget *parent = nullptr );
-            virtual ~CMakeMKVPage() override;
+            CTranscodePage( QWidget *parent = nullptr );
+            virtual ~CTranscodePage() override;
 
             virtual bool useSecondaryProgressBar() const override { return true; }
             virtual QString secondaryProgressLabel() const override;

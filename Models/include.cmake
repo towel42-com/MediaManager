@@ -29,7 +29,7 @@ set(qtproject_SRCS
     DirNodeItem.cpp
     GenerateBIFModel.cpp
     MergeSRTModel.cpp
-    MakeMKVModel.cpp
+    TranscodeModel.cpp
     TagsModel.cpp
     MediaNamingModel.cpp
     ValidateMKVModel.cpp
@@ -39,7 +39,7 @@ set(qtproject_H
     DirModel.h
     GenerateBIFModel.h
     MergeSRTModel.h
-    MakeMKVModel.h
+    TranscodeModel.h
     TagsModel.h
     MediaNamingModel.h
     ValidateMKVModel.h

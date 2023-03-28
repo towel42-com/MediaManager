@@ -20,10 +20,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "MakeMKVPage.h"
+#include "TranscodePage.h"
 
 #include "Preferences/Core/Preferences.h"
-#include "Models/MakeMKVModel.h"
+#include "Models/TranscodeModel.h"
 #include "SABUtils/DoubleProgressDlg.h"
 #include "SABUtils/utils.h"
 
@@ -33,46 +33,46 @@ namespace NMediaManager
 {
     namespace NUi
     {
-        CMakeMKVPage::CMakeMKVPage( QWidget *parent ) :
-            CBasePage( "Make H.265 MKV", parent )
+        CTranscodePage::CTranscodePage( QWidget *parent ) :
+            CBasePage( "Transcode Video", parent )
         {
         }
 
-        CMakeMKVPage::~CMakeMKVPage()
+        CTranscodePage::~CTranscodePage()
         {
         }
 
-        NModels::CDirModel *CMakeMKVPage::createDirModel()
+        NModels::CDirModel *CTranscodePage::createDirModel()
         {
-            return new NModels::CMakeMKVModel( this );
+            return new NModels::CTranscodeModel( this );
         }
 
-        QString CMakeMKVPage::secondaryProgressLabel() const
+        QString CTranscodePage::secondaryProgressLabel() const
         {
             return tr( "Current (seconds):" );
         }
 
-        QString CMakeMKVPage::loadTitleName() const
+        QString CTranscodePage::loadTitleName() const
         {
             return tr( "Finding Files" );
         }
 
-        QString CMakeMKVPage::loadCancelName() const
+        QString CTranscodePage::loadCancelName() const
         {
             return tr( "Cancel" );
         }
 
-        QString CMakeMKVPage::actionTitleName() const
+        QString CTranscodePage::actionTitleName() const
         {
             return tr( "Transcoding Videos..." );
         }
 
-        QString CMakeMKVPage::actionCancelName() const
+        QString CTranscodePage::actionCancelName() const
         {
             return tr( "Abort Transcoding Videos" );
         }
 
-        QString CMakeMKVPage::actionErrorName() const
+        QString CTranscodePage::actionErrorName() const
         {
             return tr( "Error while Transcoding Videos:" );
         }

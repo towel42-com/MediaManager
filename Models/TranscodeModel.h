@@ -20,8 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef _MAKEMKVMODEL_H
-#define _MAKEMKVMODEL_H
+#ifndef _TranscodeMODEL_H
+#define _TranscodeMODEL_H
 
 #include "DirModel.h"
 
@@ -29,7 +29,7 @@ namespace NMediaManager
 {
     namespace NModels
     {
-        class CMakeMKVModel : public CDirModel
+        class CTranscodeModel : public CDirModel
         {
             Q_OBJECT
         public:
@@ -38,8 +38,8 @@ namespace NMediaManager
                 eMediaColumnLoc = NModels::EColumns::eFirstCustomColumn,
             };
 
-            CMakeMKVModel( NUi::CBasePage *page, QObject *parent = nullptr );
-            virtual ~CMakeMKVModel() override;
+            CTranscodeModel( NUi::CBasePage *page, QObject *parent = nullptr );
+            virtual ~CTranscodeModel() override;
 
         private:
             virtual std::optional< TItemStatus > computeItemStatus( const QModelIndex &idx ) const;;   // the one to override

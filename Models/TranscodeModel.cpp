@@ -20,7 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "MakeMKVModel.h"
+#include "TranscodeModel.h"
 #include "Preferences/Core/Preferences.h"
 #include "Preferences/Core/TranscodeNeeded.h"
 #include "SABUtils/FileUtils.h"
@@ -35,16 +35,16 @@ namespace NMediaManager
 {
     namespace NModels
     {
-        CMakeMKVModel::CMakeMKVModel( NUi::CBasePage *page, QObject *parent /*= 0*/ ) :
+        CTranscodeModel::CTranscodeModel( NUi::CBasePage *page, QObject *parent /*= 0*/ ) :
             CDirModel( page, parent )
         {
         }
 
-        CMakeMKVModel::~CMakeMKVModel()
+        CTranscodeModel::~CTranscodeModel()
         {
         }
 
-        std::optional< NMediaManager::NModels::TItemStatus > CMakeMKVModel::computeItemStatus( const QModelIndex &idx ) const
+        std::optional< NMediaManager::NModels::TItemStatus > CTranscodeModel::computeItemStatus( const QModelIndex &idx ) const
         {
             if ( isRootPath( idx ) )
                 return {};
@@ -80,12 +80,12 @@ namespace NMediaManager
             return {};
         }
 
-        QStringList CMakeMKVModel::dirModelFilter() const
+        QStringList CTranscodeModel::dirModelFilter() const
         {
             return NPreferences::NCore::CPreferences::instance()->getVideoDecoderExtensions();
         }
 
-        std::pair< bool, QStandardItem * > CMakeMKVModel::processItem( const QStandardItem *item, bool displayOnly )
+        std::pair< bool, QStandardItem * > CTranscodeModel::processItem( const QStandardItem *item, bool displayOnly )
         {
             if ( item->data( ECustomRoles::eIsDir ).toBool() )
                 return std::make_pair( true, nullptr );
@@ -158,39 +158,39 @@ namespace NMediaManager
             return std::make_pair( aOK, myItem );
         }
 
-        QString CMakeMKVModel::getProgressLabel( const SProcessInfo &processInfo ) const
+        QString CTranscodeModel::getProgressLabel( const SProcessInfo &processInfo ) const
         {
             auto retVal = QString( "Converting to H.265 %3<ul><li>%1</li>to<li>%2</li></ul>" ).arg( getDispName( processInfo.fOldName ) ).arg( getDispName( processInfo.fNewNames.front() ) ).arg( NPreferences::NCore::CPreferences::instance()->getConvertMediaToContainer() );
             return retVal;
         }
 
-        QStringList CMakeMKVModel::headers() const
+        QStringList CTranscodeModel::headers() const
         {
             return CDirModel::headers() << getMediaHeaders();
             ;
         }
 
-        void CMakeMKVModel::postLoad( QTreeView *treeView )
+        void CTranscodeModel::postLoad( QTreeView *treeView )
         {
             CDirModel::postLoad( treeView );
         }
 
-        void CMakeMKVModel::preLoad( QTreeView *treeView )
+        void CTranscodeModel::preLoad( QTreeView *treeView )
         {
             CDirModel::preLoad( treeView );
         }
 
-        void CMakeMKVModel::postProcess( bool /*displayOnly*/ )
+        void CTranscodeModel::postProcess( bool /*displayOnly*/ )
         {
             if ( progressDlg() )
                 progressDlg()->setValue( 0 );
         }
 
-        void CMakeMKVModel::postFileFunction( bool /*aOK*/, const QFileInfo & /*fileInfo*/, TParentTree & /*tree*/, bool /*countOnly*/ )
+        void CTranscodeModel::postFileFunction( bool /*aOK*/, const QFileInfo & /*fileInfo*/, TParentTree & /*tree*/, bool /*countOnly*/ )
         {
         }
 
-        bool CMakeMKVModel::preFileFunction( const QFileInfo &fileInfo, std::unordered_set< QString > & /*alreadyAdded*/, TParentTree & /*tree*/, bool countOnly )
+        bool CTranscodeModel::preFileFunction( const QFileInfo &fileInfo, std::unordered_set< QString > & /*alreadyAdded*/, TParentTree & /*tree*/, bool countOnly )
         {
             if ( countOnly )
                 return true;
@@ -200,11 +200,11 @@ namespace NMediaManager
             return transcodeNeeded.transcodeNeeded();
         }
 
-        void CMakeMKVModel::attachTreeNodes( QStandardItem * /*nextParent*/, QStandardItem *& /*prevParent*/, const STreeNode & /*treeNode*/ )
+        void CTranscodeModel::attachTreeNodes( QStandardItem * /*nextParent*/, QStandardItem *& /*prevParent*/, const STreeNode & /*treeNode*/ )
         {
         }
 
-        std::optional< std::pair< uint64_t, std::optional< uint64_t > > > CMakeMKVModel::getCurrentProgress( const QString &string )
+        std::optional< std::pair< uint64_t, std::optional< uint64_t > > > CTranscodeModel::getCurrentProgress( const QString &string )
         {
             // time=00:00:00.00
             auto numSeconds = getNumSeconds( string );
@@ -213,7 +213,7 @@ namespace NMediaManager
             return std::pair< uint64_t, std::optional< uint64_t > >( numSeconds.value(), {} );
         }
 
-        std::optional< uint64_t > CMakeMKVModel::getNumSeconds( const QString &string ) const
+        std::optional< uint64_t > CTranscodeModel::getNumSeconds( const QString &string ) const
         {
             auto regEx = QRegularExpression( "[Tt]ime\\=\\s*(?<hours>\\d{2}):(?<mins>\\d{2}):(?<secs>\\d{2})" );
 
@@ -253,7 +253,7 @@ namespace NMediaManager
             return numSeconds;
         }
 
-        std::optional< std::chrono::milliseconds > CMakeMKVModel::getMSRemaining( const QString &string, const std::pair< uint64_t, std::optional< uint64_t > > &currProgress ) const
+        std::optional< std::chrono::milliseconds > CTranscodeModel::getMSRemaining( const QString &string, const std::pair< uint64_t, std::optional< uint64_t > > &currProgress ) const
         {
             if ( !currProgress.second.has_value() )
                 return {};
