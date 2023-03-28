@@ -41,9 +41,9 @@
 #include "TagAnalysisSettings.h"
 #include "TVShowSettings.h"
 #include "BIFGeneration.h"
-#include "MakeMKVGeneralSettings.h"
-#include "MakeMKVAudioSettings.h"
-#include "MakeMKVVideoSettings.h"
+#include "TranscodeGeneralSettings.h"
+#include "TranscodeAudioSettings.h"
+#include "TranscodeVideoSettings.h"
 
 #include <QSettings>
 #include <QPushButton>
@@ -123,9 +123,9 @@ namespace NMediaManager
                 addPage( new CExternalTools );
                 addPage( new CFFMpegInfo );
 
-                addPage( new CMakeMKVGeneralSettings );
-                addPage( new CMakeMKVVideoSettings );
-                addPage( new CMakeMKVAudioSettings );
+                addPage( new CTranscodeGeneralSettings );
+                addPage( new CTranscodeVideoSettings );
+                addPage( new CTranscodeAudioSettings );
 
                 addPage( new CExtendedInfo );
                 addPage( new CKnownAbbreviations );

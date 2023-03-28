@@ -20,10 +20,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "MakeMKVGeneralSettings.h"
+#include "TranscodeGeneralSettings.h"
 #include "Preferences/Core/Preferences.h"
 
-#include "ui_MakeMKVGeneralSettings.h"
+#include "ui_TranscodeGeneralSettings.h"
 
 namespace NMediaManager
 {
@@ -31,9 +31,9 @@ namespace NMediaManager
     {
         namespace NUi
         {
-            CMakeMKVGeneralSettings::CMakeMKVGeneralSettings( QWidget *parent ) :
+            CTranscodeGeneralSettings::CTranscodeGeneralSettings( QWidget *parent ) :
                 CBasePrefPage( parent ),
-                fImpl( new Ui::CMakeMKVGeneralSettings )
+                fImpl( new Ui::CTranscodeGeneralSettings )
             {
                 fImpl->setupUi( this );
 
@@ -47,11 +47,11 @@ namespace NMediaManager
                 }
             }
 
-            CMakeMKVGeneralSettings::~CMakeMKVGeneralSettings()
+            CTranscodeGeneralSettings::~CTranscodeGeneralSettings()
             {
             }
 
-            void CMakeMKVGeneralSettings::load()
+            void CTranscodeGeneralSettings::load()
             {
                 fImpl->convertMediaFormat->setChecked( NPreferences::NCore::CPreferences::instance()->getConvertMediaContainer() );
 
@@ -59,7 +59,7 @@ namespace NMediaManager
                 fImpl->mediaFormats->setCurrentIndex( pos );
             }
 
-            void CMakeMKVGeneralSettings::save()
+            void CTranscodeGeneralSettings::save()
             {
                 NPreferences::NCore::CPreferences::instance()->setConvertMediaToContainer( fImpl->mediaFormats->currentData().toString() );
                 NPreferences::NCore::CPreferences::instance()->setConvertMediaContainer( fImpl->convertMediaFormat->isChecked() );

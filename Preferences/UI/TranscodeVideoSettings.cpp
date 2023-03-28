@@ -20,12 +20,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "MakeMKVVideoSettings.h"
+#include "TranscodeVideoSettings.h"
 #include "Preferences/Core/Preferences.h"
 #include "SABUtils/MediaInfo.h"
 #include "SABUtils/FFMpegFormats.h"
 
-#include "ui_MakeMKVVideoSettings.h"
+#include "ui_TranscodeVideoSettings.h"
 
 namespace NMediaManager
 {
@@ -33,26 +33,26 @@ namespace NMediaManager
     {
         namespace NUi
         {
-            CMakeMKVVideoSettings::CMakeMKVVideoSettings( QWidget *parent ) :
+            CTranscodeVideoSettings::CTranscodeVideoSettings( QWidget *parent ) :
                 CBasePrefPage( parent ),
-                fImpl( new Ui::CMakeMKVVideoSettings )
+                fImpl( new Ui::CTranscodeVideoSettings )
             {
                 fImpl->setupUi( this );
-                connect( fImpl->useExplicitCRF, &QCheckBox::toggled, this, &CMakeMKVVideoSettings::slotUseExplicitCRFChanged );
-                connect( fImpl->usePreset, &QCheckBox::toggled, this, &CMakeMKVVideoSettings::slotUsePresetChanged );
-                connect( fImpl->useTune, &QCheckBox::toggled, this, &CMakeMKVVideoSettings::slotUseTuneChanged );
-                connect( fImpl->useProfile, &QCheckBox::toggled, this, &CMakeMKVVideoSettings::slotUseProfileChanged );
-                connect( fImpl->videoCodec, qOverload< int >( &QComboBox::currentIndexChanged ), this, &CMakeMKVVideoSettings::slotCodecChanged );
-                connect( fImpl->hwAccel, qOverload< int >( &QComboBox::currentIndexChanged ), this, &CMakeMKVVideoSettings::slotHWAccelChanged );
+                connect( fImpl->useExplicitCRF, &QCheckBox::toggled, this, &CTranscodeVideoSettings::slotUseExplicitCRFChanged );
+                connect( fImpl->usePreset, &QCheckBox::toggled, this, &CTranscodeVideoSettings::slotUsePresetChanged );
+                connect( fImpl->useTune, &QCheckBox::toggled, this, &CTranscodeVideoSettings::slotUseTuneChanged );
+                connect( fImpl->useProfile, &QCheckBox::toggled, this, &CTranscodeVideoSettings::slotUseProfileChanged );
+                connect( fImpl->videoCodec, qOverload< int >( &QComboBox::currentIndexChanged ), this, &CTranscodeVideoSettings::slotCodecChanged );
+                connect( fImpl->hwAccel, qOverload< int >( &QComboBox::currentIndexChanged ), this, &CTranscodeVideoSettings::slotHWAccelChanged );
 
                 fImpl->intelGPUTranscode->setEnabled( NPreferences::NCore::CPreferences::instance()->hasIntelGPU() );
                 fImpl->nvidiaGPUTranscode->setEnabled( NPreferences::NCore::CPreferences::instance()->hasNVidiaGPU() );
                 fImpl->amdGPUTranscode->setEnabled( NPreferences::NCore::CPreferences::instance()->hasAMDGPU() );
 
-                connect( fImpl->intelGPUTranscode, &QRadioButton::toggled, this, &CMakeMKVVideoSettings::slotExplicitCodecChanged );
-                connect( fImpl->nvidiaGPUTranscode, &QRadioButton::toggled, this, &CMakeMKVVideoSettings::slotExplicitCodecChanged );
-                connect( fImpl->amdGPUTranscode, &QRadioButton::toggled, this, &CMakeMKVVideoSettings::slotExplicitCodecChanged );
-                connect( fImpl->softwareTranscode, &QRadioButton::toggled, this, &CMakeMKVVideoSettings::slotExplicitCodecChanged );
+                connect( fImpl->intelGPUTranscode, &QRadioButton::toggled, this, &CTranscodeVideoSettings::slotExplicitCodecChanged );
+                connect( fImpl->nvidiaGPUTranscode, &QRadioButton::toggled, this, &CTranscodeVideoSettings::slotExplicitCodecChanged );
+                connect( fImpl->amdGPUTranscode, &QRadioButton::toggled, this, &CTranscodeVideoSettings::slotExplicitCodecChanged );
+                connect( fImpl->softwareTranscode, &QRadioButton::toggled, this, &CTranscodeVideoSettings::slotExplicitCodecChanged );
 
                 fVerboseEncoders = NPreferences::NCore::CPreferences::instance()->availableVideoEncoders( true );
                 fTerseEncoders = NPreferences::NCore::CPreferences::instance()->availableVideoEncoders( false );
@@ -72,11 +72,11 @@ namespace NMediaManager
                 }
             }
 
-            CMakeMKVVideoSettings::~CMakeMKVVideoSettings()
+            CTranscodeVideoSettings::~CTranscodeVideoSettings()
             {
             }
 
-            void CMakeMKVVideoSettings::load()
+            void CTranscodeVideoSettings::load()
             {
                 fImpl->transcodeVideo->setChecked( NPreferences::NCore::CPreferences::instance()->getTranscodeVideo() );
                 fImpl->losslessEncoding->setChecked( NPreferences::NCore::CPreferences::instance()->getLosslessEncoding() );
@@ -101,13 +101,13 @@ namespace NMediaManager
                 slotHWAccelChanged();
             }
 
-            void CMakeMKVVideoSettings::selectVideoCodec( const QString & curr )
+            void CTranscodeVideoSettings::selectVideoCodec( const QString & curr )
             {
                 auto pos = fImpl->videoCodec->findData( curr );
                 fImpl->videoCodec->setCurrentIndex( pos );
             }
 
-            void CMakeMKVVideoSettings::save()
+            void CTranscodeVideoSettings::save()
             {
                 NPreferences::NCore::CPreferences::instance()->setTranscodeToVideoCodec( fImpl->videoCodec->currentData().toString() );
 
@@ -117,36 +117,36 @@ namespace NMediaManager
                 NPreferences::NCore::CPreferences::instance()->setUseExplicitCRF( fImpl->useExplicitCRF->isChecked() );
                 NPreferences::NCore::CPreferences::instance()->setExplicitCRF( fImpl->explicitCRF->value() );
                 NPreferences::NCore::CPreferences::instance()->setUsePreset( fImpl->usePreset->isChecked() );
-                NPreferences::NCore::CPreferences::instance()->setPreset( static_cast< NMediaManager::NPreferences::NCore::EMakeMKVPreset >( fImpl->preset->currentIndex() ) );
+                NPreferences::NCore::CPreferences::instance()->setPreset( static_cast< NMediaManager::NPreferences::NCore::ETranscodePreset >( fImpl->preset->currentIndex() ) );
                 NPreferences::NCore::CPreferences::instance()->setUseTune( fImpl->useTune->isChecked() );
-                NPreferences::NCore::CPreferences::instance()->setTune( static_cast< NMediaManager::NPreferences::NCore::EMakeMKVTune >( fImpl->tune->currentIndex() ) );
+                NPreferences::NCore::CPreferences::instance()->setTune( static_cast< NMediaManager::NPreferences::NCore::ETranscodeTune >( fImpl->tune->currentIndex() ) );
                 NPreferences::NCore::CPreferences::instance()->setUseProfile( fImpl->useProfile->isChecked() );
-                NPreferences::NCore::CPreferences::instance()->setProfile( static_cast< NMediaManager::NPreferences::NCore::EMakeMKVProfile >( fImpl->profile->currentIndex() ) );
+                NPreferences::NCore::CPreferences::instance()->setProfile( static_cast< NMediaManager::NPreferences::NCore::ETranscodeProfile >( fImpl->profile->currentIndex() ) );
 
                 NPreferences::NCore::CPreferences::instance()->setOnlyTranscodeVideoOnFormatChange( fImpl->onlyTranscodeVideoOnFormatChange->isChecked() );
             }
 
-            void CMakeMKVVideoSettings::slotUseExplicitCRFChanged()
+            void CTranscodeVideoSettings::slotUseExplicitCRFChanged()
             {
                 fImpl->explicitCRF->setEnabled( fImpl->useExplicitCRF->isChecked() );
             }
 
-            void CMakeMKVVideoSettings::slotUsePresetChanged()
+            void CTranscodeVideoSettings::slotUsePresetChanged()
             {
                 fImpl->preset->setEnabled( fImpl->usePreset->isChecked() );
             }
 
-            void CMakeMKVVideoSettings::slotUseTuneChanged()
+            void CTranscodeVideoSettings::slotUseTuneChanged()
             {
                 fImpl->tune->setEnabled( fImpl->useTune->isChecked() );
             }
 
-            void CMakeMKVVideoSettings::slotUseProfileChanged()
+            void CTranscodeVideoSettings::slotUseProfileChanged()
             {
                 fImpl->profile->setEnabled( fImpl->useProfile->isChecked() );
             }
 
-            void CMakeMKVVideoSettings::slotCodecChanged()
+            void CTranscodeVideoSettings::slotCodecChanged()
             {
                 auto currentCodec = fImpl->videoCodec->currentData().toString();
                 bool isH265 = NPreferences::NCore::CPreferences::instance()->getMediaFormats()->isHEVCCodec( currentCodec );
@@ -192,7 +192,7 @@ namespace NMediaManager
                 }
             }
 
-            void CMakeMKVVideoSettings::slotExplicitCodecChanged()
+            void CTranscodeVideoSettings::slotExplicitCodecChanged()
             {
                 if ( fImpl->intelGPUTranscode->isChecked() )
                     selectVideoCodec( "hevc_qsv" );
@@ -204,7 +204,7 @@ namespace NMediaManager
                     selectVideoCodec( "libx265" );
             }
 
-            void CMakeMKVVideoSettings::slotHWAccelChanged()
+            void CTranscodeVideoSettings::slotHWAccelChanged()
             {
                 auto hwAccel = fImpl->hwAccel->currentData().toString();
                 if ( hwAccel.isEmpty() )

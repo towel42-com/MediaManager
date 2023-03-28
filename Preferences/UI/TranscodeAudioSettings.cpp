@@ -20,9 +20,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "MakeMKVAudioSettings.h"
+#include "TranscodeAudioSettings.h"
 #include "Preferences/Core/Preferences.h"
-#include "ui_MakeMKVAudioSettings.h"
+#include "ui_TranscodeAudioSettings.h"
 
 #include "SABUtils/UtilityModels.h"
 
@@ -32,9 +32,9 @@ namespace NMediaManager
     {
         namespace NUi
         {
-            CMakeMKVAudioSettings::CMakeMKVAudioSettings( QWidget *parent ) :
+            CTranscodeAudioSettings::CTranscodeAudioSettings( QWidget *parent ) :
                 CBasePrefPage( parent ),
-                fImpl( new Ui::CMakeMKVAudioSettings )
+                fImpl( new Ui::CTranscodeAudioSettings )
             {
                 fImpl->setupUi( this );
 
@@ -46,13 +46,21 @@ namespace NMediaManager
                 {
                     fImpl->audioCodec->addItem( fVerbose[ ii ], fTerse[ ii ] );
                 }
+
+                connect(
+                    fImpl->addAACAudioCodec, &QCheckBox::toggled,
+                    [ this ]() 
+                    {
+                        fImpl->onlyTranscodeAudioOnFormatChange->setEnabled( !fImpl->addAACAudioCodec->isChecked() );
+                        fImpl->audioCodec->setEnabled( !fImpl->addAACAudioCodec->isChecked() );
+                    } );
             }
 
-            CMakeMKVAudioSettings::~CMakeMKVAudioSettings()
+            CTranscodeAudioSettings::~CTranscodeAudioSettings()
             {
             }
 
-            void CMakeMKVAudioSettings::load()
+            void CTranscodeAudioSettings::load()
             {
                 fImpl->transcodeAudio->setChecked( NPreferences::NCore::CPreferences::instance()->getTranscodeAudio() );
 
@@ -60,15 +68,16 @@ namespace NMediaManager
                 fImpl->audioCodec->setCurrentIndex( pos );
 
                 fImpl->onlyTranscodeAudioOnFormatChange->setChecked( NPreferences::NCore::CPreferences::instance()->getOnlyTranscodeAudioOnFormatChange() );
-                fImpl->alwaysAddAACAudioCodec->setChecked( NPreferences::NCore::CPreferences::instance()->getAlwaysAddAACAudioCodec() );
+                fImpl->addAACAudioCodec->setChecked( !NPreferences::NCore::CPreferences::instance()->getAddAACAudioCodec() );
+                fImpl->addAACAudioCodec->setChecked( NPreferences::NCore::CPreferences::instance()->getAddAACAudioCodec() );
             }
 
-            void CMakeMKVAudioSettings::save()
+            void CTranscodeAudioSettings::save()
             {
                 NPreferences::NCore::CPreferences::instance()->setTranscodeAudio( fImpl->transcodeAudio->isChecked() );
                 NPreferences::NCore::CPreferences::instance()->setTranscodeToAudioCodec( fImpl->audioCodec->currentData().toString() );
                 NPreferences::NCore::CPreferences::instance()->setOnlyTranscodeAudioOnFormatChange( fImpl->onlyTranscodeAudioOnFormatChange->isChecked() );
-                NPreferences::NCore::CPreferences::instance()->setAlwaysAddAACAudioCodec( fImpl->alwaysAddAACAudioCodec->isChecked() );
+                NPreferences::NCore::CPreferences::instance()->setAddAACAudioCodec( fImpl->addAACAudioCodec->isChecked() );
             }
        }
     }

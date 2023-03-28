@@ -35,9 +35,9 @@ set(qtproject_SRCS
     KnownAbbreviations.cpp
     KnownHyphenated.cpp
     MovieSettings.cpp
-    MakeMKVGeneralSettings.cpp
-    MakeMKVVideoSettings.cpp
-    MakeMKVAudioSettings.cpp
+    TranscodeGeneralSettings.cpp
+    TranscodeVideoSettings.cpp
+    TranscodeAudioSettings.cpp
     PathsToDelete.cpp
     Preferences.cpp
     RemoveFromPaths.cpp
@@ -58,9 +58,9 @@ set(qtproject_H
     IgnoredPaths.h
     KnownAbbreviations.h
     KnownHyphenated.h
-    MakeMKVGeneralSettings.h
-    MakeMKVVideoSettings.h
-    MakeMKVAudioSettings.h
+    TranscodeGeneralSettings.h
+    TranscodeVideoSettings.h
+    TranscodeAudioSettings.h
     MovieSettings.h
     PathsToDelete.h
     Preferences.h
@@ -84,9 +84,9 @@ set(qtproject_UIS
     IgnoredPaths.ui
     KnownAbbreviations.ui
     KnownHyphenated.ui
-    MakeMKVGeneralSettings.ui
-    MakeMKVVideoSettings.ui
-    MakeMKVAudioSettings.ui
+    TranscodeGeneralSettings.ui
+    TranscodeVideoSettings.ui
+    TranscodeAudioSettings.ui
     MovieSettings.ui
     PathsToDelete.ui
     Preferences.ui

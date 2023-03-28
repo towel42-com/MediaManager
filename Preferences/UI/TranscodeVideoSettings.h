@@ -20,8 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef __UI_MAKEMKVAUDIOSETTINGS_H
-#define __UI_MAKEMKVAUDIOSETTINGS_H
+#ifndef __UI_TRANSCODEVIDEOSETTINGS_H
+#define __UI_TRANSCODEVIDEOSETTINGS_H
 
 #include "BasePrefPage.h"
 
@@ -33,23 +33,34 @@ namespace NMediaManager
         {
             namespace Ui
             {
-                class CMakeMKVAudioSettings;
+                class CTranscodeVideoSettings;
             };
-            class CMakeMKVAudioSettings : public CBasePrefPage
+            class CTranscodeVideoSettings : public CBasePrefPage
             {
                 Q_OBJECT
             public:
-                CMakeMKVAudioSettings( QWidget *parent = nullptr );
-                virtual ~CMakeMKVAudioSettings() override;
+                CTranscodeVideoSettings( QWidget *parent = nullptr );
+                virtual ~CTranscodeVideoSettings() override;
 
                 virtual void load() override;
                 virtual void save() override;
-                virtual QStringList pageName() const override { return QStringList( { "Make MKV Settings", "Audio" } ); }
+                virtual QStringList pageName() const override { return QStringList( { "Transcode Settings", "Video" } ); }
             public Q_SLOTS:
+                void slotUseExplicitCRFChanged();
+                void slotUsePresetChanged();
+                void slotUseTuneChanged();
+                void slotUseProfileChanged();
+                void slotCodecChanged();
+                void slotHWAccelChanged();
+                void slotExplicitCodecChanged();
             private:
-                std::unique_ptr< Ui::CMakeMKVAudioSettings > fImpl;
-                QStringList fVerbose;
-                QStringList fTerse;
+                void selectVideoCodec( const QString & curr );
+
+                std::unique_ptr< Ui::CTranscodeVideoSettings > fImpl;
+                QStringList fVerboseEncoders;
+                QStringList fTerseEncoders;
+                QStringList fVerboseHWAccels;
+                QStringList fTerseHWAccels;
             };
         }
     }

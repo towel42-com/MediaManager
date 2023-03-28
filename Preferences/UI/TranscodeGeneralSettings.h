@@ -20,20 +20,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef __UI_MAKEMKVVIDEOSETTINGS_H
-#define __UI_MAKEMKVVIDEOSETTINGS_H
+#ifndef __UI_TRANSCODEGENERALSETTINGS_H
+#define __UI_TRANSCODEGENERALSETTINGS_H
 
 #include "BasePrefPage.h"
 
-//namespace NSABUtils
-//{
-//    class CKeyValuePairModel;
-//}
-//class QStringListModel;
-//class QLineEdit;
-//class QListView;
-//class QTreeWidgetItem;
-//class QValidator;
 namespace NMediaManager
 {
     namespace NPreferences
@@ -42,34 +33,21 @@ namespace NMediaManager
         {
             namespace Ui
             {
-                class CMakeMKVVideoSettings;
+                class CTranscodeGeneralSettings;
             };
-            class CMakeMKVVideoSettings : public CBasePrefPage
+            class CTranscodeGeneralSettings : public CBasePrefPage
             {
                 Q_OBJECT
             public:
-                CMakeMKVVideoSettings( QWidget *parent = nullptr );
-                virtual ~CMakeMKVVideoSettings() override;
+                CTranscodeGeneralSettings( QWidget *parent = nullptr );
+                virtual ~CTranscodeGeneralSettings() override;
 
                 virtual void load() override;
                 virtual void save() override;
-                virtual QStringList pageName() const override { return QStringList( { "Make MKV Settings", "Video" } ); }
+                virtual QStringList pageName() const override { return QStringList( { "Transcode Settings", "General" } ); }
             public Q_SLOTS:
-                void slotUseExplicitCRFChanged();
-                void slotUsePresetChanged();
-                void slotUseTuneChanged();
-                void slotUseProfileChanged();
-                void slotCodecChanged();
-                void slotHWAccelChanged();
-                void slotExplicitCodecChanged();
             private:
-                void selectVideoCodec( const QString & curr );
-
-                std::unique_ptr< Ui::CMakeMKVVideoSettings > fImpl;
-                QStringList fVerboseEncoders;
-                QStringList fTerseEncoders;
-                QStringList fVerboseHWAccels;
-                QStringList fTerseHWAccels;
+                std::unique_ptr< Ui::CTranscodeGeneralSettings > fImpl;
             };
         }
     }

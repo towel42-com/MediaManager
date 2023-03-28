@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>NMediaManager::NPreferences::NUi::CMakeMKVVideoSettings</class>
- <widget class="QWidget" name="NMediaManager::NPreferences::NUi::CMakeMKVVideoSettings">
+ <class>NMediaManager::NPreferences::NUi::CTranscodeVideoSettings</class>
+ <widget class="QWidget" name="NMediaManager::NPreferences::NUi::CTranscodeVideoSettings">
   <property name="geometry">
    <rect>
     <x>0</x>

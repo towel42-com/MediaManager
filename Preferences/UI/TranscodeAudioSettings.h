@@ -20,8 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef __UI_MAKEMKVGENERALSETTINGS_H
-#define __UI_MAKEMKVGENERALSETTINGS_H
+#ifndef __UI_TRANSCODEAUDIOSETTINGS_H
+#define __UI_TRANSCODEAUDIOSETTINGS_H
 
 #include "BasePrefPage.h"
 
@@ -33,21 +33,23 @@ namespace NMediaManager
         {
             namespace Ui
             {
-                class CMakeMKVGeneralSettings;
+                class CTranscodeAudioSettings;
             };
-            class CMakeMKVGeneralSettings : public CBasePrefPage
+            class CTranscodeAudioSettings : public CBasePrefPage
             {
                 Q_OBJECT
             public:
-                CMakeMKVGeneralSettings( QWidget *parent = nullptr );
-                virtual ~CMakeMKVGeneralSettings() override;
+                CTranscodeAudioSettings( QWidget *parent = nullptr );
+                virtual ~CTranscodeAudioSettings() override;
 
                 virtual void load() override;
                 virtual void save() override;
-                virtual QStringList pageName() const override { return QStringList( { "Make MKV Settings", "General" } ); }
+                virtual QStringList pageName() const override { return QStringList( { "Transcode Settings", "Audio" } ); }
             public Q_SLOTS:
             private:
-                std::unique_ptr< Ui::CMakeMKVGeneralSettings > fImpl;
+                std::unique_ptr< Ui::CTranscodeAudioSettings > fImpl;
+                QStringList fVerbose;
+                QStringList fTerse;
             };
         }
     }

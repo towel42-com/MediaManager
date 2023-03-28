@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>NMediaManager::NPreferences::NUi::CMakeMKVAudioSettings</class>
- <widget class="QWidget" name="NMediaManager::NPreferences::NUi::CMakeMKVAudioSettings">
+ <class>NMediaManager::NPreferences::NUi::CTranscodeAudioSettings</class>
+ <widget class="QWidget" name="NMediaManager::NPreferences::NUi::CTranscodeAudioSettings">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>516</width>
+    <width>615</width>
     <height>535</height>
    </rect>
   </property>
@@ -23,7 +23,14 @@
       <bool>true</bool>
      </property>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="2" column="0" colspan="2">
+      <item row="1" column="0" colspan="2">
+       <widget class="QCheckBox" name="onlyTranscodeAudioOnFormatChange">
+        <property name="text">
+         <string>Only Transcode Audio when Format requires it?</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0" colspan="2">
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
          <widget class="QLabel" name="label_3">
@@ -50,17 +57,10 @@
         </item>
        </layout>
       </item>
-      <item row="1" column="0" colspan="2">
-       <widget class="QCheckBox" name="alwaysAddAACAudioCodec">
+      <item row="0" column="0">
+       <widget class="QCheckBox" name="addAACAudioCodec">
         <property name="text">
-         <string>Always Add AAC Audio Codec?</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0" colspan="2">
-       <widget class="QCheckBox" name="onlyTranscodeAudioOnFormatChange">
-        <property name="text">
-         <string>Only Transcode Audio when Format requires it?</string>
+         <string>Add AAC Audio Codec if missing?</string>
         </property>
        </widget>
       </item>
@@ -70,7 +70,10 @@
    <item>
     <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>If &quot;Only Transcode&quot; is checked, Audio transcoding will only occur when a format change is necessary.</string>
+      <string>Audio transcoding adds a second audio stream.  Transcoding is done on the first audio stream and inserts the new stream into position 0 (making it the default). If Add AAC is checked, then if there is NO AAC based audio stream in the file, one is added and made the default stream.  If not checked, and If &quot;Only Transcode&quot; is checked, Audio Transcoding will only occur when a format change is necessary.</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::PlainText</enum>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
@@ -94,8 +97,8 @@
  </widget>
  <tabstops>
   <tabstop>transcodeAudio</tabstop>
+  <tabstop>addAACAudioCodec</tabstop>
   <tabstop>onlyTranscodeAudioOnFormatChange</tabstop>
-  <tabstop>alwaysAddAACAudioCodec</tabstop>
   <tabstop>audioCodec</tabstop>
  </tabstops>
  <resources>
