@@ -319,6 +319,11 @@ namespace NMediaManager
                 return true;
             }
 
+            bool CPreferences::getAlwaysAddAACAudioCodecDefault() const
+            {
+                return true;
+            }
+
             bool CPreferences::getOnlyTranscodeAudioOnFormatChangeDefault() const
             {
                 return true;
@@ -344,11 +349,11 @@ namespace NMediaManager
                 return R"(libx265)";
             }
 
-            bool CPreferences::getLosslessTranscodingDefault() const
+            bool CPreferences::getLosslessEncodingDefault() const
             {
                 return true;
             }
-
+            
             bool CPreferences::getUseCRFDefault() const
             {
                 return false;
@@ -376,7 +381,7 @@ namespace NMediaManager
 
             bool CPreferences::getUseTuneDefault() const
             {
-                return false;
+                return true;
             }
 
             EMakeMKVTune CPreferences::getTuneDefault() const

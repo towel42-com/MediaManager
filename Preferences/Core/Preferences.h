@@ -70,7 +70,7 @@ namespace NMediaManager
             eExtToolsPrefs = 32,
             eBIFPrefs = 64,
             eGIFPrefs = 128,
-            eMakeMKVPrefs = 256
+            eTranscodePrefs = 256
         };
         Q_DECLARE_FLAGS( EPreferenceTypes, EPreferenceType );
         Q_DECLARE_OPERATORS_FOR_FLAGS( EPreferenceTypes );
@@ -173,6 +173,9 @@ namespace NMediaManager
                 QStringList getTranscodeArgs( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName ) const;
                 QStringList getTranscodeArgs( const QString &srcName, const QString &destName ) const;
 
+                std::shared_ptr< NSABUtils::CMediaInfo > getMediaInfo( const QFileInfo & fi );
+                std::shared_ptr< NSABUtils::CMediaInfo > getMediaInfo( const QString & fileName );
+
                 // ffmpeg results
                 QStringList availableEncoderMediaFormats( bool verbose ) const;   // if true returns name - desc, otherwise name only
                 NSABUtils::TFormatMap getEncoderFormatExtensionsMap() const;
@@ -250,6 +253,10 @@ namespace NMediaManager
                 bool getTranscodeAudioDefault() const;
                 bool getTranscodeAudio() const;
 
+                void setAlwaysAddAACAudioCodec( bool value );
+                bool getAlwaysAddAACAudioCodecDefault() const;
+                bool getAlwaysAddAACAudioCodec() const;
+
                 void setOnlyTranscodeAudioOnFormatChange( bool value );
                 bool getOnlyTranscodeAudioOnFormatChangeDefault() const;
                 bool getOnlyTranscodeAudioOnFormatChange() const;
@@ -275,9 +282,9 @@ namespace NMediaManager
                 QString getTranscodeToVideoCodecDefault() const;
                 QString getTranscodeToVideoCodec() const;
 
-                void setLosslessTranscoding( bool value );
-                bool getLosslessTranscodingDefault() const;
-                bool getLosslessTranscoding() const;
+                void setLosslessEncoding( bool value );
+                bool getLosslessEncodingDefault() const;
+                bool getLosslessEncoding() const;
 
                 void setUseCRF( bool value );
                 bool getUseCRFDefault() const;
@@ -320,6 +327,9 @@ namespace NMediaManager
 
                 void setLoadMediaInfo( bool value );
                 bool getLoadMediaInfo() const;
+
+                void setBackgroundLoadMediaInfo( bool value );
+                bool getBackgroundLoadMediaInfo() const;
 
                 void setOnlyTransformDirectories( bool value );
                 bool getOnlyTransformDirectories() const;
@@ -547,8 +557,11 @@ namespace NMediaManager
                 bool keepTempDir() const;
                 void setKeepTempDir( bool value );
 
+            private Q_SLOTS:
+                void slotMediaInfoLoaded( const QString &fileName );
             Q_SIGNALS:
                 void sigPreferencesChanged( EPreferenceTypes prefType );
+                void sigMediaInfoLoaded( const QString &fileName ) const;
 
             private:
                 QStringList getDefaultFile() const;
@@ -585,6 +598,8 @@ namespace NMediaManager
                 mutable std::unordered_set< QString > fSubtitleExtensionsHash;
                 mutable std::unordered_map< QString, bool > fIsSubtitleExtension;
                 mutable QStringList fKnownStringRegExsCache;
+
+                std::unordered_map< QString, std::shared_ptr< NSABUtils::CMediaInfo > > fQueuedMediaInfo;
             };
         }
     }
