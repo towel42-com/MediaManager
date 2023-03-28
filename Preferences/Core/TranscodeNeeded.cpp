@@ -114,6 +114,24 @@ namespace NMediaManager
 
                 return {};
             }
+
+            QString STranscodeNeeded::getMessage( const QString & from, const QString & to ) const
+            {
+                QStringList msgs;
+                msgs << QObject::tr( "Convert file from '%1' => '%2'" ).arg( from ).arg( to );
+                if ( videoTranscodeNeeded() )
+                    msgs << QObject::tr( "transcode video to the %1 codec." ).arg( NPreferences::NCore::CPreferences::instance()->getTranscodeToVideoCodec() );
+                if ( addAACAudioCodec() )
+                    msgs << QObject::tr( "add the AAC codec to audio." );
+                if ( audioTranscodeNeeded() )
+                    msgs << QObject::tr( "transcode audio to %1 codec." ).arg( NPreferences::NCore::CPreferences::instance()->getTranscodeToAudioCodec() );
+
+                if ( msgs.length() > 2 )
+                    msgs.back() = " and " + msgs.back();
+                auto msg = msgs.join( ", " );
+                return msg;
+            }
+
         }
     }
 }

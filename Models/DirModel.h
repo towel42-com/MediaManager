@@ -329,14 +329,11 @@ namespace NMediaManager
             virtual int getMediaTitleLoc() const;
             virtual int getMediaLengthLoc() const;
             virtual int getMediaDateLoc() const;
-            virtual int getMediaNumVideoStreamsLoc() const;
             virtual int getMediaResolutionLoc() const;
             virtual int getMediaVideoCodecLoc() const;
             virtual int getMediaVideoBitrateLoc() const;
-            virtual int getMediaNumAudioStreamsLoc() const;
             virtual int getMediaAudioCodecLoc() const;
             virtual int getMediaAudioSampleRateLoc() const;
-            virtual int getMediaNumSubtitleStreamsLoc() const;
             virtual int getMediaSubtitlesLoc() const;
             virtual int getMediaCommentLoc() const;
             virtual std::list< SDirNodeItem > addAdditionalItems( const QFileInfo &fileInfo ) const;

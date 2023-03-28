@@ -1743,18 +1743,11 @@ namespace NMediaManager
             return getMediaLengthLoc() + 1;
         }
 
-        int CDirModel::getMediaNumVideoStreamsLoc() const
-        {
-            if ( !canShowMediaInfo() )
-                return -1;
-            return getMediaDateLoc() + 1;
-        }
-
         int CDirModel::getMediaResolutionLoc() const
         {
             if ( !canShowMediaInfo() )
                 return -1;
-            return getMediaNumVideoStreamsLoc() + 1;
+            return getMediaDateLoc() + 1;
         }
 
         int CDirModel::getMediaVideoCodecLoc() const
@@ -1771,18 +1764,11 @@ namespace NMediaManager
             return getMediaVideoCodecLoc() + 1;
         }
 
-        int CDirModel::getMediaNumAudioStreamsLoc() const
-        {
-            if ( !canShowMediaInfo() )
-                return -1;
-            return getMediaVideoBitrateLoc() + 1;
-        }
-
         int CDirModel::getMediaAudioCodecLoc() const
         {
             if ( !canShowMediaInfo() )
                 return -1;
-            return getMediaNumAudioStreamsLoc() + 1;
+            return getMediaVideoBitrateLoc() + 1;
         }
 
         int CDirModel::getMediaAudioSampleRateLoc() const
@@ -1792,18 +1778,11 @@ namespace NMediaManager
             return getMediaAudioCodecLoc() + 1;
         }
 
-        int CDirModel::getMediaNumSubtitleStreamsLoc() const
-        {
-            if ( !canShowMediaInfo() )
-                return -1;
-            return getMediaAudioSampleRateLoc() + 1;
-        }
-
         int CDirModel::getMediaSubtitlesLoc() const
         {
             if ( !canShowMediaInfo() )
                 return -1;
-            return getMediaNumSubtitleStreamsLoc() + 1;
+            return getMediaAudioSampleRateLoc() + 1;
         }
 
         int CDirModel::getMediaCommentLoc() const
@@ -2174,14 +2153,11 @@ namespace NMediaManager
                 << tr( "Title" )   //
                 << tr( "Length" )   //
                 << tr( "Media Date" )   //
-                << tr( "# Video Streams" )   //
                 << tr( "Resolution" )   //
                 << tr( "Video Codec(s)" )   //
                 << tr( "Video Bitrate" )   //
-                << tr( "# Audio Streams" )   //
                 << tr( "Audio Codec(s)" )   //
                 << tr( "Audio Sample Rate" )   //
-                << tr( "# Subtitle Streams" )   //
                 << tr( "Subtitles(s)" )   //
                 << tr( "Comment" );
 
@@ -2190,14 +2166,11 @@ namespace NMediaManager
                     NSABUtils::EMediaTags::eTitle,   //
                     NSABUtils::EMediaTags::eLength,   //
                     NSABUtils::EMediaTags::eDate,   //
-                    NSABUtils::EMediaTags::eNumVideoStreams,   //
                     NSABUtils::EMediaTags::eResolution,   //
                     NSABUtils::EMediaTags::eAllVideoCodecs,   //
                     NSABUtils::EMediaTags::eVideoBitrateString,   //
-                    NSABUtils::EMediaTags::eNumAudioStreams,   //
                     NSABUtils::EMediaTags::eAllAudioCodecs,   //
                     NSABUtils::EMediaTags::eAudioSampleRateString,   //
-                    NSABUtils::EMediaTags::eNumSubtitleStreams,   //
                     NSABUtils::EMediaTags::eAllSubtitles,   //
                     NSABUtils::EMediaTags::eComment   //
                 } );
@@ -2220,11 +2193,6 @@ namespace NMediaManager
                 ,
                 { [ this ]()
                   {
-                      return getMediaNumVideoStreamsLoc();
-                  } }   //
-                ,
-                { [ this ]()
-                  {
                       return getMediaResolutionLoc();
                   } }   //
                 ,
@@ -2240,11 +2208,6 @@ namespace NMediaManager
                 ,
                 { [ this ]()
                   {
-                      return getMediaNumAudioStreamsLoc();
-                  } }   //
-                ,
-                { [ this ]()
-                  {
                       return getMediaAudioCodecLoc();
                   } }   //
                 ,
@@ -2252,13 +2215,7 @@ namespace NMediaManager
                   {
                       return getMediaAudioSampleRateLoc();
                   } }   //
-                ,
-                { [ this ]()
-                  {
-                      return getMediaNumSubtitleStreamsLoc();
-                  } }   //
-                ,
-                { [ this ]()
+                ,{ [ this ]()
                   {
                       return getMediaSubtitlesLoc();
                   } }   //

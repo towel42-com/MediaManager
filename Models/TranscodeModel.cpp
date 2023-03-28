@@ -109,20 +109,7 @@ namespace NMediaManager
 
             processInfo.fNewNames << fi.absoluteDir().absoluteFilePath( newBaseName );
 
-            QStringList msgs;
-            msgs << tr( "Convert file from '%1' => '%2'" ).arg( getDispName( processInfo.fOldName ) ).arg( getDispName( processInfo.fNewNames.front() ) );
-            if ( transcodeNeeded.videoTranscodeNeeded() )
-                msgs << tr( "transcode video to the %1 codec." ).arg( NPreferences::NCore::CPreferences::instance()->getTranscodeToVideoCodec() );
-            if ( transcodeNeeded.addAACAudioCodec() )
-                msgs << tr( "add the AAC codec to audio." );
-            if ( transcodeNeeded.audioTranscodeNeeded() )
-                msgs << tr( "transcode audio to %1 codec." ).arg( NPreferences::NCore::CPreferences::instance()->getTranscodeToAudioCodec() );
-
-            if ( msgs.length() > 2 )
-                msgs.back() = " and " + msgs.back();
-            auto msg = msgs.join( ", " );
-            
-            processInfo.fItem = new QStandardItem( msg );
+            processInfo.fItem = new QStandardItem( transcodeNeeded.getMessage( getDispName( processInfo.fOldName ), getDispName( processInfo.fNewNames.front() ) ) );
             processInfo.fItem->setData( processInfo.fOldName, ECustomRoles::eOldName );
             processInfo.fItem->setData( processInfo.fNewNames, ECustomRoles::eNewName );
 
