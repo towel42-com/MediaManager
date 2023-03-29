@@ -48,7 +48,7 @@ namespace NMediaManager
                 std::optional< QString > getVideoCodecMessage() const;
                 std::optional< QString > getAudioCodecMessage() const;
                 QString getMessage( const QString & from, const QString & to ) const;
-           
+                QString getProgressLabelHeader( const QString &from, const QString &to ) const;
 
                 bool transcodeNeeded() const { return fVideo || fAudio || fMissingAAC || fFormat; }
                 bool formatOnly() const { return fFormat && !fVideo && !fAudio; }

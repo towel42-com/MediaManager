@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>615</width>
-    <height>535</height>
+    <width>611</width>
+    <height>526</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -60,7 +60,7 @@
       <item row="0" column="0">
        <widget class="QCheckBox" name="addAACAudioCodec">
         <property name="text">
-         <string>Add AAC Audio Codec if missing?</string>
+         <string>Add AAC 5.1 Audio Codec if missing?</string>
         </property>
        </widget>
       </item>
@@ -70,7 +70,7 @@
    <item>
     <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>Audio transcoding adds a second audio stream.  Transcoding is done on the first audio stream and inserts the new stream into position 0 (making it the default). If Add AAC is checked, then if there is NO AAC based audio stream in the file, one is added and made the default stream.  If not checked, and If &quot;Only Transcode&quot; is checked, Audio Transcoding will only occur when a format change is necessary.</string>
+      <string>Audio transcoding adds an additional audio stream as the new first (default) audio stream.  Transcoding is done on the first audio stream and inserts the new stream into position 0 (making it the default). If Add AAC 5.1 is checked, then if there is NO AAC 5.1 (or lesser number of channels) based audio stream in the file , one is added and made the default stream.  If not checked, and if &quot;Only Transcode&quot; is checked, Audio Transcoding will only occur when a format change is necessary.</string>
      </property>
      <property name="textFormat">
       <enum>Qt::PlainText</enum>

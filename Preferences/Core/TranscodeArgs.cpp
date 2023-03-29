@@ -63,10 +63,8 @@ namespace NMediaManager
                 if ( transcodeNeeded.formatOnly() )
                 {
                     // already HVEC but wrong container, just copy
-                    retVal << "-c:v"
-                           << "copy"   //
-                           << "-c:a"
-                           << "copy"   //
+                    retVal << "-c:v" << "copy"   //
+                           << "-c:a" << "copy"   //
                         ;
                 }
                 else
@@ -89,23 +87,28 @@ namespace NMediaManager
                         ;
 
                     if ( !transcodeNeeded.audioTranscodeNeeded() && !transcodeNeeded.addAACAudioCodec() )
-                        retVal << "-c:a"
-                               << "copy";
+                    {
+                        retVal << "-map" << "0:a?"   //
+                               << "-c:a" << "copy";
+                    }
                     else
                     {
                         auto numAudioStreams = mediaInfo->numAudioStreams();
                         int streamNum = 0;
                         for ( int ii = 0; ii < numAudioStreams; ++ii )
                         {
+                            retVal << "-map" << QString( "0:a:%1?" ).arg( ii );
                             if ( ii == 0 )   // transcode or copy the first audio stream
                             {
-                                retVal << "-map" << QString( "0:a:%1?" ).arg( ii );
-
                                 auto audioFormat = transcodeNeeded.addAACAudioCodec() ? "aac" : getTranscodeToAudioCodec();
-                                retVal << QString( "-c:a:%1" ).arg( streamNum++ ) << audioFormat;
+                                retVal << QString( "-c:a:0" ) << audioFormat;
+                                if ( transcodeNeeded.addAACAudioCodec() )
+                                    retVal << "-ac:a:0" << "6"; // convert it to 5.1
                                 retVal << QString( "-metadata:s:a:%1" ).arg( ii ) << QString( R"(title="Transcoded from Default Track")" ).arg( audioFormat );
+                                streamNum++;
+                                retVal << "-map" << QString( "0:a:%1?" ).arg( ii );
                             }
-                            retVal << "-map" << QString( "0:a:%1?" ).arg( ii ) << QString( "-c:a:%1" ).arg( streamNum++ ) << "copy";
+                            retVal << QString( "-c:a:%1" ).arg( streamNum++ ) << "copy";
                         }
                     }
 

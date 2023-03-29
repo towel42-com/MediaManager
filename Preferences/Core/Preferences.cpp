@@ -1616,22 +1616,47 @@ namespace NMediaManager
                 if ( !getLoadMediaInfo() )
                     return {};
 
-                bool backgroundLoad = getBackgroundLoadMediaInfo();
-                auto retVal = std::make_shared< NSABUtils::CMediaInfo >( fi /*, !backgroundLoad*/ );
-                if ( backgroundLoad )
+                bool loadNow = !getBackgroundLoadMediaInfo();
+                auto retVal = std::make_shared< NSABUtils::CMediaInfo >( fi, loadNow );
+                if ( !loadNow )
                 {
-                    fQueuedMediaInfo[ fi.absoluteFilePath() ] = retVal;
-                    connect( retVal.get(), &NSABUtils::CMediaInfo::sigMediaInfoLoaded, this, &CPreferences::slotMediaInfoLoaded );
-                    retVal->queueLoad();
+                    addToMediaInfoQueue( fi, retVal );
+                    auto queued = retVal->queueLoad( [ this ]( const QString &fileName ) { mediaInfoLoaded( fileName ); } );
+                    if ( !queued )
+                    {
+                        removeFromMediaInfoQueue( fi );
+                    }
                 }
                 return retVal;
             }
 
-            void CPreferences::slotMediaInfoLoaded( const QString &fileName )
+            void CPreferences::addToMediaInfoQueue( const QFileInfo &fi, std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo )
             {
+                fMutex.lock();
+                fQueuedMediaInfo[ fi.absoluteFilePath() ] = mediaInfo;
+                fMutex.unlock();
+            }
+
+            void CPreferences::removeFromMediaInfoQueue( const QFileInfo &fi )
+            {
+                fMutex.lock();
+                auto pos = fQueuedMediaInfo.find( fi.absoluteFilePath() );
+                if ( pos != fQueuedMediaInfo.end() )
+                {
+                    if ( !(*pos).second->isQueued() )
+                        fQueuedMediaInfo.erase( pos );
+                }
+                fMutex.unlock();
+            }
+
+            void CPreferences::mediaInfoLoaded( const QString &fileName )
+            {
+                fMutex.lock();
                 auto pos = fQueuedMediaInfo.find( fileName );
                 if ( pos != fQueuedMediaInfo.end() )
                     fQueuedMediaInfo.erase( pos );
+                fMutex.unlock();
+
                 emit sigMediaInfoLoaded( fileName );
             }
 

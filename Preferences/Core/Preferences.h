@@ -29,6 +29,7 @@
 #include <QMap>
 #include <QHash>
 #include <QRegularExpression>
+#include <QMutex>
 #include <unordered_set>
 #include <optional>
 #include <memory>
@@ -538,13 +539,14 @@ namespace NMediaManager
                 bool keepTempDir() const;
                 void setKeepTempDir( bool value );
 
-            private Q_SLOTS:
-                void slotMediaInfoLoaded( const QString &fileName );
             Q_SIGNALS:
                 void sigPreferencesChanged( EPreferenceTypes prefType );
                 void sigMediaInfoLoaded( const QString &fileName ) const;
 
             private:
+                void removeFromMediaInfoQueue( const QFileInfo &fi );
+                void addToMediaInfoQueue( const QFileInfo &fi, std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo );
+                void mediaInfoLoaded( const QString &fileName );
                 QStringList getDefaultFile() const;
                 bool isFileWithExtension( const QFileInfo &fi, std::function< QStringList() > getExtensions, std::unordered_set< QString > &hash, std::unordered_map< QString, bool > &cache ) const;
 
@@ -576,6 +578,7 @@ namespace NMediaManager
                 mutable QStringList fKnownStringRegExsCache;
 
                 std::unordered_map< QString, std::shared_ptr< NSABUtils::CMediaInfo > > fQueuedMediaInfo;
+                QMutex fMutex;
             };
         }
     }
