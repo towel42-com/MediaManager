@@ -76,7 +76,7 @@ namespace NMediaManager
 
             std::optional< QString > STranscodeNeeded::getFormatMessage() const
             {
-                if ( fFormat )
+                if ( formatChangeNeeded() )
                 {
                     auto msg = QObject::tr( "<p style='white-space:pre'>File <b>'%1'</b> is not using a %2 container</p>" )
                                    .arg( QFileInfo( fMediaInfo->fileName() ).fileName() )
@@ -88,7 +88,7 @@ namespace NMediaManager
 
             std::optional< QString > STranscodeNeeded::getVideoCodecMessage() const
             {
-                if ( fVideo )
+                if ( videoTranscodeNeeded() )
                 {
                     auto msg = QObject::tr( "<p style='white-space:pre'>File <b>'%1'</b> is not using the '%2' video codec</p>" )
                                    .arg( QFileInfo( fMediaInfo->fileName() ).fileName() )
@@ -100,13 +100,13 @@ namespace NMediaManager
 
             std::optional< QString > STranscodeNeeded::getAudioCodecMessage() const
             {
-                if ( fMissingAAC )
+                if ( addAACAudioCodec() )
                 {
                     auto msg = QObject::tr( "<p style='white-space:pre'>File <b>'%1'</b> is missing the 'AAC 5.1' audio codec</p>" ).arg( QFileInfo( fMediaInfo->fileName() ).fileName() );
                     return msg;
                 }
 
-                if ( fAudio )
+                if ( audioTranscodeNeeded() )
                 {
                     auto msg = QObject::tr( "<p style='white-space:pre'>File <b>'%1'</b> is not using the '%2' audio codec</p>" )
                                    .arg( QFileInfo( fMediaInfo->fileName() ).fileName() )
@@ -120,13 +120,15 @@ namespace NMediaManager
             QString STranscodeNeeded::getMessage( const QString &from, const QString &to ) const
             {
                 QStringList msgs;
-                msgs << QObject::tr( "Convert file from '%1' => '%2'" ).arg( from ).arg( to );
+                msgs << QObject::tr( "Convert to file from '%1' => '%2'" ).arg( from ).arg( to );
+                if ( formatChangeNeeded() )
+                    msgs << QObject::tr( "Convert to Container: %1" ).arg( NPreferences::NCore::CPreferences::instance()->getConvertMediaToContainer() );
                 if ( videoTranscodeNeeded() )
-                    msgs << QObject::tr( "transcode video to the %1 codec" ).arg( NPreferences::NCore::CPreferences::instance()->getTranscodeToVideoCodec() );
+                    msgs << QObject::tr( "Transcode video to the %1 codec" ).arg( NPreferences::NCore::CPreferences::instance()->getTranscodeToVideoCodec() );
                 if ( addAACAudioCodec() )
-                    msgs << QObject::tr( "add the AAC 5.1 codec to audio" );
+                    msgs << QObject::tr( "Add the AAC 5.1 codec to audio" );
                 if ( audioTranscodeNeeded() )
-                    msgs << QObject::tr( "transcode audio to %1 codec" ).arg( NPreferences::NCore::CPreferences::instance()->getTranscodeToAudioCodec() );
+                    msgs << QObject::tr( "Transcode audio to %1 codec" ).arg( NPreferences::NCore::CPreferences::instance()->getTranscodeToAudioCodec() );
 
                 if ( msgs.length() > 2 )
                     msgs.back() = " and " + msgs.back();
@@ -136,15 +138,15 @@ namespace NMediaManager
 
             QString STranscodeNeeded::getProgressLabelHeader( const QString &from, const QString &to ) const
             {
-                auto msgs = QStringList()   //
-                            << QObject::tr( "Converting to %1" )   //
-                                   .arg( NPreferences::NCore::CPreferences::instance()->getConvertMediaToContainer() );
+                QStringList msgs;
+                if ( formatChangeNeeded() )
+                    msgs << QObject::tr( "Converting to Container: %1" ).arg( NPreferences::NCore::CPreferences::instance()->getConvertMediaToContainer() );
                 if ( videoTranscodeNeeded() )
-                    msgs << QObject::tr( "transcode video to the %1 codec" ).arg( NPreferences::NCore::CPreferences::instance()->getTranscodeToVideoCodec() );
+                    msgs << QObject::tr( "Transcode video to the %1 codec" ).arg( NPreferences::NCore::CPreferences::instance()->getTranscodeToVideoCodec() );
                 if ( addAACAudioCodec() )
-                    msgs << QObject::tr( "add the AAC 5.1 codec to audio" );
+                    msgs << QObject::tr( "Add the AAC 5.1 codec to audio" );
                 if ( audioTranscodeNeeded() )
-                    msgs << QObject::tr( "transcode audio to %1 codec" ).arg( NPreferences::NCore::CPreferences::instance()->getTranscodeToAudioCodec() );
+                    msgs << QObject::tr( "Transcode audio to %1 codec" ).arg( NPreferences::NCore::CPreferences::instance()->getTranscodeToAudioCodec() );
 
                 if ( msgs.length() > 2 )
                     msgs.back() = " and " + msgs.back();
