@@ -2169,7 +2169,7 @@ namespace NMediaManager
                     NSABUtils::EMediaTags::eResolution,   //
                     NSABUtils::EMediaTags::eAllVideoCodecs,   //
                     NSABUtils::EMediaTags::eVideoBitrateString,   //
-                    NSABUtils::EMediaTags::eAllAudioCodecs,   //
+                    NSABUtils::EMediaTags::eAllAudioCodecsDisp,   //
                     NSABUtils::EMediaTags::eAudioSampleRateString,   //
                     NSABUtils::EMediaTags::eAllSubtitles,   //
                     NSABUtils::EMediaTags::eComment   //

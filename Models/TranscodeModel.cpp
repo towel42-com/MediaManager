@@ -118,6 +118,7 @@ namespace NMediaManager
             fFirstProcess = true;
             if ( !displayOnly )
             {
+                processInfo.fProgressLabel = transcodeNeeded.getProgressLabelHeader( getDispName( processInfo.fOldName ), getDispName( processInfo.fNewNames.front() ) );
                 auto mediaInfo = getMediaInfo( fi );
                 Q_ASSERT( mediaInfo );
 
@@ -147,8 +148,7 @@ namespace NMediaManager
 
         QString CTranscodeModel::getProgressLabel( const SProcessInfo &processInfo ) const
         {
-            auto retVal = QString( "Converting to H.265 %3<ul><li>%1</li>to<li>%2</li></ul>" ).arg( getDispName( processInfo.fOldName ) ).arg( getDispName( processInfo.fNewNames.front() ) ).arg( NPreferences::NCore::CPreferences::instance()->getConvertMediaToContainer() );
-            return retVal;
+            return processInfo.fProgressLabel;
         }
 
         QStringList CTranscodeModel::headers() const

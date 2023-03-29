@@ -163,6 +163,7 @@ namespace NMediaManager
             QStringList fAncillary;
             QStringList fNewNames;
             int fMaximum{ 0 };
+            QString fProgressLabel;
 
             std::function< bool( const SProcessInfo *processInfo, QString &msg ) > fPostProcess;
             std::shared_ptr< QTemporaryDir > fTempDir;
