@@ -197,6 +197,7 @@ namespace NMediaManager
             CPreferences::CPreferences()
             {
                 fMediaFormats = std::make_unique< NSABUtils::CFFMpegFormats >( getFFMpegEXE() );
+                connect( NSABUtils::CMediaInfoMgr::instance(), &NSABUtils::CMediaInfoMgr::sigMediaLoaded, this, &CPreferences::sigMediaInfoLoaded );
             }
 
             CPreferences::~CPreferences()
@@ -270,7 +271,7 @@ namespace NMediaManager
 
             QSize CPreferences::getThumbnailSize( const QFileInfo &fi ) const
             {
-                auto mediaInfo = NSABUtils::CMediaInfo( fi.absoluteFilePath(), false );
+                auto mediaInfo = NSABUtils::CMediaInfo( fi.absoluteFilePath() );
                 auto tags = mediaInfo.getMediaTags( { NSABUtils::EMediaTags::eWidth, NSABUtils::EMediaTags::eHeight, NSABUtils::EMediaTags::eAspectRatio } );
 
                 auto width = tags[ NSABUtils::EMediaTags::eWidth ].toInt();
@@ -1608,6 +1609,11 @@ namespace NMediaManager
             /// ////////////////////////////////////////////////////////
             /// MakeMKV Options
             /// ////////////////////////////////////////////////////////
+            std::shared_ptr< NSABUtils::CMediaInfo > CPreferences::getMediaInfo( const QString &fileName )
+            {
+                return getMediaInfo( std::move( QFileInfo( fileName ) ) );
+            }
+
             std::shared_ptr< NSABUtils::CMediaInfo > CPreferences::getMediaInfo( const QFileInfo &fi )
             {
                 if ( !isMediaFile( fi ) )
@@ -1616,53 +1622,13 @@ namespace NMediaManager
                 if ( !getLoadMediaInfo() )
                     return {};
 
-                bool loadNow = !getBackgroundLoadMediaInfo();
-                auto retVal = std::make_shared< NSABUtils::CMediaInfo >( fi, loadNow );
-                if ( !loadNow )
+                bool delayLoad = getBackgroundLoadMediaInfo();
+                if ( delayLoad )
                 {
-                    addToMediaInfoQueue( fi, retVal );
-                    auto queued = retVal->queueLoad( [ this ]( const QString &fileName ) { mediaInfoLoaded( fileName ); } );
-                    if ( !queued )
-                    {
-                        removeFromMediaInfoQueue( fi );
-                    }
+                    return NSABUtils::CMediaInfoMgr::instance()->getMediaInfo( fi );
                 }
-                return retVal;
-            }
-
-            void CPreferences::addToMediaInfoQueue( const QFileInfo &fi, std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo )
-            {
-                fMutex.lock();
-                fQueuedMediaInfo[ fi.absoluteFilePath() ] = mediaInfo;
-                fMutex.unlock();
-            }
-
-            void CPreferences::removeFromMediaInfoQueue( const QFileInfo &fi )
-            {
-                fMutex.lock();
-                auto pos = fQueuedMediaInfo.find( fi.absoluteFilePath() );
-                if ( pos != fQueuedMediaInfo.end() )
-                {
-                    if ( !(*pos).second->isQueued() )
-                        fQueuedMediaInfo.erase( pos );
-                }
-                fMutex.unlock();
-            }
-
-            void CPreferences::mediaInfoLoaded( const QString &fileName )
-            {
-                fMutex.lock();
-                auto pos = fQueuedMediaInfo.find( fileName );
-                if ( pos != fQueuedMediaInfo.end() )
-                    fQueuedMediaInfo.erase( pos );
-                fMutex.unlock();
-
-                emit sigMediaInfoLoaded( fileName );
-            }
-
-            std::shared_ptr< NSABUtils::CMediaInfo > CPreferences::getMediaInfo( const QString &fileName )
-            {
-                return getMediaInfo( std::move( QFileInfo( fileName ) ) );
+                else
+                    return std::make_shared< NSABUtils::CMediaInfo >( fi );
             }
 
             QStringList CPreferences::availableEncoderMediaFormats( bool verbose ) const

@@ -544,9 +544,6 @@ namespace NMediaManager
                 void sigMediaInfoLoaded( const QString &fileName ) const;
 
             private:
-                void removeFromMediaInfoQueue( const QFileInfo &fi );
-                void addToMediaInfoQueue( const QFileInfo &fi, std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo );
-                void mediaInfoLoaded( const QString &fileName );
                 QStringList getDefaultFile() const;
                 bool isFileWithExtension( const QFileInfo &fi, std::function< QStringList() > getExtensions, std::unordered_set< QString > &hash, std::unordered_map< QString, bool > &cache ) const;
 
@@ -576,9 +573,6 @@ namespace NMediaManager
                 mutable std::unordered_set< QString > fSubtitleExtensionsHash;
                 mutable std::unordered_map< QString, bool > fIsSubtitleExtension;
                 mutable QStringList fKnownStringRegExsCache;
-
-                std::unordered_map< QString, std::shared_ptr< NSABUtils::CMediaInfo > > fQueuedMediaInfo;
-                QMutex fMutex;
             };
         }
     }
