@@ -188,7 +188,7 @@ namespace NMediaManager
                 return toString( ETranscodeProfile::eMain, forEnum );
             }
 
-            CPreferences *CPreferences::instance()
+            CPreferences * CPreferences::instance()
             {
                 static CPreferences retVal;
                 return &retVal;
@@ -227,7 +227,7 @@ namespace NMediaManager
                 return settings.value( QString( "%1-%2ground" ).arg( toString( status ) ).arg( background ? "Back" : "Fore" ), defaultColor ).value< QColor >();
             }
 
-            void CPreferences::setColorForStatus( EItemStatus status, bool background, const QColor &value )
+            void CPreferences::setColorForStatus( EItemStatus status, bool background, const QColor & value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eColorsPrefs ) );
@@ -239,7 +239,7 @@ namespace NMediaManager
             /// System Options
             /// ////////////////////////////////////////////////////////
 
-            void CPreferences::setPageVisible( const QString &pageName, bool isVisible )
+            void CPreferences::setPageVisible( const QString & pageName, bool isVisible )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
@@ -247,7 +247,7 @@ namespace NMediaManager
                 emitSigPreferencesChanged( EPreferenceType::eSystemPrefs );
             }
 
-            bool CPreferences::getPageVisible( const QString &pageName ) const
+            bool CPreferences::getPageVisible( const QString & pageName ) const
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
@@ -269,7 +269,7 @@ namespace NMediaManager
                 emitSigPreferencesChanged( EPreferenceType::eSystemPrefs );
             }
 
-            QSize CPreferences::getThumbnailSize( const QFileInfo &fi ) const
+            QSize CPreferences::getThumbnailSize( const QFileInfo & fi ) const
             {
                 auto mediaInfo = NSABUtils::CMediaInfo( fi.absoluteFilePath() );
                 auto tags = mediaInfo.getMediaTags( { NSABUtils::EMediaTags::eWidth, NSABUtils::EMediaTags::eHeight, NSABUtils::EMediaTags::eAspectRatio } );
@@ -293,21 +293,21 @@ namespace NMediaManager
                 return QSize( width, height );
             }
 
-            QString CPreferences::getImageFileName( const QFileInfo &fi, const QSize &sz, const QString &ext ) const
+            QString CPreferences::getImageFileName( const QFileInfo & fi, const QSize & sz, const QString & ext ) const
             {
                 return fi.absoluteDir().absoluteFilePath( fi.completeBaseName() + QString( "-%1x%2-%3.%4" ).arg( sz.width() ).arg( sz.height() ).arg( imageInterval() ).arg( ext ) );
             }
 
-            QString CPreferences::getImageFileName( const QFileInfo &fi, const QString &ext ) const
+            QString CPreferences::getImageFileName( const QFileInfo & fi, const QString & ext ) const
             {
                 auto sz = getThumbnailSize( fi );
                 return getImageFileName( fi, sz, ext );
             }
 
-            QStringList CPreferences::cleanUpPaths( const QStringList &paths, bool /*areDirs*/ ) const
+            QStringList CPreferences::cleanUpPaths( const QStringList & paths, bool /*areDirs*/ ) const
             {
                 QStringList retVal;
-                for ( auto &&ii : paths )
+                for ( auto && ii : paths )
                 {
                     QString curr;
                     if ( NSABUtils::NFileUtils::isIPAddressNetworkPath( ii ) )
@@ -322,7 +322,7 @@ namespace NMediaManager
                 return retVal;
             }
 
-            void CPreferences::setDirectories( const QStringList &dir )
+            void CPreferences::setDirectories( const QStringList & dir )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
@@ -338,7 +338,7 @@ namespace NMediaManager
                 return dirs;
             }
 
-            void CPreferences::setFileNames( const QStringList &dir )
+            void CPreferences::setFileNames( const QStringList & dir )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
@@ -351,7 +351,7 @@ namespace NMediaManager
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
                 auto retVal = settings.value( "FileNames", QStringList() ).toStringList();
-                for ( auto &&ii : retVal )
+                for ( auto && ii : retVal )
                 {
                     ii = QDir::toNativeSeparators( ii );
                 }
@@ -437,12 +437,12 @@ namespace NMediaManager
                 return settings.value( "TreatAsTVShowByDefault", false ).toBool();
             }
 
-            bool CPreferences::isEncoderFormat( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &formatName ) const
+            bool CPreferences::isEncoderFormat( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString & formatName ) const
             {
                 return fMediaFormats->isEncoderFormat( QFileInfo( mediaInfo->fileName() ).suffix(), formatName );
             }
 
-            bool CPreferences::isDecoderFormat( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &formatName ) const
+            bool CPreferences::isDecoderFormat( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString & formatName ) const
             {
                 return fMediaFormats->isDecoderFormat( QFileInfo( mediaInfo->fileName() ).suffix(), formatName );
             }
@@ -477,7 +477,7 @@ namespace NMediaManager
                 return settings.value( "OnlyLoadDirectories", false ).toBool();
             }
 
-            void CPreferences::setTVOutFilePattern( const QString &value )
+            void CPreferences::setTVOutFilePattern( const QString & value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
@@ -495,7 +495,7 @@ namespace NMediaManager
                 return settings.value( "OutFilePattern", getDefaultOutFilePattern( true ) ).toString();
             }
 
-            void CPreferences::setSeasonOutDirPattern( const QString &value )
+            void CPreferences::setSeasonOutDirPattern( const QString & value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
@@ -513,7 +513,7 @@ namespace NMediaManager
                 return settings.value( "SeasonDirPattern", getDefaultSeasonDirPattern() ).toString();
             }
 
-            void CPreferences::setTVOutDirPattern( const QString &value )
+            void CPreferences::setTVOutDirPattern( const QString & value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
@@ -534,7 +534,7 @@ namespace NMediaManager
                 return retVal;
             }
 
-            void CPreferences::setMovieOutFilePattern( const QString &value )
+            void CPreferences::setMovieOutFilePattern( const QString & value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
@@ -552,7 +552,7 @@ namespace NMediaManager
                 return settings.value( "OutFilePattern", getDefaultOutFilePattern( false ) ).toString();
             }
 
-            void CPreferences::setMovieOutDirPattern( const QString &value )
+            void CPreferences::setMovieOutDirPattern( const QString & value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
@@ -650,7 +650,7 @@ namespace NMediaManager
                 auto imageFormats = QImageReader::supportedImageFormats();
 
                 QStringList retVal;
-                for ( auto &&ii : imageFormats )
+                for ( auto && ii : imageFormats )
                     retVal << "*." + ii;
 
                 return retVal;
@@ -671,11 +671,11 @@ namespace NMediaManager
                 return settings.value( "DeleteTXT", true ).toBool();
             }
 
-            void CPreferences::setCustomPathsToDelete( const QStringList &values )
+            void CPreferences::setCustomPathsToDelete( const QStringList & values )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
-                const QStringList &realValues = values;
+                const QStringList & realValues = values;
                 settings.setValue( "CustomToDelete", realValues );
                 emitSigPreferencesChanged( EPreferenceType::eMediaRenamerPrefs );
             }
@@ -687,7 +687,7 @@ namespace NMediaManager
                 return settings.value( "CustomToDelete", getDefaultCustomPathsToDelete() ).toStringList();
             }
 
-            void CPreferences::setRippedWithMakeMKVRegEX( const QString &value )
+            void CPreferences::setRippedWithMakeMKVRegEX( const QString & value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
@@ -724,11 +724,11 @@ namespace NMediaManager
                 return retVal;
             }
 
-            bool CPreferences::isPathToDelete( const QString &path ) const
+            bool CPreferences::isPathToDelete( const QString & path ) const
             {
                 auto fn = QFileInfo( path ).fileName();
                 auto toDelete = getExtensionsToDelete();
-                for ( auto &&ii : toDelete )
+                for ( auto && ii : toDelete )
                 {
                     auto regExStr = QRegularExpression::wildcardToRegularExpression( ii );
                     QRegularExpression::PatternOptions options = QRegularExpression::PatternOption::NoPatternOption;
@@ -743,10 +743,10 @@ namespace NMediaManager
                 return false;
             }
 
-            void CPreferences::addKnownStrings( const QStringList &value )
+            void CPreferences::addKnownStrings( const QStringList & value )
             {
                 auto knownWords = getKnownStrings();
-                for ( auto &&ii : value )
+                for ( auto && ii : value )
                 {
                     if ( !knownWords.contains( ii ) )
                         knownWords << value;
@@ -754,13 +754,13 @@ namespace NMediaManager
                 setKnownStrings( knownWords );
             }
 
-            void CPreferences::setKnownStrings( const QStringList &value )
+            void CPreferences::setKnownStrings( const QStringList & value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
                 QSet< QString > tmp;
                 QStringList realValues;
-                for ( auto &&ii : value )
+                for ( auto && ii : value )
                 {
                     if ( !tmp.contains( ii ) )
                         realValues << ii;
@@ -772,8 +772,12 @@ namespace NMediaManager
 
             struct SCmp
             {
-                bool operator()( const QString &lhs, const QString &rhs ) const
+                bool operator()( const QString & lhs, const QString & rhs ) const
                 {
+                    if ( lhs.compare( rhs, Qt::CaseInsensitive ) == 0 )
+                    {
+                        return false;
+                    }
                     if ( lhs.startsWith( rhs, Qt::CaseInsensitive ) )
                         return true;
                     if ( rhs.startsWith( lhs, Qt::CaseInsensitive ) )
@@ -789,7 +793,7 @@ namespace NMediaManager
                 auto tmp = settings.value( "KnownStrings", getDefaultKnownStrings() ).toStringList();
                 auto tmp2 = std::set< QString, SCmp >( { tmp.begin(), tmp.end() } );
                 QStringList retVal;
-                for ( auto &&ii : tmp2 )
+                for ( auto && ii : tmp2 )
                     retVal.push_back( ii );
 
                 return retVal;
@@ -801,7 +805,7 @@ namespace NMediaManager
                 {
                     auto strings = getKnownStrings();
                     QStringList nonRegExs;
-                    for ( auto &&ii : strings )
+                    for ( auto && ii : strings )
                     {
                         bool isRegEx = ( ii.indexOf( "\\" ) != -1 ) || ( ii.indexOf( "?" ) != -1 ) || ( ii.indexOf( "{" ) != -1 ) || ( ii.indexOf( "}" ) != -1 );
 
@@ -816,11 +820,12 @@ namespace NMediaManager
                 return fKnownStringRegExsCache;
             }
 
-            void CPreferences::setKnownExtendedStrings( const QStringList &value )
+            void CPreferences::setKnownExtendedStrings( const QStringList & value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
                 settings.setValue( "KnownExtendedStrings", value );
+                fKnownStringRegExsCache.clear();
                 emitSigPreferencesChanged( EPreferenceType::eMediaRenamerPrefs );
             }
 
@@ -831,17 +836,17 @@ namespace NMediaManager
                 return settings.value( "KnownExtendedStrings", getDefaultKnownExtendedStrings() ).toStringList();
             }
 
-            void CPreferences::setKnownAbbreviations( const QList< QPair< QString, QString > > &value )
+            void CPreferences::setKnownAbbreviations( const QList< QPair< QString, QString > > & value )
             {
                 QVariantMap map;
-                for ( auto &&ii : value )
+                for ( auto && ii : value )
                 {
                     map[ ii.first ] = ii.second;
                 }
                 return setKnownAbbreviations( map );
             }
 
-            void CPreferences::setKnownAbbreviations( const QVariantMap &value )
+            void CPreferences::setKnownAbbreviations( const QVariantMap & value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
@@ -856,7 +861,7 @@ namespace NMediaManager
                 return settings.value( "KnownAbbreviations", getDefaultKnownAbbreviations() ).toMap();
             };
 
-            void CPreferences::setKnownHyphenated( const QStringList &value )
+            void CPreferences::setKnownHyphenated( const QStringList & value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
@@ -875,7 +880,7 @@ namespace NMediaManager
             {
                 std::list< std::pair< QString, int > > retVal;
                 auto data = getKnownHyphenated();
-                for ( auto &&ii : data )
+                for ( auto && ii : data )
                 {
                     retVal.push_back( { ii, ii.indexOf( '-' ) } );
                 }
@@ -885,9 +890,9 @@ namespace NMediaManager
             /// ////////////////////////////////////////////////////////
             /// Load Options
             /// ////////////////////////////////////////////////////////
-            bool CPreferences::containsValue( const QString &value, const QStringList &values ) const
+            bool CPreferences::containsValue( const QString & value, const QStringList & values ) const
             {
-                for ( auto &&ii : values )
+                for ( auto && ii : values )
                 {
                     QRegularExpression::PatternOption option = QRegularExpression::NoPatternOption;
 #ifdef Q_OS_WINDOWS
@@ -900,7 +905,7 @@ namespace NMediaManager
                 return false;
             }
 
-            bool CPreferences::pathMatches( const QFileInfo &fileInfo, const QStringList &values ) const
+            bool CPreferences::pathMatches( const QFileInfo & fileInfo, const QStringList & values ) const
             {
                 auto pathName = fileInfo.fileName();
 
@@ -910,18 +915,18 @@ namespace NMediaManager
                 return containsValue( pathName, values );
             }
 
-            bool CPreferences::isSkippedPath( bool forMediaNaming, const QFileInfo &fileInfo ) const
+            bool CPreferences::isSkippedPath( bool forMediaNaming, const QFileInfo & fileInfo ) const
             {
                 return pathMatches( fileInfo, getSkippedPaths( forMediaNaming ) );
             }
 
-            void CPreferences::setSkippedPaths( bool forMediaNaming, const QStringList &values )
+            void CPreferences::setSkippedPaths( bool forMediaNaming, const QStringList & values )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eLoadPrefs ) );
                 QStringList realValues = values;
 #ifdef Q_OS_WINDOWS
-                for ( auto &&ii : realValues )
+                for ( auto && ii : realValues )
                     ii = ii.toLower();
 #endif
                 settings.setValue( QString( "SkippedDirs (%1)" ).arg( forMediaNaming ? "Media Transform" : "Media Tagging" ), realValues );
@@ -950,18 +955,18 @@ namespace NMediaManager
                 return settings.value( QString( "SkippedDirs (%1)" ).arg( forMediaNaming ? "Media Transform" : "Media Tagging" ), getDefaultSkippedPaths( forMediaNaming ) ).toStringList();
             }
 
-            bool CPreferences::isIgnoredPath( const QFileInfo &fileInfo ) const
+            bool CPreferences::isIgnoredPath( const QFileInfo & fileInfo ) const
             {
                 return pathMatches( fileInfo, getIgnoredPaths() );
             }
 
-            void CPreferences::setIgnoredPaths( const QStringList &values )
+            void CPreferences::setIgnoredPaths( const QStringList & values )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eLoadPrefs ) );
                 QStringList realValues = values;
 #ifdef Q_OS_WINDOWS
-                for ( auto &&ii : realValues )
+                for ( auto && ii : realValues )
                     ii = ii.toLower();
 #endif
                 settings.setValue( "IgnoredFileNames", realValues );
@@ -1014,23 +1019,45 @@ namespace NMediaManager
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTagPrefs ) );
 
-                std::list< std::pair< NSABUtils::EMediaTags, bool > > retVal = { { NSABUtils::EMediaTags::eTitle, true },    { NSABUtils::EMediaTags::eLength, true },       { NSABUtils::EMediaTags::eDate, true },
-                                                                                 { NSABUtils::EMediaTags::eComment, true },  { NSABUtils::EMediaTags::eBPM, true },          { NSABUtils::EMediaTags::eArtist, true },
-                                                                                 { NSABUtils::EMediaTags::eComposer, true }, { NSABUtils::EMediaTags::eGenre, true },        { NSABUtils::EMediaTags::eTrack, true },
-                                                                                 { NSABUtils::EMediaTags::eAlbum, false },   { NSABUtils::EMediaTags::eAlbumArtist, false }, { NSABUtils::EMediaTags::eDiscnumber, false } };
+                std::list< std::pair< NSABUtils::EMediaTags, bool > > retVal =
+                {
+                    { NSABUtils::EMediaTags::eTitle, true },
+                    { NSABUtils::EMediaTags::eLength, true },
+                    { NSABUtils::EMediaTags::eDate, true },
+                    { NSABUtils::EMediaTags::eComment, true },
+                    { NSABUtils::EMediaTags::eBPM, true },
+                    { NSABUtils::EMediaTags::eArtist, true },
+                    { NSABUtils::EMediaTags::eComposer, true },
+                    { NSABUtils::EMediaTags::eGenre, true },
+                    { NSABUtils::EMediaTags::eTrack, true },
+                    { NSABUtils::EMediaTags::eAlbum, false },
+                    { NSABUtils::EMediaTags::eAlbumArtist, false },
+                    { NSABUtils::EMediaTags::eDiscnumber, false },
+                    { NSABUtils::EMediaTags::eAspectRatio, false },
+                    { NSABUtils::EMediaTags::eWidth, false },
+                    { NSABUtils::EMediaTags::eHeight, false },
+                    { NSABUtils::EMediaTags::eResolution, false },
+                    { NSABUtils::EMediaTags::eAllVideoCodecs, false },
+                    { NSABUtils::EMediaTags::eAllAudioCodecsDisp, false },
+                    { NSABUtils::EMediaTags::eVideoBitrateString, false },
+                    { NSABUtils::EMediaTags::eOverAllBitrateString, false },
+                    { NSABUtils::EMediaTags::eNumChannels, false },
+                    { NSABUtils::EMediaTags::eAudioSampleRateString, false },
+                    { NSABUtils::EMediaTags::eAllSubtitles, false },
+                };
 
                 if ( !settings.contains( "EnabledTags" ) )
                     return retVal;
 
                 auto enabledTags = settings.value( "EnabledTags" ).toList();
-                for ( auto &&jj : retVal )
+                for ( auto && jj : retVal )
                     jj.second = false;
 
-                for ( auto &&ii : enabledTags )
+                for ( auto && ii : enabledTags )
                 {
-                    for ( auto &&jj : retVal )
+                    for ( auto && jj : retVal )
                     {
-                        if ( jj.first == static_cast< NSABUtils::EMediaTags >( ii.toInt() ) )
+                        if ( jj.first == static_cast<NSABUtils::EMediaTags>( ii.toInt() ) )
                             jj.second = true;
                     }
                 }
@@ -1041,7 +1068,7 @@ namespace NMediaManager
             {
                 auto allTags = getAllMediaTags();
                 std::list< NSABUtils::EMediaTags > retVal;
-                for ( auto &&ii : allTags )
+                for ( auto && ii : allTags )
                 {
                     if ( ii.second )
                         retVal.emplace_back( ii.first );
@@ -1053,23 +1080,23 @@ namespace NMediaManager
             {
                 auto tags = getEnabledTags();
                 QStringList retVal;
-                for ( auto &&ii : tags )
+                for ( auto && ii : tags )
                     retVal << NSABUtils::displayName( ii );
                 return retVal;
             }
 
-            void CPreferences::setEnabledTags( const std::list< NSABUtils::EMediaTags > &values )
+            void CPreferences::setEnabledTags( const std::list< NSABUtils::EMediaTags > & values )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTagPrefs ) );
                 QVariantList tmp;
-                for ( auto &&ii : values )
-                    tmp << static_cast< int >( ii );
+                for ( auto && ii : values )
+                    tmp << static_cast<int>( ii );
                 settings.setValue( "EnabledTags", tmp );
                 emitSigPreferencesChanged( EPreferenceType::eTagPrefs );
             }
 
-            QString replaceFileInfo( const QFileInfo &fi, const QDate &date, const QString &expr )
+            QString replaceFileInfo( const QFileInfo & fi, const QDate & date, const QString & expr )
             {
                 QString retVal = expr;
 
@@ -1105,7 +1132,7 @@ namespace NMediaManager
                 emitSigPreferencesChanged( EPreferenceType::eTagPrefs );
             }
 
-            QRegularExpression CPreferences::getVerifyMediaTitleExpr( const QFileInfo &fi, const QDate &date ) const
+            QRegularExpression CPreferences::getVerifyMediaTitleExpr( const QFileInfo & fi, const QDate & date ) const
             {
                 auto regExStr = replaceFileInfo( fi, date, getVerifyMediaTitleExpr() );
                 return QRegularExpression( regExStr );
@@ -1118,7 +1145,7 @@ namespace NMediaManager
                 return settings.value( "VerifyMediaTitleExpr", "<basename>" ).toString();
             }
 
-            void CPreferences::setVerifyMediaTitleExpr( const QString &value )
+            void CPreferences::setVerifyMediaTitleExpr( const QString & value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTagPrefs ) );
@@ -1147,7 +1174,7 @@ namespace NMediaManager
                 return settings.value( "VerifyMediaDateExpr", R"(<year>|<month>[-\/]<year>|<month>[-\/]<day>[-\/]<year>)" ).toString();
             }
 
-            void CPreferences::setVerifyMediaDateExpr( const QString &value )
+            void CPreferences::setVerifyMediaDateExpr( const QString & value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTagPrefs ) );
@@ -1155,7 +1182,7 @@ namespace NMediaManager
                 emitSigPreferencesChanged( EPreferenceType::eTagPrefs );
             }
 
-            QRegularExpression CPreferences::getVerifyMediaDateExpr( const QFileInfo &fi, const QDate &date ) const
+            QRegularExpression CPreferences::getVerifyMediaDateExpr( const QFileInfo & fi, const QDate & date ) const
             {
                 auto regExStr = replaceFileInfo( fi, date, getVerifyMediaDateExpr() );
                 return QRegularExpression( regExStr );
@@ -1183,7 +1210,7 @@ namespace NMediaManager
                 return settings.value( "VerifyMediaCommentExpr", R"(<EMPTY>)" ).toString();
             }
 
-            void CPreferences::setVerifyMediaCommentExpr( const QString &value )
+            void CPreferences::setVerifyMediaCommentExpr( const QString & value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTagPrefs ) );
@@ -1191,7 +1218,7 @@ namespace NMediaManager
                 emitSigPreferencesChanged( EPreferenceType::eTagPrefs );
             }
 
-            QRegularExpression CPreferences::getVerifyMediaCommentExpr( const QFileInfo &fi, const QDate &date ) const
+            QRegularExpression CPreferences::getVerifyMediaCommentExpr( const QFileInfo & fi, const QDate & date ) const
             {
                 auto regExStr = replaceFileInfo( fi, date, getVerifyMediaCommentExpr() );
                 return QRegularExpression( regExStr );
@@ -1201,7 +1228,7 @@ namespace NMediaManager
             /// External Tools Options
             /// ////////////////////////////////////////////////////////
 
-            QString CPreferences::getExternalToolPath( const QString &settingsLoc, const QString &exe, const QString &defaultPath ) const
+            QString CPreferences::getExternalToolPath( const QString & settingsLoc, const QString & exe, const QString & defaultPath ) const
             {
                 QDir defDir( qApp->applicationDirPath() );
                 if ( getUseCustomExternalTools() )
@@ -1241,7 +1268,7 @@ namespace NMediaManager
                 return getExternalToolPath( "", "mkvalidator.exe", qApp->applicationDirPath() );
             }
 
-            void CPreferences::setMKVMergeEXE( const QString &value )
+            void CPreferences::setMKVMergeEXE( const QString & value )
             {
                 if ( value == getMKVMergeEXE() )
                     return;
@@ -1257,7 +1284,7 @@ namespace NMediaManager
                 return getExternalToolPath( "MKVMergeEXE", "mkvmerge.exe", "C:/Program Files/MKVToolNix" );
             }
 
-            void CPreferences::setMKVPropEditEXE( const QString &value )
+            void CPreferences::setMKVPropEditEXE( const QString & value )
             {
                 if ( value == getMKVPropEditEXE() )
                     return;
@@ -1273,7 +1300,7 @@ namespace NMediaManager
                 return getExternalToolPath( "MKVPropEditEXE", "mkvpropedit.exe", "C:/Program Files/MKVToolNix" );
             }
 
-            void CPreferences::setFFMpegEXE( const QString &value )
+            void CPreferences::setFFMpegEXE( const QString & value )
             {
                 if ( value == getFFMpegEXE() )
                     return;
@@ -1291,7 +1318,7 @@ namespace NMediaManager
                 return getExternalToolPath( "FFMpegEXE", "ffmpeg.exe", QString() );
             }
 
-            void CPreferences::setFFMpegEmbyEXE( const QString &value )
+            void CPreferences::setFFMpegEmbyEXE( const QString & value )
             {
                 if ( value == getFFMpegEmbyEXE() )
                     return;
@@ -1307,7 +1334,7 @@ namespace NMediaManager
                 return getExternalToolPath( "FFMpegEmbyEXE", "ffmpeg-emby.exe", QString() );
             }
 
-            void CPreferences::setFFProbeEXE( const QString &value )
+            void CPreferences::setFFProbeEXE( const QString & value )
             {
                 if ( value == getFFProbeEXE() )
                     return;
@@ -1609,12 +1636,12 @@ namespace NMediaManager
             /// ////////////////////////////////////////////////////////
             /// MakeMKV Options
             /// ////////////////////////////////////////////////////////
-            std::shared_ptr< NSABUtils::CMediaInfo > CPreferences::getMediaInfo( const QString &fileName )
+            std::shared_ptr< NSABUtils::CMediaInfo > CPreferences::getMediaInfo( const QString & fileName )
             {
                 return getMediaInfo( std::move( QFileInfo( fileName ) ) );
             }
 
-            std::shared_ptr< NSABUtils::CMediaInfo > CPreferences::getMediaInfo( const QFileInfo &fi )
+            std::shared_ptr< NSABUtils::CMediaInfo > CPreferences::getMediaInfo( const QFileInfo & fi )
             {
                 if ( !isMediaFile( fi ) )
                     return {};
@@ -1726,12 +1753,12 @@ namespace NMediaManager
                 return getMediaFormats()->hwAccels( verbose );
             }
 
-            void CPreferences::recomputeSupportedFormats( QProgressDialog *dlg )
+            void CPreferences::recomputeSupportedFormats( QProgressDialog * dlg )
             {
                 loadMediaFormats( true, dlg );
             }
 
-            void CPreferences::loadMediaFormats( bool forceFromFFMpeg, QProgressDialog *dlg ) const
+            void CPreferences::loadMediaFormats( bool forceFromFFMpeg, QProgressDialog * dlg ) const
             {
                 auto ffmpeg = getFFMpegEXE();
                 if ( ffmpeg.isEmpty() )
@@ -1775,18 +1802,18 @@ namespace NMediaManager
                 }
             }
 
-            NSABUtils::CFFMpegFormats *CPreferences::getMediaFormats() const
+            NSABUtils::CFFMpegFormats * CPreferences::getMediaFormats() const
             {
                 loadMediaFormats( false );
                 return fMediaFormats.get();
             }
 
-            QStringList CPreferences::getExtensionsForEncoderMediaFormat( const QString &formatName ) const
+            QStringList CPreferences::getExtensionsForEncoderMediaFormat( const QString & formatName ) const
             {
                 return getMediaFormats()->getEncoderExtensionsForFormat( formatName );
             }
 
-            QStringList CPreferences::getExtensionsForDecoderMediaFormat( const QString &formatName ) const
+            QStringList CPreferences::getExtensionsForDecoderMediaFormat( const QString & formatName ) const
             {
                 return getMediaFormats()->getDecoderExtensionsForFormat( formatName );
             }
@@ -1806,7 +1833,7 @@ namespace NMediaManager
                 return settings.value( "ConvertMediaFormat", getConvertMediaToContainerDefault() ).toBool();
             }
 
-            void CPreferences::setConvertMediaToContainer( const QString &value )
+            void CPreferences::setConvertMediaToContainer( const QString & value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTranscodePrefs ) );
@@ -1871,7 +1898,7 @@ namespace NMediaManager
                 return settings.value( "OnlyTranscodeVideoOnFormatChange", getOnlyTranscodeVideoOnFormatChangeDefault() ).toBool();
             }
 
-            void CPreferences::setTranscodeToAudioCodec( const QString &value )
+            void CPreferences::setTranscodeToAudioCodec( const QString & value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTranscodePrefs ) );
@@ -1901,7 +1928,7 @@ namespace NMediaManager
                 return settings.value( "TranscodeVideo", getTranscodeVideoDefault() ).toBool();
             }
 
-            void CPreferences::setTranscodeToVideoCodec( const QString &value )
+            void CPreferences::setTranscodeToVideoCodec( const QString & value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTranscodePrefs ) );
@@ -1922,12 +1949,12 @@ namespace NMediaManager
                 return getTranscodeHWAccel( videoCodec );
             }
 
-            QString CPreferences::getTranscodeHWAccel( const QString &codec ) const
+            QString CPreferences::getTranscodeHWAccel( const QString & codec ) const
             {
                 return getMediaFormats()->getTranscodeHWAccel( codec );
             }
 
-            QString CPreferences::getCodecForHWAccel( const QString &codec ) const
+            QString CPreferences::getCodecForHWAccel( const QString & codec ) const
             {
                 return getMediaFormats()->getCodecForHWAccel( codec );
             }
@@ -2019,7 +2046,7 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTranscodePrefs ) );
-                return static_cast< ETranscodePreset >( settings.value( "Preset", getPresetDefault() ).toInt() );
+                return static_cast<ETranscodePreset>( settings.value( "Preset", getPresetDefault() ).toInt() );
             }
 
             void CPreferences::setUseTune( bool value )
@@ -2049,7 +2076,7 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTranscodePrefs ) );
-                return static_cast< ETranscodeTune >( settings.value( "Tune", getTuneDefault() ).toInt() );
+                return static_cast<ETranscodeTune>( settings.value( "Tune", getTuneDefault() ).toInt() );
             }
 
             void CPreferences::setUseProfile( bool value )
@@ -2079,7 +2106,7 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTranscodePrefs ) );
-                return static_cast< ETranscodeProfile >( settings.value( "Profile", getProfileDefault() ).toInt() );
+                return static_cast<ETranscodeProfile>( settings.value( "Profile", getProfileDefault() ).toInt() );
             }
 
             bool CPreferences::hasIntelGPU() const
@@ -2088,7 +2115,7 @@ namespace NMediaManager
                 {
                     fHasIntelGPU = false;
                     auto gpus = NSABUtils::detectGPUs();
-                    for ( auto &&ii : gpus )
+                    for ( auto && ii : gpus )
                     {
                         if ( ii->isIntelGPU() )
                         {
@@ -2106,7 +2133,7 @@ namespace NMediaManager
                 {
                     fHasNVidiaGPU = false;
                     auto gpus = NSABUtils::detectGPUs();
-                    for ( auto &&ii : gpus )
+                    for ( auto && ii : gpus )
                     {
                         if ( ii->isNVidiaGPU() )
                         {
@@ -2124,7 +2151,7 @@ namespace NMediaManager
                 {
                     fHasAMDGPU = false;
                     auto gpus = NSABUtils::detectGPUs();
-                    for ( auto &&ii : gpus )
+                    for ( auto && ii : gpus )
                     {
                         if ( ii->isAMDGPU() )
                         {
@@ -2161,12 +2188,12 @@ namespace NMediaManager
 
             /////////////////////////////////
             /////////////////////////////////
-            bool CPreferences::isFileWithExtension( const QFileInfo &fi, std::function< QStringList() > getExtensions, std::unordered_set< QString > &hash, std::unordered_map< QString, bool > &cache ) const
+            bool CPreferences::isFileWithExtension( const QFileInfo & fi, std::function< QStringList() > getExtensions, std::unordered_set< QString > & hash, std::unordered_map< QString, bool > & cache ) const
             {
                 if ( hash.empty() )
                 {
                     auto suffixes = getExtensions();
-                    for ( auto &&ii : suffixes )
+                    for ( auto && ii : suffixes )
                     {
                         auto pos = ii.lastIndexOf( '.' );
                         ii = ii.mid( pos + 1 );
@@ -2186,14 +2213,14 @@ namespace NMediaManager
                 return retVal;
             }
 
-            bool CPreferences::isMediaFile( const QFileInfo &fi ) const
+            bool CPreferences::isMediaFile( const QFileInfo & fi ) const
             {
                 return isFileWithExtension(
                     fi, [ this ]() { return getMediaFormats()->getVideoEncoderExtensions(); }, fMediaExtensionsHash, fIsMediaExtension );
             }
 
             // only return true for X_Lang.srt files or subs directories
-            bool CPreferences::isSubtitleFile( const QFileInfo &fi, bool *isLangFileFormat ) const
+            bool CPreferences::isSubtitleFile( const QFileInfo & fi, bool * isLangFileFormat ) const
             {
                 if ( isLangFileFormat )
                 {
