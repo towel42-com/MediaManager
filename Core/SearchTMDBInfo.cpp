@@ -253,7 +253,7 @@ namespace NMediaManager
             QString extra;
             EMediaType retVal = EMediaType::eUnknownType;   // default is a movie
 
-            auto regExpStr = QString( R"((^|[^A-Z])S(?<garbage>EASON(_?))?(?<season>\d{1,4}))" );
+            auto regExpStr = QString( R"((^|[^A-Z])S(?<garbage>EASON(_?))?\s*(?<season>\d{1,4}))" );
             auto regExp = QRegularExpression( regExpStr, QRegularExpression::PatternOption::CaseInsensitiveOption );
             auto match = regExp.match( title );
             std::list< std::pair< int, int > > positions;
