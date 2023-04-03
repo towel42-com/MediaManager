@@ -115,27 +115,9 @@ namespace NMediaManager
         {
         }
 
-        void CTagsModel::preLoad( QTreeView * /*treeView*/ )
+        std::list< NSABUtils::EMediaTags > CTagsModel::getMediaColumnsList() const
         {
-            fTagsBeingShown = NPreferences::NCore::CPreferences::instance()->getEnabledTags();
-            fFirstColumn = -1;
-            int colNum = EColumns::eMediaColumnLoc;
-            for ( auto &&ii : fTagsBeingShown )
-            {
-                if ( ii == NSABUtils::EMediaTags::eTitle )
-                    fTitleColumn = colNum;
-                else if ( ii == NSABUtils::EMediaTags::eLength )
-                    fLengthColumn = colNum;
-                else if ( ii == NSABUtils::EMediaTags::eDate )
-                    fDateColumn = colNum;
-                else if ( ii == NSABUtils::EMediaTags::eComment )
-                    fCommentColumn = colNum;
-
-                if ( fFirstColumn == -1 )
-                    fFirstColumn = colNum;
-                fLastColumn = colNum;
-                colNum++;
-            }
+            return NPreferences::NCore::CPreferences::instance()->getEnabledTags();
         }
 
         QStringList CTagsModel::headers() const

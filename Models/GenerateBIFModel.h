@@ -50,7 +50,6 @@ namespace NMediaManager
             virtual std::pair< bool, QStandardItem * > processItem( const QStandardItem *item, bool displayOnly ) override;
 
             virtual bool showMediaItems() const override { return false; };
-            //virtual int firstMediaItemColumn() const override { return EColumns::eMediaColumnLoc; }
             virtual QStringList headers() const override;
             virtual QString getProgressLabel( const SProcessInfo &processInfo ) const override;
 

@@ -53,13 +53,11 @@ namespace NMediaManager
         private:
             virtual QStringList dirModelFilter() const override;
 
-            virtual void preLoad( QTreeView *treeView ) override;
-            virtual int firstMediaItemColumn() const override { return fFirstColumn; }
-            virtual int lastMediaItemColumn() const override { return fLastColumn; }
+            virtual int firstMediaItemColumn() const override { return EColumns::eMediaColumnLoc; }
             virtual QStringList headers() const override;
             virtual std::pair< bool, QStandardItem * > processItem( const QStandardItem *item, bool displayOnly ) override;
             virtual void attachTreeNodes( QStandardItem *nextParent, QStandardItem *&prevParent, const STreeNode &treeNode ) override;
-            ;
+
             virtual bool usesQueuedProcessing() const override { return false; }
             virtual void postFileFunction( bool /*aOK*/, const QFileInfo & /*fileInfo*/, TParentTree & /*tree*/, bool countOnly ) override;
             virtual bool preFileFunction( const QFileInfo & /*fileInfo*/, std::unordered_set< QString > & /*alreadyAdded*/, TParentTree & /*tree*/, bool countOnly ) override;
@@ -68,20 +66,10 @@ namespace NMediaManager
             virtual bool showMediaItemsContextMenu() const override { return true; };
 
             virtual bool showMediaItems() const override { return false; };
-            virtual int getMediaTitleLoc() const override { return fTitleColumn; }
-            virtual int getMediaLengthLoc() const override { return fLengthColumn; }
-            virtual int getMediaDateLoc() const override { return fDateColumn; }
-            virtual int getMediaCommentLoc() const override { return fCommentColumn; }
+            virtual std::list< NSABUtils::EMediaTags > getMediaColumnsList() const override;
+
             virtual void reloadMediaTags( const QModelIndex &idx ) override;
             virtual std::list< SDirNodeItem > addAdditionalItems( const QFileInfo &fileInfo ) const override;
-
-            std::list< NSABUtils::EMediaTags > fTagsBeingShown;
-            int fFirstColumn{ -1 };
-            int fTitleColumn{ -1 };
-            int fLengthColumn{ -1 };
-            int fDateColumn{ -1 };
-            int fCommentColumn{ -1 };
-            int fLastColumn{ -1 };
         };
 
         class CTagsFilterModel : public QSortFilterProxyModel

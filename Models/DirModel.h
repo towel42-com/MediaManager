@@ -261,7 +261,7 @@ namespace NMediaManager
             void addMessageForFile( const QString &msg );
             std::list< QStandardItem * > messageItems( bool andClear );
 
-            virtual void processLog( const QString &string, NSABUtils::CDoubleProgressDlg * progressDlg ) final;
+            virtual void processLog( const QString &string, NSABUtils::CDoubleProgressDlg *progressDlg ) final;
         Q_SIGNALS:
             void sigDirLoadFinished( bool canceled );
             void sigProcessesFinished( bool status, bool showProcessResults, bool cancelled, bool reloadModel );
@@ -281,7 +281,8 @@ namespace NMediaManager
             void slotProcesssStateChanged( QProcess::ProcessState newState );
             void slotProgressCanceled();
             virtual void slotDataChanged( const QModelIndex &start, const QModelIndex &end, const QVector< int > &roles );
-            virtual void slotUpdateMediaInfo( const QString & path );
+            virtual void slotUpdateMediaInfo( const QString &path );
+
         protected:
             virtual QString getSecondaryProgressFormat( NSABUtils::CDoubleProgressDlg *progressDlg ) const;
             virtual std::optional< std::pair< uint64_t, std::optional< uint64_t > > > getCurrentProgress( const QString & /*string*/ ) { return {}; }
@@ -325,23 +326,31 @@ namespace NMediaManager
 
             virtual std::pair< bool, QStandardItem * > processItem( const QStandardItem *item, bool displayOnly ) = 0;
             virtual void postAddItems( const QFileInfo &fileInfo, std::list< SDirNodeItem > &currItems ) const;
-            virtual int firstMediaItemColumn() const { return -1; }
-            virtual int lastMediaItemColumn() const;
-            virtual int getMediaTitleLoc() const;
-            virtual int getMediaLengthLoc() const;
-            virtual int getMediaDateLoc() const;
-            virtual int getMediaResolutionLoc() const;
-            virtual int getMediaVideoCodecLoc() const;
-            virtual int getMediaVideoBitrateLoc() const;
-            virtual int getMediaAudioCodecLoc() const;
-            virtual int getMediaAudioSampleRateLoc() const;
-            virtual int getMediaSubtitlesLoc() const;
-            virtual int getMediaCommentLoc() const;
+            virtual int firstMediaItemColumn() const;
+            virtual std::list< NSABUtils::EMediaTags > getMediaColumnsList() const;
+            virtual int lastMediaItemColumn() const final;
+            virtual int getMediaColumn( NSABUtils::EMediaTags mediaTag ) const final;
+
+
+            virtual void computeMediaColumnMap() const final;
+            virtual void clearMediaColumnMap();
+
+            virtual int getMediaTitleLoc() const final;
+            virtual int getMediaLengthLoc() const final;
+            virtual int getMediaDateLoc() const final;
+            virtual int getMediaResolutionLoc() const final;
+            virtual int getMediaVideoCodecLoc() const final;
+            virtual int getMediaVideoBitrateLoc() const final;
+            virtual int getMediaAudioCodecLoc() const final;
+            virtual int getMediaAudioSampleRateLoc() const final;
+            virtual int getMediaSubtitlesLoc() const final;
+            virtual int getMediaCommentLoc() const final;
+
             virtual std::list< SDirNodeItem > addAdditionalItems( const QFileInfo &fileInfo ) const;
             virtual std::list< SDirNodeItem > getMediaInfoItems( const QFileInfo &fileInfo, int firstColumn ) const;
 
             virtual void setupNewItem( const SDirNodeItem &nodeItem, const QStandardItem *nameItem, QStandardItem *item ) const;
-            ;
+
             virtual QStringList headers() const;
             virtual void preLoad() final;
             virtual void postLoad( bool aOK ) final;
@@ -353,7 +362,7 @@ namespace NMediaManager
 
             std::unordered_map< NSABUtils::EMediaTags, QString > getDefaultMediaTags( const QFileInfo &fi ) const;
             QStringList getMediaHeaders() const;
-            std::tuple < QStringList, std::list< NSABUtils::EMediaTags >, std::list< std::function< int() > > > getMediaDataInfo() const;
+            std::tuple< QStringList, std::list< NSABUtils::EMediaTags >, std::list< std::function< int() > > > getMediaDataInfo() const;
 
             virtual void resizeColumns() const;
 
@@ -434,7 +443,7 @@ namespace NMediaManager
 
             std::map< QString, QStandardItem * > fPathMapping;
 
-            QTimer * fReloadTimer{ nullptr };
+            QTimer *fReloadTimer{ nullptr };
             NUi::CBasePage *fBasePage{ nullptr };
             QProcess *fProcess{ nullptr };
             std::pair< bool, std::shared_ptr< QStandardItemModel > > fProcessResults;
@@ -454,6 +463,8 @@ namespace NMediaManager
             mutable std::unordered_map< QFileInfo, bool > fIsRootPathCache;
             mutable std::unordered_map< QString, QString > fDispNameCache;
             std::optional< std::pair< QDateTime, uint64_t > > fLastProgress;
+            mutable std::optional< std::unordered_map< NSABUtils::EMediaTags, int > * > fMediaColumnMap;
+            mutable int fLastMediaColumn{ -1 };
         };
     }
 }

@@ -1717,79 +1717,111 @@ namespace NMediaManager
             (void)currItems;
         }
 
+        int CDirModel::firstMediaItemColumn() const
+        {
+            return -1;
+        }
+
         int CDirModel::lastMediaItemColumn() const
         {
-            return getMediaCommentLoc();
+            return fLastMediaColumn;
+        }
+
+        std::list< NSABUtils::EMediaTags > CDirModel::getMediaColumnsList() const
+        {
+            auto retVal = std::list< NSABUtils::EMediaTags >(
+                { NSABUtils::EMediaTags::eTitle,
+                  NSABUtils::EMediaTags::eLength,
+                  NSABUtils::EMediaTags::eDate,
+                  NSABUtils::EMediaTags::eResolution,
+                  NSABUtils::EMediaTags::eAllVideoCodecs,
+                  NSABUtils::EMediaTags::eVideoBitrateString,
+                  NSABUtils::EMediaTags::eAllAudioCodecsDisp,
+                  NSABUtils::EMediaTags::eAllSubtitles,
+                  NSABUtils::EMediaTags::eComment
+            } );
+            return retVal;
+        }
+
+        void CDirModel::clearMediaColumnMap()
+        {
+            fMediaColumnMap.reset();
+        }
+
+        void CDirModel::computeMediaColumnMap() const
+        {
+            if ( !fMediaColumnMap.has_value() )
+            {
+                auto map = new std::unordered_map< NSABUtils::EMediaTags, int >();
+                fMediaColumnMap = map;
+                auto mediaColumnsList = getMediaColumnsList();
+                int currColumn = firstMediaItemColumn();
+                for ( auto ii : mediaColumnsList )
+                {
+                    fLastMediaColumn = ( *map )[ ii ] = currColumn++;
+                }
+            }
+        }
+
+        int CDirModel::getMediaColumn( NSABUtils::EMediaTags mediaTag ) const
+        {
+            if ( !canShowMediaInfo() )
+                return -1;
+            computeMediaColumnMap();
+            auto pos = fMediaColumnMap.value()->find( mediaTag );
+            if ( pos == fMediaColumnMap.value()->end() )
+                return -1;
+            return ( *pos ).second;
         }
 
         int CDirModel::getMediaTitleLoc() const
         {
-            if ( !canShowMediaInfo() )
-                return -1;
-            return firstMediaItemColumn();
+            return getMediaColumn( NSABUtils::EMediaTags::eTitle );
         }
 
         int CDirModel::getMediaLengthLoc() const
         {
-            if ( !canShowMediaInfo() )
-                return -1;
-            return getMediaTitleLoc() + 1;
+            return getMediaColumn( NSABUtils::EMediaTags::eLength );
         }
 
         int CDirModel::getMediaDateLoc() const
         {
-            if ( !canShowMediaInfo() )
-                return -1;
-            return getMediaLengthLoc() + 1;
+            return getMediaColumn( NSABUtils::EMediaTags::eDate );
         }
 
         int CDirModel::getMediaResolutionLoc() const
         {
-            if ( !canShowMediaInfo() )
-                return -1;
-            return getMediaDateLoc() + 1;
+            return getMediaColumn( NSABUtils::EMediaTags::eResolution );
         }
 
         int CDirModel::getMediaVideoCodecLoc() const
         {
-            if ( !canShowMediaInfo() )
-                return -1;
-            return getMediaResolutionLoc() + 1;
+            return getMediaColumn( NSABUtils::EMediaTags::eAllVideoCodecs );
         }
 
         int CDirModel::getMediaVideoBitrateLoc() const
         {
-            if ( !canShowMediaInfo() )
-                return -1;
-            return getMediaVideoCodecLoc() + 1;
+            return getMediaColumn( NSABUtils::EMediaTags::eVideoBitrateString );
         }
 
         int CDirModel::getMediaAudioCodecLoc() const
         {
-            if ( !canShowMediaInfo() )
-                return -1;
-            return getMediaVideoBitrateLoc() + 1;
+            return getMediaColumn( NSABUtils::EMediaTags::eAllAudioCodecsDisp );
         }
 
         int CDirModel::getMediaAudioSampleRateLoc() const
         {
-            if ( !canShowMediaInfo() )
-                return -1;
-            return getMediaAudioCodecLoc() + 1;
+            return getMediaColumn( NSABUtils::EMediaTags::eAudioSampleRateString );
         }
 
         int CDirModel::getMediaSubtitlesLoc() const
         {
-            if ( !canShowMediaInfo() )
-                return -1;
-            return getMediaAudioSampleRateLoc() + 1;
+            return getMediaColumn( NSABUtils::EMediaTags::eAllSubtitles );
         }
 
         int CDirModel::getMediaCommentLoc() const
         {
-            if ( !canShowMediaInfo() )
-                return -1;
-            return getMediaSubtitlesLoc() + 1;
+            return getMediaColumn( NSABUtils::EMediaTags::eComment );
         }
 
         QTreeView *CDirModel::filesView() const
@@ -1939,19 +1971,20 @@ namespace NMediaManager
 
         std::optional< TItemStatus > CDirModel::getIndexStatus( const QModelIndex &idx ) const
         {
-            auto itemStatus = getItemStatus( idx );
-            if ( !itemStatus.has_value() )
+            std::optional< TItemStatus > retVal;
+            if ( idx.column() == NModels::EColumns::eFSName )
+                retVal = getRowStatus( idx );
+
+            if ( !retVal.has_value() )
+                retVal = getItemStatus( idx );
+
+            if ( !retVal.has_value() )
             {
                 auto fi = fileInfo( idx );
-                itemStatus = getPathStatus( fi );
+                retVal = getPathStatus( fi );
             }
 
-            if ( !itemStatus.has_value() && idx.column() == NModels::EColumns::eFSName )
-            {
-                // when the filename itself has no result, show the union of all other columns
-                itemStatus = getRowStatus( idx );
-            }
-            return itemStatus;
+            return retVal;
         }
 
         std::optional< TItemStatus > CDirModel::computeItemStatus( QStandardItem *item ) const
@@ -2215,7 +2248,8 @@ namespace NMediaManager
                   {
                       return getMediaAudioSampleRateLoc();
                   } }   //
-                ,{ [ this ]()
+                ,
+                { [ this ]()
                   {
                       return getMediaSubtitlesLoc();
                   } }   //
