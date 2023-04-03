@@ -1730,16 +1730,8 @@ namespace NMediaManager
         std::list< NSABUtils::EMediaTags > CDirModel::getMediaColumnsList() const
         {
             auto retVal = std::list< NSABUtils::EMediaTags >(
-                { NSABUtils::EMediaTags::eTitle,
-                  NSABUtils::EMediaTags::eLength,
-                  NSABUtils::EMediaTags::eDate,
-                  NSABUtils::EMediaTags::eResolution,
-                  NSABUtils::EMediaTags::eAllVideoCodecs,
-                  NSABUtils::EMediaTags::eVideoBitrateString,
-                  NSABUtils::EMediaTags::eAllAudioCodecsDisp,
-                  NSABUtils::EMediaTags::eAllSubtitles,
-                  NSABUtils::EMediaTags::eComment
-            } );
+                { NSABUtils::EMediaTags::eTitle, NSABUtils::EMediaTags::eLength, NSABUtils::EMediaTags::eDate, NSABUtils::EMediaTags::eResolution, NSABUtils::EMediaTags::eAllVideoCodecs, NSABUtils::EMediaTags::eVideoBitrateString,
+                  NSABUtils::EMediaTags::eAllAudioCodecsDisp, NSABUtils::EMediaTags::eAllSubtitles, NSABUtils::EMediaTags::eComment } );
             return retVal;
         }
 
@@ -2307,7 +2299,16 @@ namespace NMediaManager
                 if ( msecsRemaining.has_value() )
                 {
                     auto ts = NSABUtils::CTimeString( msecsRemaining.value() );
-                    format = format + ts.toString( " ETA: hh:mm:ss  ", false );
+                    if ( this->currentUnitsAreSeconds() )
+                    {
+                        auto currTS = NSABUtils::CTimeString( progressDlg->secondaryValue() * 1000 );
+                        auto endTS = NSABUtils::CTimeString( progressDlg->secondaryMax() * 1000 );
+                        format = QString( "Processing Time: %1 of %2 ETA: %3  " ).arg( currTS.toString( "hh:mm:ss", false ) ).arg( endTS.toString( "hh:mm:ss", false ) ).arg( ts.toString( "hh:mm:ss", false ) );
+                    }
+                    else
+                    {
+                        format = format + ts.toString( " ETA: hh:mm:ss  ", false );
+                    }
                 }
             }
             progressDlg->setSecondaryFormat( format );

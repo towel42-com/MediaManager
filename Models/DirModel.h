@@ -262,6 +262,8 @@ namespace NMediaManager
             std::list< QStandardItem * > messageItems( bool andClear );
 
             virtual void processLog( const QString &string, NSABUtils::CDoubleProgressDlg *progressDlg ) final;
+
+            virtual bool currentUnitsAreSeconds() const { return false; }
         Q_SIGNALS:
             void sigDirLoadFinished( bool canceled );
             void sigProcessesFinished( bool status, bool showProcessResults, bool cancelled, bool reloadModel );

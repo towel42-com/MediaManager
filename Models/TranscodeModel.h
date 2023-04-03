@@ -67,6 +67,8 @@ namespace NMediaManager
             virtual std::optional< uint64_t > getNumSeconds( const QString &string ) const;
 
             std::optional< std::chrono::milliseconds > getMSRemaining( const QString &string, const std::pair< uint64_t, std::optional< uint64_t > > &currProgress ) const override;
+
+            virtual bool currentUnitsAreSeconds() const { return true; }
         };
     }
 }
