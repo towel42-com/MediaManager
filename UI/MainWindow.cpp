@@ -195,6 +195,8 @@ namespace NMediaManager
         CMainWindow::~CMainWindow()
         {
             saveSettings();
+            if ( fStayAwake )
+                delete fStayAwake;
         }
 
         void CMainWindow::connectBasePage( CBasePage *basePage )
