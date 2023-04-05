@@ -49,7 +49,7 @@ namespace NMediaManager
 
         QString CTranscodePage::secondaryProgressLabel() const
         {
-            return tr( "Current (seconds):" );
+            return tr( "Current:" );
         }
 
         QString CTranscodePage::loadTitleName() const

@@ -156,12 +156,12 @@ namespace NMediaManager
             return retVal;
         }
 
-        void CTagsModel::reloadMediaTags( const QModelIndex &idx )
+        void CTagsModel::reloadMediaInfo( const QModelIndex &idx )
         {
             if ( !canShowMediaInfo() )
                 return;
 
-            CDirModel::reloadMediaTags( idx, true );
+            CDirModel::reloadMediaInfo( idx, true );
         }
 
         void CTagsModel::postFileFunction( bool /*aOK*/, const QFileInfo & /*fileInfo*/, TParentTree & /*tree*/, bool /*countOnly*/ )

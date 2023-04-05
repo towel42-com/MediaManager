@@ -48,6 +48,10 @@ namespace NMediaManager
                               << "-y"   //
                               << "-fflags"
                               << "+genpts"   //
+                              << "-map_metadata"
+                              << "0"
+                              << "-map_chapters"
+                              << "0";
                     ;
                 auto hwAccel = getTranscodeHWAccel();
                 if ( !hwAccel.isEmpty() )

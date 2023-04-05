@@ -68,7 +68,7 @@ namespace NMediaManager
             virtual bool showMediaItems() const override { return false; };
             virtual std::list< NSABUtils::EMediaTags > getMediaColumnsList() const override;
 
-            virtual void reloadMediaTags( const QModelIndex &idx ) override;
+            virtual void reloadMediaInfo( const QModelIndex &idx ) override;
             virtual std::list< SDirNodeItem > addAdditionalItems( const QFileInfo &fileInfo ) const override;
         };
 

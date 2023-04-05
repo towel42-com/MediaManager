@@ -349,7 +349,7 @@ namespace NMediaManager
             if ( fModel->showMediaItemsContextMenu() && fModel->isMediaFile( idx ) )
             {
                 retVal->addSeparator();
-                retVal->addAction( tr( "Set Tags..." ), [ idx, this ]() { editMediaTags( idx ); } );
+                retVal->addAction( tr( "Set Tags..." ), [ idx, this ]() { editMediaInfo( idx ); } );
                 if ( !fModel->areMediaTagsSameAsAutoSet( idx ) )
                 {
                     retVal->addAction( tr( "Auto Set Tags from File Name..." ), [ idx, this ]() { fModel->autoSetMediaTags( idx ); } );
@@ -412,12 +412,12 @@ namespace NMediaManager
             return appendToLog( msg, stdOut ? fModel->stdOutRemaining() : fModel->stdErrRemaining(), stdOut, false );
         }
 
-        void CBasePage::editMediaTags( const QModelIndex &idx )
+        void CBasePage::editMediaInfo( const QModelIndex &idx )
         {
             auto fn = fModel->fileInfo( idx ).absoluteFilePath();
             NSABUtils::CSetMKVTags dlg( fn, NPreferences::NCore::CPreferences::instance()->getMKVPropEditEXE(), this );
             if ( dlg.exec() == QDialog::Accepted )
-                fModel->reloadMediaTags( idx );
+                fModel->reloadMediaInfo( idx );
             emit sigDialogClosed();
         }
 

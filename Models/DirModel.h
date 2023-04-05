@@ -236,8 +236,8 @@ namespace NMediaManager
 
             bool canShowMediaInfo() const;
             virtual std::unordered_map< NSABUtils::EMediaTags, QString > getMediaTags( const QFileInfo &fi, const std::list< NSABUtils::EMediaTags > &tags = {} ) const;
-            virtual void reloadMediaTags( const QModelIndex &idx );
-            virtual void reloadMediaTags( const QModelIndex &idx, bool force );
+            virtual void reloadMediaInfo( const QModelIndex &idx );
+            virtual void reloadMediaInfo( const QModelIndex &idx, bool force );
 
             virtual bool autoSetMediaTags( const QModelIndex &idx, QString *msg = nullptr ) final;
             virtual bool areMediaTagsSameAsAutoSet( const QModelIndex &idx ) const final;

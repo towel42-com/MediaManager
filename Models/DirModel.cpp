@@ -1146,7 +1146,7 @@ namespace NMediaManager
             {
                 auto idx = indexFromItem( item );
 
-                reloadMediaTags( idx );
+                reloadMediaInfo( idx );
 
                 auto lhs = index( idx.row(), 0, idx.parent() );
                 auto rhs = index( idx.row(), columnCount() - 1, idx.parent() );
@@ -1159,12 +1159,12 @@ namespace NMediaManager
             return true;
         }
 
-        void CDirModel::reloadMediaTags( const QModelIndex &idx )
+        void CDirModel::reloadMediaInfo( const QModelIndex &idx )
         {
-            reloadMediaTags( idx, false );
+            reloadMediaInfo( idx, false );
         }
 
-        void CDirModel::reloadMediaTags( const QModelIndex &idx, bool force )
+        void CDirModel::reloadMediaInfo( const QModelIndex &idx, bool force )
         {
             if ( !force && ( !showMediaItems() || !canShowMediaInfo() ) )
                 return;
@@ -1275,7 +1275,7 @@ namespace NMediaManager
 
             if ( setMediaTags( fi.absoluteFilePath(), QString(), QString(), QString(), msg ) )
             {
-                reloadMediaTags( idx );
+                reloadMediaInfo( idx );
                 return true;
             }
             return false;
@@ -1729,10 +1729,8 @@ namespace NMediaManager
 
         std::list< NSABUtils::EMediaTags > CDirModel::getMediaColumnsList() const
         {
-            auto retVal = std::list< NSABUtils::EMediaTags >(
-                { NSABUtils::EMediaTags::eTitle, NSABUtils::EMediaTags::eLength, NSABUtils::EMediaTags::eDate, NSABUtils::EMediaTags::eResolution, NSABUtils::EMediaTags::eAllVideoCodecs, NSABUtils::EMediaTags::eVideoBitrateString,
-                  NSABUtils::EMediaTags::eAllAudioCodecsDisp, NSABUtils::EMediaTags::eAllSubtitles, NSABUtils::EMediaTags::eComment } );
-            return retVal;
+            auto tmp = std::get< 1 >( getMediaDataInfo() );
+            return std::list< NSABUtils::EMediaTags >( { tmp.begin(), tmp.end() } );
         }
 
         void CDirModel::clearMediaColumnMap()
@@ -2303,7 +2301,7 @@ namespace NMediaManager
                     {
                         auto currTS = NSABUtils::CTimeString( progressDlg->secondaryValue() * 1000 );
                         auto endTS = NSABUtils::CTimeString( progressDlg->secondaryMax() * 1000 );
-                        format = QString( "Processing Time: %1 of %2 ETA: %3  " ).arg( currTS.toString( "hh:mm:ss", false ) ).arg( endTS.toString( "hh:mm:ss", false ) ).arg( ts.toString( "hh:mm:ss", false ) );
+                        format = QString( "Processing Position: %1 of %2 ETA: %3  " ).arg( currTS.toString( "hh:mm:ss", false ) ).arg( endTS.toString( "hh:mm:ss", false ) ).arg( ts.toString( "hh:mm:ss", false ) );
                     }
                     else
                     {

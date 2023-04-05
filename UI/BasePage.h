@@ -89,7 +89,7 @@ namespace NMediaManager
             virtual QString selectFileFilter() const { return QString(); }
             virtual bool eventFilter( QObject *obj, QEvent *event ) override;
 
-            void editMediaTags( const QModelIndex &idx );
+            void editMediaInfo( const QModelIndex &idx );
 
             QVBoxLayout *mainLayout() const;
         public Q_SLOTS:
