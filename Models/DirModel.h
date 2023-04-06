@@ -42,6 +42,7 @@ class QTemporaryDir;
 #include <optional>
 #include <QMutex>
 #include <QFileIconProvider>
+#include <functional>
 
 namespace NSABUtils
 {
@@ -152,6 +153,7 @@ namespace NMediaManager
         {
             SProcessInfo() {}
             void cleanup( CDirModel *model, bool aOK );
+            QString primaryNewName() const;
 
             bool fBackupOrig{ true };
             bool fSetMKVTagsOnSuccess{ false };
@@ -333,7 +335,6 @@ namespace NMediaManager
             virtual int lastMediaItemColumn() const final;
             virtual int getMediaColumn( NSABUtils::EMediaTags mediaTag ) const final;
 
-
             virtual void computeMediaColumnMap() const final;
             virtual void clearMediaColumnMap();
 
@@ -369,7 +370,9 @@ namespace NMediaManager
             virtual void resizeColumns() const;
 
             virtual void postReloadModelRequest();
-            virtual int computeNumberOfItems() const;
+            virtual int computeNumberOfItems() const final;
+            virtual std::pair< std::function< bool( const QVariant & ) >, int > getExcludeFuncForItemCount() const;
+
             virtual void postProcess( bool /*displayOnly*/ );
             virtual bool postExtProcess( const SProcessInfo &info, QStringList &msgList );
             virtual QString getProgressLabel( const SProcessInfo &processInfo ) const;
