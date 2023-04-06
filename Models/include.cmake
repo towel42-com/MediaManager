@@ -28,7 +28,6 @@ set(qtproject_SRCS
     DirModel.cpp
     DirNodeItem.cpp
     GenerateBIFModel.cpp
-    MergeSRTModel.cpp
     TranscodeModel.cpp
     TagsModel.cpp
     MediaNamingModel.cpp
@@ -38,7 +37,6 @@ set(qtproject_SRCS
 set(qtproject_H
     DirModel.h
     GenerateBIFModel.h
-    MergeSRTModel.h
     TranscodeModel.h
     TagsModel.h
     MediaNamingModel.h

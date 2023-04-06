@@ -20,13 +20,18 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef _TranscodeMODEL_H
-#define _TranscodeMODEL_H
+#ifndef _TranscodeModel_H
+#define _TranscodeModel_H
 
 #include "DirModel.h"
 
 namespace NMediaManager
 {
+    namespace NCore
+    {
+        struct SLanguageInfo;
+    }
+
     namespace NModels
     {
         class CTranscodeModel : public CDirModel
@@ -35,18 +40,31 @@ namespace NMediaManager
         public:
             enum EColumns
             {
-                eMediaColumnLoc = NModels::EColumns::eFirstCustomColumn,
+                eLanguage = NModels::EColumns::eFirstCustomColumn,
+                eForced,
+                eSDH,
+                eOnByDefault,
+                eMediaColumnLoc
             };
 
             CTranscodeModel( NUi::CBasePage *page, QObject *parent = nullptr );
             virtual ~CTranscodeModel() override;
 
-        private:
-            virtual std::optional< TItemStatus > computeItemStatus( const QModelIndex &idx ) const;;   // the one to override
+        protected:
+            virtual std::optional< TItemStatus > computeItemStatus( const QModelIndex &idx ) const;   // the one to override
+            virtual void clear() override;
 
             virtual QStringList dirModelFilter() const override;
 
             virtual std::pair< bool, QStandardItem * > processItem( const QStandardItem *item, bool displayOnly ) override;
+
+            [[nodiscard]] bool setupProcessItem( SProcessInfo &processInfo, const QString &path, const std::list< NCore::SLanguageInfo > &langFiles, bool displayOnly ) const;
+            bool processTranscoding( SProcessInfo &processInfo, const std::list< NCore::SLanguageInfo >&srtFiles, const QStandardItem *item, bool displayOnly );
+            bool processSRTSubTitle( SProcessInfo &processInfo, const QStandardItem *mkvFile, const std::unordered_map< QString, std::vector< QStandardItem * > > &srtFiles ) const;
+            bool processSUBIDXSubTitle( const QStandardItem *mkvFile, const std::list< std::pair< QStandardItem *, QStandardItem * > > &subidxFiles, bool displayOnly ) const;
+            std::list< std::pair< QStandardItem *, QStandardItem * > > pairSubIDX( const std::list< QStandardItem * > &idxFiles, const std::list< QStandardItem * > &subFiles ) const;
+            QString computeProgressLabel( const SProcessInfo &processInfo ) const;
+
             virtual bool showMediaItems() const override { return true; };
             virtual int firstMediaItemColumn() const override { return EColumns::eMediaColumnLoc; }
             virtual QStringList headers() const override;
@@ -54,6 +72,9 @@ namespace NMediaManager
             virtual void postLoad( QTreeView * /*treeView*/ ) override;
             virtual void preLoad( QTreeView * /*treeView*/ ) override;
             virtual void postProcess( bool /*displayOnly*/ ) override;
+            virtual std::pair< std::function< bool( const QVariant & ) >, int > getExcludeFuncForItemCount() const override;
+            virtual std::list< SDirNodeItem > addAdditionalItems( const QFileInfo &fileInfo ) const override;
+            virtual void setupNewItem( const SDirNodeItem &nodeItem, const QStandardItem *nameItem, QStandardItem *item ) const override;
 
             virtual void postFileFunction( bool aOK, const QFileInfo &fileInfo, TParentTree & /*tree*/, bool countOnly ) override;
             virtual bool preFileFunction( const QFileInfo &fileInfo, std::unordered_set< QString > &alreadyAdded, TParentTree &tree, bool countOnly ) override;
@@ -69,6 +90,26 @@ namespace NMediaManager
             std::optional< std::chrono::milliseconds > getMSRemaining( const QString &string, const std::pair< uint64_t, std::optional< uint64_t > > &currProgress ) const override;
 
             virtual bool currentUnitsAreSeconds() const { return true; }
+
+            QList< QFileInfo > getSRTFilesForMKV( const QFileInfo &fi, bool countOnly ) const;
+            std::optional< std::pair< QFileInfo, QFileInfo > > getIDXSUBFilesForMKV( const QFileInfo &fi ) const;
+            void autoDetermineLanguageAttributes( QStandardItem *parent ) const;
+
+            std::pair< std::unordered_map< QString, std::vector< QStandardItem * > >, std::list< NCore::SLanguageInfo > > getChildSRTFiles( const QStandardItem *item, bool sort ) const;   // item should be a MKV file
+            std::list< std::pair< QFileInfo, QFileInfo > > getIDXSUBFilesInDir( const QDir &dir ) const;
+
+            bool isNameBasedMatch( const QFileInfo &mkvFile, const QFileInfo &srtFile ) const;
+            bool nameMatch( const QString &mkvBaseName, const QString &subtitleFile ) const;
+
+            bool isSubtitleFile( const QFileInfo &fileInfo, bool *isLangFileFormat = nullptr ) const;
+
+            std::list< QStandardItem * > getChildFiles( const QStandardItem *item, const QString &ext ) const;
+            QList< QStandardItem * > getChildMKVFiles( const QStandardItem *item, bool goBelowDirs ) const;   // item should be a dir file
+
+            QStandardItem *getLanguageItem( const QStandardItem *parent ) const;
+
+            mutable std::unordered_map< QString, std::optional< QList< QFileInfo > > > fSRTFileCache;
+            mutable std::map< QStandardItem *, std::pair< QStandardItem *, NCore::SLanguageInfo > > fAllLangInfos;
         };
     }
 }

@@ -75,7 +75,7 @@ namespace NMediaManager
                 auto bifName = NPreferences::NCore::CPreferences::instance()->getImageFileName( fi, sz, "bif" );
                 processInfo.fNewNames << bifName;
 
-                auto bifItem = new QStandardItem( tr( "BIF File => '%1'" ).arg( getDispName( processInfo.fNewNames.front() ) ) );
+                auto bifItem = new QStandardItem( tr( "BIF File => '%1'" ).arg( getDispName( processInfo.primaryNewName() ) ) );
                 processInfo.fItem->appendRow( bifItem );
             }
 
@@ -166,7 +166,7 @@ namespace NMediaManager
                         auto bifFile = std::make_shared< NSABUtils::NBIF::CFile >( allImages.value(), NPreferences::NCore::CPreferences::instance()->imageInterval() * 1000, msg );
                         if ( !bifFile->isValid() )
                             return false;
-                        aOK = bifFile->save( processInfo->fNewNames.front(), msg );
+                        aOK = bifFile->save( processInfo->primaryNewName(), msg );
                     }
                     progressDlg()->setPrimaryValue( progressDlg()->primaryValue() + 1 );
                     if ( aOK && NPreferences::NCore::CPreferences::instance()->generateGIF() )
@@ -221,7 +221,7 @@ namespace NMediaManager
 
         QString CGenerateBIFModel::getProgressLabel( const SProcessInfo *processInfo, bool bif ) const
         {
-            auto retVal = QString( "Generating Thumbnail Videos<ul><li>%1</li>to<li>%2</li></ul>" ).arg( getDispName( processInfo->fOldName ) ).arg( getDispName( bif ? processInfo->fNewNames.front() : processInfo->fNewNames.back() ) );
+            auto retVal = QString( "Generating Thumbnail Videos<ul><li>%1</li>to<li>%2</li></ul>" ).arg( getDispName( processInfo->fOldName ) ).arg( getDispName( bif ? processInfo->primaryNewName() : processInfo->fNewNames.back() ) );
             return retVal;
         }
 
