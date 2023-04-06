@@ -84,6 +84,8 @@ namespace NMediaManager
             bool operator==( const SLanguageInfo &rhs ) const;
             bool operator!=( const SLanguageInfo &rhs ) const { return !operator==( rhs ); }
 
+            QString path() const { return fFileName; }
+
         private:
             bool isKnownLanguage( const QString &lang ) const;
             void computeLanguages( const QFileInfo &fi );
