@@ -30,7 +30,6 @@ set(qtproject_SRCS
     GenerateBIFPage.cpp
     MainWindow.cpp
     TranscodePage.cpp
-    MergeSRTPage.cpp
     SelectTMDB.cpp
     ProcessConfirm.cpp
     TagsPage.cpp
@@ -44,7 +43,6 @@ set(qtproject_H
     GenerateBIFPage.h
     MainWindow.h
     TranscodePage.h
-    MergeSRTPage.h
     SelectTMDB.h
     ProcessConfirm.h
     TagsPage.h
