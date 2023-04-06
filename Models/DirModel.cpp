@@ -280,7 +280,12 @@ namespace NMediaManager
 
         int CDirModel::computeNumberOfItems() const
         {
-            return NSABUtils::itemCount( fProcessResults.second.get(), true );
+            return NSABUtils::itemCount( fProcessResults.second.get(), true, getExcludeFuncForItemCount() );
+        }
+
+        std::pair< std::function< bool( const QVariant &value ) >, int > CDirModel::getExcludeFuncForItemCount() const
+        {
+            return { {}, Qt::DisplayRole };
         }
 
         bool CDirModel::setData( const QModelIndex &idx, const QVariant &value, int role )
@@ -335,7 +340,10 @@ namespace NMediaManager
 
         std::unique_ptr< QDirIterator > CDirModel::getDirIteratorForPath( const QFileInfo &fileInfo ) const
         {
-            auto retVal = std::make_unique< QDirIterator >( fileInfo.absoluteFilePath(), dirModelFilter(), QDir::AllDirs | QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Readable );
+            auto filter = dirModelFilter();
+            auto tmp = filter;
+            tmp.sort();
+            auto retVal = std::make_unique< QDirIterator >( fileInfo.absoluteFilePath(), filter, QDir::AllDirs | QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Readable );
             return std::move( retVal );
         }
 
@@ -1174,12 +1182,17 @@ namespace NMediaManager
                 return;
 
             auto mediaInfo = getDefaultMediaTags( fi );
-            auto mediaTags = getMediaDataInfo();
-            auto mediaTagIter = std::get< 1 >( mediaTags ).begin();
-            auto columnPosIter = std::get< 2 >( mediaTags ).begin();
-            for ( ; ( mediaTagIter != std::get< 1 >( mediaTags ).end() ) && ( columnPosIter != std::get< 2 >( mediaTags ).end() ); ++mediaTagIter, ++columnPosIter )
+            auto mediaData = getMediaDataInfo();
+
+            auto &&mediaTags = std::get< 1 >( mediaData );
+            auto &&mediaColumns = std::get< 2 >( mediaData );
+
+            auto mediaTagIter = mediaTags.begin();
+            auto columnPosIter = mediaColumns.begin();
+            for ( ; ( mediaTagIter != mediaTags.end() ) && ( columnPosIter != mediaColumns.end() ); ++mediaTagIter, ++columnPosIter )
             {
-                auto item = itemFromIndex( index( idx.row(), ( *columnPosIter )(), idx.parent() ) );
+                auto col = ( *columnPosIter )();
+                auto item = itemFromIndex( index( idx.row(), col, idx.parent() ) );
                 if ( !item )
                     continue;
 
@@ -1197,13 +1210,23 @@ namespace NMediaManager
 
             std::list< SDirNodeItem > retVal;
             auto mediaInfo = getDefaultMediaTags( fileInfo );
+            auto mediaData = getMediaDataInfo();
 
-            auto mediaTags = std::get< 1 >( getMediaDataInfo() );
-            for ( auto &&ii : mediaTags )
+            auto &&mediaTags = std::get< 1 >( mediaData );
+            auto &&mediaColumns = std::get< 2 >( mediaData );
+
+            auto mediaTagIter = mediaTags.begin();
+            auto columnPosIter = mediaColumns.begin();
+            for ( ; ( mediaTagIter != mediaTags.end() ) && ( columnPosIter != mediaColumns.end() ); ++mediaTagIter, ++columnPosIter )
             {
-                retVal.emplace_back( mediaInfo[ ii ], offset++ );
-                if ( ( ii == NSABUtils::EMediaTags::eTitle ) || ( ii == NSABUtils::EMediaTags::eDate ) || ( ii == NSABUtils::EMediaTags::eComment ) )
-                    retVal.back().fEditable = std::make_pair( EType::eMediaTag, ii );
+                auto &&currTag = ( *mediaTagIter );
+                retVal.emplace_back( mediaInfo[ currTag ], offset++ );
+                if ( ( currTag == NSABUtils::EMediaTags::eTitle ) || ( currTag == NSABUtils::EMediaTags::eDate ) || ( currTag == NSABUtils::EMediaTags::eComment ) )
+                    retVal.back().fEditable = std::make_pair( EType::eMediaTag, currTag );
+
+                auto col = ( *columnPosIter )();
+                auto firstCol = firstMediaItemColumn();
+                Q_ASSERT( ( col - firstCol ) == ( retVal.size() - 1 ) );
             }
             return retVal;
         }
@@ -1664,6 +1687,13 @@ namespace NMediaManager
             }
         }
 
+        QString SProcessInfo::primaryNewName() const
+        {
+            if ( fNewNames.isEmpty() )
+                return {};
+            return fNewNames.front();
+        }
+
         QString CDirModel::getMediaYear( const QFileInfo &fi ) const
         {
             auto date = getMediaDate( fi );
@@ -1950,7 +1980,6 @@ namespace NMediaManager
                     if ( rowStatus.has_value() )
                     {
                         rowStatus.value().first = std::max( rowStatus.value().first, status.value().first );
-                        rowStatus.value().second += "\n" + status.value().second;
                     }
                     else
                         rowStatus = status;
@@ -2198,7 +2227,7 @@ namespace NMediaManager
                     NSABUtils::EMediaTags::eComment   //
                 } );
 
-            static auto sGetPosFuncs = std::list< std::function< int() > >( {
+            auto getPosFuncs = std::list< std::function< int() > >( {
                 { [ this ]()
                   {
                       return getMediaTitleLoc();
@@ -2251,8 +2280,8 @@ namespace NMediaManager
             } );
 
             Q_ASSERT( sDefaultHeaders.count() == sDefaultTags.size() );
-            Q_ASSERT( sDefaultHeaders.count() == sGetPosFuncs.size() );
-            return std::make_tuple( sDefaultHeaders, sDefaultTags, sGetPosFuncs );
+            Q_ASSERT( sDefaultHeaders.count() == getPosFuncs.size() );
+            return std::make_tuple( sDefaultHeaders, sDefaultTags, getPosFuncs );
         }
 
         QString CDirModel::getSecondaryProgressFormat( NSABUtils::CDoubleProgressDlg *progressDlg ) const
