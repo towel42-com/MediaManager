@@ -22,6 +22,7 @@
 
 #include "Preferences.h"
 #include "TranscodeNeeded.h"
+#include "Core/LanguageInfo.h"
 #include "SABUtils/MediaInfo.h"
 
 namespace NMediaManager
@@ -30,17 +31,11 @@ namespace NMediaManager
     {
         namespace NCore
         {
-            QStringList CPreferences::getTranscodeArgs( const QString &srcName, const QString &destName ) const
-            {
-                auto mediaInfo = std::make_shared< NSABUtils::CMediaInfo >( srcName );
-                return getTranscodeArgs( mediaInfo, srcName, destName );
-            }
-
-            QStringList CPreferences::getTranscodeArgs( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName ) const
+            QStringList CPreferences::getTranscodeArgs( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName, const std::list< NMediaManager::NCore::SLanguageInfo > &srtFiles ) const
             {
                 auto transcodeNeeded = STranscodeNeeded( mediaInfo, this );
 
-                if ( !transcodeNeeded.transcodeNeeded() )
+                if ( !transcodeNeeded.transcodeNeeded() && srtFiles.empty() )
                     return {};
 
                 auto retVal = QStringList()   //
@@ -48,10 +43,6 @@ namespace NMediaManager
                               << "-y"   //
                               << "-fflags"
                               << "+genpts"   //
-                              << "-map_metadata"
-                              << "0"
-                              << "-map_chapters"
-                              << "0";
                     ;
                 auto hwAccel = getTranscodeHWAccel();
                 if ( !hwAccel.isEmpty() )
@@ -63,12 +54,19 @@ namespace NMediaManager
                 }
 
                 retVal << "-i" << srcName;   //
+                for ( auto &&ii : srtFiles )
+                    retVal << "-i" << ii.path();
 
-                if ( transcodeNeeded.formatOnly() )
+                retVal << "-map_metadata"
+                       << "0"   //
+                       << "-map_chapters"
+                       << "0";
+
+                if ( transcodeNeeded.formatOnly() || !transcodeNeeded.transcodeNeeded() )
                 {
                     // already HVEC but wrong container, just copy
-                    retVal << "-c:v" << "copy"   //
-                           << "-c:a" << "copy"   //
+                    retVal << "-map" << "0:v?" << "-c:v" << "copy"   //
+                           << "-map" << "0:a?" << "-c:a" << "copy"   //
                         ;
                 }
                 else
@@ -85,15 +83,15 @@ namespace NMediaManager
 
                     retVal << "-map"
                            << "0:v?"   //
-                           << "-map"
-                           << "0:s?"   //
                            << "-c:v" << videoCodec   //
                         ;
 
                     if ( !transcodeNeeded.audioTranscodeNeeded() && !transcodeNeeded.addAACAudioCodec() )
                     {
-                        retVal << "-map" << "0:a?"   //
-                               << "-c:a" << "copy";
+                        retVal << "-map"
+                               << "0:a?"   //
+                               << "-c:a"
+                               << "copy";
                     }
                     else
                     {
@@ -107,7 +105,8 @@ namespace NMediaManager
                                 auto audioFormat = transcodeNeeded.addAACAudioCodec() ? "aac" : getTranscodeToAudioCodec();
                                 retVal << QString( "-c:a:0" ) << audioFormat;
                                 if ( transcodeNeeded.addAACAudioCodec() )
-                                    retVal << "-ac:a:0" << "6"; // convert it to 5.1
+                                    retVal << "-ac:a:0"
+                                           << "6";   // convert it to 5.1
                                 retVal << QString( "-metadata:s:a:%1" ).arg( ii ) << QString( R"(title="Transcoded from Default Track")" ).arg( audioFormat );
                                 streamNum++;
                                 retVal << "-map" << QString( "0:a:%1?" ).arg( ii );
@@ -132,8 +131,27 @@ namespace NMediaManager
                     }
                 }
 
-                retVal << "-c:s" << ( !isEncoderFormat( mediaInfo, getConvertMediaToContainer() ) ? "srt" : "copy" )   //
-                       << "-f" << getConvertMediaToContainer()   //
+                auto numSubtitleStreams = mediaInfo->numSubtitleStreams();
+                int subTitleStreamNum = 0;
+                for ( int ii = 0; ii < numSubtitleStreams; ++ii )
+                {
+                    retVal << "-map" << QString( "0:s:%1?" ).arg( subTitleStreamNum );
+                    retVal << QString( "-c:s:%1" ).arg( subTitleStreamNum++ ) << ( !isEncoderFormat( mediaInfo, "matroska" ) ? "srt" : "copy" );   // if the source is NOT MKV make sure the subtitles are SRT, otherwise just copy
+                }
+
+                int fileNum = 1;
+                for ( auto &&srtFile : srtFiles )
+                {
+                    retVal << "-map" << QString( "%1:0?" ).arg( fileNum++ )   //
+                           << "-map" << QString( "0:s:%1?" ).arg( subTitleStreamNum )   //
+                           << QString( "-metadata:s:s:%1" ).arg( subTitleStreamNum ) << QString( "language=%1" ).arg( srtFile.isoCode() )   //
+                           << QString( "-metadata:s:s:%1" ).arg( subTitleStreamNum ) << QString( "handler_name=%1" ).arg( srtFile.language() )   //
+                           << QString( "-metadata:s:s:%1" ).arg( subTitleStreamNum ) << QString( "title=%1" ).arg( srtFile.displayName() )   //
+                        ;
+                    subTitleStreamNum++;
+                }
+
+                retVal << "-f" << getConvertMediaToContainer()   //
                        << destName;
 
                 return retVal;

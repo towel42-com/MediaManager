@@ -60,6 +60,13 @@
     </widget>
    </item>
    <item>
+    <widget class="QCheckBox" name="forceTranscode">
+     <property name="text">
+      <string>Force Transcoding? (Use when you change the quality)</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <spacer name="verticalSpacer_7">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -76,6 +83,8 @@
  </widget>
  <tabstops>
   <tabstop>convertMediaFormat</tabstop>
+  <tabstop>mediaFormats</tabstop>
+  <tabstop>forceTranscode</tabstop>
  </tabstops>
  <resources/>
  <connections/>

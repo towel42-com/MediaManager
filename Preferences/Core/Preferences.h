@@ -50,6 +50,10 @@ class QProgressDialog;
 class QTimer;
 namespace NMediaManager
 {
+    namespace NCore
+    {
+        struct SLanguageInfo;
+    }
     namespace NPreferences
     {
         enum class EItemStatus
@@ -75,7 +79,7 @@ namespace NMediaManager
         };
         Q_DECLARE_FLAGS( EPreferenceTypes, EPreferenceType );
         Q_DECLARE_OPERATORS_FOR_FLAGS( EPreferenceTypes );
-        QString toString( EPreferenceType prefType, bool forEnum=false );
+        QString toString( EPreferenceType prefType, bool forEnum = false );
 
         namespace NCore
         {
@@ -137,7 +141,7 @@ namespace NMediaManager
                 static CPreferences *instance();
                 virtual ~CPreferences() override;
 
-                void recomputeSupportedFormats( QProgressDialog * dlg );
+                void recomputeSupportedFormats( QProgressDialog *dlg );
                 QString validateDefaults() const;
                 void showValidateDefaults( QWidget *parent, bool showNoChange );
 
@@ -149,23 +153,26 @@ namespace NMediaManager
 
                 void setTreatAsTVShowByDefault( bool value );
                 bool getTreatAsTVShowByDefault() const;
-                
-                bool isEncoderFormat( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &formatName ) const;
-                bool isDecoderFormat( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &formatName ) const;
-                QStringList getTranscodeArgs( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName ) const;
-                QStringList getTranscodeArgs( const QString &srcName, const QString &destName ) const;
 
-                std::shared_ptr< NSABUtils::CMediaInfo > getMediaInfo( const QFileInfo & fi );
-                std::shared_ptr< NSABUtils::CMediaInfo > getMediaInfo( const QString & fileName );
+                bool isEncoderFormat( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &formatName ) const;
+                bool isEncoderFormat( const QString &fileName, const QString &formatName ) const;
+                bool isEncoderFormat( const QFileInfo &fi, const QString &formatName ) const;
+                bool isDecoderFormat( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &formatName ) const;
+                bool isDecoderFormat( const QString &fileName, const QString &formatName ) const;
+                bool isDecoderFormat( const QFileInfo &fi, const QString &formatName ) const;
+                QStringList getTranscodeArgs( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName, const std::list< NMediaManager::NCore::SLanguageInfo > &srtFiles ) const;
+
+                std::shared_ptr< NSABUtils::CMediaInfo > getMediaInfo( const QFileInfo &fi );
+                std::shared_ptr< NSABUtils::CMediaInfo > getMediaInfo( const QString &fileName );
 
                 // ffmpeg results
                 QStringList availableEncoderMediaFormats( bool verbose ) const;   // if true returns name - desc, otherwise name only
                 NSABUtils::TFormatMap getEncoderFormatExtensionsMap() const;
-                QStringList getExtensionsForEncoderMediaFormat( const QString &format ) const;
+                QStringList getExtensionsForEncoderMediaFormat( const QString &format, const QStringList &exclude = {} ) const;
 
                 QStringList availableDecoderMediaFormats( bool verbose ) const;   // if true returns name - desc, otherwise name only
                 NSABUtils::TFormatMap getDecoderFormatExtensionsMap() const;
-                QStringList getExtensionsForDecoderMediaFormat( const QString &format ) const;
+                QStringList getExtensionsForDecoderMediaFormat( const QString &format, const QStringList &exclude = {} ) const;
 
                 QStringList availableVideoEncodingCodecs( bool verbose ) const;   // if true returns name - desc, otherwise name only
                 QStringList availableVideoDecodingCodecs( bool verbose ) const;   // if true returns name - desc, otherwise name only
@@ -220,6 +227,9 @@ namespace NMediaManager
                 QStringList availableHWAccelsStatic( bool verbose ) const;
 
                 // container transcode arguments
+                void setForceTranscode( bool value );
+                bool getForceTranscode() const;
+
                 void setConvertMediaContainer( bool value );
                 bool getConvertMediaContainerDefault() const;
                 bool getConvertMediaContainer() const;
@@ -255,7 +265,7 @@ namespace NMediaManager
                 QString getTranscodeHWAccel() const;
                 QString getTranscodeHWAccel( const QString &codec ) const;
                 QString getCodecForHWAccel( const QString &codec ) const;
-                
+
                 void setOnlyTranscodeVideoOnFormatChange( bool value );
                 bool getOnlyTranscodeVideoOnFormatChangeDefault() const;
                 bool getOnlyTranscodeVideoOnFormatChange() const;
@@ -412,13 +422,13 @@ namespace NMediaManager
                 QStringList getExtensionsToDelete() const;
                 bool isPathToDelete( const QString &path ) const;
 
-                QStringList getVideoEncoderExtensions() const;
-                QStringList getAudioEncoderExtensions() const;
-                QStringList getSubtitleEncoderExtensions() const;
+                QStringList getVideoEncoderExtensions( const QStringList &exclude = {} ) const;
+                QStringList getAudioEncoderExtensions( const QStringList &exclude = {} ) const;
+                QStringList getSubtitleEncoderExtensions( const QStringList &exclude = {} ) const;
 
-                QStringList getVideoDecoderExtensions() const;
-                QStringList getAudioDecoderExtensions() const;
-                QStringList getSubtitleDecoderExtensions() const;
+                QStringList getVideoDecoderExtensions( const QStringList &exclude = {} ) const;
+                QStringList getAudioDecoderExtensions( const QStringList &exclude = {} ) const;
+                QStringList getSubtitleDecoderExtensions( const QStringList &exclude = {} ) const;
 
                 void addKnownStrings( const QStringList &value );
                 void setKnownStrings( const QStringList &value );
@@ -443,7 +453,7 @@ namespace NMediaManager
 
                 void setUseCustomExternalTools( bool value );
                 bool getUseCustomExternalTools() const;
-                QString  getExternalToolPath( const QString &settingsLoc, const QString &exe, const QString &defaultPath ) const;
+                QString getExternalToolPath( const QString &settingsLoc, const QString &exe, const QString &defaultPath ) const;
 
                 QString getMKVValidatorEXE() const;
 
@@ -556,7 +566,7 @@ namespace NMediaManager
                 QString getDefaultOutDirPattern( bool forTV ) const;
                 QString getDefaultOutFilePattern( bool forTV ) const;
 
-                void loadMediaFormats( bool forceFromFFMpeg, QProgressDialog * dlg = nullptr ) const;
+                void loadMediaFormats( bool forceFromFFMpeg, QProgressDialog *dlg = nullptr ) const;
 
                 QTimer *fPrefChangeTimer{ nullptr };
                 EPreferenceTypes fPending;

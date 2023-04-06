@@ -47,10 +47,10 @@ namespace NMediaManager
                 std::optional< QString > getFormatMessage() const;
                 std::optional< QString > getVideoCodecMessage() const;
                 std::optional< QString > getAudioCodecMessage() const;
-                QString getMessage( const QString & from, const QString & to ) const;
-                QString getProgressLabelHeader( const QString &from, const QString &to ) const;
+                QStringList getActions() const;
+                QString getProgressLabelHeader( const QString &from, const QStringList & otherFiles, const QString &to ) const;
 
-                bool transcodeNeeded() const { return fVideo || fAudio || fMissingAAC || fFormat; }
+                bool transcodeNeeded() const { return fForce || fVideo || fAudio || fMissingAAC || fFormat; }
                 bool formatOnly() const { return fFormat && !fVideo && !fAudio; }
 
                 bool formatChangeNeeded() const { return fFormat; }
@@ -62,6 +62,7 @@ namespace NMediaManager
                 bool fAudio{ false };
                 bool fMissingAAC{ false };
                 bool fFormat{ false };
+                bool fForce{ false };
                 std::shared_ptr< NSABUtils::CMediaInfo > fMediaInfo;
             };
         }
