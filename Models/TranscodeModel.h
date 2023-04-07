@@ -58,11 +58,10 @@ namespace NMediaManager
 
             virtual std::pair< bool, QStandardItem * > processItem( const QStandardItem *item, bool displayOnly ) override;
 
-            [[nodiscard]] bool setupProcessItem( SProcessInfo &processInfo, const QString &path, const std::list< NCore::SLanguageInfo > &langFiles, bool displayOnly ) const;
+            [[nodiscard]] bool setupProcessItem( SProcessInfo &processInfo, const QString &path, const std::list< NCore::SLanguageInfo > &srtFiles, const std::list< NCore::SLanguageInfo > & subIDXFiles, bool displayOnly ) const;
             bool processTranscoding( SProcessInfo &processInfo, const std::list< NCore::SLanguageInfo >&srtFiles, const QStandardItem *item, bool displayOnly );
             bool processSRTSubTitle( SProcessInfo &processInfo, const QStandardItem *mkvFile, const std::unordered_map< QString, std::vector< QStandardItem * > > &srtFiles ) const;
-            bool processSUBIDXSubTitle( const QStandardItem *mkvFile, const std::list< std::pair< QStandardItem *, QStandardItem * > > &subidxFiles, bool displayOnly ) const;
-            std::list< std::pair< QStandardItem *, QStandardItem * > > pairSubIDX( const std::list< QStandardItem * > &idxFiles, const std::list< QStandardItem * > &subFiles ) const;
+            bool processSUBIDXSubTitle( SProcessInfo &processInfo, const QStandardItem *mkvFile, const std::list< std::pair< QStandardItem *, QStandardItem * > > &subidxFiles ) const;
             QString computeProgressLabel( const SProcessInfo &processInfo ) const;
 
             virtual bool showMediaItems() const override { return true; };
@@ -95,8 +94,10 @@ namespace NMediaManager
             std::optional< std::pair< QFileInfo, QFileInfo > > getIDXSUBFilesForMKV( const QFileInfo &fi ) const;
             void autoDetermineLanguageAttributes( QStandardItem *parent ) const;
 
-            std::pair< std::unordered_map< QString, std::vector< QStandardItem * > >, std::list< NCore::SLanguageInfo > > getChildSRTFiles( const QStandardItem *item, bool sort ) const;   // item should be a MKV file
+            std::pair< std::list< std::pair< QStandardItem *, QStandardItem * > >, std::list< NCore::SLanguageInfo > > pairSubIDX( const std::list< QStandardItem * > &idxFiles, const std::list< QStandardItem * > &subFiles ) const;
             std::list< std::pair< QFileInfo, QFileInfo > > getIDXSUBFilesInDir( const QDir &dir ) const;
+
+            std::pair< std::unordered_map< QString, std::vector< QStandardItem * > >, std::list< NCore::SLanguageInfo > > getChildSRTFiles( const QStandardItem *item, bool sort ) const;   // item should be a MKV file
 
             bool isNameBasedMatch( const QFileInfo &mkvFile, const QFileInfo &srtFile ) const;
             bool nameMatch( const QString &mkvBaseName, const QString &subtitleFile ) const;

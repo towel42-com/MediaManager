@@ -383,7 +383,7 @@ namespace NMediaManager
 
             bool CPreferences::getUseTuneDefault() const
             {
-                return false;
+                return true;
             }
 
             ETranscodeTune CPreferences::getTuneDefault() const

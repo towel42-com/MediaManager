@@ -225,7 +225,7 @@ namespace NMediaManager
                 progressDlg()->setValue( 0 );
         }
 
-        bool CTranscodeModel::setupProcessItem( SProcessInfo &processInfo, const QString &path, const std::list< NCore::SLanguageInfo >  & langFiles, bool displayOnly ) const
+        bool CTranscodeModel::setupProcessItem( SProcessInfo &processInfo, const QString &path, const std::list< NCore::SLanguageInfo > &srtFiles, const std::list< NCore::SLanguageInfo > &/*subIDXFiles*/, bool displayOnly ) const
         {
             if ( !processInfo.fItem )
             {
@@ -263,12 +263,11 @@ namespace NMediaManager
                     }
                     processInfo.fTimeStamps = NSABUtils::NFileUtils::timeStamps( processInfo.fOldName );
                 }
-
             }
             if ( !checkProcessItemExists( processInfo.fOldName, processInfo.fItem ) )
                 return false;
 
-            for ( auto &&langFile : langFiles )
+            for ( auto &&langFile : srtFiles )
             {
                 if ( !checkProcessItemExists( langFile.path(), processInfo.fItem ) )
                     return false;
@@ -288,8 +287,12 @@ namespace NMediaManager
 
             auto srtFiles = getChildSRTFiles( item, false );
 
+            auto idxFiles = getChildFiles( item, "idx" );
+            auto subFiles = getChildFiles( item, "sub" );
+            auto subIDXPairFiles = pairSubIDX( idxFiles, subFiles );
+
             SProcessInfo processInfo;
-            bool aOK = setupProcessItem( processInfo, path, srtFiles.second, displayOnly );
+            bool aOK = setupProcessItem( processInfo, path, srtFiles.second, subIDXPairFiles.second, displayOnly );
             if ( !aOK )
                 return std::make_pair( false, processInfo.fItem );
 
@@ -300,16 +303,15 @@ namespace NMediaManager
             if ( aOK )
             {
                 if ( !srtFiles.first.empty() )
-                    aOK = processSRTSubTitle( processInfo, item, srtFiles.first ); // all actually processing is done in 
-                else
-                {
-                    auto idxFiles = getChildFiles( item, "idx" );
-                    auto subFiles = getChildFiles( item, "sub" );
-                    auto subIDXPairFiles = pairSubIDX( idxFiles, subFiles );
-                    if ( !subIDXPairFiles.empty() )
-                        aOK = processSUBIDXSubTitle( item, subIDXPairFiles, displayOnly );
-                }
+                    aOK = processSRTSubTitle( processInfo, item, srtFiles.first );   // all actually processing is done in
             }
+
+            if ( aOK )
+            {
+                if ( !subIDXPairFiles.first.empty() )
+                    aOK = processSUBIDXSubTitle( processInfo, item, subIDXPairFiles.first );
+            }
+
             if ( aOK && !displayOnly )
             {
                 fProcessQueue.push_back( processInfo );
@@ -318,7 +320,7 @@ namespace NMediaManager
             return std::move( std::make_pair( aOK, processInfo.fItem ) );
         }
 
-        bool CTranscodeModel::processTranscoding( SProcessInfo &processInfo, const std::list< NCore::SLanguageInfo > & srtFiles, const QStandardItem *item, bool displayOnly )
+        bool CTranscodeModel::processTranscoding( SProcessInfo &processInfo, const std::list< NCore::SLanguageInfo > &srtFiles, const QStandardItem *item, bool displayOnly )
         {
             if ( !isMediaFile( item ) || item->data( ECustomRoles::eIsDir ).toBool() )
                 return true;
@@ -359,9 +361,7 @@ namespace NMediaManager
                 return true;
 
             auto path = mkvFile->data( ECustomRoles::eAbsFilePath ).toString();
-            auto aOK = setupProcessItem( processInfo, path, {}, true );
-
-            auto oldFI = QFileInfo( processInfo.fOldName );
+            auto aOK = setupProcessItem( processInfo, path, {}, {}, true );
 
             for ( auto &&ii : srtFiles )
             {
@@ -384,18 +384,13 @@ namespace NMediaManager
             return true;
         }
 
-        bool CTranscodeModel::processSUBIDXSubTitle( const QStandardItem *mkvFile, const std::list< std::pair< QStandardItem *, QStandardItem * > > &subidxFiles, bool displayOnly ) const
+        bool CTranscodeModel::processSUBIDXSubTitle( SProcessInfo &processInfo, const QStandardItem *mkvFile, const std::list< std::pair< QStandardItem *, QStandardItem * > > &subidxFiles ) const
         {
             if ( !mkvFile )
                 return true;
 
-            SProcessInfo processInfo;
-            processInfo.fSetMKVTagsOnSuccess = true;
-            processInfo.fOldName = computeTransformPath( mkvFile, true );
-            auto oldFI = QFileInfo( processInfo.fOldName );
-
-            processInfo.fNewNames << oldFI.absoluteDir().absoluteFilePath( oldFI.fileName() + ".new" );   // prevents the emby system from picking it up
-            processInfo.fItem = new QStandardItem( QString( "'%1' => '%2'" ).arg( getDispName( processInfo.fOldName ) ).arg( getDispName( processInfo.primaryNewName() ) ) );
+            auto path = mkvFile->data( ECustomRoles::eAbsFilePath ).toString();
+            auto aOK = setupProcessItem( processInfo, path, {}, {}, true );
 
             std::list< std::pair< std::pair< QStandardItem *, QStandardItem * >, NCore::SLanguageInfo > > allLangInfos;
             std::unordered_map< QStandardItem *, std::unordered_map< int, std::pair< bool, bool > > > langMap;
@@ -462,96 +457,94 @@ namespace NMediaManager
                 }
             }
 
-            if ( !displayOnly )
-            {
-                processInfo.fProgressLabel = computeProgressLabel( processInfo );
+            //if ( !displayOnly )
+            //{
+            //    processInfo.fProgressLabel = computeProgressLabel( processInfo );
 
-                processInfo.fCmd = NPreferences::NCore::CPreferences::instance()->getMKVMergeEXE();
-                bool aOK = true;
-                if ( processInfo.fCmd.isEmpty() || !QFileInfo( processInfo.fCmd ).isExecutable() )
-                {
-                    QStandardItem *errorItem = nullptr;
-                    if ( processInfo.fCmd.isEmpty() )
-                        appendError( processInfo.fItem, tr( "mkvmerge is not set properly" ) );
-                    else
-                        appendError( processInfo.fItem, tr( "mkvmerge '%1' is not an executable" ).arg( processInfo.fCmd ) );
+            //    processInfo.fCmd = NPreferences::NCore::CPreferences::instance()->getMKVMergeEXE();
+            //    bool aOK = true;
+            //    if ( processInfo.fCmd.isEmpty() || !QFileInfo( processInfo.fCmd ).isExecutable() )
+            //    {
+            //        QStandardItem *errorItem = nullptr;
+            //        if ( processInfo.fCmd.isEmpty() )
+            //            appendError( processInfo.fItem, tr( "mkvmerge is not set properly" ) );
+            //        else
+            //            appendError( processInfo.fItem, tr( "mkvmerge '%1' is not an executable" ).arg( processInfo.fCmd ) );
 
-                    aOK = false;
-                }
+            //        aOK = false;
+            //    }
 
-                for ( auto &&ii : subidxFiles )
-                {
-                    if ( !aOK )
-                        break;
-                    aOK = aOK && checkProcessItemExists( ii.first->data( ECustomRoles::eAbsFilePath ).toString(), processInfo.fItem );
-                    aOK = aOK && checkProcessItemExists( ii.second->data( ECustomRoles::eAbsFilePath ).toString(), processInfo.fItem );
-                }
+            //    for ( auto &&ii : subidxFiles )
+            //    {
+            //        if ( !aOK )
+            //            break;
+            //        aOK = aOK && checkProcessItemExists( ii.first->data( ECustomRoles::eAbsFilePath ).toString(), processInfo.fItem );
+            //        aOK = aOK && checkProcessItemExists( ii.second->data( ECustomRoles::eAbsFilePath ).toString(), processInfo.fItem );
+            //    }
 
-                //aOK = the MKV and SRT exist and the cmd is an executable
-                processInfo.fTimeStamps = NSABUtils::NFileUtils::timeStamps( processInfo.fOldName );
+            //    //aOK = the MKV and SRT exist and the cmd is an executable
+            //    processInfo.fTimeStamps = NSABUtils::NFileUtils::timeStamps( processInfo.fOldName );
 
-                processInfo.fArgs = QStringList() << "--ui-language"
-                                                  << "en"
-                                                  << "--priority"
-                                                  << "lower"
-                                                  << "--output" << processInfo.fNewNames << "--language"
-                                                  << "0:en"
-                                                  << "--language"
-                                                  << "1:en"
-                                                  << "--language"
-                                                  << "3:en"
-                                                  << "(" << processInfo.fOldName << ")"
-                                                  << "--title" << oldFI.completeBaseName();
+            //    processInfo.fArgs = QStringList() << "--ui-language"
+            //                                      << "en"
+            //                                      << "--priority"
+            //                                      << "lower"
+            //                                      << "--output" << processInfo.fNewNames << "--language"
+            //                                      << "0:en"
+            //                                      << "--language"
+            //                                      << "1:en"
+            //                                      << "--language"
+            //                                      << "3:en"
+            //                                      << "(" << processInfo.fOldName << ")"
+            //                                      << "--title" << oldFI.completeBaseName();
 
-                QStringList trackOrder = { "0:0", "0:1", "0:3" };
-                int langFileCnt = 1;
-                for ( auto &&langInfo : allLangInfos )
-                {
-                    int nextTrack = 1;
-                    std::list< NCore::SMultLangInfo > orderByIdx;
-                    auto currIDX = langInfo.first.first->data( ECustomRoles::eAbsFilePath ).toString();
-                    auto currSUB = langInfo.first.second->data( ECustomRoles::eAbsFilePath ).toString();
-                    auto langs = langInfo.second.allLanguageInfos();
-                    for ( auto &&ii : langs )
-                    {
-                        for ( auto &&jj : ii.second )
-                            orderByIdx.push_back( jj );
-                    }
+            //    QStringList trackOrder = { "0:0", "0:1", "0:3" };
+            //    int langFileCnt = 1;
+            //    for ( auto &&langInfo : allLangInfos )
+            //    {
+            //        int nextTrack = 1;
+            //        std::list< NCore::SMultLangInfo > orderByIdx;
+            //        auto currIDX = langInfo.first.first->data( ECustomRoles::eAbsFilePath ).toString();
+            //        auto currSUB = langInfo.first.second->data( ECustomRoles::eAbsFilePath ).toString();
+            //        auto langs = langInfo.second.allLanguageInfos();
+            //        for ( auto &&ii : langs )
+            //        {
+            //            for ( auto &&jj : ii.second )
+            //                orderByIdx.push_back( jj );
+            //        }
 
-                    orderByIdx.sort( []( const NCore::SMultLangInfo &lhs, const NCore::SMultLangInfo &rhs ) { return lhs.fIndex < rhs.fIndex; } );
+            //        orderByIdx.sort( []( const NCore::SMultLangInfo &lhs, const NCore::SMultLangInfo &rhs ) { return lhs.fIndex < rhs.fIndex; } );
 
-                    for ( auto &&ii : orderByIdx )
-                    {
-                        bool sdh = false;
-                        bool forced = false;
+            //        for ( auto &&ii : orderByIdx )
+            //        {
+            //            bool sdh = false;
+            //            bool forced = false;
 
-                        auto langPos = langMap.find( langInfo.first.first );
-                        if ( langPos != langMap.end() )
-                        {
-                            auto indexPos = ( *langPos ).second.find( ii.fIndex );
-                            if ( indexPos != ( *langPos ).second.end() )
-                            {
-                                sdh = ( *indexPos ).second.first;
-                                forced = ( *indexPos ).second.second;
-                            }
-                        }
-                        processInfo.fArgs << "--language" << QString( "%1:%2" ).arg( ii.fIndex ).arg( ii.fLanguage->isoCode() ) << "--default-track" << QString( "%1:%2" ).arg( ii.fIndex ).arg( "no" ) << "--hearing-impaired-flag"
-                                          << QString( "%1:%2" ).arg( ii.fIndex ).arg( sdh ? "yes" : "no" ) << "--forced-track" << QString( "%1:%2" ).arg( ii.fIndex ).arg( forced ? "yes" : "no" );
-                        trackOrder << QString( "%1:%2" ).arg( langFileCnt ).arg( ii.fIndex );
-                    }
-                    processInfo.fArgs << "(" << currIDX << ")"
-                                      << "(" << currSUB << ")";
-                    processInfo.fAncillary.push_back( currIDX );
-                    processInfo.fAncillary.push_back( currSUB );
+            //            auto langPos = langMap.find( langInfo.first.first );
+            //            if ( langPos != langMap.end() )
+            //            {
+            //                auto indexPos = ( *langPos ).second.find( ii.fIndex );
+            //                if ( indexPos != ( *langPos ).second.end() )
+            //                {
+            //                    sdh = ( *indexPos ).second.first;
+            //                    forced = ( *indexPos ).second.second;
+            //                }
+            //            }
+            //            processInfo.fArgs << "--language" << QString( "%1:%2" ).arg( ii.fIndex ).arg( ii.fLanguage->isoCode() ) << "--default-track" << QString( "%1:%2" ).arg( ii.fIndex ).arg( "no" ) << "--hearing-impaired-flag"
+            //                              << QString( "%1:%2" ).arg( ii.fIndex ).arg( sdh ? "yes" : "no" ) << "--forced-track" << QString( "%1:%2" ).arg( ii.fIndex ).arg( forced ? "yes" : "no" );
+            //            trackOrder << QString( "%1:%2" ).arg( langFileCnt ).arg( ii.fIndex );
+            //        }
+            //        processInfo.fArgs << "(" << currIDX << ")"
+            //                          << "(" << currSUB << ")";
 
-                    langFileCnt++;
-                }
-                processInfo.fArgs << "--track-order" << trackOrder.join( "," );
-            }
+            //        langFileCnt++;
+            //    }
+            //    processInfo.fArgs << "--track-order" << trackOrder.join( "," );
+            //}
             return true;
         }
 
-        std::list< std::pair< QStandardItem *, QStandardItem * > > CTranscodeModel::pairSubIDX( const std::list< QStandardItem * > &idxFiles, const std::list< QStandardItem * > &subFiles ) const
+        std::pair< std::list< std::pair< QStandardItem *, QStandardItem * > >, std::list< NCore::SLanguageInfo > > CTranscodeModel::pairSubIDX( const std::list< QStandardItem * > &idxFiles, const std::list< QStandardItem * > &subFiles ) const
         {
             if ( idxFiles.empty() || subFiles.empty() || ( idxFiles.size() != subFiles.size() ) )
                 return {};
@@ -564,6 +557,7 @@ namespace NMediaManager
             }
 
             std::list< std::pair< QStandardItem *, QStandardItem * > > retVal;
+            std::list< NCore::SLanguageInfo > langInfoFiles;
             for ( auto &&ii : idxFiles )
             {
                 auto baseName = QFileInfo( ii->data( ECustomRoles::eAbsFilePath ).toString() ).completeBaseName();
@@ -572,7 +566,7 @@ namespace NMediaManager
                     continue;
                 retVal.emplace_back( std::make_pair( ii, ( *pos ).second ) );
             }
-            return retVal;
+            return std::move( std::make_pair( retVal, langInfoFiles ) );
         }
 
         QString CTranscodeModel::computeProgressLabel( const SProcessInfo &processInfo ) const
@@ -1036,9 +1030,9 @@ namespace NMediaManager
                 auto path = nameItem->data( ECustomRoles::eAbsFilePath ).toString();
                 if ( isSubtitleFile( path ) )
                     item->setBackground( Qt::red );
-                
+
                 auto language = NCore::SLanguageInfo( path );
-                fAllLangInfos[ item ] = { nullptr, language }; // need to handl subidx
+                fAllLangInfos[ item ] = { nullptr, language };   // need to handl subidx
             }
         }
     }

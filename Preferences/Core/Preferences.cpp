@@ -271,7 +271,7 @@ namespace NMediaManager
 
             QSize CPreferences::getThumbnailSize( const QFileInfo &fi ) const
             {
-                auto mediaInfo = NSABUtils::CMediaInfo( fi.absoluteFilePath() );
+                auto mediaInfo = NSABUtils::CMediaInfo( fi.absoluteFilePath(), false );
                 auto tags = mediaInfo.getMediaTags( { NSABUtils::EMediaTags::eWidth, NSABUtils::EMediaTags::eHeight, NSABUtils::EMediaTags::eAspectRatio } );
 
                 auto width = tags[ NSABUtils::EMediaTags::eWidth ].toInt();
