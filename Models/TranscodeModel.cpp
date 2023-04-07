@@ -159,8 +159,10 @@ namespace NMediaManager
             if ( countOnly )
                 return true;
 
+            if ( !NPreferences::NCore::CPreferences::instance()->isMediaFile( fileInfo ) )
+                return false;
+
             //qDebug() << fileInfo;
-            bool hasSubtitleFile = false;
             auto srtFiles = getSRTFilesForMKV( fileInfo, countOnly );
             auto dir = fileInfo.absoluteDir();
             if ( !srtFiles.isEmpty() )
@@ -184,12 +186,8 @@ namespace NMediaManager
                         srtRow.updateName( dir );
                     }
                     tree.emplace_back( std::move( srtRow ) );
-                    hasSubtitleFile = true;
                 }
 
-                //for ( auto && ii : tree )
-                //    qDebug() << ii;
-                //return true;
             }
             auto idxSub = getIDXSUBFilesForMKV( fileInfo );
             if ( idxSub.has_value() )
@@ -209,12 +207,10 @@ namespace NMediaManager
 
                     tree.emplace_back( idxRow );
                     tree.emplace_back( subRow );
-                    hasSubtitleFile = true;
                 }
-                //return true;
             }
 
-            return hasSubtitleFile;
+            return true;
         }
 
         void CTranscodeModel::postFileFunction( bool aOK, const QFileInfo &fileInfo, TParentTree & /*tree*/, bool countOnly )
