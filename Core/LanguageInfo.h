@@ -87,6 +87,7 @@ namespace NMediaManager
             QString path() const { return fFileName; }
 
         private:
+            void setAbsolutePath( const QString &path ) { fFileName = path; }
             bool isKnownLanguage( const QString &lang ) const;
             void computeLanguages( const QFileInfo &fi );
             void computeLanguage();

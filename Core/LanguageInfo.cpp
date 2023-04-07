@@ -73,6 +73,7 @@ namespace NMediaManager
         {
             Q_ASSERT( fileInfo.suffix() == "idx" );
             SLanguageInfo langInfo( fileInfo.completeBaseName() );
+            langInfo.setAbsolutePath( fileInfo.absoluteFilePath() );
             langInfo.computeLanguages( fileInfo );
             return langInfo;
         }
