@@ -160,7 +160,7 @@ namespace NMediaManager
                 bool isDecoderFormat( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &formatName ) const;
                 bool isDecoderFormat( const QString &fileName, const QString &formatName ) const;
                 bool isDecoderFormat( const QFileInfo &fi, const QString &formatName ) const;
-                QStringList getTranscodeArgs( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName, const std::list< NMediaManager::NCore::SLanguageInfo > &srtFiles ) const;
+                QStringList getTranscodeArgs( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName, const std::list< NMediaManager::NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NMediaManager::NCore::SLanguageInfo, QString > > & subIdxFiles ) const;
 
                 std::shared_ptr< NSABUtils::CMediaInfo > getMediaInfo( const QFileInfo &fi );
                 std::shared_ptr< NSABUtils::CMediaInfo > getMediaInfo( const QString &fileName );

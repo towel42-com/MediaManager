@@ -31,11 +31,11 @@ namespace NMediaManager
     {
         namespace NCore
         {
-            QStringList CPreferences::getTranscodeArgs( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName, const std::list< NMediaManager::NCore::SLanguageInfo > &srtFiles ) const
+            QStringList CPreferences::getTranscodeArgs( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName, const std::list< NMediaManager::NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NMediaManager::NCore::SLanguageInfo, QString > > & subIdxFiles ) const
             {
                 auto transcodeNeeded = STranscodeNeeded( mediaInfo, this );
 
-                if ( !transcodeNeeded.transcodeNeeded() && srtFiles.empty() )
+                if ( !transcodeNeeded.transcodeNeeded() && srtFiles.empty() && subIdxFiles.empty() )
                     return {};
 
                 auto retVal = QStringList()   //
@@ -56,6 +56,16 @@ namespace NMediaManager
                 retVal << "-i" << srcName;   //
                 for ( auto &&ii : srtFiles )
                     retVal << "-i" << ii.path();
+
+                for( auto && subIDXPair : subIdxFiles)
+                {
+                    retVal
+                        << "-f" << "vobsub"   //  must set the filename
+                        << "-sub_name" << subIDXPair.second //
+                        << "-i" << subIDXPair.first.path()  //
+                        ;
+                }
+
 
                 retVal << "-map_metadata"
                        << "0"   //
@@ -147,6 +157,18 @@ namespace NMediaManager
                            << QString( "-metadata:s:s:%1" ).arg( subTitleStreamNum ) << QString( "language=%1" ).arg( srtFile.isoCode() )   //
                            << QString( "-metadata:s:s:%1" ).arg( subTitleStreamNum ) << QString( "handler_name=%1" ).arg( srtFile.language() )   //
                            << QString( "-metadata:s:s:%1" ).arg( subTitleStreamNum ) << QString( "title=%1" ).arg( srtFile.displayName() )   //
+                        ;
+                    subTitleStreamNum++;
+                }
+
+                for ( auto &&subIdxPair : subIdxFiles )
+                {
+                    retVal << "-map" << QString( "%1:0?" ).arg( fileNum++ )   //
+                           << "-map" << QString( "0:s:%1?" ).arg( subTitleStreamNum )   //
+                           << QString( "-c:s:%1" ).arg( subTitleStreamNum ) << "copy"
+                           << QString( "-metadata:s:s:%1" ).arg( subTitleStreamNum ) << QString( "language=%1" ).arg( subIdxPair.first.isoCode() )   //
+                           << QString( "-metadata:s:s:%1" ).arg( subTitleStreamNum ) << QString( "handler_name=%1" ).arg( subIdxPair.first.language() )   //
+                           << QString( "-metadata:s:s:%1" ).arg( subTitleStreamNum ) << QString( "title=%1" ).arg( subIdxPair.first.displayName() )   //
                         ;
                     subTitleStreamNum++;
                 }
