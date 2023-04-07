@@ -56,7 +56,7 @@ namespace NMediaManager
 
         QStringList CTranscodeModel::dirModelFilter() const
         {
-            return NPreferences::NCore::CPreferences::instance()->getVideoDecoderExtensions( QStringList() << "*.nfo" );
+            return NPreferences::NCore::CPreferences::instance()->getVideoExtensions( QStringList() << "*.nfo" );
         }
 
         std::optional< NMediaManager::NModels::TItemStatus > CTranscodeModel::computeItemStatus( const QModelIndex &idx ) const
@@ -130,6 +130,7 @@ namespace NMediaManager
         {
             if ( treeNode.fIsFile )
             {
+                auto nodePath = treeNode.fullPath();
                 auto isSubFile = NPreferences::NCore::CPreferences::instance()->isSubtitleFile( treeNode.fullPath(), false );
                 auto useAsParent = [ isSubFile, this ]( QStandardItem *item )
                 {
@@ -159,12 +160,13 @@ namespace NMediaManager
                 return true;
 
             //qDebug() << fileInfo;
+            bool hasSubtitleFile = false;
             auto srtFiles = getSRTFilesForMKV( fileInfo, countOnly );
+            auto dir = fileInfo.absoluteDir();
             if ( !srtFiles.isEmpty() )
             {
                 //for ( auto && ii : tree )
                 //    qDebug() << ii;
-                auto dir = fileInfo.absoluteDir();
                 for ( auto &&ii : srtFiles )
                 {
                     //qDebug() << ii.absoluteFilePath();
@@ -182,21 +184,37 @@ namespace NMediaManager
                         srtRow.updateName( dir );
                     }
                     tree.emplace_back( std::move( srtRow ) );
+                    hasSubtitleFile = true;
                 }
 
                 //for ( auto && ii : tree )
                 //    qDebug() << ii;
-                return true;
+                //return true;
             }
             auto idxSub = getIDXSUBFilesForMKV( fileInfo );
             if ( idxSub.has_value() )
             {
-                tree.emplace_back( getItemRow( idxSub.value().first ) );
-                tree.emplace_back( getItemRow( idxSub.value().second ) );
-                return true;
+                if ( ( alreadyAdded.find( idxSub.value().first.absoluteFilePath() ) == alreadyAdded.end() ) && ( alreadyAdded.find( idxSub.value().second.absoluteFilePath() ) == alreadyAdded.end() ) )
+                {
+                    alreadyAdded.insert( idxSub.value().first.absoluteFilePath() );
+                    alreadyAdded.insert( idxSub.value().second.absoluteFilePath() );
+
+                    auto idxRow = getItemRow( idxSub.value().first );
+                    if ( dir != idxRow.fileInfo().absoluteDir() )
+                        idxRow.updateName( dir );
+
+                    auto subRow = getItemRow( idxSub.value().second );
+                    if ( dir != subRow.fileInfo().absoluteDir() )
+                        subRow.updateName( dir );
+
+                    tree.emplace_back( idxRow );
+                    tree.emplace_back( subRow );
+                    hasSubtitleFile = true;
+                }
+                //return true;
             }
 
-            return false;
+            return hasSubtitleFile;
         }
 
         void CTranscodeModel::postFileFunction( bool aOK, const QFileInfo &fileInfo, TParentTree & /*tree*/, bool countOnly )
@@ -225,7 +243,7 @@ namespace NMediaManager
                 progressDlg()->setValue( 0 );
         }
 
-        bool CTranscodeModel::setupProcessItem( SProcessInfo &processInfo, const QString &path, const std::list< NCore::SLanguageInfo > &srtFiles, const std::list< NCore::SLanguageInfo > &/*subIDXFiles*/, bool displayOnly ) const
+        bool CTranscodeModel::setupProcessItem( SProcessInfo &processInfo, const QString &path, const std::list< NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NCore::SLanguageInfo, QString > > &subIDXFiles, bool displayOnly ) const
         {
             if ( !processInfo.fItem )
             {
@@ -274,6 +292,16 @@ namespace NMediaManager
                 processInfo.fAncillary << langFile.path();
             }
 
+            for ( auto &&langFile : subIDXFiles )
+            {
+                if ( !checkProcessItemExists( langFile.first.path(), processInfo.fItem ) )
+                    return false;
+                processInfo.fAncillary << langFile.first.path();
+                if ( !checkProcessItemExists( langFile.second, processInfo.fItem ) )
+                    return false;
+                processInfo.fAncillary << langFile.second;
+            }
+
             return true;
         }
 
@@ -298,7 +326,7 @@ namespace NMediaManager
 
             fFirstProcess = true;
 
-            aOK = processTranscoding( processInfo, srtFiles.second, item, displayOnly );
+            aOK = processTranscoding( processInfo, srtFiles.second, subIDXPairFiles.second, item, displayOnly );
 
             if ( aOK )
             {
@@ -320,7 +348,7 @@ namespace NMediaManager
             return std::move( std::make_pair( aOK, processInfo.fItem ) );
         }
 
-        bool CTranscodeModel::processTranscoding( SProcessInfo &processInfo, const std::list< NCore::SLanguageInfo > &srtFiles, const QStandardItem *item, bool displayOnly )
+        bool CTranscodeModel::processTranscoding( SProcessInfo &processInfo, const std::list< NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NCore::SLanguageInfo, QString > > &subIdxFiles, const QStandardItem *item, bool displayOnly )
         {
             if ( !isMediaFile( item ) || item->data( ECustomRoles::eIsDir ).toBool() )
                 return true;
@@ -350,7 +378,7 @@ namespace NMediaManager
                 processInfo.fProgressLabel = transcodeNeeded.getProgressLabelHeader( getDispName( processInfo.fOldName ), tmp, getDispName( processInfo.primaryNewName() ) );
 
                 processInfo.fTimeStamps = NSABUtils::NFileUtils::timeStamps( processInfo.fOldName );
-                processInfo.fArgs = NPreferences::NCore::CPreferences::instance()->getTranscodeArgs( mediaInfo, processInfo.fOldName, processInfo.primaryNewName(), srtFiles );
+                processInfo.fArgs = NPreferences::NCore::CPreferences::instance()->getTranscodeArgs( mediaInfo, processInfo.fOldName, processInfo.primaryNewName(), srtFiles, subIdxFiles );
             }
             return aOK;
         }
@@ -373,11 +401,7 @@ namespace NMediaManager
                     auto forcedItem = getItem( jj, EColumns::eForced );
                     auto sdhItem = getItem( jj, EColumns::eSDH );
 
-                    auto srtFileItem = new QStandardItem( tr( "'%2' - Default: %3 Forced : %4 SDH : %5" )
-                                                              .arg( jj->text() )
-                                                              .arg( ( defaultItem && defaultItem->checkState() == Qt::Checked ) ? "Yes" : "No" )
-                                                              .arg( ( forcedItem && forcedItem->checkState() == Qt::Checked ) ? "Yes" : "No" )
-                                                              .arg( ( sdhItem && sdhItem->checkState() == Qt::Checked ) ? "Yes" : "No" ) );
+                    auto srtFileItem = new QStandardItem( tr( "'%2' - Default: %3 Forced : %4 SDH : %5" ).arg( jj->text() ).arg( ( defaultItem && defaultItem->checkState() == Qt::Checked ) ? "Yes" : "No" ).arg( ( forcedItem && forcedItem->checkState() == Qt::Checked ) ? "Yes" : "No" ).arg( ( sdhItem && sdhItem->checkState() == Qt::Checked ) ? "Yes" : "No" ) );
                     languageItem->appendRow( srtFileItem );
                 }
             }
@@ -544,7 +568,7 @@ namespace NMediaManager
             return true;
         }
 
-        std::pair< std::list< std::pair< QStandardItem *, QStandardItem * > >, std::list< NCore::SLanguageInfo > > CTranscodeModel::pairSubIDX( const std::list< QStandardItem * > &idxFiles, const std::list< QStandardItem * > &subFiles ) const
+        std::pair< std::list< std::pair< QStandardItem *, QStandardItem * > >, std::list< std::pair< NCore::SLanguageInfo, QString > > > CTranscodeModel::pairSubIDX( const std::list< QStandardItem * > &idxFiles, const std::list< QStandardItem * > &subFiles ) const
         {
             if ( idxFiles.empty() || subFiles.empty() || ( idxFiles.size() != subFiles.size() ) )
                 return {};
@@ -557,14 +581,20 @@ namespace NMediaManager
             }
 
             std::list< std::pair< QStandardItem *, QStandardItem * > > retVal;
-            std::list< NCore::SLanguageInfo > langInfoFiles;
+            std::list< std::pair< NCore::SLanguageInfo, QString > > langInfoFiles;
             for ( auto &&ii : idxFiles )
             {
-                auto baseName = QFileInfo( ii->data( ECustomRoles::eAbsFilePath ).toString() ).completeBaseName();
+                auto currIDX = ii->data( ECustomRoles::eAbsFilePath ).toString();
+
+                auto baseName = QFileInfo( currIDX ).completeBaseName();
                 auto pos = subMap.find( baseName );
                 if ( pos == subMap.end() )
                     continue;
                 retVal.emplace_back( std::make_pair( ii, ( *pos ).second ) );
+                
+                auto currSUB = (*pos).second->data( ECustomRoles::eAbsFilePath ).toString();
+                auto langInfo = NCore::SLanguageInfo( QFileInfo( currIDX ) );
+                langInfoFiles.emplace_back( std::make_pair( langInfo, currSUB ) );
             }
             return std::move( std::make_pair( retVal, langInfoFiles ) );
         }
