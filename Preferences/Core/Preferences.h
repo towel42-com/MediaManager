@@ -461,9 +461,6 @@ namespace NMediaManager
 
                 QString getMKVValidatorEXE() const;
 
-                void setMKVMergeEXE( const QString &value );
-                QString getMKVMergeEXE() const;
-
                 void setMKVPropEditEXE( const QString &value );
                 QString getMKVPropEditEXE() const;
 

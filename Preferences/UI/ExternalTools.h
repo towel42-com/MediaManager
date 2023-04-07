@@ -54,17 +54,14 @@ namespace NMediaManager
                 virtual void save() override;
                 virtual QStringList pageName() const override { return QStringList( { "External Tools" } ); }
             public Q_SLOTS:
-                void slotSelectMKVMergeExe();
                 void slotSelectMKVPropEditExe();
                 void slotSelectFFMpegExe();
                 void slotSelectFFMpegEmbyExe();
                 void slotSelectFFProbeExe();
 
                 void slotFFToolChanged();
-                void slotMKVNixToolChanged();
 
             private:
-                void mkvnixToolChanged( QLineEdit *le );
                 void fftoolToolChanged( QLineEdit *le );
 
                 void updateOtherTool( QObject *sender, const std::pair< QLineEdit *, QString > &lhs, const std::pair< QLineEdit *, QString > &rhs );

@@ -40,11 +40,6 @@ namespace NMediaManager
             {
                 fImpl->setupUi( this );
 
-                connect( fImpl->btnSelectMKVMergeExe, &QToolButton::clicked, this, &CExternalTools::slotSelectMKVMergeExe );
-                fImpl->mkvMergeExe->setCheckExists( true );
-                fImpl->mkvMergeExe->setCheckIsFile( true );
-                fImpl->mkvMergeExe->setCheckIsExecutable( true );
-
                 connect( fImpl->btnSelectMKVPropEditExe, &QToolButton::clicked, this, &CExternalTools::slotSelectMKVPropEditExe );
                 fImpl->mkvPropEditExe->setCheckExists( true );
                 fImpl->mkvPropEditExe->setCheckIsFile( true );
@@ -67,30 +62,13 @@ namespace NMediaManager
 
                 connect( fImpl->ffmpegExe, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CExternalTools::slotFFToolChanged );
                 connect( fImpl->ffprobeExe, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CExternalTools::slotFFToolChanged );
-                connect( fImpl->mkvMergeExe, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CExternalTools::slotMKVNixToolChanged );
-                connect( fImpl->mkvPropEditExe, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CExternalTools::slotMKVNixToolChanged );
 
                 fftoolToolChanged( fImpl->ffmpegExe );
                 fftoolToolChanged( fImpl->ffprobeExe );
-                mkvnixToolChanged( fImpl->mkvMergeExe );
-                mkvnixToolChanged( fImpl->mkvPropEditExe );
             }
 
             CExternalTools::~CExternalTools()
             {
-            }
-
-            void CExternalTools::slotSelectMKVMergeExe()
-            {
-                auto exe = QFileDialog::getOpenFileName( this, tr( "Select MKVMerge Executable:" ), fImpl->mkvMergeExe->text(), "mkvmerge Executable (mkvmerge.exe);;All Executables (*.exe);;All Files (*.*)" );
-                if ( !exe.isEmpty() && !QFileInfo( exe ).isExecutable() )
-                {
-                    QMessageBox::critical( this, "Not an Executable", tr( "The file '%1' is not an executable" ).arg( exe ) );
-                    return;
-                }
-
-                if ( !exe.isEmpty() )
-                    fImpl->mkvMergeExe->setText( exe );
             }
 
             void CExternalTools::slotSelectMKVPropEditExe()
@@ -181,16 +159,6 @@ namespace NMediaManager
                     otherLE->setText( otherEXE );
             }
 
-            void CExternalTools::slotMKVNixToolChanged()
-            {
-                mkvnixToolChanged( dynamic_cast< QLineEdit * >( sender() ) );
-            }
-
-            void CExternalTools::mkvnixToolChanged( QLineEdit *le )
-            {
-                updateOtherTool( le, { fImpl->mkvPropEditExe, "mkvpropedit" }, { fImpl->mkvMergeExe, "mkvmerge" } );
-            }
-
             void CExternalTools::slotFFToolChanged()
             {
                 fftoolToolChanged( dynamic_cast< QLineEdit * >( sender() ) );
@@ -204,7 +172,6 @@ namespace NMediaManager
             void CExternalTools::load()
             {
                 fImpl->useCustomExternalTools->setChecked( NPreferences::NCore::CPreferences::instance()->getUseCustomExternalTools() );
-                fImpl->mkvMergeExe->setText( NPreferences::NCore::CPreferences::instance()->getMKVMergeEXE() );
                 fImpl->mkvPropEditExe->setText( NPreferences::NCore::CPreferences::instance()->getMKVPropEditEXE() );
                 fImpl->ffmpegExe->setText( NPreferences::NCore::CPreferences::instance()->getFFMpegEXE() );
                 fImpl->ffmpegEmbyExe->setText( NPreferences::NCore::CPreferences::instance()->getFFMpegEmbyEXE() );
@@ -214,7 +181,6 @@ namespace NMediaManager
             void CExternalTools::save()
             {
                 NPreferences::NCore::CPreferences::instance()->setUseCustomExternalTools( fImpl->useCustomExternalTools->isChecked() );
-                NPreferences::NCore::CPreferences::instance()->setMKVMergeEXE( fImpl->mkvMergeExe->text() );
                 NPreferences::NCore::CPreferences::instance()->setMKVPropEditEXE( fImpl->mkvPropEditExe->text() );
                 NPreferences::NCore::CPreferences::instance()->setFFMpegEXE( fImpl->ffmpegExe->text() );
                 NPreferences::NCore::CPreferences::instance()->setFFMpegEmbyEXE( fImpl->ffmpegEmbyExe->text() );

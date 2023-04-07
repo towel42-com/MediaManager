@@ -1302,22 +1302,6 @@ namespace NMediaManager
                 return getExternalToolPath( "", "mkvalidator.exe", qApp->applicationDirPath() );
             }
 
-            void CPreferences::setMKVMergeEXE( const QString &value )
-            {
-                if ( value == getMKVMergeEXE() )
-                    return;
-
-                QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eExtToolsPrefs ) );
-                settings.setValue( "MKVMergeEXE", value );
-                emitSigPreferencesChanged( EPreferenceType::eExtToolsPrefs );
-            }
-
-            QString CPreferences::getMKVMergeEXE() const
-            {
-                return getExternalToolPath( "MKVMergeEXE", "mkvmerge.exe", "C:/Program Files/MKVToolNix" );
-            }
-
             void CPreferences::setMKVPropEditEXE( const QString &value )
             {
                 if ( value == getMKVPropEditEXE() )
