@@ -168,11 +168,11 @@ namespace NMediaManager
                 // ffmpeg results
                 QStringList availableEncoderMediaFormats( bool verbose ) const;   // if true returns name - desc, otherwise name only
                 NSABUtils::TFormatMap getEncoderFormatExtensionsMap() const;
-                QStringList getExtensionsForEncoderMediaFormat( const QString &format, const QStringList &exclude = {} ) const;
+                QStringList getEncoderExtensionsForFormat( const QString &format, const QStringList &exclude = {} ) const;
 
                 QStringList availableDecoderMediaFormats( bool verbose ) const;   // if true returns name - desc, otherwise name only
                 NSABUtils::TFormatMap getDecoderFormatExtensionsMap() const;
-                QStringList getExtensionsForDecoderMediaFormat( const QString &format, const QStringList &exclude = {} ) const;
+                QStringList getDecoderExtensionsForFormat( const QString &format, const QStringList &exclude = {} ) const;
 
                 QStringList availableVideoEncodingCodecs( bool verbose ) const;   // if true returns name - desc, otherwise name only
                 QStringList availableVideoDecodingCodecs( bool verbose ) const;   // if true returns name - desc, otherwise name only
@@ -421,6 +421,10 @@ namespace NMediaManager
 
                 QStringList getExtensionsToDelete() const;
                 bool isPathToDelete( const QString &path ) const;
+
+                QStringList getVideoExtensions( const QStringList &exclude = {} ) const;
+                QStringList getAudioExtensions( const QStringList &exclude = {} ) const;
+                QStringList getSubtitleExtensions( const QStringList &exclude = {} ) const;
 
                 QStringList getVideoEncoderExtensions( const QStringList &exclude = {} ) const;
                 QStringList getAudioEncoderExtensions( const QStringList &exclude = {} ) const;

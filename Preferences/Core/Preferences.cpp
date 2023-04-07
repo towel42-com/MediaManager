@@ -359,7 +359,22 @@ namespace NMediaManager
                 return retVal;
             }
 
-            QStringList CPreferences::getVideoEncoderExtensions( const QStringList & exclude ) const
+            QStringList CPreferences::getVideoExtensions( const QStringList &exclude /*= {} */ ) const
+            {
+                return getMediaFormats()->getVideoExtensions( exclude );
+            }
+
+            QStringList CPreferences::getAudioExtensions( const QStringList &exclude /*= {} */ ) const
+            {
+                return getMediaFormats()->getAudioExtensions( exclude );
+            }
+
+            QStringList CPreferences::getSubtitleExtensions( const QStringList &exclude /*= {} */ ) const
+            {
+                return getMediaFormats()->getSubtitleExtensions( exclude );
+            }
+
+            QStringList CPreferences::getVideoEncoderExtensions( const QStringList &exclude ) const
             {
                 return getMediaFormats()->getVideoEncoderExtensions( exclude );
             }
@@ -442,7 +457,7 @@ namespace NMediaManager
                 return isEncoderFormat( QFileInfo( fileName ), formatName );
             }
 
-            bool CPreferences::isEncoderFormat( const QFileInfo &fi , const QString &formatName ) const
+            bool CPreferences::isEncoderFormat( const QFileInfo &fi, const QString &formatName ) const
             {
                 return fMediaFormats->isEncoderFormat( fi.suffix(), formatName );
             }
@@ -1827,12 +1842,12 @@ namespace NMediaManager
                 return fMediaFormats.get();
             }
 
-            QStringList CPreferences::getExtensionsForEncoderMediaFormat( const QString &formatName, const QStringList &exclude ) const
+            QStringList CPreferences::getEncoderExtensionsForFormat( const QString &formatName, const QStringList &exclude ) const
             {
                 return getMediaFormats()->getEncoderExtensionsForFormat( formatName, exclude );
             }
 
-            QStringList CPreferences::getExtensionsForDecoderMediaFormat( const QString &formatName, const QStringList &exclude ) const
+            QStringList CPreferences::getDecoderExtensionsForFormat( const QString &formatName, const QStringList &exclude ) const
             {
                 return getMediaFormats()->getDecoderExtensionsForFormat( formatName, exclude );
             }
@@ -2250,7 +2265,7 @@ namespace NMediaManager
             bool CPreferences::isMediaFile( const QFileInfo &fi ) const
             {
                 return isFileWithExtension(
-                    fi, [ this ]() { return getMediaFormats()->getVideoDecoderExtensions(); }, fMediaExtensionsHash, fIsMediaExtension );
+                    fi, [ this ]() { return getMediaFormats()->getVideoExtensions(); }, fMediaExtensionsHash, fIsMediaExtension );
             }
 
             // only return true for X_Lang.srt files or subs directories
@@ -2262,7 +2277,7 @@ namespace NMediaManager
                 }
 
                 return isFileWithExtension(
-                    fi, [ this ]() { return getMediaFormats()->getSubtitleDecoderExtensions(); }, fSubtitleExtensionsHash, fIsSubtitleExtension );
+                    fi, [ this ]() { return getMediaFormats()->getSubtitleExtensions(); }, fSubtitleExtensionsHash, fIsSubtitleExtension );
             }
 
             void CPreferences::emitSigPreferencesChanged( EPreferenceTypes preferenceTypes )

@@ -17,7 +17,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>2</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="containersTab">
       <attribute name="title">
@@ -50,22 +50,6 @@
        <string>Video</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout">
-       <item row="0" column="0">
-        <widget class="QGroupBox" name="videoEncodingCodecsGB">
-         <property name="title">
-          <string>Video Encoding Codecs:</string>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_7">
-          <item>
-           <widget class="QListWidget" name="videoEncodingCodecs">
-            <property name="sortingEnabled">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
        <item row="0" column="1">
         <widget class="QGroupBox" name="videoDecodingCodecsGB">
          <property name="title">
@@ -114,14 +98,42 @@
          </layout>
         </widget>
        </item>
-       <item row="2" column="0" colspan="2">
-        <widget class="QGroupBox" name="videoExtensionsGB">
+       <item row="0" column="0">
+        <widget class="QGroupBox" name="videoEncodingCodecsGB">
          <property name="title">
-          <string>Video Extensions:</string>
+          <string>Video Encoding Codecs:</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_7">
+          <item>
+           <widget class="QListWidget" name="videoEncodingCodecs">
+            <property name="sortingEnabled">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QGroupBox" name="videoDecoderExtensionsGB">
+         <property name="title">
+          <string>Video Decoder Extensions:</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_22">
+          <item>
+           <widget class="QListWidget" name="videoDecoderExtensions"/>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QGroupBox" name="videoEncoderExtensionsGB">
+         <property name="title">
+          <string>Video Encoder Extensions:</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_5">
           <item>
-           <widget class="QListWidget" name="videoExtensions">
+           <widget class="QListWidget" name="videoEncoderExtensions">
             <property name="sortingEnabled">
              <bool>true</bool>
             </property>
@@ -137,14 +149,14 @@
        <string>Audio</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_2">
-       <item row="0" column="0">
-        <widget class="QGroupBox" name="audioEncodingCodecsGB">
+       <item row="1" column="1">
+        <widget class="QGroupBox" name="audioDecodersGB">
          <property name="title">
-          <string>Audio Encoding Codecs:</string>
+          <string>Audio Decoders:</string>
          </property>
-         <layout class="QVBoxLayout" name="verticalLayout_13">
+         <layout class="QVBoxLayout" name="verticalLayout_10">
           <item>
-           <widget class="QListWidget" name="audioEncodingCodecs">
+           <widget class="QListWidget" name="audioDecoders">
             <property name="sortingEnabled">
              <bool>true</bool>
             </property>
@@ -169,6 +181,22 @@
          </layout>
         </widget>
        </item>
+       <item row="0" column="0">
+        <widget class="QGroupBox" name="audioEncodingCodecsGB">
+         <property name="title">
+          <string>Audio Encoding Codecs:</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_13">
+          <item>
+           <widget class="QListWidget" name="audioEncodingCodecs">
+            <property name="sortingEnabled">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
        <item row="1" column="0">
         <widget class="QGroupBox" name="audioEncodersGB">
          <property name="title">
@@ -185,30 +213,26 @@
          </layout>
         </widget>
        </item>
-       <item row="1" column="1">
-        <widget class="QGroupBox" name="audioDecodersGB">
+       <item row="2" column="1">
+        <widget class="QGroupBox" name="audioDecoderExtensionsGB">
          <property name="title">
-          <string>Audio Decoders:</string>
+          <string>Audio Decoder Extensions:</string>
          </property>
-         <layout class="QVBoxLayout" name="verticalLayout_10">
+         <layout class="QVBoxLayout" name="verticalLayout_2">
           <item>
-           <widget class="QListWidget" name="audioDecoders">
-            <property name="sortingEnabled">
-             <bool>true</bool>
-            </property>
-           </widget>
+           <widget class="QListWidget" name="audioDecoderExtensions"/>
           </item>
          </layout>
         </widget>
        </item>
-       <item row="2" column="0" colspan="2">
-        <widget class="QGroupBox" name="audioExtensionsGB">
+       <item row="2" column="0">
+        <widget class="QGroupBox" name="audioEncoderExtensionsGB">
          <property name="title">
-          <string>Audio Extensions:</string>
+          <string>Audio Encoder Extensions:</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_11">
           <item>
-           <widget class="QListWidget" name="audioExtensions">
+           <widget class="QListWidget" name="audioEncoderExtensions">
             <property name="sortingEnabled">
              <bool>true</bool>
             </property>
@@ -256,22 +280,6 @@
          </layout>
         </widget>
        </item>
-       <item row="1" column="0">
-        <widget class="QGroupBox" name="subtitleEncodersGB">
-         <property name="title">
-          <string>Subtitle Encoders:</string>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_15">
-          <item>
-           <widget class="QListWidget" name="subtitleEncoders">
-            <property name="sortingEnabled">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
        <item row="1" column="1">
         <widget class="QGroupBox" name="subtitleDecodersGB">
          <property name="title">
@@ -288,14 +296,42 @@
          </layout>
         </widget>
        </item>
-       <item row="2" column="0" colspan="2">
-        <widget class="QGroupBox" name="subtitleExtensionsGB">
+       <item row="1" column="0">
+        <widget class="QGroupBox" name="subtitleEncodersGB">
          <property name="title">
-          <string>Subtitle Extensions:</string>
+          <string>Subtitle Encoders:</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_15">
+          <item>
+           <widget class="QListWidget" name="subtitleEncoders">
+            <property name="sortingEnabled">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QGroupBox" name="subtitleDecoderExtensionsGB">
+         <property name="title">
+          <string>Subtitle Decoder Extensions:</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_23">
+          <item>
+           <widget class="QListWidget" name="subtitleDecoderExtensions"/>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QGroupBox" name="subtitleEncoderExtensionsGB">
+         <property name="title">
+          <string>Subtitle Encoder Extensions:</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_14">
           <item>
-           <widget class="QListWidget" name="subtitleExtensions">
+           <widget class="QListWidget" name="subtitleEncoderExtensions">
             <property name="sortingEnabled">
              <bool>true</bool>
             </property>
@@ -368,24 +404,27 @@
  </widget>
  <tabstops>
   <tabstop>tabWidget</tabstop>
-  <tabstop>recomputeBtn</tabstop>
   <tabstop>supportedFormats</tabstop>
   <tabstop>videoEncodingCodecs</tabstop>
   <tabstop>videoDecodingCodecs</tabstop>
   <tabstop>videoEncoders</tabstop>
   <tabstop>videoDecoders</tabstop>
-  <tabstop>videoExtensions</tabstop>
+  <tabstop>videoEncoderExtensions</tabstop>
+  <tabstop>videoDecoderExtensions</tabstop>
   <tabstop>audioEncodingCodecs</tabstop>
   <tabstop>audioDecodingCodecs</tabstop>
   <tabstop>audioEncoders</tabstop>
   <tabstop>audioDecoders</tabstop>
-  <tabstop>audioExtensions</tabstop>
+  <tabstop>audioEncoderExtensions</tabstop>
+  <tabstop>audioDecoderExtensions</tabstop>
   <tabstop>subtitleEncodingCodecs</tabstop>
   <tabstop>subtitleDecodingCodecs</tabstop>
   <tabstop>subtitleEncoders</tabstop>
   <tabstop>subtitleDecoders</tabstop>
-  <tabstop>subtitleExtensions</tabstop>
+  <tabstop>subtitleEncoderExtensions</tabstop>
+  <tabstop>subtitleDecoderExtensions</tabstop>
   <tabstop>hwAccels</tabstop>
+  <tabstop>recomputeBtn</tabstop>
  </tabstops>
  <resources>
   <include location="../../SABUtils/resources/SABUtils.qrc"/>

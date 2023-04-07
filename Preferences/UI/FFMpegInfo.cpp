@@ -68,19 +68,22 @@ namespace NMediaManager
                 loadInfo( fImpl->videoDecodingCodecs, fImpl->videoDecodingCodecsGB, NPreferences::NCore::CPreferences::instance()->availableVideoDecodingCodecs( true ) );
                 loadInfo( fImpl->videoEncoders, fImpl->videoEncodersGB, NPreferences::NCore::CPreferences::instance()->availableVideoEncoders( true ) );
                 loadInfo( fImpl->videoDecoders, fImpl->videoDecodersGB, NPreferences::NCore::CPreferences::instance()->availableVideoDecoders( true ) );
-                loadInfo( fImpl->videoExtensions, fImpl->videoExtensionsGB, NPreferences::NCore::CPreferences::instance()->getVideoEncoderExtensions() );
+                loadInfo( fImpl->videoEncoderExtensions, fImpl->videoEncoderExtensionsGB, NPreferences::NCore::CPreferences::instance()->getVideoEncoderExtensions() );
+                loadInfo( fImpl->videoDecoderExtensions, fImpl->videoDecoderExtensionsGB, NPreferences::NCore::CPreferences::instance()->getVideoDecoderExtensions() );
 
                 loadInfo( fImpl->audioEncodingCodecs, fImpl->audioEncodingCodecsGB, NPreferences::NCore::CPreferences::instance()->availableAudioEncodingCodecs( true ) );
                 loadInfo( fImpl->audioDecodingCodecs, fImpl->audioDecodingCodecsGB, NPreferences::NCore::CPreferences::instance()->availableAudioDecodingCodecs( true ) );
                 loadInfo( fImpl->audioEncoders, fImpl->audioEncodersGB, NPreferences::NCore::CPreferences::instance()->availableAudioEncoders( true ) );
                 loadInfo( fImpl->audioDecoders, fImpl->audioDecodersGB, NPreferences::NCore::CPreferences::instance()->availableAudioDecoders( true ) );
-                loadInfo( fImpl->audioExtensions, fImpl->audioExtensionsGB, NPreferences::NCore::CPreferences::instance()->getAudioEncoderExtensions() );
+                loadInfo( fImpl->audioEncoderExtensions, fImpl->audioEncoderExtensionsGB, NPreferences::NCore::CPreferences::instance()->getAudioEncoderExtensions() );
+                loadInfo( fImpl->audioDecoderExtensions, fImpl->audioDecoderExtensionsGB, NPreferences::NCore::CPreferences::instance()->getAudioDecoderExtensions() );
 
                 loadInfo( fImpl->subtitleEncodingCodecs, fImpl->subtitleEncodingCodecsGB, NPreferences::NCore::CPreferences::instance()->availableSubtitleEncodingCodecs( true ) );
                 loadInfo( fImpl->subtitleDecodingCodecs, fImpl->subtitleDecodingCodecsGB, NPreferences::NCore::CPreferences::instance()->availableSubtitleDecodingCodecs( true ) );
                 loadInfo( fImpl->subtitleEncoders, fImpl->subtitleEncodersGB, NPreferences::NCore::CPreferences::instance()->availableSubtitleEncoders( true ) );
                 loadInfo( fImpl->subtitleDecoders, fImpl->subtitleDecodersGB, NPreferences::NCore::CPreferences::instance()->availableSubtitleDecoders( true ) );
-                loadInfo( fImpl->subtitleExtensions, fImpl->subtitleExtensionsGB, NPreferences::NCore::CPreferences::instance()->getSubtitleEncoderExtensions() );
+                loadInfo( fImpl->subtitleEncoderExtensions, fImpl->subtitleEncoderExtensionsGB, NPreferences::NCore::CPreferences::instance()->getSubtitleEncoderExtensions() );
+                loadInfo( fImpl->subtitleDecoderExtensions, fImpl->subtitleDecoderExtensionsGB, NPreferences::NCore::CPreferences::instance()->getSubtitleDecoderExtensions() );
 
                 loadInfo( fImpl->hwAccels, fImpl->hwAccelsGB, NPreferences::NCore::CPreferences::instance()->availableHWAccels( true ) );
             }
