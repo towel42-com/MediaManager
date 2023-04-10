@@ -130,7 +130,10 @@ namespace NMediaManager
             auto knownStrings = NPreferences::NCore::CPreferences::instance()->getKnownExtendedStrings();
             for ( auto &&knownString : knownStrings )
             {
-                auto regExpStr = "\\W(?<word>" + QRegularExpression::escape( knownString ) + ")(\\W|$)";
+                knownString = QRegularExpression::escape( knownString );
+                knownString = knownString.replace( R"(\ )", "." );
+
+                auto regExpStr = "\\W(?<word>" + knownString + ")(\\W|$)";
                 auto regExp = QRegularExpression( regExpStr, QRegularExpression::CaseInsensitiveOption );
                 auto match = regExp.match( retVal );
                 if ( match.hasMatch() )
