@@ -1361,6 +1361,9 @@ namespace NMediaManager
             NSABUtils::CAutoWaitCursor awc;
 
             auto fi = QFileInfo( fileName );
+            if ( fi.isDir() )
+                return true;
+
             QString localMsg;
             bool aOK = true;
             if ( !ignoreIsMediaFile && !NPreferences::NCore::CPreferences::instance()->isMediaFile( fi ) )
