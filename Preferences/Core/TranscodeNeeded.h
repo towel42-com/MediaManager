@@ -44,6 +44,7 @@ namespace NMediaManager
                 STranscodeNeeded( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const CPreferences *prefs );
                 STranscodeNeeded( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo );
 
+                bool isLoaded() const;
                 std::optional< QString > getFormatMessage() const;
                 std::optional< QString > getVideoCodecMessage() const;
                 std::optional< QString > getAudioCodecMessage() const;
