@@ -692,7 +692,9 @@ namespace NMediaManager
                                 }
 
                                 QString msg;
-                                auto aOK = setMediaTags( newName, transformResult, msg );
+                                bool aOK = true;
+                                if ( QFileInfo( newName ).isFile()  )
+                                    aOK = setMediaTags( newName, transformResult, msg );
                                 if ( progressDlg() )
                                 {
                                     progressDlg()->setValue( progressDlg()->value() + 1 );
