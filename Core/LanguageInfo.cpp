@@ -552,7 +552,7 @@ namespace NMediaManager
             auto regExp1 = QRegularExpression( regExpStr );
             Q_ASSERT( regExp1.isValid() );
 
-            regExpStr = R"((?<filename>[^<>:"\/\\|?*]+)\.(((?<isocode>[A-Za-z]{2})(?<country>_[A-Za-z]{2}(\d+)?)?$)|(?<langname>[A-Za-z]{2,3}$)))";
+            regExpStr = R"((?<filename>[^<>:"\/\\|?*]+)(\.|-)(((?<isocode>[A-Za-z]{2})(?<country>_[A-Za-z]{2}(\d+)?)?$)|(?<langname>[A-Za-z]{2,3}$)))";
             auto regExp2 = QRegularExpression( regExpStr );
             Q_ASSERT( regExp2.isValid() );
 
