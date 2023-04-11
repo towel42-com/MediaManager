@@ -25,13 +25,17 @@
 #include "Core/LanguageInfo.h"
 #include "SABUtils/MediaInfo.h"
 
+#include <QTextCodec>
+#include <QFile>
+#include <QDebug>
+
 namespace NMediaManager
 {
     namespace NPreferences
     {
         namespace NCore
         {
-            QStringList CPreferences::getTranscodeArgs( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName, const std::list< NMediaManager::NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NMediaManager::NCore::SLanguageInfo, QString > > & subIdxFiles ) const
+            QStringList CPreferences::getTranscodeArgs( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName, const std::list< NMediaManager::NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NMediaManager::NCore::SLanguageInfo, QString > > &subIdxFiles ) const
             {
                 auto transcodeNeeded = STranscodeNeeded( mediaInfo, this );
 
@@ -55,17 +59,33 @@ namespace NMediaManager
 
                 retVal << "-i" << srcName;   //
                 for ( auto &&ii : srtFiles )
+                {
+                    //retVal << "-sub_charenc" << "cp1252";
                     retVal << "-i" << ii.path();
 
-                for( auto && subIDXPair : subIdxFiles)
+                    //QFile file( ii.path() );
+                    //file.open( QFile::ReadOnly );
+                    //if ( file.isOpen() )
+                    //{
+                    //    auto bom = file.peek( 4 );
+                    //    qDebug() << ii.path() << "BOM:" << bom;
+                    //    auto codec = QTextCodec::codecForUtfText( bom, nullptr );
+                    //    if ( codec )
+                    //    {
+                    //        retVal << "-sub_charenc"
+                    //               << "cp1252";
+                    //         // codec->name();
+                    //    }
+                    //}
+                }
+                for ( auto &&subIDXPair : subIdxFiles )
                 {
-                    retVal
-                        << "-f" << "vobsub"   //  must set the filename
-                        << "-sub_name" << subIDXPair.second //
-                        << "-i" << subIDXPair.first.path()  //
+                    retVal << "-f"
+                           << "vobsub"   //  must set the filename
+                           << "-sub_name" << subIDXPair.second   //
+                           << "-i" << subIDXPair.first.path()   //
                         ;
                 }
-
 
                 retVal << "-map_metadata"
                        << "0"   //
@@ -75,8 +95,14 @@ namespace NMediaManager
                 if ( transcodeNeeded.formatOnly() || !transcodeNeeded.transcodeNeeded() )
                 {
                     // already HVEC but wrong container, just copy
-                    retVal << "-map" << "0:v?" << "-c:v" << "copy"   //
-                           << "-map" << "0:a?" << "-c:a" << "copy"   //
+                    retVal << "-map"
+                           << "0:v?"
+                           << "-c:v"
+                           << "copy"   //
+                           << "-map"
+                           << "0:a?"
+                           << "-c:a"
+                           << "copy"   //
                         ;
                 }
                 else
@@ -142,11 +168,37 @@ namespace NMediaManager
                 }
 
                 auto numSubtitleStreams = mediaInfo->numSubtitleStreams();
+                auto subtitleCodecs = mediaInfo->allSubtitleCodecs();
                 int subTitleStreamNum = 0;
                 for ( int ii = 0; ii < numSubtitleStreams; ++ii )
                 {
                     retVal << "-map" << QString( "0:s:%1?" ).arg( subTitleStreamNum );
-                    retVal << QString( "-c:s:%1" ).arg( subTitleStreamNum++ ) << ( !isEncoderFormat( mediaInfo, "matroska" ) ? "srt" : "copy" );   // if the source is NOT MKV make sure the subtitles are SRT, otherwise just copy
+
+                    auto currCodec = subtitleCodecs[ ii ].toLower();
+                    auto subTitleCodec = QString( "copy" );
+                    if ( isEncoderFormat( mediaInfo, "matroska" ) )
+                    {
+                        if ( ( currCodec == "ass" ) || ( currCodec == "srt" )     || ( currCodec == "ssa" ) 
+                           || ( currCodec == "hdmv_pgs_subtitle" ) || ( currCodec == "subrip" ) || ( currCodec == "xsub" ) || ( currCodec == "dvdsub" ) )
+                            subTitleCodec = QString( "copy" );
+                        else
+                            subTitleCodec = "srt";
+                    }
+                    else if ( isEncoderFormat( mediaInfo, "mp4" ) )
+                    {
+                        if ( currCodec == "mov_text" )
+                            subTitleCodec = QString( "copy" );
+                        else
+                            subTitleCodec = "mov_text";
+                    }
+                    else if ( isEncoderFormat( mediaInfo, "mov" ) )
+                    {
+                        if ( currCodec == "mov_text" )
+                            subTitleCodec = QString( "copy" );
+                        else
+                            subTitleCodec = "mov_text";
+                    }
+                    retVal << QString( "-c:s:%1" ).arg( subTitleStreamNum++ ) << subTitleCodec;
                 }
 
                 int fileNum = 1;
@@ -165,8 +217,7 @@ namespace NMediaManager
                 {
                     retVal << "-map" << QString( "%1:0?" ).arg( fileNum++ )   //
                            << "-map" << QString( "0:s:%1?" ).arg( subTitleStreamNum )   //
-                           << QString( "-c:s:%1" ).arg( subTitleStreamNum ) << "copy"
-                           << QString( "-metadata:s:s:%1" ).arg( subTitleStreamNum ) << QString( "language=%1" ).arg( subIdxPair.first.isoCode() )   //
+                           << QString( "-c:s:%1" ).arg( subTitleStreamNum ) << "copy" << QString( "-metadata:s:s:%1" ).arg( subTitleStreamNum ) << QString( "language=%1" ).arg( subIdxPair.first.isoCode() )   //
                            << QString( "-metadata:s:s:%1" ).arg( subTitleStreamNum ) << QString( "handler_name=%1" ).arg( subIdxPair.first.language() )   //
                            << QString( "-metadata:s:s:%1" ).arg( subTitleStreamNum ) << QString( "title=%1" ).arg( subIdxPair.first.displayName() )   //
                         ;

@@ -1076,8 +1076,9 @@ namespace NMediaManager
                     { NSABUtils::EMediaTags::eVideoBitrateString, false },
                     { NSABUtils::EMediaTags::eOverAllBitrateString, false },
                     { NSABUtils::EMediaTags::eNumChannels, false },
-                    { NSABUtils::EMediaTags::eAudioSampleRateString, false },
-                    { NSABUtils::EMediaTags::eAllSubtitles, false },
+                    { NSABUtils::EMediaTags::eAudioSampleRateString, false }, 
+                    { NSABUtils::EMediaTags::eAllSubtitleLanguages, false },
+                    { NSABUtils::EMediaTags::eAllSubtitleCodecs, false },
                 };
 
                 if ( !settings.contains( "EnabledTags" ) )
