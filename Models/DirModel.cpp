@@ -1839,7 +1839,7 @@ namespace NMediaManager
 
         int CDirModel::getMediaSubtitlesLoc() const
         {
-            return getMediaColumn( NSABUtils::EMediaTags::eAllSubtitles );
+            return getMediaColumn( NSABUtils::EMediaTags::eAllSubtitleLanguages );
         }
 
         int CDirModel::getMediaCommentLoc() const
@@ -2226,7 +2226,7 @@ namespace NMediaManager
                     NSABUtils::EMediaTags::eVideoBitrateString,   //
                     NSABUtils::EMediaTags::eAllAudioCodecsDisp,   //
                     NSABUtils::EMediaTags::eAudioSampleRateString,   //
-                    NSABUtils::EMediaTags::eAllSubtitles,   //
+                    NSABUtils::EMediaTags::eAllSubtitleLanguages,   //
                     NSABUtils::EMediaTags::eComment   //
                 } );
 
