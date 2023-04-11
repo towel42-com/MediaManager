@@ -922,7 +922,8 @@ namespace NMediaManager
 
         bool CTranscodeModel::nameMatch( const QString &mkvBaseName, const QString &origSubtitleFile ) const
         {
-            if ( origSubtitleFile.startsWith( mkvBaseName ) && ( origSubtitleFile.length() > mkvBaseName.length() ) && ( origSubtitleFile[ mkvBaseName.length() ] == '.' ) )
+            auto nextChar = ( origSubtitleFile.length() > mkvBaseName.length() ) ? origSubtitleFile[ mkvBaseName.length() ] : QChar( 0 );
+            if ( origSubtitleFile.startsWith( mkvBaseName ) && !nextChar.isLetterOrNumber() )
                 return true;
 
             auto subtitleFile = origSubtitleFile;
@@ -951,7 +952,7 @@ namespace NMediaManager
                 auto dirs = relPath.split( QRegularExpression( R"([\/\\])" ) );
                 for ( auto &curr : dirs )
                 {
-                    if ( curr.toLower() == "subs" )
+                    if ( ( curr.toLower() == "subs" ) || ( curr.toLower() == "subtitles" ) )
                         continue;
                     if ( curr.toLower() == "." )
                         continue;
