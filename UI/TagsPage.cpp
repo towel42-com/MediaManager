@@ -73,7 +73,6 @@ namespace NMediaManager
 
         void CTagsPage::postNonQueuedRun( bool finalStep, bool canceled )
         {
-            emit sigStopStayAwake();
             if ( finalStep && !canceled )
                 load( true );
         }
