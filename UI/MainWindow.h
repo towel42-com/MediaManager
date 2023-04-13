@@ -92,8 +92,6 @@ namespace NMediaManager
             virtual void slotWindowChanged();
 
             virtual void slotLoadFinished( bool canceled );
-            virtual void slotStopStayAwake();
-            virtual void slotStartStayAwake();
             virtual void slotFileCheckFinished( bool aOK, const QString &msg );
             virtual void slotValidateDefaults();
             virtual void slotPreferencesChanged( NPreferences::EPreferenceTypes prefType );

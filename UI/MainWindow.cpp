@@ -202,8 +202,6 @@ namespace NMediaManager
         {
             connect( this, &CMainWindow::sigPreferencesChanged, basePage, &CBasePage::slotPreferencesChanged );
             connect( basePage, &CBasePage::sigLoadFinished, this, &CMainWindow::slotLoadFinished );
-            connect( basePage, &CBasePage::sigStartStayAwake, this, &CMainWindow::slotStartStayAwake );
-            connect( basePage, &CBasePage::sigStopStayAwake, this, &CMainWindow::slotStopStayAwake );
             connect( basePage, &CBasePage::sigDialogClosed, this, &CMainWindow::slotQueuedPrefChange );
         }
 
@@ -483,21 +481,6 @@ namespace NMediaManager
             auto basePage = getCurrentBasePage();
             if ( basePage )
                 basePage->run( QModelIndex() );
-        }
-
-        void CMainWindow::slotStartStayAwake()
-        {
-            if ( !fStayAwake )
-                fStayAwake = new NSABUtils::CStayAwake( true );
-
-            QThreadPool::globalInstance()->start( fStayAwake );
-        }
-
-        void CMainWindow::slotStopStayAwake()
-        {
-            if ( !fStayAwake )
-                return;
-            fStayAwake->stop();
         }
 
         bool CMainWindow::titleBarClicked( const QPoint &pt ) const
