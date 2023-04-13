@@ -65,10 +65,9 @@ namespace NMediaManager
 
                 fFormat = prefs->getConvertMediaContainer() && fForce || !prefs->isEncoderFormat( mediaInfo, prefs->getConvertMediaToContainer() );
                 fVideo = prefs->getTranscodeVideo() && fForce || ( !mediaInfo->hasVideoCodec( prefs->getTranscodeToVideoCodec(), prefs->getMediaFormats() ) && ( fFormat || !prefs->getOnlyTranscodeVideoOnFormatChange() ) );
-                fMissingAAC = prefs->getTranscodeAudio() && prefs->getAddAACAudioCodec() && !mediaInfo->hasAACCodec( prefs->getMediaFormats(), 6 );
-                fAudio = prefs->getTranscodeAudio()
-                         && ( fForce
-                              || ( (
+                fMissingAAC = prefs->getTranscodeAudio() && ( mediaInfo->numAudioStreams() != 0 ) && prefs->getAddAACAudioCodec() && !mediaInfo->hasAACCodec( prefs->getMediaFormats(), 6 );
+                fAudio = prefs->getTranscodeAudio() && ( mediaInfo->numAudioStreams() != 0 )
+                    && ( fForce || ( (
                                   !mediaInfo->isCodec( "aac", prefs->getTranscodeToAudioCodec(), prefs->getMediaFormats() ) && !mediaInfo->hasAudioCodec( prefs->getTranscodeToAudioCodec(), prefs->getMediaFormats() )
                                   && ( fFormat || !prefs->getOnlyTranscodeAudioOnFormatChange() ) ) ) );
             }
