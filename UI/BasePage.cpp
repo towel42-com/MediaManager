@@ -28,6 +28,7 @@
 #include "SABUtils/DoubleProgressDlg.h"
 #include "SABUtils/SetMKVTags.h"
 #include "SABUtils/QtUtils.h"
+#include "SABUtils/StayAwake.h"
 
 #include <QSettings>
 #include <QMenu>
@@ -173,7 +174,6 @@ namespace NMediaManager
         void CBasePage::slotLoadFinished( bool canceled )
         {
             emit sigLoadFinished( canceled );
-            emit sigStopStayAwake();
 
             postLoadFinished( canceled );
             clearProgressDlg( canceled );
@@ -182,7 +182,7 @@ namespace NMediaManager
         void CBasePage::slotProcessingStarted()
         {
             showResults();
-            emit sigStartStayAwake();
+            stayAwake( true );
         }
 
         void CBasePage::load( const QString &dirName )
@@ -219,7 +219,6 @@ namespace NMediaManager
             setupModel();
             setupProgressDlg( loadTitleName(), loadCancelName(), 1, 1 );
 
-            emit sigStartStayAwake();
             emit sigLoading();
         }
 
@@ -263,7 +262,7 @@ namespace NMediaManager
             }
             if ( !canceled && reloadModel )
                 load( true );
-            emit sigStopStayAwake();
+            stayAwake( false );
         }
 
         void CBasePage::run( const QModelIndex &idx )
@@ -274,8 +273,7 @@ namespace NMediaManager
             if ( fModel )
             {
                 fModel->process(
-                    idx, [ actionName, cancelName, this ]( int count, int eventsPerPath ) { setupProgressDlg( actionName, cancelName, count, eventsPerPath ); },
-                    [ this ]( bool finalStep, bool canceled ) { postNonQueuedRun( finalStep, canceled ); }, this );
+                    idx, [ actionName, cancelName, this ]( int count, int eventsPerPath ) { setupProgressDlg( actionName, cancelName, count, eventsPerPath ); }, [ this ]( bool finalStep, bool canceled ) { postNonQueuedRun( finalStep, canceled ); }, this );
             }
         }
 
@@ -437,5 +435,16 @@ namespace NMediaManager
                 fModel->clear();
         }
 
+        void CBasePage::stayAwake( bool enable )
+        {
+            if ( enable && !fStayAwake )
+            {
+                fStayAwake = std::make_unique< NSABUtils::CAutoStayAwake >( true );
+            }
+            else if ( !enable && fStayAwake )
+            {
+                fStayAwake.reset();
+            }
+        }
     }
 }

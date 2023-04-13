@@ -30,6 +30,7 @@ class QAbstractItemModel;
 namespace NSABUtils
 {
     class CDoubleProgressDlg;
+    class CAutoStayAwake;
 }
 class QTreeView;
 class QPlainTextEdit;
@@ -106,8 +107,6 @@ namespace NMediaManager
         Q_SIGNALS:
             void sigLoading();
             void sigLoadFinished( bool canceled );
-            void sigStartStayAwake();
-            void sigStopStayAwake();
             void sigDialogClosed();
 
         protected:
@@ -136,6 +135,8 @@ namespace NMediaManager
             virtual void loadSettings();
             virtual void saveSettings();
 
+            void stayAwake( bool enable );
+
             QString fPageName;
             QString fDirName;
 
@@ -144,6 +145,8 @@ namespace NMediaManager
             NSABUtils::CDoubleProgressDlg *fProgressDlg{ nullptr };
             std::unique_ptr< NModels::CDirModel > fModel;
             std::unique_ptr< Ui::CBasePage > fImpl;
+
+            std::unique_ptr< NSABUtils::CAutoStayAwake > fStayAwake;
         };
     }
 }
