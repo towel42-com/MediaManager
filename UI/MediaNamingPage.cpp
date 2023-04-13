@@ -70,7 +70,6 @@ namespace NMediaManager
 
         void CMediaNamingPage::postNonQueuedRun( bool finalStep, bool canceled )
         {
-            emit sigStopStayAwake();
             if ( finalStep && !canceled )
                 load( true );
         }
@@ -143,7 +142,6 @@ namespace NMediaManager
         {
             bool retVal = false;
 
-            emit sigStartStayAwake();
             auto parentName = model()->getSearchName( index );
 
             auto name = model()->getSearchName( index );
@@ -314,7 +312,6 @@ namespace NMediaManager
             if ( !searchesRemaining )
             {
                 emit sigLoadFinished( false );
-                emit sigStopStayAwake();
                 if ( filesView() )
                     filesView()->expandAll();
             }
