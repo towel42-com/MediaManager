@@ -79,7 +79,7 @@ namespace NMediaManager
 
             bool STranscodeNeeded::isLoaded() const
             {
-                return fMediaInfo->aOK() && !fMediaInfo->isQueued();
+                return fMediaInfo && fMediaInfo->aOK() && !fMediaInfo->isQueued();
             }
 
             std::optional< QString > STranscodeNeeded::getFormatMessage() const

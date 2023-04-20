@@ -1655,20 +1655,23 @@ namespace NMediaManager
             /// ////////////////////////////////////////////////////////
             /// MakeMKV Options
             /// ////////////////////////////////////////////////////////
-            std::shared_ptr< NSABUtils::CMediaInfo > CPreferences::getMediaInfo( const QString &fileName )
+            std::shared_ptr< NSABUtils::CMediaInfo > CPreferences::getMediaInfo( const QString &fileName, bool force )
             {
-                return getMediaInfo( std::move( QFileInfo( fileName ) ) );
+                return getMediaInfo( std::move( QFileInfo( fileName ) ), force );
             }
 
-            std::shared_ptr< NSABUtils::CMediaInfo > CPreferences::getMediaInfo( const QFileInfo &fi )
+            std::shared_ptr< NSABUtils::CMediaInfo > CPreferences::getMediaInfo( const QFileInfo &fi, bool force )
             {
                 if ( !isMediaFile( fi ) )
                     return {};
 
-                if ( !getLoadMediaInfo() )
+                if ( NSABUtils::CMediaInfoMgr::instance()->isMediaCached( fi ) )
+                    return NSABUtils::CMediaInfoMgr::instance()->getMediaInfo( fi );
+
+                if ( !force && !getLoadMediaInfo() )
                     return {};
 
-                bool delayLoad = getBackgroundLoadMediaInfo();
+                bool delayLoad = !force && getBackgroundLoadMediaInfo();
                 if ( delayLoad )
                 {
                     return NSABUtils::CMediaInfoMgr::instance()->getMediaInfo( fi );

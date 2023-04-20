@@ -162,8 +162,8 @@ namespace NMediaManager
                 bool isDecoderFormat( const QFileInfo &fi, const QString &formatName ) const;
                 QStringList getTranscodeArgs( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName, const std::list< NMediaManager::NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NMediaManager::NCore::SLanguageInfo, QString > > & subIdxFiles ) const;
 
-                std::shared_ptr< NSABUtils::CMediaInfo > getMediaInfo( const QFileInfo &fi );
-                std::shared_ptr< NSABUtils::CMediaInfo > getMediaInfo( const QString &fileName );
+                std::shared_ptr< NSABUtils::CMediaInfo > getMediaInfo( const QFileInfo &fi, bool force=false );
+                std::shared_ptr< NSABUtils::CMediaInfo > getMediaInfo( const QString &fileName, bool force = false );
 
                 // ffmpeg results
                 QStringList availableEncoderMediaFormats( bool verbose ) const;   // if true returns name - desc, otherwise name only
