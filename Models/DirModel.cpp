@@ -1127,20 +1127,20 @@ namespace NMediaManager
             return mediaInfo->getMediaTags( tags );
         }
 
-        std::shared_ptr< NSABUtils::CMediaInfo > CDirModel::getMediaInfo( const QString &path ) const
+        std::shared_ptr< NSABUtils::CMediaInfo > CDirModel::getMediaInfo( const QString &path, bool force ) const
         {
-            return NPreferences::NCore::CPreferences::instance()->getMediaInfo( path );
+            return NPreferences::NCore::CPreferences::instance()->getMediaInfo( path, force );
         }
 
-        std::shared_ptr< NSABUtils::CMediaInfo > CDirModel::getMediaInfo( const QFileInfo &fi ) const
+        std::shared_ptr< NSABUtils::CMediaInfo > CDirModel::getMediaInfo( const QFileInfo &fi, bool force ) const
         {
-            return NPreferences::NCore::CPreferences::instance()->getMediaInfo( fi );
+            return NPreferences::NCore::CPreferences::instance()->getMediaInfo( fi, force );
         }
 
-        std::shared_ptr< NSABUtils::CMediaInfo > CDirModel::getMediaInfo( const QModelIndex &idx ) const
+        std::shared_ptr< NSABUtils::CMediaInfo > CDirModel::getMediaInfo( const QModelIndex &idx, bool force ) const
         {
             auto fileInfo = this->fileInfo( idx );
-            return getMediaInfo( fileInfo );
+            return getMediaInfo( fileInfo, force );
         }
 
         void CDirModel::slotUpdateMediaInfo( const QString &path )
@@ -1512,7 +1512,7 @@ namespace NMediaManager
 
         std::list< SDirNodeItem > CDirModel::addAdditionalItems( const QFileInfo &fileInfo ) const
         {
-            if ( showMediaItems() && canShowMediaInfo() && NPreferences::NCore::CPreferences::instance()->getLoadMediaInfo() )
+            if ( showMediaItems() && canShowMediaInfo() && ( NSABUtils::CMediaInfoMgr::instance()->isMediaCached( fileInfo ) || NPreferences::NCore::CPreferences::instance()->getLoadMediaInfo() ) )
             {
                 return getMediaInfoItems( fileInfo, firstMediaItemColumn() );
             }

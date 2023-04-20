@@ -292,9 +292,9 @@ namespace NMediaManager
             virtual std::optional< std::pair< uint64_t, std::optional< uint64_t > > > getCurrentProgress( const QString & /*string*/ ) { return {}; }
             virtual std::optional< std::chrono::milliseconds > getMSRemaining( const QString & /*string*/, const std::pair< uint64_t, std::optional< uint64_t > > & /*currProgress*/ ) const { return {}; }
 
-            std::shared_ptr< NSABUtils::CMediaInfo > getMediaInfo( const QFileInfo &fi ) const;
-            std::shared_ptr< NSABUtils::CMediaInfo > getMediaInfo( const QModelIndex &idx ) const;
-            std::shared_ptr< NSABUtils::CMediaInfo > getMediaInfo( const QString &path ) const;
+            std::shared_ptr< NSABUtils::CMediaInfo > getMediaInfo( const QFileInfo &fi, bool force=false ) const;
+            std::shared_ptr< NSABUtils::CMediaInfo > getMediaInfo( const QModelIndex &idx, bool force = false ) const;
+            std::shared_ptr< NSABUtils::CMediaInfo > getMediaInfo( const QString &path, bool force = false ) const;
 
             virtual bool isTitleSameAsAutoSet( const QModelIndex &idx, QString *msg = nullptr ) const;
             virtual bool isDateSameAsAutoSet( const QModelIndex &idx, QString *msg = nullptr ) const;

@@ -250,7 +250,7 @@ namespace NMediaManager
         std::pair< bool, bool > CTranscodeModel::setupProcessItem( SProcessInfo &processInfo, const QString &path, const std::list< NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NCore::SLanguageInfo, QString > > &subIDXFiles, bool displayOnly ) const
         {
             auto fi = QFileInfo( path );
-            auto mediaInfo = getMediaInfo( fi );
+            auto mediaInfo = getMediaInfo( fi, true );
             Q_ASSERT( mediaInfo );
             auto transcodeNeeded = NPreferences::NCore::STranscodeNeeded( mediaInfo );
             if ( !transcodeNeeded.transcodeNeeded() && srtFiles.empty() && subIDXFiles.empty() )
