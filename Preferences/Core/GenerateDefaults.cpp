@@ -1,6 +1,6 @@
 // The MIT License( MIT )
 //
-// Copyright( c ) 2020-2021 Scott Aron Bloom
+// Copyright( c ) 2020-2023 Scott Aron Bloom
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -404,7 +404,7 @@ namespace NMediaManager
             {
                 auto retVal = QStringList() << R"(// The MIT License( MIT ))"
                                             << R"(//)"
-                                            << R"(// Copyright( c ) 2020-2021 Scott Aron Bloom)"
+                                            << R"(// Copyright( c ) 2020-2023 Scott Aron Bloom)"
                                             << R"(//)"
                                             << R"(// Permission is hereby granted, free of charge, to any person obtaining a copy)"
                                             << R"(// of this software and associated documentation files( the "Software" ), to deal)"
