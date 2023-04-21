@@ -278,6 +278,8 @@ namespace NMediaManager
                 auto height = tags[ NSABUtils::EMediaTags::eHeight ].toInt();
 
                 auto aspectRatio = tags[ NSABUtils::EMediaTags::eAspectRatio ].toDouble();   // w/h
+                if ( aspectRatio == 0.0 )
+                    aspectRatio = ( 1.0 * width ) / ( 1.0 * height );
 
                 if ( byImageWidth() )
                 {
