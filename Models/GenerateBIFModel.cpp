@@ -95,7 +95,15 @@ namespace NMediaManager
             if ( !displayOnly )
             {
                 processInfo.fMaximum = NSABUtils::CMediaInfo::getNumberOfSeconds( processInfo.fOldName );
+
+                bool isEmbyEXE = false;
                 processInfo.fCmd = NPreferences::NCore::CPreferences::instance()->getFFMpegEmbyEXE();
+                if ( !processInfo.fCmd.isEmpty() && QFileInfo( processInfo.fCmd ).isExecutable() )
+                    isEmbyEXE = true;
+                else
+                {
+                    processInfo.fCmd = NPreferences::NCore::CPreferences::instance()->getFFMpegEXE();
+                }
 
                 if ( processInfo.fCmd.isEmpty() || !QFileInfo( processInfo.fCmd ).isExecutable() )
                 {
@@ -123,19 +131,28 @@ namespace NMediaManager
                 //qDebug() << processInfo.fTempDir->path();
 
                 // eg -f matroska -threads 1 -skip_interval 10 -copyts -i file:"/volume2/video/Movies/Westworld (1973) [tmdbid=2362]/Westworld.mkv" -an -sn -vf "scale=w=320:h=133" -vsync cfr -r 0.1 -f image2 "/var/packages/EmbyServer/var/cache/temp/112d22a09fea457eaea27c4b0c88f790/img_%05d.jpg"
-                processInfo.fArgs = QStringList() << "-f"
-                                                  << "matroska"
-                                                  << "-threads"
-                                                  << "1"
-                                                  << "-skip_interval" << QString::number( NPreferences::NCore::CPreferences::instance()->imageInterval() ) << "-copyts"
-                                                  << "-i" << processInfo.fOldName << "-an"
-                                                  << "-sn"
-                                                  << "-vf" << QString( "scale=w=%1:h=%2" ).arg( sz.width() ).arg( sz.height() ) << "-vsync"
-                                                  << "cfr"
-                                                  << "-r"
-                                                  << "0.1"
-                                                  << "-f"
-                                                  << "image2" << processInfo.fTempDir->filePath( "img_%05d.jpg" );
+                processInfo.fArgs = QStringList() << "-hide_banner" << "-f" << "matroska"   // input format
+                    ;
+                auto hwAccel = NPreferences::NCore::CPreferences::instance()->getTranscodeHWAccel();
+                if ( !hwAccel.isEmpty() )
+                {
+                    processInfo.fArgs << "-hwaccel" << hwAccel;
+                }
+                processInfo.fArgs << "-threads" << "1"   // num threads
+                    ;
+                if ( isEmbyEXE )
+                {
+                    processInfo.fArgs << "-skip_interval" << QString::number( NPreferences::NCore::CPreferences::instance()->imageInterval() );   // how often to skip
+                }
+
+                processInfo.fArgs << "-copyts"   // ignore processing timestamps
+                                  << "-i" << processInfo.fOldName   // input file
+                                  << "-an"   // no audio
+                                  << "-sn"   // no subtitles
+                                  << "-vf" << QString( "scale=w=%1:h=%2" ).arg( sz.width() ).arg( sz.height() ) << "-vsync"
+                                  << "cfr"   // constant frame  videwo sync method
+                                  << "-f"
+                                  << "image2" << processInfo.fTempDir->filePath( "img_%05d.jpg" );
                 processInfo.fBackupOrig = false;
                 processInfo.fPostProcess = [ this ]( const SProcessInfo *processInfo, QString &msg ) -> bool
                 {
@@ -300,7 +317,7 @@ namespace NMediaManager
         void CGenerateBIFModel::attachTreeNodes( QStandardItem * /*nextParent*/, QStandardItem *& /*prevParent*/, const STreeNode & /*treeNode*/ )
         {
         }
-        
+
         std::optional< std::pair< uint64_t, std::optional< uint64_t > > > CGenerateBIFModel::getCurrentProgress( const QString &string )
         {
             // Skip-Option - Write output: pkt_pts_time:2570 pkt_dts_time:2570 input_pts_time:2570.2
