@@ -36,7 +36,6 @@
 #include <QTreeView>
 #include <QApplication>
 #include <QVariant>
-#include <QLocale>
 
 #include <QDirIterator>
 
