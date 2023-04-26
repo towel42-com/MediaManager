@@ -487,15 +487,15 @@ namespace NMediaManager
                                             << R"()"
                                             << "%DEFAULT_CRF%"
                                             << R"()"
-                                            << "%DEFAULT_USE_AVERAGE_BITRATE%"
+                                            << "%DEFAULT_USE_TARGET_BITRATE%"
                                             << R"()"
-                                            << "%DEFAULT_AVERAGE_4K_BITRATE%"
+                                            << "%DEFAULT_TARGET_4K_BITRATE%"
                                             << R"()"
-                                            << "%DEFAULT_AVERAGE_HD_BITRATE%"
+                                            << "%DEFAULT_TARGET_HD_BITRATE%"
                                             << R"()"
-                                            << "%DEFAULT_AVERAGE_SUBHD_BITRATE%"
+                                            << "%DEFAULT_TARGET_SUBHD_BITRATE%"
                                             << R"()"
-                                            << "%DEFAULT_NON_CONFORMING_DIVISOR%"
+                                            << "%DEFAULT_GREATER_THAN_4K_DIVISOR%"
                                             << R"()"
                                             << "%DEFAULT_USE_PRESET%"
                                             << R"()"
@@ -592,15 +592,16 @@ namespace NMediaManager
 
                                            << compareValues( "Generate Low Bitrate Video", getGenerateLowBitrateVideoDefault(), getGenerateLowBitrateVideo() )   //
                                            << compareValues( "Bitrate Threshold Percentage", getBitrateThresholdPercentageDefault(), getBitrateThresholdPercentage() )   //
+                                           << compareValues( "Resolution Threshold Percentage", getResolutionThresholdPercentageDefault(), getResolutionThresholdPercentage() )   //
                                            << compareValues( "Generate non-4k Video", getGenerateNon4kVideoDefault(), getGenerateNon4kVideo() )   //
 
                                            << compareValues( "Use CRF", getUseCRFDefault(), getUseCRF() )   //
                                            << compareValues( "CRF", getCRFDefault(), getCRF() )   //
-                                           << compareValues( "Use Average Bitrate", getUseAverageBitrateDefault(), getUseAverageBitrate() )   //
-                                           << compareValues( "Average 4k Bitrate", getAverage4kBitrateDefault(), getAverage4kBitrate() )   //
-                                           << compareValues( "Average HD Bitrate", getAverageHDBitrateDefault(), getAverageHDBitrate() )   //
-                                           << compareValues( "Average Sub-HD Bitrate", getAverageSubHDBitrateDefault(), getAverageSubHDBitrate() )   //
-                                           << compareValues( "Non-Conforming Resolution Divisor", getNonConformingResolutionDivisorDefault(), getNonConformingResolutionDivisor() )   //
+                                           << compareValues( "Use Target Bitrate", getUseTargetBitrateDefault(), getUseTargetBitrate() )   //
+                                           << compareValues( "Target 4k Bitrate", getTarget4kBitrateDefault(), getTarget4kBitrate() )   //
+                                           << compareValues( "Target HD Bitrate", getTargetHDBitrateDefault(), getTargetHDBitrate() )   //
+                                           << compareValues( "Target Sub-HD Bitrate", getTargetSubHDBitrateDefault(), getTargetSubHDBitrate() )   //
+                                           << compareValues( "Greater than 4k Divisor", getGreaterThan4kDivisorDefault(), getGreaterThan4kDivisor() )   //
                                            << compareValues( "Use Preset", getUsePresetDefault(), getUsePreset() )   //
                                            << compareValues( "Preset", toString( getPresetDefault() ), toString( getPreset() ) )   //
                                            << compareValues( "Use Tune", getUseTuneDefault(), getUseTune() )   //
@@ -673,15 +674,16 @@ namespace NMediaManager
 
                     replaceText( "%DEFAULT_GENERATE_LOW_BITRATE_VIDEO%", newFileText, "getGenerateLowBitrateVideoDefault", getGenerateLowBitrateVideo() );
                     replaceText( "%DEFAULT_BITRATE_THRESHOLD_PERCENTAGE%", newFileText, "getBitrateThresholdPercentageDefault", getBitrateThresholdPercentage() );
+                    replaceText( "%DEFAULT_RESOLUTION_THRESHOLD_PERCENTAGE%", newFileText, "getResolutionThresholdPercentageDefault", getResolutionThresholdPercentage() );
                     replaceText( "%DEFAULT_GENERATE_NON_4k_VIDEO%", newFileText, "getGenerateNon4kVideoDefault", getGenerateNon4kVideo() );
 
                     replaceText( "%DEFAULT_USE_CRF%", newFileText, "getUseCRFDefault", getUseCRF() );
                     replaceText( "%DEFAULT_CRF%", newFileText, "getCRFDefault", getCRF() );
-                    replaceText( "%DEFAULT_USE_AVERAGE_BITRATE%", newFileText, "getUseAverageBitrateDefault", getUseAverageBitrate() );
-                    replaceText( "%DEFAULT_AVERAGE_4K_BITRATE%", newFileText, "getAverage4kBitrateDefault", getAverage4kBitrate() );
-                    replaceText( "%DEFAULT_AVERAGE_HD_BITRATE%", newFileText, "getAverageHDBitrateDefault", getAverageHDBitrate() );
-                    replaceText( "%DEFAULT_AVERAGE_SUBHD_BITRATE%", newFileText, "getAverageSubHDBitrateDefault", getAverageSubHDBitrate() );
-                    replaceText( "%DEFAULT_NON_CONFORMING_DIVISOR%", newFileText, "getNonConformingResolutionDivisorDefault", getNonConformingResolutionDivisor() );
+                    replaceText( "%DEFAULT_USE_TARGET_BITRATE%", newFileText, "getUseTargetBitrateDefault", getUseTargetBitrate() );
+                    replaceText( "%DEFAULT_TARGET_4K_BITRATE%", newFileText, "getTarget4kBitrateDefault", getTarget4kBitrate() );
+                    replaceText( "%DEFAULT_TARGET_HD_BITRATE%", newFileText, "getTargetHDBitrateDefault", getTargetHDBitrate() );
+                    replaceText( "%DEFAULT_TARGET_SUBHD_BITRATE%", newFileText, "getTargetSubHDBitrateDefault", getTargetSubHDBitrate() );
+                    replaceText( "%DEFAULT_GREATER_THAN_4K_DIVISOR%", newFileText, "getGreaterThan4kDivisorDefault", getGreaterThan4kDivisor() );
 
                     replaceText( "%DEFAULT_LOSSLESS_TRANSCODING%", newFileText, "getLosslessEncodingDefault", getLosslessEncoding() );
                     replaceText( "%DEFAULT_USE_PRESET%", newFileText, "getUsePresetDefault", getUsePreset() );

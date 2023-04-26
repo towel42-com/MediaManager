@@ -66,7 +66,7 @@ namespace NMediaManager
 
                 if ( prefs->getGenerateLowBitrateVideo() )
                 {
-                    auto averageBitrateTarget = prefs->getAverageBitrateTarget( fMediaInfo, false, true );
+                    auto averageBitrateTarget = prefs->getTargetBitrate( fMediaInfo, false, true );
                     fVideoBitrate = mediaInfo->getBitRate() > averageBitrateTarget;
                 }
 
@@ -116,7 +116,7 @@ namespace NMediaManager
             {
                 if ( videoBitrateTranscodeNeeded() )
                 {
-                    auto msg = QObject::tr( "<p style='white-space:pre'>File <b>'%1'</b> bit rate is higher than '%2' kbps</p>" ).arg( QFileInfo( fMediaInfo->fileName() ).fileName() ).arg( NPreferences::NCore::CPreferences::instance()->getAverageBitrateTargetDisplayString( fMediaInfo ) );
+                    auto msg = QObject::tr( "<p style='white-space:pre'>File <b>'%1'</b> bit rate is higher than '%2' kbps</p>" ).arg( QFileInfo( fMediaInfo->fileName() ).fileName() ).arg( NPreferences::NCore::CPreferences::instance()->getTargetBitrateDisplayString( fMediaInfo ) );
                     return msg;
                 }
                 return {};
@@ -172,7 +172,7 @@ namespace NMediaManager
 
                 if ( videoBitrateTranscodeNeeded() )
                 {
-                    actions << QObject::tr( "Transcode video to an average of %1" ).arg( NPreferences::NCore::CPreferences::instance()->getAverageBitrateTargetDisplayString( fMediaInfo ) );
+                    actions << QObject::tr( "Transcode video to an average of %1" ).arg( NPreferences::NCore::CPreferences::instance()->getTargetBitrateDisplayString( fMediaInfo ) );
                     actions << getActions();
                 }
 

@@ -1075,7 +1075,7 @@ namespace NMediaManager
                 settings.beginGroup( toString( EPreferenceType::eTagPrefs ) );
 
                 std::list< std::pair< NSABUtils::EMediaTags, bool > > retVal = {
-                    { NSABUtils::EMediaTags::eTitle, true }, { NSABUtils::EMediaTags::eLength, true }, { NSABUtils::EMediaTags::eDate, true }, { NSABUtils::EMediaTags::eComment, true }, { NSABUtils::EMediaTags::eBPM, true }, { NSABUtils::EMediaTags::eArtist, true }, { NSABUtils::EMediaTags::eComposer, true }, { NSABUtils::EMediaTags::eGenre, true }, { NSABUtils::EMediaTags::eTrack, true }, { NSABUtils::EMediaTags::eAlbum, false }, { NSABUtils::EMediaTags::eAlbumArtist, false }, { NSABUtils::EMediaTags::eDiscnumber, false }, { NSABUtils::EMediaTags::eAspectRatio, false }, { NSABUtils::EMediaTags::eWidth, false }, { NSABUtils::EMediaTags::eHeight, false }, { NSABUtils::EMediaTags::eResolution, false }, { NSABUtils::EMediaTags::eAllVideoCodecs, false }, { NSABUtils::EMediaTags::eAllAudioCodecsDisp, false }, { NSABUtils::EMediaTags::eVideoBitrateString, false }, { NSABUtils::EMediaTags::eOverAllBitrateString, false }, { NSABUtils::EMediaTags::eNumChannels, false }, { NSABUtils::EMediaTags::eAudioSampleRateString, false }, { NSABUtils::EMediaTags::eAllSubtitleLanguages, false }, { NSABUtils::EMediaTags::eAllSubtitleCodecs, false },
+                    { NSABUtils::EMediaTags::eTitle, true }, { NSABUtils::EMediaTags::eLength, true }, { NSABUtils::EMediaTags::eDate, true }, { NSABUtils::EMediaTags::eComment, true }, { NSABUtils::EMediaTags::eBPM, true }, { NSABUtils::EMediaTags::eArtist, true }, { NSABUtils::EMediaTags::eComposer, true }, { NSABUtils::EMediaTags::eGenre, true }, { NSABUtils::EMediaTags::eTrack, true }, { NSABUtils::EMediaTags::eAlbum, false }, { NSABUtils::EMediaTags::eAlbumArtist, false }, { NSABUtils::EMediaTags::eDiscnumber, false }, { NSABUtils::EMediaTags::eAspectRatio, false }, { NSABUtils::EMediaTags::eWidth, false }, { NSABUtils::EMediaTags::eHeight, false }, { NSABUtils::EMediaTags::eResolution, false }, { NSABUtils::EMediaTags::eAllVideoCodecs, false }, { NSABUtils::EMediaTags::eAllAudioCodecsDisp, false }, { NSABUtils::EMediaTags::eVideoBitrateString, false }, { NSABUtils::EMediaTags::eHDRInfo, false }, { NSABUtils::EMediaTags::eOverAllBitrateString, false }, { NSABUtils::EMediaTags::eNumChannels, false }, { NSABUtils::EMediaTags::eAudioSampleRateString, false }, { NSABUtils::EMediaTags::eAllSubtitleLanguages, false }, { NSABUtils::EMediaTags::eAllSubtitleCodecs, false },
                 };
 
                 if ( !settings.contains( "EnabledTags" ) )
@@ -2068,6 +2068,31 @@ namespace NMediaManager
                 return settings.value( "BitrateThresholdPercentage", getBitrateThresholdPercentageDefault() ).toInt();
             }
 
+            double CPreferences::getBitrateThreshold() const
+            {
+                return ( 1.0 * getBitrateThresholdPercentage() ) / 100.0;
+            }
+
+            void CPreferences::setResolutionThresholdPercentage( int value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eTranscodePrefs ) );
+                settings.setValue( "ResolutionThreshold", value );
+                emitSigPreferencesChanged( EPreferenceType::eTranscodePrefs );
+            }
+
+            int CPreferences::getResolutionThresholdPercentage() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eTranscodePrefs ) );
+                return settings.value( "ResolutionThresholdPercentage", getResolutionThresholdPercentageDefault() ).toInt();
+            }
+
+            double CPreferences::getResolutionThreshold() const
+            {
+                return ( 1.0 * getResolutionThresholdPercentage() ) / 100.0;
+            }
+
             void CPreferences::setGenerateNon4kVideo( bool value )
             {
                 QSettings settings;
@@ -2083,118 +2108,135 @@ namespace NMediaManager
                 return settings.value( "GenerateNon4kVideo", getGenerateNon4kVideoDefault() ).toBool();
             }
 
-            void CPreferences::setUseAverageBitrate( bool value )
+            void CPreferences::setUseTargetBitrate( bool value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTranscodePrefs ) );
-                settings.setValue( "UseAverageBitrate", value );
+                settings.setValue( "UseTargetBitrate", value );
                 emitSigPreferencesChanged( EPreferenceType::eTranscodePrefs );
             }
 
-            bool CPreferences::getUseAverageBitrate() const
+            bool CPreferences::getUseTargetBitrate() const
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTranscodePrefs ) );
-                return settings.value( "UseAverageBitrate", getUseAverageBitrateDefault() ).toBool();
+                return settings.value( "UseTargetBitrate", getUseTargetBitrateDefault() ).toBool();
             }
 
-            uint64_t CPreferences::getAverageBitrateTarget( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, bool useKBS, bool addThreshold ) const
+            uint64_t CPreferences::getTargetBitrate( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, bool useKBS, bool addThreshold ) const
             {
                 if ( !mediaInfo )
                     return 0;
 
-                std::optional< uint64_t > retVal;
-                if ( mediaInfo->is4kResolution() )
-                    retVal = getAverage4kBitrate();
-                else if ( mediaInfo->isHDResolution() )
-                    retVal = getAverageHDBitrate();
-                else if ( mediaInfo->isSubHDResolution() )
-                    retVal = getAverageSubHDBitrate();
+                return getTargetBitrate( mediaInfo->getResolutionInfo(), useKBS, addThreshold );
+            }
 
-                if ( !retVal.has_value() )
+            uint64_t CPreferences::getTargetBitrate( const NSABUtils::SResolutionInfo &resInfo, bool useKBS, bool addThreshold, int greaterThan4kDivisor, double resThreshold, int bitrate4k, int bitrateHD, int bitrateSubHD, double bitrateThreshold )
+            {
+                uint64_t retVal;
+                if ( resInfo.isGreaterThan4kResolution( resThreshold ) )
                 {
-                    auto bitRate = mediaInfo->getUncompressedBitRate();
-                    auto tmp = 1.0 * bitRate / ( 1.0 * getNonConformingResolutionDivisor() );
+                    auto bitRate = resInfo.idealBitrate();
+                    auto tmp = 1.0 * bitRate / ( 1.0 * greaterThan4kDivisor );
                     if ( useKBS )
                         tmp /= 1000.0;
 
                     retVal = static_cast< uint64_t >( tmp );
                 }
-                else
+                else if ( resInfo.is4kResolution( resThreshold ) || resInfo.isGreaterThanHDResolution( resThreshold ) )
                 {
+                    retVal = bitrate4k;
                     if ( !useKBS )
-                        retVal.value() *= 1000;
+                        retVal *= 1000;
+                }
+                else if ( resInfo.isHDResolution( resThreshold ) )
+                {
+                    retVal = bitrateHD;
+                    if ( !useKBS )
+                        retVal *= 1000;
+                }
+                else /*if ( resInfo.isSubHDResolution( resThreshold ) )*/
+                {
+                    retVal = bitrateSubHD;
+                    if ( !useKBS )
+                        retVal *= 1000;
                 }
 
                 if ( addThreshold )
-                    retVal.value() *= 1.0 + ( ( 1.0 * getBitrateThresholdPercentage() ) / 100.0 );
-                return retVal.value();
+                    retVal *= ( 1.0 + bitrateThreshold );
+
+                return retVal;
             }
 
-            QString CPreferences::getAverageBitrateTargetDisplayString( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo ) const
+            uint64_t CPreferences::getTargetBitrate( const NSABUtils::SResolutionInfo &resInfo, bool useKBS, bool addThreshold ) const
             {
-                auto bps = NPreferences::NCore::CPreferences::instance()->getAverageBitrateTarget( mediaInfo, false, false );
+                return getTargetBitrate( resInfo, useKBS, addThreshold, getGreaterThan4kDivisor(), getResolutionThreshold(), getTarget4kBitrate(), getTargetHDBitrate(), getTargetSubHDBitrate(), getBitrateThreshold() );
+            }
+
+            QString CPreferences::getTargetBitrateDisplayString( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo ) const
+            {
+                auto bps = NPreferences::NCore::CPreferences::instance()->getTargetBitrate( mediaInfo, false, false );
                 return NSABUtils::NFileUtils::byteSizeString( bps, true, false, 1, false, "bps" );
             }
 
-            void CPreferences::setAverage4kBitrate( int value )
+            void CPreferences::setTarget4kBitrate( int value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTranscodePrefs ) );
-                settings.setValue( "Average4kBitrate", value );
+                settings.setValue( "Target4kBitrate", value );
                 emitSigPreferencesChanged( EPreferenceType::eTranscodePrefs );
             }
 
-            int CPreferences::getAverage4kBitrate() const
+            int CPreferences::getTarget4kBitrate() const
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTranscodePrefs ) );
-                return settings.value( "Average4kBitrate", getAverage4kBitrateDefault() ).toInt();
+                return settings.value( "Target4kBitrate", getTarget4kBitrateDefault() ).toInt();
             }
 
-            void CPreferences::setAverageHDBitrate( int value )
+            void CPreferences::setTargetHDBitrate( int value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTranscodePrefs ) );
-                settings.setValue( "AverageHDBitrate", value );
+                settings.setValue( "TargetHDBitrate", value );
                 emitSigPreferencesChanged( EPreferenceType::eTranscodePrefs );
             }
 
-            int CPreferences::getAverageHDBitrate() const
+            int CPreferences::getTargetHDBitrate() const
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTranscodePrefs ) );
-                return settings.value( "AverageHDBitrate", getAverageHDBitrateDefault() ).toInt();
+                return settings.value( "TargetHDBitrate", getTargetHDBitrateDefault() ).toInt();
             }
 
-            void CPreferences::setAverageSubHDBitrate( int value )
+            void CPreferences::setTargetSubHDBitrate( int value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTranscodePrefs ) );
-                settings.setValue( "AverageSubHDBitrate", value );
+                settings.setValue( "TargetSubHDBitrate", value );
                 emitSigPreferencesChanged( EPreferenceType::eTranscodePrefs );
             }
 
-            int CPreferences::getAverageSubHDBitrate() const
+            int CPreferences::getTargetSubHDBitrate() const
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTranscodePrefs ) );
-                return settings.value( "AverageSubHDBitrate", getAverageSubHDBitrateDefault() ).toInt();
+                return settings.value( "TargetSubHDBitrate", getTargetSubHDBitrateDefault() ).toInt();
             }
 
-            void CPreferences::setNonConformingResolutionDivisor( int value )
+            void CPreferences::setGreaterThan4kDivisor( int value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTranscodePrefs ) );
-                settings.setValue( "NonConformingResolutionRatio", value );
+                settings.setValue( "GreaterThan4kDivisor", value );
                 emitSigPreferencesChanged( EPreferenceType::eTranscodePrefs );
             }
 
-            int CPreferences::getNonConformingResolutionDivisor() const
+            int CPreferences::getGreaterThan4kDivisor() const
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTranscodePrefs ) );
-                return settings.value( "NonConformingResolutionRatio", getNonConformingResolutionDivisorDefault() ).toInt();
+                return settings.value( "GreaterThan4kDivisor", getGreaterThan4kDivisorDefault() ).toInt();
             }
 
             void CPreferences::setUsePreset( bool value )

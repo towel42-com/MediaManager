@@ -377,6 +377,11 @@ namespace NMediaManager
                 return 30;
             }
 
+            int CPreferences::getResolutionThresholdPercentageDefault() const
+            {
+                return 30;
+            }
+
             bool CPreferences::getGenerateNon4kVideoDefault() const
             {
                 return true;
@@ -392,27 +397,27 @@ namespace NMediaManager
                 return 18;
             }
 
-            bool CPreferences::getUseAverageBitrateDefault() const
+            bool CPreferences::getUseTargetBitrateDefault() const
             {
                 return false;
             }
 
-            int CPreferences::getAverage4kBitrateDefault() const
+            int CPreferences::getTarget4kBitrateDefault() const
             {
                 return 25000;
             }
 
-            int CPreferences::getAverageHDBitrateDefault() const
+            int CPreferences::getTargetHDBitrateDefault() const
             {
                 return 10000;
             }
 
-            int CPreferences::getAverageSubHDBitrateDefault() const
+            int CPreferences::getTargetSubHDBitrateDefault() const
             {
                 return 3000;
             }
 
-            int CPreferences::getNonConformingResolutionDivisorDefault() const
+            int CPreferences::getGreaterThan4kDivisorDefault() const
             {
                 return 250;
             }

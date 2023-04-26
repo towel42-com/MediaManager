@@ -42,13 +42,13 @@ namespace NMediaManager
 
             QStringList CPreferences::getHighBitrateTranscodeArgs( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName, const std::list< NMediaManager::NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NMediaManager::NCore::SLanguageInfo, QString > > &subIdxFiles ) const
             {
-                auto kbps = getAverageBitrateTarget( mediaInfo, true, false );
+                auto kbps = getTargetBitrate( mediaInfo, true, false );
                 return getTranscodeArgs( mediaInfo, srcName, destName, srtFiles, subIdxFiles, {}, kbps );
             }
 
             QStringList CPreferences::getHighResolutionTranscodeArgs( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName, const std::list< NMediaManager::NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NMediaManager::NCore::SLanguageInfo, QString > > &subIdxFiles ) const
             {
-                return getTranscodeArgs( mediaInfo, srcName, destName, srtFiles, subIdxFiles, NSABUtils::CMediaInfo::kHDResolution, {} );
+                return getTranscodeArgs( mediaInfo, srcName, destName, srtFiles, subIdxFiles, NSABUtils::CMediaInfo::k1080pResolution.fResolution, {} );
             }
 
             QStringList CPreferences::getTranscodeArgs( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName, const std::list< NMediaManager::NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NMediaManager::NCore::SLanguageInfo, QString > > &subIdxFiles, const std::optional< std::pair< int, int > > &resolution, const std::optional< uint64_t > &bitrate ) const
@@ -194,8 +194,8 @@ namespace NMediaManager
                             }
                             else if ( getUseCRF() )
                                 retVal << "-crf" << QString::number( getCRF() );
-                            else if ( getUseAverageBitrate() )
-                                retVal << "-b:v" << QString( "%1k" ).arg( getAverageBitrateTarget( mediaInfo, true, false ) );
+                            else if ( getUseTargetBitrate() )
+                                retVal << "-b:v" << QString( "%1k" ).arg( getTargetBitrate( mediaInfo, true, false ) );
                         }
 
                         if ( getUsePreset() )

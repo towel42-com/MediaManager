@@ -40,6 +40,7 @@ class QDir;
 namespace NSABUtils
 {
     class CMediaInfo;
+    struct SResolutionInfo;
     enum class EMediaTags;
     class CFFMpegFormats;
     enum class EFormatType;
@@ -295,35 +296,45 @@ namespace NMediaManager
 
                 void setBitrateThresholdPercentage( int value );
                 int getBitrateThresholdPercentageDefault() const;
-                int getBitrateThresholdPercentage() const;
+                int getBitrateThresholdPercentage() const;   // returns 30 for 30%
+                double getBitrateThreshold() const;   // return 0.3 for 30%
+
+                void setResolutionThresholdPercentage( int value );
+                int getResolutionThresholdPercentageDefault() const;
+                int getResolutionThresholdPercentage() const;   // returns 30 for 30%
+                double getResolutionThreshold() const;   // returns 0.3 for 30%
 
                 void setGenerateNon4kVideo( bool value );
                 bool getGenerateNon4kVideoDefault() const;
                 bool getGenerateNon4kVideo() const;
 
-                void setUseAverageBitrate( bool value );
-                bool getUseAverageBitrateDefault() const;
-                bool getUseAverageBitrate() const;
+                void setUseTargetBitrate( bool value );
+                bool getUseTargetBitrateDefault() const;
+                bool getUseTargetBitrate() const;
 
                 // since it can return raw gb/s over 4, use 64 bit int
-                uint64_t getAverageBitrateTarget( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, bool useKBS, bool addThreshold ) const;   // returns it in bits/second + threshold
-                QString getAverageBitrateTargetDisplayString( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo ) const;
+                uint64_t getTargetBitrate( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, bool useKBS, bool addThreshold ) const;   // returns it in bits/second + threshold
+                uint64_t getTargetBitrate( const NSABUtils::SResolutionInfo &resInfo, bool useKBS, bool addThreshold ) const;   // returns it in bits/second + threshold
 
-                void setAverage4kBitrate( int value );
-                int getAverage4kBitrateDefault() const;
-                int getAverage4kBitrate() const;
+                static uint64_t getTargetBitrate( const NSABUtils::SResolutionInfo &resInfo, bool useKBS, bool addThreshold, int greaterThan4kDivisor, double resThreshold, int bitrate4k, int bitrateHD, int bitrateSubHD, double bitrateThreshold );   // returns it in bits/second + threshold
 
-                void setAverageHDBitrate( int value );
-                int getAverageHDBitrateDefault() const;
-                int getAverageHDBitrate() const;
+                QString getTargetBitrateDisplayString( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo ) const;
 
-                void setAverageSubHDBitrate( int value );
-                int getAverageSubHDBitrateDefault() const;
-                int getAverageSubHDBitrate() const;
+                void setTarget4kBitrate( int value );
+                int getTarget4kBitrateDefault() const;
+                int getTarget4kBitrate() const;
 
-                void setNonConformingResolutionDivisor( int value );
-                int getNonConformingResolutionDivisorDefault() const;
-                int getNonConformingResolutionDivisor() const;
+                void setTargetHDBitrate( int value );
+                int getTargetHDBitrateDefault() const;
+                int getTargetHDBitrate() const;
+
+                void setTargetSubHDBitrate( int value );
+                int getTargetSubHDBitrateDefault() const;
+                int getTargetSubHDBitrate() const;
+
+                void setGreaterThan4kDivisor( int value );
+                int getGreaterThan4kDivisorDefault() const;
+                int getGreaterThan4kDivisor() const;
 
                 void setUsePreset( bool value );
                 bool getUsePresetDefault() const;
@@ -592,7 +603,7 @@ namespace NMediaManager
                 void sigMediaInfoLoaded( const QString &fileName ) const;
 
             private:
-                QStringList getTranscodeArgs( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName, const std::list< NMediaManager::NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NMediaManager::NCore::SLanguageInfo, QString > > &subIdxFiles, const std::optional< std::pair< int, int > > &resolution, const std::optional< uint64_t > & bitrate ) const;
+                QStringList getTranscodeArgs( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName, const std::list< NMediaManager::NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NMediaManager::NCore::SLanguageInfo, QString > > &subIdxFiles, const std::optional< std::pair< int, int > > &resolution, const std::optional< uint64_t > &bitrate ) const;
 
                 QStringList getDefaultFile() const;
                 bool isFileWithExtension( const QFileInfo &fi, std::function< QStringList() > getExtensions, std::unordered_set< QString > &hash, std::unordered_map< QString, bool > &cache ) const;
