@@ -369,7 +369,7 @@ namespace NMediaManager
 
             bool CPreferences::getGenerateLowBitrateVideoDefault() const
             {
-                return false;
+                return true;
             }
 
             int CPreferences::getBitrateThresholdPercentageDefault() const
@@ -379,7 +379,7 @@ namespace NMediaManager
 
             bool CPreferences::getGenerateNon4kVideoDefault() const
             {
-                return false;
+                return true;
             }
 
             bool CPreferences::getUseCRFDefault() const
