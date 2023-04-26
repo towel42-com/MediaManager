@@ -320,7 +320,7 @@ namespace NMediaManager
                     if ( !mediaInfo )
                         return { false, std::list< QStandardItem * >() };
 
-                    newBaseName += " " + NPreferences::NCore::CPreferences::instance()->getAverageBitrateTargetDisplayString( mediaInfo );
+                    newBaseName += " " + NPreferences::NCore::CPreferences::instance()->getTargetBitrateDisplayString( mediaInfo );
                 }
                 else if ( type == ETranscodeType::eHighRes )
                 {
