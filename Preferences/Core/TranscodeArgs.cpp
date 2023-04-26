@@ -173,13 +173,16 @@ namespace NMediaManager
                                 auto audioFormat = transcodeNeeded.addAACAudioCodec() ? "aac" : getTranscodeToAudioCodec();
                                 retVal << QString( "-c:a:0" ) << audioFormat;
                                 if ( transcodeNeeded.addAACAudioCodec() )
-                                    retVal << "-ac:a:0"
-                                           << "6";   // convert it to 5.1
+                                {
+                                    retVal << "-ac:a:0" << "6";   // convert it to 5.1
+                                    retVal << "-disposition:a:0" << "default";
+                                }
                                 retVal << QString( "-metadata:s:a:%1" ).arg( ii ) << QString( R"(title="Transcoded from Default Track")" ).arg( audioFormat );
                                 streamNum++;
                                 retVal << "-map" << QString( "0:a:%1?" ).arg( ii );
                             }
-                            retVal << QString( "-c:a:%1" ).arg( streamNum++ ) << "copy";
+                            retVal << QString( "-c:a:%1" ).arg( streamNum ) << "copy";
+                            retVal << QString( "-disposition:a:%1" ).arg( streamNum ) << "0";
                         }
                     }
 
