@@ -44,6 +44,8 @@
 #include "TranscodeGeneralSettings.h"
 #include "TranscodeAudioSettings.h"
 #include "TranscodeVideoSettings.h"
+#include "TranscodeVideoCodec.h"
+#include "TranscodeVideoQuality.h"
 
 #include <QSettings>
 #include <QPushButton>
@@ -125,6 +127,8 @@ namespace NMediaManager
 
                 addPage( new CTranscodeGeneralSettings );
                 addPage( new CTranscodeVideoSettings );
+                addPage( new CTranscodeVideoCodec );
+                addPage( new CTranscodeVideoQuality);
                 addPage( new CTranscodeAudioSettings );
 
                 addPage( new CExtendedInfo );

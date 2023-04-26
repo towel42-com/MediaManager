@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>NMediaManager::NPreferences::NUi::CTranscodeVideoQuality</class>
+ <widget class="QWidget" name="NMediaManager::NPreferences::NUi::CTranscodeVideoQuality">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>678</width>
+    <height>486</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Bitrate Targets (Used for both Secondary Video creation and HEVC Target Bitrate)</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_9">
+        <property name="text">
+         <string>Greater than 4k Resolution Divisor:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QSpinBox" name="greaterThan4kDivisor">
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>10000</number>
+        </property>
+        <property name="stepType">
+         <enum>QAbstractSpinBox::AdaptiveDecimalStepType</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_6">
+        <property name="text">
+         <string>4k (3840x2160):</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="NSABUtils::CLineEditWithSuffix" name="target4kBitrate">
+        <property name="placeholderText">
+         <string>Bitrate in kbps</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2" rowspan="2">
+       <spacer name="horizontalSpacer_2">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>187</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>HD 1080p (1920x1080):</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="NSABUtils::CLineEditWithSuffix" name="targetHDBitrate">
+        <property name="maxLength">
+         <number>10</number>
+        </property>
+        <property name="placeholderText">
+         <string>Bitrate in kbps</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_10">
+        <property name="text">
+         <string>Sub HD:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="NSABUtils::CLineEditWithSuffix" name="targetSubHDBitrate">
+        <property name="maxLength">
+         <number>10</number>
+        </property>
+        <property name="placeholderText">
+         <string>Bitrate in kbps</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="label_12">
+        <property name="text">
+         <string>Threshold:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QSpinBox" name="resolutionThreshold">
+        <property name="suffix">
+         <string>%</string>
+        </property>
+        <property name="minimum">
+         <number>30</number>
+        </property>
+        <property name="maximum">
+         <number>200</number>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0" colspan="3">
+       <widget class="QLabel" name="label_14">
+        <property name="text">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If Resolution is reported within listed resolution +/- threshhold percentage)&lt;/p&gt;&lt;p&gt;When the resolution is greater than 4k. The Uncompressed Bitrate is calculated then divided by this number, a &lt;span style=&quot; font-weight:600;&quot;&gt;Lower&lt;/span&gt; divisor is &lt;span style=&quot; font-weight:600;&quot;&gt;Better&lt;/span&gt; Quality&lt;/p&gt;&lt;p&gt;For example: 24bit 1080p with a divisor of 250=24*1920*1080*60/250 = 11.94 kbit/sec&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="textFormat">
+         <enum>Qt::RichText</enum>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="2">
+       <widget class="QPushButton" name="experiment">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Experiment</string>
+        </property>
+        <property name="icon">
+         <iconset resource="../../UI/resources/application.qrc">
+          <normaloff>:/experiment.png</normaloff>:/experiment.png</iconset>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0" colspan="2">
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="label_8">
+     <property name="text">
+      <string>Higher Bitrate is Better Quality</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer_7">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>231</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>NSABUtils::CLineEditWithSuffix</class>
+   <extends>QLineEdit</extends>
+   <header>SABUtils/LineEditWithSuffix.h</header>
+  </customwidget>
+ </customwidgets>
+ <tabstops>
+  <tabstop>target4kBitrate</tabstop>
+  <tabstop>targetHDBitrate</tabstop>
+  <tabstop>targetSubHDBitrate</tabstop>
+ </tabstops>
+ <resources>
+  <include location="../../UI/resources/application.qrc"/>
+ </resources>
+ <connections/>
+</ui>

@@ -20,8 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef __UI_TRANSCODEVIDEOSETTINGS_H
-#define __UI_TRANSCODEVIDEOSETTINGS_H
+#ifndef __UI_TRANSCODEVIDEOCODECCODEC_H
+#define __UI_TRANSCODEVIDEOCODECCODEC_H
 
 #include "BasePrefPage.h"
 
@@ -33,24 +33,40 @@ namespace NMediaManager
         {
             namespace Ui
             {
-                class CTranscodeVideoSettings;
+                class CTranscodeVideoCodec;
             };
-            class CTranscodeVideoSettings : public CBasePrefPage
+            class CTranscodeVideoCodec : public CBasePrefPage
             {
                 Q_OBJECT
             public:
-                CTranscodeVideoSettings( QWidget *parent = nullptr );
+                CTranscodeVideoCodec( QWidget *parent = nullptr );
 
-                virtual ~CTranscodeVideoSettings() override;
+                virtual ~CTranscodeVideoCodec() override;
 
                 virtual void load() override;
                 virtual void save() override;
-                virtual QStringList pageName() const override { return QStringList( { "Transcode Settings", "Video" } ); }
+
+                virtual QStringList pageName() const override { return QStringList( { "Transcode Settings", "Video", "Codec" } ); }
             public Q_SLOTS:
+                void slotUsePresetChanged();
+                void slotUseTuneChanged();
+                void slotUseProfileChanged();
+                void slotCodecChanged();
+                void slotHWAccelChanged();
+                void slotExplicitCodecChanged();
 
+                void slotQualityGoalMetricChanged();
+                void slotExplicitCRFSliderChanged();
             private:
+                double getCurrentCRFValue() const;
+                void setCurrentCRFValue( double value );
+                void selectVideoCodec( const QString &curr );
 
-                std::unique_ptr< Ui::CTranscodeVideoSettings > fImpl;
+                std::unique_ptr< Ui::CTranscodeVideoCodec > fImpl;
+                QStringList fVerboseEncoders;
+                QStringList fTerseEncoders;
+                QStringList fVerboseHWAccels;
+                QStringList fTerseHWAccels;
             };
         }
     }
