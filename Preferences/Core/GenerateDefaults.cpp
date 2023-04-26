@@ -495,6 +495,8 @@ namespace NMediaManager
                                             << R"()"
                                             << "%DEFAULT_AVERAGE_SUBHD_BITRATE%"
                                             << R"()"
+                                            << "%DEFAULT_NON_CONFORMING_DIVISOR%"
+                                            << R"()"
                                             << "%DEFAULT_USE_PRESET%"
                                             << R"()"
                                             << "%DEFAULT_PRESET%"
