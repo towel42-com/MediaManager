@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/">
+        <file>experiment.png</file>
         <file>rename.png</file>
         <file>convert.png</file>
         <file>cc.png</file>
