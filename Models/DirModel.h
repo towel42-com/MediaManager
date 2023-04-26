@@ -344,6 +344,7 @@ namespace NMediaManager
             virtual int getMediaResolutionLoc() const final;
             virtual int getMediaVideoCodecLoc() const final;
             virtual int getMediaVideoBitrateLoc() const final;
+            virtual int getMediaVideoHDRLoc() const final;
             virtual int getMediaAudioCodecLoc() const final;
             virtual int getMediaAudioSampleRateLoc() const final;
             virtual int getMediaSubtitlesLoc() const final;

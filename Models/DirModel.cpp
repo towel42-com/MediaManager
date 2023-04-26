@@ -47,7 +47,6 @@
 #include <QTextStream>
 #include <QCollator>
 #include <QDir>
-#include <QLocale>
 #include <QFileIconProvider>
 #include <QTimer>
 #include <QTreeView>
@@ -1841,6 +1840,11 @@ namespace NMediaManager
             return getMediaColumn( NSABUtils::EMediaTags::eVideoBitrateString );
         }
 
+        int CDirModel::getMediaVideoHDRLoc() const
+        {
+            return getMediaColumn( NSABUtils::EMediaTags::eHDRInfo );
+        }
+
         int CDirModel::getMediaAudioCodecLoc() const
         {
             return getMediaColumn( NSABUtils::EMediaTags::eAllAudioCodecsDisp );
@@ -2234,6 +2238,7 @@ namespace NMediaManager
                 << tr( "Resolution" )   //
                 << tr( "Video Codec(s)" )   //
                 << tr( "Video Bitrate" )   //
+                << tr( "HDR Info" )   //
                 << tr( "Audio Codec(s)" )   //
                 << tr( "Audio Sample Rate" )   //
                 << tr( "Subtitles(s)" )   //
@@ -2247,6 +2252,7 @@ namespace NMediaManager
                     NSABUtils::EMediaTags::eResolution,   //
                     NSABUtils::EMediaTags::eAllVideoCodecs,   //
                     NSABUtils::EMediaTags::eVideoBitrateString,   //
+                    NSABUtils::EMediaTags::eHDRInfo,   //
                     NSABUtils::EMediaTags::eAllAudioCodecsDisp,   //
                     NSABUtils::EMediaTags::eAudioSampleRateString,   //
                     NSABUtils::EMediaTags::eAllSubtitleLanguages,   //
@@ -2282,6 +2288,11 @@ namespace NMediaManager
                 { [ this ]()
                   {
                       return getMediaVideoBitrateLoc();
+                  } }   //
+                ,
+                { [ this ]()
+                  {
+                      return getMediaVideoHDRLoc();
                   } }   //
                 ,
                 { [ this ]()
