@@ -59,11 +59,11 @@ namespace NMediaManager
             return retVal;
         }
 
-        std::pair< bool, QStandardItem * > CTagsModel::processItem( const QStandardItem *item, bool displayOnly )
+        std::pair< bool, std::list< QStandardItem * > > CTagsModel::processItem( const QStandardItem *item, bool displayOnly )
         {
             auto fi = fileInfo( item );
             if ( !isMediaFile( fi ) )
-                return std::make_pair( true, nullptr );
+                return std::make_pair( true, std::list< QStandardItem * >() );
 
             QStandardItem *myItem = nullptr;
             bool aOK = true;
@@ -108,7 +108,7 @@ namespace NMediaManager
 
             if ( progressDlg() )
                 progressDlg()->setValue( progressDlg()->value() + 1 );
-            return std::make_pair( aOK, myItem );
+            return std::make_pair( aOK, std::list< QStandardItem * >( { myItem } ) );
         }
 
         void CTagsModel::attachTreeNodes( QStandardItem * /*nextParent*/, QStandardItem *& /*prevParent*/, const STreeNode & /*treeNode*/ )
@@ -225,8 +225,7 @@ namespace NMediaManager
                     if ( tag.isEmpty() )
                         tag = QString( "<EMPTY>" ).toHtmlEscaped();
 
-                    auto msg =
-                        tr( "<p style='white-space:pre'>File <b>'%1'</b> does not meet <b>'%2'</b> Meta Tag requirement '%3' - Currently <b>'%4'</b></p>" ).arg( fileInfo.fileName() ).arg( tagName ).arg( expr.toHtmlEscaped() ).arg( tag );
+                    auto msg = tr( "<p style='white-space:pre'>File <b>'%1'</b> does not meet <b>'%2'</b> Meta Tag requirement '%3' - Currently <b>'%4'</b></p>" ).arg( fileInfo.fileName() ).arg( tagName ).arg( expr.toHtmlEscaped() ).arg( tag );
 
                     return TItemStatus( NPreferences::EItemStatus::eWarning, msg );
                 }

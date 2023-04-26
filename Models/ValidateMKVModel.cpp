@@ -46,60 +46,60 @@ namespace NMediaManager
             return QStringList() << "*.mkv";
         }
 
-        std::pair< bool, QStandardItem * > CValidateMKVModel::processItem( const QStandardItem *item, bool displayOnly )
+        std::pair< bool, std::list< QStandardItem * > > CValidateMKVModel::processItem( const QStandardItem *item, bool displayOnly )
         {
             if ( item->data( ECustomRoles::eIsDir ).toBool() )
-                return std::make_pair( true, nullptr );
+                return std::make_pair( true, std::list< QStandardItem * >() );
 
-            SProcessInfo processInfo;
-            processInfo.fSetMKVTagsOnSuccess = true;
-            processInfo.fOldName = item->data( ECustomRoles::eAbsFilePath ).toString();
-            auto fi = QFileInfo( processInfo.fOldName );
-            processInfo.fItem = new QStandardItem( QString( "Validate '%1'" ).arg( getDispName( processInfo.fOldName ) ) );
-            processInfo.fItem->setData( processInfo.fOldName, ECustomRoles::eOldName );
+            auto processInfo = std::make_shared< SProcessInfo >();
+            processInfo->fSetMetainfoTagsOnSuccess = true;
+            processInfo->fOldName = item->data( ECustomRoles::eAbsFilePath ).toString();
+            auto fi = QFileInfo( processInfo->fOldName );
+            processInfo->fItem = new QStandardItem( QString( "Validate '%1'" ).arg( getDispName( processInfo->fOldName ) ) );
+            processInfo->fItem->setData( processInfo->fOldName, ECustomRoles::eOldName );
 
             bool aOK = true;
             QStandardItem *myItem = nullptr;
             fFirstProcess = true;
             if ( !displayOnly )
             {
-                processInfo.fForceUnbuffered = true;
-                processInfo.fMaximum = 4;
+                processInfo->fForceUnbuffered = true;
+                processInfo->fMaximum = 4;
 
-                processInfo.fCmd = NPreferences::NCore::CPreferences::instance()->getMKVValidatorEXE();
-                if ( processInfo.fCmd.isEmpty() || !QFileInfo( processInfo.fCmd ).isExecutable() )
+                processInfo->fCmd = NPreferences::NCore::CPreferences::instance()->getMKVValidatorEXE();
+                if ( processInfo->fCmd.isEmpty() || !QFileInfo( processInfo->fCmd ).isExecutable() )
                 {
                     QStandardItem *errorItem = nullptr;
-                    if ( processInfo.fCmd.isEmpty() )
-                        appendError( processInfo.fItem, tr( "mkvalidator is not set properly" ) );
+                    if ( processInfo->fCmd.isEmpty() )
+                        appendError( processInfo->fItem, tr( "mkvalidator is not set properly" ) );
                     else
-                        appendError( processInfo.fItem, tr( "mkvalidator '%1' is not an executable" ).arg( processInfo.fCmd ) );
+                        appendError( processInfo->fItem, tr( "mkvalidator '%1' is not an executable" ).arg( processInfo->fCmd ) );
                     aOK = false;
                 }
 
-                aOK = aOK && checkProcessItemExists( processInfo.fOldName, processInfo.fItem );
+                aOK = aOK && checkProcessItemExists( processInfo->fOldName, processInfo->fItem );
 
-                processInfo.fArgs = QStringList()
-                                    //<< "--no-warn"
-                                    << "--stage"
-                                    << "--quiet"
-                                    << "--ignore-mkv-errors"
-                                    //<< "--quick"
-                                    //<< "--quiet"
-                                    << processInfo.fOldName;
+                processInfo->fArgs = QStringList()
+                                     //<< "--no-warn"
+                                     << "--stage"
+                                     << "--quiet"
+                                     << "--ignore-mkv-errors"
+                                     //<< "--quick"
+                                     //<< "--quiet"
+                                     << processInfo->fOldName;
                 if ( aOK )
                 {
                     fProcessQueue.push_back( processInfo );
                     QTimer::singleShot( 0, this, &CDirModel::slotRunNextProcessInQueue );
                 }
             }
-            myItem = processInfo.fItem;
-            return std::make_pair( aOK, myItem );
+            myItem = processInfo->fItem;
+            return std::make_pair( aOK, std::list< QStandardItem * >( { myItem } ) );
         }
 
-        QString CValidateMKVModel::getProgressLabel( const SProcessInfo &processInfo ) const
+        QString CValidateMKVModel::getProgressLabel( std::shared_ptr< SProcessInfo > processInfo ) const
         {
-            auto retVal = QString( "Validating MKV<ul><li>%1</li></ul>" ).arg( getDispName( processInfo.fOldName ) );
+            auto retVal = QString( "Validating MKV<ul><li>%1</li></ul>" ).arg( getDispName( processInfo->fOldName ) );
             return retVal;
         }
 

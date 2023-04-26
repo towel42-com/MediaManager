@@ -37,6 +37,22 @@ namespace NMediaManager
         {
             QStringList CPreferences::getTranscodeArgs( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName, const std::list< NMediaManager::NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NMediaManager::NCore::SLanguageInfo, QString > > &subIdxFiles ) const
             {
+                return getTranscodeArgs( mediaInfo, srcName, destName, srtFiles, subIdxFiles, {}, {} );
+            }
+
+            QStringList CPreferences::getHighBitrateTranscodeArgs( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName, const std::list< NMediaManager::NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NMediaManager::NCore::SLanguageInfo, QString > > &subIdxFiles ) const
+            {
+                auto kbps = getAverageBitrateTarget( mediaInfo, true, false );
+                return getTranscodeArgs( mediaInfo, srcName, destName, srtFiles, subIdxFiles, {}, kbps );
+            }
+
+            QStringList CPreferences::getHighResolutionTranscodeArgs( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName, const std::list< NMediaManager::NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NMediaManager::NCore::SLanguageInfo, QString > > &subIdxFiles ) const
+            {
+                return getTranscodeArgs( mediaInfo, srcName, destName, srtFiles, subIdxFiles, NSABUtils::CMediaInfo::kHDResolution, {} );
+            }
+
+            QStringList CPreferences::getTranscodeArgs( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName, const std::list< NMediaManager::NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NMediaManager::NCore::SLanguageInfo, QString > > &subIdxFiles, const std::optional< std::pair< int, int > > &resolution, const std::optional< uint64_t > &bitrate ) const
+            {
                 auto transcodeNeeded = STranscodeNeeded( mediaInfo, this );
 
                 if ( !transcodeNeeded.transcodeNeeded() && srtFiles.empty() && subIdxFiles.empty() )
@@ -51,13 +67,29 @@ namespace NMediaManager
                 auto hwAccel = getTranscodeHWAccel();
                 if ( !hwAccel.isEmpty() )
                 {
-                    retVal   //
-                        << "-hwaccel" << hwAccel   //
-                        << "-hwaccel_output_format" << hwAccel   //
+                    retVal << "-hwaccel" << hwAccel;
+                    retVal << "-hwaccel_output_format" << hwAccel   //
                         ;
                 }
 
                 retVal << "-i" << srcName;   //
+                if ( resolution.has_value() )
+                {
+                    auto currRes = mediaInfo->getResolution();
+                    auto widthDiff = 1.0 * std::abs( currRes.first - resolution.value().first ) / ( 1.0 * resolution.value().first );
+                    auto heightDiff = 1.0 * std::abs( currRes.second - resolution.value().second ) / ( 1.0 * resolution.value().second );
+
+                    auto scale = QString( "scale%1=%2:%3" ).arg( hwAccel.isEmpty() ? "" : ( "_" + hwAccel ) );
+                    if ( widthDiff > heightDiff )
+                        scale = scale.arg( resolution.value().first ).arg( -1 );
+                    else
+                        scale = scale.arg( -1 ).arg( resolution.value().second );
+                    retVal << "-vf" << scale;
+                }
+
+                if ( bitrate.has_value() )
+                    retVal << "-b:v" << QString( "%1k" ).arg( bitrate.value() );
+
                 for ( auto &&ii : srtFiles )
                 {
                     //retVal << "-sub_charenc" << "cp1252";
@@ -92,7 +124,7 @@ namespace NMediaManager
                        << "-map_chapters"
                        << "0";
 
-                if ( transcodeNeeded.formatOnly() || !transcodeNeeded.transcodeNeeded() )
+                if ( !bitrate.has_value() && ( transcodeNeeded.formatOnly() || !transcodeNeeded.transcodeNeeded() ) )
                 {
                     // already HVEC but wrong container, just copy
                     retVal << "-map"
@@ -108,7 +140,7 @@ namespace NMediaManager
                 else
                 {
                     QString videoCodec;
-                    if ( !transcodeNeeded.videoTranscodeNeeded() )
+                    if ( !transcodeNeeded.videoCodecTranscodeNeeded() && !bitrate.has_value() && !resolution.has_value() )
                     {
                         videoCodec = "copy";
                     }
@@ -151,19 +183,29 @@ namespace NMediaManager
                         }
                     }
 
-                    if ( transcodeNeeded.videoTranscodeNeeded() && mediaInfo->isHEVCCodec( videoCodec, NPreferences::NCore::CPreferences::instance()->getMediaFormats() ) )
+                    if ( transcodeNeeded.videoCodecTranscodeNeeded() && mediaInfo->isHEVCCodec( videoCodec, NPreferences::NCore::CPreferences::instance()->getMediaFormats() ) )
                     {
-                        if ( getLosslessEncoding() )
-                            retVal << "-x265-params"
-                                   << "lossless=1";
-                        if ( getUseExplicitCRF() )
-                            retVal << "-crf" << QString::number( getExplicitCRF() );
+                        if ( !bitrate.has_value() )
+                        {
+                            if ( getLosslessEncoding() )
+                            {
+                                retVal << "-x265-params"
+                                       << "lossless=1";
+                            }
+                            else if ( getUseCRF() )
+                                retVal << "-crf" << QString::number( getCRF() );
+                            else if ( getUseAverageBitrate() )
+                                retVal << "-b:v" << QString( "%1k" ).arg( getAverageBitrateTarget( mediaInfo, true, false ) );
+                        }
+
                         if ( getUsePreset() )
                             retVal << "-preset" << toString( getPreset() );
                         if ( getUseTune() )
                             retVal << "-tune" << toString( getTune() );
                         if ( getUseProfile() )
                             retVal << "-profile:v" << toString( getProfile() );
+                        retVal << "-tag:v"
+                               << "hvc1";
                     }
                 }
 
@@ -178,8 +220,7 @@ namespace NMediaManager
                     auto subTitleCodec = QString( "copy" );
                     if ( isEncoderFormat( mediaInfo, "matroska" ) )
                     {
-                        if ( ( currCodec == "ass" ) || ( currCodec == "srt" )     || ( currCodec == "ssa" ) 
-                           || ( currCodec == "hdmv_pgs_subtitle" ) || ( currCodec == "subrip" ) || ( currCodec == "xsub" ) || ( currCodec == "dvdsub" ) )
+                        if ( ( currCodec == "ass" ) || ( currCodec == "srt" ) || ( currCodec == "ssa" ) || ( currCodec == "hdmv_pgs_subtitle" ) || ( currCodec == "subrip" ) || ( currCodec == "xsub" ) || ( currCodec == "dvdsub" ) )
                             subTitleCodec = QString( "copy" );
                         else
                             subTitleCodec = "srt";
@@ -227,6 +268,8 @@ namespace NMediaManager
                 retVal << "-f" << getConvertMediaToContainer()   //
                        << destName;
 
+                (void)bitrate;
+                (void)resolution;
                 return retVal;
             }
         }

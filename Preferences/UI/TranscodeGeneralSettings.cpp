@@ -57,14 +57,12 @@ namespace NMediaManager
 
                 auto pos = fImpl->mediaFormats->findData( NPreferences::NCore::CPreferences::instance()->getConvertMediaToContainer() );
                 fImpl->mediaFormats->setCurrentIndex( pos );
-                fImpl->forceTranscode->setChecked( NPreferences::NCore::CPreferences::instance()->getForceTranscode() );
             }
 
             void CTranscodeGeneralSettings::save()
             {
                 NPreferences::NCore::CPreferences::instance()->setConvertMediaToContainer( fImpl->mediaFormats->currentData().toString() );
                 NPreferences::NCore::CPreferences::instance()->setConvertMediaContainer( fImpl->convertMediaFormat->isChecked() );
-                NPreferences::NCore::CPreferences::instance()->setForceTranscode( fImpl->forceTranscode->isChecked() );
             }
        }
     }

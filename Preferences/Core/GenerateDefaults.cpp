@@ -139,8 +139,7 @@ namespace NMediaManager
             void replaceText( const QString &txt, QStringList &curr, const QString &funcName, const QString &boolVariable, const QString &trueValue, const QString &falseValue )
             {
                 QStringList function;
-                function << QString( "QString CPreferences::%1( bool %2 ) const" ).arg( funcName ).arg( boolVariable ) << "{" << getIndent( 1 ) + QString( "if ( %2 )" ).arg( boolVariable )
-                         << getIndent( 2 ) + QString( "return %1;" ).arg( toString( trueValue ) ) << getIndent( 1 ) + QString( "else" ) << getIndent( 2 ) + QString( "return %1;" ).arg( toString( falseValue ) ) << "}";
+                function << QString( "QString CPreferences::%1( bool %2 ) const" ).arg( funcName ).arg( boolVariable ) << "{" << getIndent( 1 ) + QString( "if ( %2 )" ).arg( boolVariable ) << getIndent( 2 ) + QString( "return %1;" ).arg( toString( trueValue ) ) << getIndent( 1 ) + QString( "else" ) << getIndent( 2 ) + QString( "return %1;" ).arg( toString( falseValue ) ) << "}";
                 for ( auto &&ii : function )
                 {
                     ii = getIndent( 3 ) + ii;
@@ -269,8 +268,7 @@ namespace NMediaManager
             }
 
             template< typename T >
-            auto replaceText( const QString &txt, QStringList &curr, const QString &funcName, T value ) ->
-                typename std::enable_if< !std::is_same< bool, T >::value && !std::is_enum< T >::value && !std::is_same< QString, T >::value && !std::is_same< char *, T >::value, void >::type
+            auto replaceText( const QString &txt, QStringList &curr, const QString &funcName, T value ) -> typename std::enable_if< !std::is_same< bool, T >::value && !std::is_enum< T >::value && !std::is_same< QString, T >::value && !std::is_same< char *, T >::value, void >::type
             {
                 QStringList function;
                 function << QString( "%1 CPreferences::%2() const" ).arg( typeid( T ).name() ).arg( funcName ) << "{" << getIndent( 1 ) + QString( "return %1;" ).arg( value ) << "}";
@@ -293,12 +291,10 @@ namespace NMediaManager
                 return replaceText( txt, curr, function );
             }
 
-            void replaceText(
-                const QString &txt, QStringList &curr, const QString &funcName, const QString &boolVariable, const QStringList &trueValue, const QStringList &falseValue, const QString &retValType = "QStringList", bool asString = true )
+            void replaceText( const QString &txt, QStringList &curr, const QString &funcName, const QString &boolVariable, const QStringList &trueValue, const QStringList &falseValue, const QString &retValType = "QStringList", bool asString = true )
             {
                 QStringList function;
-                function << QString( "%3 CPreferences::%1( bool %2 ) const" ).arg( funcName ).arg( boolVariable ).arg( retValType ) << "{" << getIndent( 1 ) + QString( "if ( %2 )" ).arg( boolVariable ) << getIndent( 1 ) + "{"
-                         << toString( retValType, trueValue, asString, 2 ) << getIndent( 1 ) + "}" << getIndent( 1 ) + "else" << getIndent( 1 ) + "{" << toString( retValType, falseValue, asString, 2 ) << getIndent( 1 ) + "}"
+                function << QString( "%3 CPreferences::%1( bool %2 ) const" ).arg( funcName ).arg( boolVariable ).arg( retValType ) << "{" << getIndent( 1 ) + QString( "if ( %2 )" ).arg( boolVariable ) << getIndent( 1 ) + "{" << toString( retValType, trueValue, asString, 2 ) << getIndent( 1 ) + "}" << getIndent( 1 ) + "else" << getIndent( 1 ) + "{" << toString( retValType, falseValue, asString, 2 ) << getIndent( 1 ) + "}"
                          << "}";
                 for ( auto &&ii : function )
                 {
@@ -427,8 +423,7 @@ namespace NMediaManager
                                             << R"(#include "Preferences.h")"
                                             << R"(#include "SABUtils/FFMpegFormats.h")"
                                             << R"()"
-                                            << R"(namespace NMediaManager)" << getIndent( 0 ) + R"({)" << getIndent( 1 ) + R"(namespace NPreferences)" << getIndent( 1 ) + R"({)" << getIndent( 2 ) + R"(namespace NCore)"
-                                            << getIndent( 2 ) + R"({)"
+                                            << R"(namespace NMediaManager)" << getIndent( 0 ) + R"({)" << getIndent( 1 ) + R"(namespace NPreferences)" << getIndent( 1 ) + R"({)" << getIndent( 2 ) + R"(namespace NCore)" << getIndent( 2 ) + R"({)"
                                             << "%DEFAULT_SEASON_DIR_PATTERN%"
                                             << R"()"
                                             << "%DEFAULT_OUT_DIR_PATTERN%"
@@ -476,17 +471,29 @@ namespace NMediaManager
                                             << R"()"
                                             << "%DEFAULT_TRANSCODE_VIDEO%"
                                             << R"()"
-                                            << "%DEFAULT_ONLY_TRANSCODE_VIDEO_ON_FORMAT_CHANGE%"
+                                            << "%DEFAULT_ONLY_TRANSCODE_VIDEO_ON_FORMAT_OR_BITRATE_CHANGE%"
                                             << R"()"
                                             << "%DEFAULT_TRANSCODE_TO_VIDEO_CODEC%"
                                             << R"()"
                                             << "%DEFAULT_LOSSLESS_TRANSCODING%"
                                             << R"()"
+                                            << "%DEFAULT_GENERATE_LOW_BITRATE_VIDEO%"
+                                            << R"()"
+                                            << "%DEFAULT_BITRATE_THRESHOLD_PERCENTAGE%"
+                                            << R"()"
+                                            << "%DEFAULT_GENERATE_NON_4k_VIDEO%"
+                                            << R"()"
                                             << "%DEFAULT_USE_CRF%"
                                             << R"()"
-                                            << "%DEFAULT_USE_EXPLICIT_CRF%"
+                                            << "%DEFAULT_CRF%"
                                             << R"()"
-                                            << "%DEFAULT_EXPLICIT_CRF%"
+                                            << "%DEFAULT_USE_AVERAGE_BITRATE%"
+                                            << R"()"
+                                            << "%DEFAULT_AVERAGE_4K_BITRATE%"
+                                            << R"()"
+                                            << "%DEFAULT_AVERAGE_HD_BITRATE%"
+                                            << R"()"
+                                            << "%DEFAULT_AVERAGE_SUBHD_BITRATE%"
                                             << R"()"
                                             << "%DEFAULT_USE_PRESET%"
                                             << R"()"
@@ -578,11 +585,20 @@ namespace NMediaManager
                                            << compareValues( "Transcode Audio Codec", getTranscodeToAudioCodecDefault(), getTranscodeToAudioCodec() )   //
 
                                            << compareValues( "Transcode Video", getTranscodeVideoDefault(), getTranscodeVideo() )   //
-                                           << compareValues( "Transcode Video on Format Change", getOnlyTranscodeVideoOnFormatChangeDefault(), getOnlyTranscodeVideoOnFormatChange() )   //
+                                           << compareValues( "Transcode Video on Format or Bitrate Change", getOnlyTranscodeVideoOnFormatChangeDefault(), getOnlyTranscodeVideoOnFormatChange() )   //
                                            << compareValues( "Lossless Video Encoding", getLosslessEncodingDefault(), getLosslessEncoding() )   //
+
+                                           << compareValues( "Generate Low Bitrate Video", getGenerateLowBitrateVideoDefault(), getGenerateLowBitrateVideo() )   //
+                                           << compareValues( "Bitrate Threshold Percentage", getBitrateThresholdPercentageDefault(), getBitrateThresholdPercentage() )   //
+                                           << compareValues( "Generate non-4k Video", getGenerateNon4kVideoDefault(), getGenerateNon4kVideo() )   //
+
                                            << compareValues( "Use CRF", getUseCRFDefault(), getUseCRF() )   //
-                                           << compareValues( "Use Explicit CRF", getUseExplicitCRFDefault(), getUseExplicitCRF() )   //
-                                           << compareValues( "Explicit CRF", getExplicitCRFDefault(), getExplicitCRF() )   //
+                                           << compareValues( "CRF", getCRFDefault(), getCRF() )   //
+                                           << compareValues( "Use Average Bitrate", getUseAverageBitrateDefault(), getUseAverageBitrate() )   //
+                                           << compareValues( "Average 4k Bitrate", getAverage4kBitrateDefault(), getAverage4kBitrate() )   //
+                                           << compareValues( "Average HD Bitrate", getAverageHDBitrateDefault(), getAverageHDBitrate() )   //
+                                           << compareValues( "Average Sub-HD Bitrate", getAverageSubHDBitrateDefault(), getAverageSubHDBitrate() )   //
+                                           << compareValues( "Non-Conforming Resolution Divisor", getNonConformingResolutionDivisorDefault(), getNonConformingResolutionDivisor() )   //
                                            << compareValues( "Use Preset", getUsePresetDefault(), getUsePreset() )   //
                                            << compareValues( "Preset", toString( getPresetDefault() ), toString( getPreset() ) )   //
                                            << compareValues( "Use Tune", getUseTuneDefault(), getUseTune() )   //
@@ -619,8 +635,7 @@ namespace NMediaManager
                 }
                 else if ( showNoChange )
                 {
-                    copyDefaults = QMessageBox::information( parent, tr( "Default Preferences are the Same" ), tr( "The defaults are up to date.\nWould you like to copy the defaults to the Clipboard" ), QMessageBox::Yes, QMessageBox::No )
-                                   == QMessageBox::Yes;
+                    copyDefaults = QMessageBox::information( parent, tr( "Default Preferences are the Same" ), tr( "The defaults are up to date.\nWould you like to copy the defaults to the Clipboard" ), QMessageBox::Yes, QMessageBox::No ) == QMessageBox::Yes;
                 }
 
                 if ( copyDefaults )
@@ -651,12 +666,22 @@ namespace NMediaManager
                     replaceText( "%DEFAULT_TRANSCODE_TO_AUDIO_CODEC%", newFileText, "getTranscodeToAudioCodecDefault", getTranscodeToAudioCodec() );
 
                     replaceText( "%DEFAULT_TRANSCODE_VIDEO%", newFileText, "getTranscodeVideoDefault", getTranscodeVideo() );
-                    replaceText( "%DEFAULT_ONLY_TRANSCODE_VIDEO_ON_FORMAT_CHANGE%", newFileText, "getOnlyTranscodeVideoOnFormatChangeDefault", getOnlyTranscodeVideoOnFormatChange() );
+                    replaceText( "%DEFAULT_ONLY_TRANSCODE_VIDEO_ON_FORMAT_OR_BITRATE_CHANGE%", newFileText, "getOnlyTranscodeVideoOnFormatChangeDefault", getOnlyTranscodeVideoOnFormatChange() );
                     replaceText( "%DEFAULT_TRANSCODE_TO_VIDEO_CODEC%", newFileText, "getTranscodeToVideoCodecDefault", getTranscodeToVideoCodec() );
+
+                    replaceText( "%DEFAULT_GENERATE_LOW_BITRATE_VIDEO%", newFileText, "getGenerateLowBitrateVideoDefault", getGenerateLowBitrateVideo() );
+                    replaceText( "%DEFAULT_BITRATE_THRESHOLD_PERCENTAGE%", newFileText, "getBitrateThresholdPercentageDefault", getBitrateThresholdPercentage() );
+                    replaceText( "%DEFAULT_GENERATE_NON_4k_VIDEO%", newFileText, "getGenerateNon4kVideoDefault", getGenerateNon4kVideo() );
+
                     replaceText( "%DEFAULT_USE_CRF%", newFileText, "getUseCRFDefault", getUseCRF() );
+                    replaceText( "%DEFAULT_CRF%", newFileText, "getCRFDefault", getCRF() );
+                    replaceText( "%DEFAULT_USE_AVERAGE_BITRATE%", newFileText, "getUseAverageBitrateDefault", getUseAverageBitrate() );
+                    replaceText( "%DEFAULT_AVERAGE_4K_BITRATE%", newFileText, "getAverage4kBitrateDefault", getAverage4kBitrate() );
+                    replaceText( "%DEFAULT_AVERAGE_HD_BITRATE%", newFileText, "getAverageHDBitrateDefault", getAverageHDBitrate() );
+                    replaceText( "%DEFAULT_AVERAGE_SUBHD_BITRATE%", newFileText, "getAverageSubHDBitrateDefault", getAverageSubHDBitrate() );
+                    replaceText( "%DEFAULT_NON_CONFORMING_DIVISOR%", newFileText, "getNonConformingResolutionDivisorDefault", getNonConformingResolutionDivisor() );
+
                     replaceText( "%DEFAULT_LOSSLESS_TRANSCODING%", newFileText, "getLosslessEncodingDefault", getLosslessEncoding() );
-                    replaceText( "%DEFAULT_USE_EXPLICIT_CRF%", newFileText, "getUseExplicitCRFDefault", getUseExplicitCRF() );
-                    replaceText( "%DEFAULT_EXPLICIT_CRF%", newFileText, "getExplicitCRFDefault", getExplicitCRF() );
                     replaceText( "%DEFAULT_USE_PRESET%", newFileText, "getUsePresetDefault", getUsePreset() );
                     replaceText( "%DEFAULT_PRESET%", "ETranscodePreset", newFileText, "getPresetDefault", getPreset() );
                     replaceText( "%DEFAULT_USE_TUNE%", newFileText, "getUseTuneDefault", getUseTune() );

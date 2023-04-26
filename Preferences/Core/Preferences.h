@@ -35,6 +35,7 @@
 #include <memory>
 class QFileInfo;
 class QWidget;
+class QDir;
 
 namespace NSABUtils
 {
@@ -160,9 +161,11 @@ namespace NMediaManager
                 bool isDecoderFormat( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &formatName ) const;
                 bool isDecoderFormat( const QString &fileName, const QString &formatName ) const;
                 bool isDecoderFormat( const QFileInfo &fi, const QString &formatName ) const;
-                QStringList getTranscodeArgs( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName, const std::list< NMediaManager::NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NMediaManager::NCore::SLanguageInfo, QString > > & subIdxFiles ) const;
+                QStringList getTranscodeArgs( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName, const std::list< NMediaManager::NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NMediaManager::NCore::SLanguageInfo, QString > > &subIdxFiles ) const;
+                QStringList getHighBitrateTranscodeArgs( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName, const std::list< NMediaManager::NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NMediaManager::NCore::SLanguageInfo, QString > > &subIdxFiles ) const;
+                QStringList getHighResolutionTranscodeArgs( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName, const std::list< NMediaManager::NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NMediaManager::NCore::SLanguageInfo, QString > > &subIdxFiles ) const;
 
-                std::shared_ptr< NSABUtils::CMediaInfo > getMediaInfo( const QFileInfo &fi, bool force=false );
+                std::shared_ptr< NSABUtils::CMediaInfo > getMediaInfo( const QFileInfo &fi, bool force = false );
                 std::shared_ptr< NSABUtils::CMediaInfo > getMediaInfo( const QString &fileName, bool force = false );
 
                 // ffmpeg results
@@ -282,13 +285,45 @@ namespace NMediaManager
                 bool getUseCRFDefault() const;
                 bool getUseCRF() const;
 
-                void setUseExplicitCRF( bool value );
-                bool getUseExplicitCRFDefault() const;
-                bool getUseExplicitCRF() const;
+                void setCRF( double value );
+                double getCRFDefault() const;
+                double getCRF() const;
 
-                void setExplicitCRF( int value );
-                int getExplicitCRFDefault() const;
-                int getExplicitCRF() const;
+                void setGenerateLowBitrateVideo( bool value );
+                bool getGenerateLowBitrateVideoDefault() const;
+                bool getGenerateLowBitrateVideo() const;
+
+                void setBitrateThresholdPercentage( int value );
+                int getBitrateThresholdPercentageDefault() const;
+                int getBitrateThresholdPercentage() const;
+
+                void setGenerateNon4kVideo( bool value );
+                bool getGenerateNon4kVideoDefault() const;
+                bool getGenerateNon4kVideo() const;
+
+                void setUseAverageBitrate( bool value );
+                bool getUseAverageBitrateDefault() const;
+                bool getUseAverageBitrate() const;
+
+                // since it can return raw gb/s over 4, use 64 bit int
+                uint64_t getAverageBitrateTarget( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, bool useKBS, bool addThreshold ) const;   // returns it in bits/second + threshold
+                QString getAverageBitrateTargetDisplayString( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo ) const;
+
+                void setAverage4kBitrate( int value );
+                int getAverage4kBitrateDefault() const;
+                int getAverage4kBitrate() const;
+
+                void setAverageHDBitrate( int value );
+                int getAverageHDBitrateDefault() const;
+                int getAverageHDBitrate() const;
+
+                void setAverageSubHDBitrate( int value );
+                int getAverageSubHDBitrateDefault() const;
+                int getAverageSubHDBitrate() const;
+
+                void setNonConformingResolutionDivisor( int value );
+                int getNonConformingResolutionDivisorDefault() const;
+                int getNonConformingResolutionDivisor() const;
 
                 void setUsePreset( bool value );
                 bool getUsePresetDefault() const;
@@ -341,6 +376,7 @@ namespace NMediaManager
                 void setMovieOutDirPattern( const QString &value );
                 QString getMovieOutDirPattern() const;
 
+                bool isSkippedPath( bool forMediaNaming, const QDir &dir ) const;
                 bool isSkippedPath( bool forMediaNaming, const QFileInfo &fileInfo ) const;
                 QStringList getDefaultSkippedPaths( bool forMediaNaming ) const;
                 QStringList getSkippedPaths( bool forMediaNaming ) const;
@@ -349,6 +385,7 @@ namespace NMediaManager
                 void setIgnorePathNamesToSkip( bool forMediaNaming, bool value );
                 bool getIgnorePathNamesToSkip( bool forMediaNaming ) const;
 
+                bool isIgnoredPath( const QDir &dir ) const;
                 bool isIgnoredPath( const QFileInfo &fileInfo ) const;
                 QStringList getDefaultIgnoredPaths() const;
                 QStringList getIgnoredPaths() const;
@@ -555,12 +592,16 @@ namespace NMediaManager
                 void sigMediaInfoLoaded( const QString &fileName ) const;
 
             private:
+                QStringList getTranscodeArgs( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName, const std::list< NMediaManager::NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NMediaManager::NCore::SLanguageInfo, QString > > &subIdxFiles, const std::optional< std::pair< int, int > > &resolution, const std::optional< uint64_t > & bitrate ) const;
+
                 QStringList getDefaultFile() const;
                 bool isFileWithExtension( const QFileInfo &fi, std::function< QStringList() > getExtensions, std::unordered_set< QString > &hash, std::unordered_map< QString, bool > &cache ) const;
 
                 QStringList cleanUpPaths( const QStringList &paths, bool areDirs ) const;
                 void emitSigPreferencesChanged( EPreferenceTypes prefType );
                 bool pathMatches( const QFileInfo &fileInfo, const QStringList &values ) const;
+                bool pathMatches( const QDir &dir, const QStringList &values ) const;
+                bool pathMatches( QString pathName, const QStringList &values ) const;
                 bool containsValue( const QString &value, const QStringList &values ) const;
                 //QString getDefaultInPattern( bool forTV ) const;
                 QString getDefaultSeasonDirPattern() const;

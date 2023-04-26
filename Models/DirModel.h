@@ -156,7 +156,7 @@ namespace NMediaManager
             QString primaryNewName() const;
 
             bool fBackupOrig{ true };
-            bool fSetMKVTagsOnSuccess{ false };
+            bool fSetMetainfoTagsOnSuccess{ false };
             bool fForceUnbuffered{ false };
             QString fCmd;
             QStringList fArgs;
@@ -167,7 +167,7 @@ namespace NMediaManager
             int fMaximum{ 0 };
             QString fProgressLabel;
 
-            std::function< bool( const SProcessInfo *processInfo, QString &msg ) > fPostProcess;
+            std::function< bool( const SProcessInfo * processInfo, QString &msg ) > fPostProcess;
             std::shared_ptr< QTemporaryDir > fTempDir;
             std::unordered_map< QFileDevice::FileTime, QDateTime > fTimeStamps;
         };
@@ -328,7 +328,7 @@ namespace NMediaManager
             QTreeView *filesView() const;
             NSABUtils::CDoubleProgressDlg *progressDlg() const;
 
-            virtual std::pair< bool, QStandardItem * > processItem( const QStandardItem *item, bool displayOnly ) = 0;
+            virtual std::pair< bool, std::list< QStandardItem * > > processItem( const QStandardItem *item, bool displayOnly ) = 0;
             virtual void postAddItems( const QFileInfo &fileInfo, std::list< SDirNodeItem > &currItems ) const;
             virtual int firstMediaItemColumn() const;
             virtual std::list< NSABUtils::EMediaTags > getMediaColumnsList() const;
@@ -374,8 +374,8 @@ namespace NMediaManager
             virtual std::pair< std::function< bool( const QVariant & ) >, int > getExcludeFuncForItemCount() const;
 
             virtual void postProcess( bool /*displayOnly*/ );
-            virtual bool postExtProcess( const SProcessInfo &info, QStringList &msgList );
-            virtual QString getProgressLabel( const SProcessInfo &processInfo ) const;
+            virtual bool postExtProcess( const SProcessInfo * processInfo, QStringList &msgList );
+            virtual QString getProgressLabel( std::shared_ptr< SProcessInfo > processInfo ) const;
             virtual bool usesQueuedProcessing() const = 0;
 
             // model overrides during iteration
@@ -453,7 +453,7 @@ namespace NMediaManager
             QProcess *fProcess{ nullptr };
             std::pair< bool, std::shared_ptr< QStandardItemModel > > fProcessResults;
 
-            mutable std::list< SProcessInfo > fProcessQueue;
+            mutable std::list< std::shared_ptr< SProcessInfo > > fProcessQueue;
             std::pair< QString, bool > fStdOutRemaining{ QString(), false };
             std::pair< QString, bool > fStdErrRemaining{ QString(), false };
 

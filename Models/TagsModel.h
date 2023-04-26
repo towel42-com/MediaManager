@@ -55,7 +55,7 @@ namespace NMediaManager
 
             virtual int firstMediaItemColumn() const override { return EColumns::eMediaColumnLoc; }
             virtual QStringList headers() const override;
-            virtual std::pair< bool, QStandardItem * > processItem( const QStandardItem *item, bool displayOnly ) override;
+            virtual std::pair< bool, std::list< QStandardItem * > > processItem( const QStandardItem *item, bool displayOnly ) override;
             virtual void attachTreeNodes( QStandardItem *nextParent, QStandardItem *&prevParent, const STreeNode &treeNode ) override;
 
             virtual bool usesQueuedProcessing() const override { return false; }

@@ -44,11 +44,11 @@ namespace NMediaManager
         private:
             virtual QStringList dirModelFilter() const override;
 
-            virtual std::pair< bool, QStandardItem * > processItem( const QStandardItem *item, bool displayOnly ) override;
+            virtual std::pair< bool, std::list< QStandardItem * > > processItem( const QStandardItem *item, bool displayOnly ) override;
             virtual bool showMediaItems() const override { return true; };
             virtual int firstMediaItemColumn() const override { return EColumns::eMediaColumnLoc; }
             virtual QStringList headers() const override;
-            virtual QString getProgressLabel( const SProcessInfo &processInfo ) const override;
+            virtual QString getProgressLabel( std::shared_ptr< SProcessInfo > processInfo ) const override;
             virtual void postLoad( QTreeView * /*treeView*/ ) override;
             virtual void preLoad( QTreeView * /*treeView*/ ) override;
             virtual void postProcess( bool /*displayOnly*/ ) override;

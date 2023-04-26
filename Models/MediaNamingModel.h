@@ -130,7 +130,7 @@ namespace NMediaManager
 
             virtual bool usesQueuedProcessing() const override { return false; }
 
-            virtual std::pair< bool, QStandardItem * > processItem( const QStandardItem *item, bool displayOnly ) override;
+            virtual std::pair< bool, std::list< QStandardItem * > > processItem( const QStandardItem *item, bool displayOnly ) override;
 
             void updateTransformResults( const QString &newName, const QString &oldName );
 

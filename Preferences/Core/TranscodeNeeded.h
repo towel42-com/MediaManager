@@ -47,23 +47,38 @@ namespace NMediaManager
                 bool isLoaded() const;
                 std::optional< QString > getFormatMessage() const;
                 std::optional< QString > getVideoCodecMessage() const;
+                std::optional< QString > getVideoBitrateMessage() const;
+                std::optional< QString > getVideoResolutionMessage() const;
                 std::optional< QString > getAudioCodecMessage() const;
+
                 QStringList getActions() const;
+                QStringList getHighBitrateAction() const;
+                QStringList getHighResolutionAction() const;
+                
                 QString getProgressLabelHeader( const QString &from, const QStringList & otherFiles, const QString &to ) const;
+                QString getHighResolutionProgressLabelHeader( const QString &from, const QStringList &otherFiles, const QString &to ) const;
+                QString getHighBitrateProgressLabelHeader( const QString &from, const QStringList &otherFiles, const QString &to ) const;
 
-                bool transcodeNeeded() const { return fForce || fVideo || fAudio || fMissingAAC || fFormat; }
-                bool formatOnly() const { return fFormat && !fVideo && !fAudio; }
+                bool transcodeNeeded() const { return fVideoCodec || fAudio || fMissingAAC || fFormat; }
+                bool videoBitrateTranscodeNeeded() const { return fVideoBitrate; }   // when true create a secondary video at lower bitrate
+                bool videoResolutionTranscodeNeeded() const { return fVideoResolution; }   // when true create a secondary video at lower resolution
 
-                bool formatChangeNeeded() const { return fFormat; }
-                bool addAACAudioCodec() const { return fMissingAAC; }
-                bool audioTranscodeNeeded() const { return fAudio; }
-                bool videoTranscodeNeeded() const { return fVideo; }
+                bool formatOnly() const { return fFormat && !fVideoCodec && !fAudio && !fMissingAAC; }
+
+                bool formatChangeNeeded() const { return fFormat; }   // when true container format needs changing
+                bool addAACAudioCodec() const { return fMissingAAC; }  // when true aac audio is missing and needs to be added
+                bool audioTranscodeNeeded() const { return fAudio; }   // when true the audio codec needs to be transcoded 
+                bool videoCodecTranscodeNeeded() const { return fVideoCodec; }  // when true, the video codec needs to be transcoded
+
             private:
-                bool fVideo{ false };
+                QString getProgressLabelHeader( const QString &from, const QStringList &mergedFiles, const QString &to, const QStringList &actions ) const;
+                
+                bool fVideoCodec{ false };
+                bool fVideoBitrate{ false };
+                bool fVideoResolution{ false };
                 bool fAudio{ false };
                 bool fMissingAAC{ false };
                 bool fFormat{ false };
-                bool fForce{ false };
                 std::shared_ptr< NSABUtils::CMediaInfo > fMediaInfo;
             };
         }

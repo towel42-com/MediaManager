@@ -56,106 +56,109 @@ namespace NMediaManager
             return QStringList() << "*.mkv";
         }
 
-        std::pair< bool, QStandardItem * > CGenerateBIFModel::processItem( const QStandardItem *item, bool displayOnly )
+        std::pair< bool, std::list< QStandardItem * > > CGenerateBIFModel::processItem( const QStandardItem *item, bool displayOnly )
         {
             if ( item->data( ECustomRoles::eIsDir ).toBool() )
-                return std::make_pair( true, nullptr );
+                return std::make_pair( true, std::list< QStandardItem * >() );
 
-            SProcessInfo processInfo;
-            processInfo.fSetMKVTagsOnSuccess = false;
-            processInfo.fOldName = item->data( ECustomRoles::eAbsFilePath ).toString();
-            auto fi = QFileInfo( processInfo.fOldName );
+            auto processInfo = std::make_shared< SProcessInfo >();
+            processInfo->fSetMetainfoTagsOnSuccess = false;
+            processInfo->fOldName = item->data( ECustomRoles::eAbsFilePath ).toString();
+            auto fi = QFileInfo( processInfo->fOldName );
             auto sz = NPreferences::NCore::CPreferences::instance()->getThumbnailSize( fi );
 
-            processInfo.fItem = new QStandardItem( QString( "Generate Thumbnail Videos from '%1'" ).arg( getDispName( processInfo.fOldName ) ) );
-            processInfo.fItem->setData( processInfo.fOldName, ECustomRoles::eOldName );
+            processInfo->fItem = new QStandardItem( QString( "Generate Thumbnail Videos from '%1'" ).arg( getDispName( processInfo->fOldName ) ) );
+            processInfo->fItem->setData( processInfo->fOldName, ECustomRoles::eOldName );
 
             if ( NPreferences::NCore::CPreferences::instance()->generateBIF() )
             {
                 auto bifName = NPreferences::NCore::CPreferences::instance()->getImageFileName( fi, sz, "bif" );
-                processInfo.fNewNames << bifName;
+                processInfo->fNewNames << bifName;
 
-                auto bifItem = new QStandardItem( tr( "BIF File => '%1'" ).arg( getDispName( processInfo.primaryNewName() ) ) );
-                processInfo.fItem->appendRow( bifItem );
+                auto bifItem = new QStandardItem( tr( "BIF File => '%1'" ).arg( getDispName( processInfo->primaryNewName() ) ) );
+                processInfo->fItem->appendRow( bifItem );
             }
 
             if ( NPreferences::NCore::CPreferences::instance()->generateGIF() )
             {
                 auto gifName = NPreferences::NCore::CPreferences::instance()->getImageFileName( fi, sz, "gif" );
-                processInfo.fNewNames << gifName;
+                processInfo->fNewNames << gifName;
 
                 auto gifItem = new QStandardItem( tr( "GIF File => '%1'" ).arg( getDispName( gifName ) ) );
-                processInfo.fItem->appendRow( gifItem );
+                processInfo->fItem->appendRow( gifItem );
             }
-            processInfo.fItem->setData( processInfo.fNewNames, ECustomRoles::eNewName );
+            processInfo->fItem->setData( processInfo->fNewNames, ECustomRoles::eNewName );
 
             bool aOK = true;
             QStandardItem *myItem = nullptr;
             fFirstProcess = true;
             if ( !displayOnly )
             {
-                processInfo.fMaximum = NSABUtils::CMediaInfo::getNumberOfSeconds( processInfo.fOldName );
+                processInfo->fMaximum = NSABUtils::CMediaInfo::getNumberOfSeconds( processInfo->fOldName );
 
                 bool isEmbyEXE = false;
-                processInfo.fCmd = NPreferences::NCore::CPreferences::instance()->getFFMpegEmbyEXE();
-                if ( !processInfo.fCmd.isEmpty() && QFileInfo( processInfo.fCmd ).isExecutable() )
+                processInfo->fCmd = NPreferences::NCore::CPreferences::instance()->getFFMpegEmbyEXE();
+                if ( !processInfo->fCmd.isEmpty() && QFileInfo( processInfo->fCmd ).isExecutable() )
                     isEmbyEXE = true;
                 else
                 {
-                    processInfo.fCmd = NPreferences::NCore::CPreferences::instance()->getFFMpegEXE();
+                    processInfo->fCmd = NPreferences::NCore::CPreferences::instance()->getFFMpegEXE();
                 }
 
-                if ( processInfo.fCmd.isEmpty() || !QFileInfo( processInfo.fCmd ).isExecutable() )
+                if ( processInfo->fCmd.isEmpty() || !QFileInfo( processInfo->fCmd ).isExecutable() )
                 {
                     QStandardItem *errorItem = nullptr;
-                    if ( processInfo.fCmd.isEmpty() )
-                        appendError( processInfo.fItem, tr( "ffmpeg is not set properly" ) );
+                    if ( processInfo->fCmd.isEmpty() )
+                        appendError( processInfo->fItem, tr( "ffmpeg is not set properly" ) );
                     else
-                        appendError( processInfo.fItem, tr( "ffmpeg '%1' is not an executable" ).arg( processInfo.fCmd ) );
+                        appendError( processInfo->fItem, tr( "ffmpeg '%1' is not an executable" ).arg( processInfo->fCmd ) );
                     aOK = false;
                 }
 
-                aOK = aOK && checkProcessItemExists( processInfo.fOldName, processInfo.fItem );
-                processInfo.fTimeStamps = NSABUtils::NFileUtils::timeStamps( processInfo.fOldName );
+                aOK = aOK && checkProcessItemExists( processInfo->fOldName, processInfo->fItem );
+                processInfo->fTimeStamps = NSABUtils::NFileUtils::timeStamps( processInfo->fOldName );
 
                 if ( NPreferences::NCore::CPreferences::instance()->keepTempDir() )
                 {
-                    processInfo.fTempDir = std::make_shared< QTemporaryDir >();
-                    processInfo.fTempDir->setAutoRemove( false );
+                    processInfo->fTempDir = std::make_shared< QTemporaryDir >();
+                    processInfo->fTempDir->setAutoRemove( false );
                 }
                 else
                 {
-                    processInfo.fTempDir = std::make_shared< QTemporaryDir >( QFileInfo( processInfo.fOldName ).absoluteDir().absoluteFilePath( "./TempDir-XXXXXX" ) );
-                    processInfo.fTempDir->setAutoRemove( true );
+                    processInfo->fTempDir = std::make_shared< QTemporaryDir >( QFileInfo( processInfo->fOldName ).absoluteDir().absoluteFilePath( "./TempDir-XXXXXX" ) );
+                    processInfo->fTempDir->setAutoRemove( true );
                 }
-                //qDebug() << processInfo.fTempDir->path();
+                //qDebug() << processInfo->fTempDir->path();
 
                 // eg -f matroska -threads 1 -skip_interval 10 -copyts -i file:"/volume2/video/Movies/Westworld (1973) [tmdbid=2362]/Westworld.mkv" -an -sn -vf "scale=w=320:h=133" -vsync cfr -r 0.1 -f image2 "/var/packages/EmbyServer/var/cache/temp/112d22a09fea457eaea27c4b0c88f790/img_%05d.jpg"
-                processInfo.fArgs = QStringList() << "-hide_banner" << "-f" << "matroska"   // input format
+                processInfo->fArgs = QStringList() << "-hide_banner" << "-f" << "matroska"   // input format
                     ;
                 auto hwAccel = NPreferences::NCore::CPreferences::instance()->getTranscodeHWAccel();
                 if ( !hwAccel.isEmpty() )
                 {
-                    processInfo.fArgs << "-hwaccel" << hwAccel;
+                    processInfo->fArgs << "-hwaccel" << hwAccel;
                 }
-                processInfo.fArgs << "-threads" << "1"   // num threads
+                processInfo->fArgs << "-threads" << "1"   // num threads
                     ;
                 if ( isEmbyEXE )
                 {
-                    processInfo.fArgs << "-skip_interval" << QString::number( NPreferences::NCore::CPreferences::instance()->imageInterval() );   // how often to skip
+                    processInfo->fArgs << "-skip_interval" << QString::number( NPreferences::NCore::CPreferences::instance()->imageInterval() );   // how often to skip
                 }
 
-                processInfo.fArgs << "-copyts"   // ignore processing timestamps
-                                  << "-i" << processInfo.fOldName   // input file
+                processInfo->fArgs << "-copyts"   // ignore processing timestamps
+                                  << "-i" << processInfo->fOldName   // input file
                                   << "-an"   // no audio
                                   << "-sn"   // no subtitles
                                   << "-vf" << QString( "scale=w=%1:h=%2" ).arg( sz.width() ).arg( sz.height() ) << "-vsync"
                                   << "cfr"   // constant frame  videwo sync method
                                   << "-f"
-                                  << "image2" << processInfo.fTempDir->filePath( "img_%05d.jpg" );
-                processInfo.fBackupOrig = false;
-                processInfo.fPostProcess = [ this ]( const SProcessInfo *processInfo, QString &msg ) -> bool
+                                  << "image2" << processInfo->fTempDir->filePath( "img_%05d.jpg" );
+                processInfo->fBackupOrig = false;
+                processInfo->fPostProcess = [ this ]( const SProcessInfo * processInfo, QString &msg ) -> bool
                 {
+                    if ( !processInfo )
+                        return false;
+
                     progressDlg()->setPrimaryValue( progressDlg()->primaryValue() + 1 );
                     if ( !processInfo || !processInfo->fTempDir )
                     {
@@ -227,17 +230,20 @@ namespace NMediaManager
                 fProcessQueue.push_back( processInfo );
                 QTimer::singleShot( 0, this, &CDirModel::slotRunNextProcessInQueue );
             }
-            myItem = processInfo.fItem;
-            return std::make_pair( aOK, myItem );
+            myItem = processInfo->fItem;
+            return std::make_pair( aOK, std::list< QStandardItem * >( { myItem } ) );
         }
 
-        QString CGenerateBIFModel::getProgressLabel( const SProcessInfo &processInfo ) const
+        QString CGenerateBIFModel::getProgressLabel( std::shared_ptr< SProcessInfo > processInfo ) const
         {
-            return getProgressLabel( &processInfo, true );
+            return getProgressLabel( processInfo.get(), true );
         }
 
-        QString CGenerateBIFModel::getProgressLabel( const SProcessInfo *processInfo, bool bif ) const
+        QString CGenerateBIFModel::getProgressLabel( const SProcessInfo * processInfo, bool bif ) const
         {
+            if ( !processInfo )
+                return {};
+
             auto retVal = QString( "Generating Thumbnail Videos<ul><li>%1</li>to<li>%2</li></ul>" ).arg( getDispName( processInfo->fOldName ) ).arg( getDispName( bif ? processInfo->primaryNewName() : processInfo->fNewNames.back() ) );
             return retVal;
         }

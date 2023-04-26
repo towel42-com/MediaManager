@@ -488,7 +488,7 @@ namespace NMediaManager
             setSearchResult( idx, {}, recursive, true );
         }
 
-        std::pair< bool, QStandardItem * > CMediaNamingModel::processItem( const QStandardItem *item, bool displayOnly )
+        std::pair< bool, std::list< QStandardItem * > > CMediaNamingModel::processItem( const QStandardItem *item, bool displayOnly )
         {
             QStandardItem *myItem = nullptr;
             bool aOK = true;
@@ -649,15 +649,14 @@ namespace NMediaManager
                                     else
                                     {
                                         aOK = false;
-                                        errorMsg =
-                                            QString( "Destination file Exists - Old Size: %1 New Size: %2" ).arg( NSABUtils::NFileUtils::byteSizeString( oldName, false ) ).arg( NSABUtils::NFileUtils::byteSizeString( newName, false ) );
+                                        errorMsg = QString( "Destination file Exists - Old Size: %1 New Size: %2" ).arg( NSABUtils::NFileUtils::byteSizeString( oldName, false ) ).arg( NSABUtils::NFileUtils::byteSizeString( newName, false ) );
                                     }
                                 }
                                 else
                                 {
                                     if ( !NSABUtils::NFileUtils::backup( newName ) )
                                     {
-                                        errorMsg = tr("Could not backup %1").arg( newName );
+                                        errorMsg = tr( "Could not backup %1" ).arg( newName );
                                     }
                                     auto fi = QFile( oldName );
                                     aOK = fi.rename( newName );
@@ -693,7 +692,7 @@ namespace NMediaManager
 
                                 QString msg;
                                 bool aOK = true;
-                                if ( QFileInfo( newName ).isFile()  )
+                                if ( QFileInfo( newName ).isFile() )
                                     aOK = setMediaTags( newName, transformResult, msg );
                                 if ( progressDlg() )
                                 {
@@ -734,7 +733,7 @@ namespace NMediaManager
                     }
                 }
             }
-            return std::make_pair( aOK, myItem );
+            return std::make_pair( aOK, std::list< QStandardItem * >( { myItem } ) );
         }
 
         QStandardItem *CMediaNamingModel::getTransformItem( const QStandardItem *item ) const

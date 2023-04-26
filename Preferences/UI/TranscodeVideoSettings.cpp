@@ -27,6 +27,9 @@
 
 #include "ui_TranscodeVideoSettings.h"
 
+#include <QIntValidator>
+#include <QWidgetAction>
+
 namespace NMediaManager
 {
     namespace NPreferences
@@ -38,7 +41,26 @@ namespace NMediaManager
                 fImpl( new Ui::CTranscodeVideoSettings )
             {
                 fImpl->setupUi( this );
-                connect( fImpl->useExplicitCRF, &QCheckBox::toggled, this, &CTranscodeVideoSettings::slotUseExplicitCRFChanged );
+                fImpl->average4kBitRate->setSuffix( "(kbps)" );
+                fImpl->averageHDBitRate->setSuffix( "(kbps)" );
+                fImpl->averageSubHDBitRate->setSuffix( "(kbps)" );
+
+                auto validator = new QIntValidator( fImpl->average4kBitRate );
+                validator->setRange( 1, 100000 );
+                fImpl->average4kBitRate->setValidator( validator );
+
+                validator = new QIntValidator( fImpl->averageHDBitRate );
+                validator->setRange( 1, 100000 );
+                fImpl->averageHDBitRate->setValidator( validator );
+
+                validator = new QIntValidator( fImpl->averageSubHDBitRate );
+                validator->setRange( 1, 100000 );
+                fImpl->averageSubHDBitRate->setValidator( validator );
+
+                connect( fImpl->losslessEncoding, &QRadioButton::toggled, this, &CTranscodeVideoSettings::slotQualityGoalMetricChanged );
+                connect( fImpl->useAvgBitrate, &QRadioButton::toggled, this, &CTranscodeVideoSettings::slotQualityGoalMetricChanged );
+                connect( fImpl->useCRF, &QRadioButton::toggled, this, &CTranscodeVideoSettings::slotQualityGoalMetricChanged );
+
                 connect( fImpl->usePreset, &QCheckBox::toggled, this, &CTranscodeVideoSettings::slotUsePresetChanged );
                 connect( fImpl->useTune, &QCheckBox::toggled, this, &CTranscodeVideoSettings::slotUseTuneChanged );
                 connect( fImpl->useProfile, &QCheckBox::toggled, this, &CTranscodeVideoSettings::slotUseProfileChanged );
@@ -79,21 +101,34 @@ namespace NMediaManager
             void CTranscodeVideoSettings::load()
             {
                 fImpl->transcodeVideo->setChecked( NPreferences::NCore::CPreferences::instance()->getTranscodeVideo() );
+
+                fImpl->onlyTranscodeVideoOnFormatChange->setChecked( NPreferences::NCore::CPreferences::instance()->getOnlyTranscodeVideoOnFormatChange() );
+
+                fImpl->generateNon4kVideo->setChecked( NPreferences::NCore::CPreferences::instance()->getGenerateNon4kVideo() );
+
+                fImpl->average4kBitRate->setText( QString::number( NPreferences::NCore::CPreferences::instance()->getAverage4kBitrate() ) );
+                fImpl->averageHDBitRate->setText( QString::number( NPreferences::NCore::CPreferences::instance()->getAverageHDBitrate() ) );
+                fImpl->averageSubHDBitRate->setText( QString::number( NPreferences::NCore::CPreferences::instance()->getAverageSubHDBitrate() ) );
+                fImpl->nonConformingResolutionRatio->setValue( NPreferences::NCore::CPreferences::instance()->getNonConformingResolutionDivisor() );
+
+                fImpl->generateLowBitrateVideo->setChecked( NPreferences::NCore::CPreferences::instance()->getGenerateLowBitrateVideo() );
+                fImpl->bitrateThreshold->setValue( NPreferences::NCore::CPreferences::instance()->getBitrateThresholdPercentage() );
+
                 fImpl->losslessEncoding->setChecked( NPreferences::NCore::CPreferences::instance()->getLosslessEncoding() );
+                fImpl->useAvgBitrate->setChecked( NPreferences::NCore::CPreferences::instance()->getUseAverageBitrate() );
                 fImpl->useCRF->setChecked( NPreferences::NCore::CPreferences::instance()->getUseCRF() );
-                fImpl->useExplicitCRF->setChecked( NPreferences::NCore::CPreferences::instance()->getUseExplicitCRF() );
-                fImpl->explicitCRF->setValue( NPreferences::NCore::CPreferences::instance()->getExplicitCRF() );
+                fImpl->explicitCRF->setValue( NPreferences::NCore::CPreferences::instance()->getCRF() );
+
                 fImpl->usePreset->setChecked( NPreferences::NCore::CPreferences::instance()->getUsePreset() );
                 fImpl->preset->setCurrentIndex( NPreferences::NCore::CPreferences::instance()->getPreset() );
                 fImpl->useTune->setChecked( NPreferences::NCore::CPreferences::instance()->getUseTune() );
                 fImpl->tune->setCurrentIndex( NPreferences::NCore::CPreferences::instance()->getTune() );
                 fImpl->useProfile->setChecked( NPreferences::NCore::CPreferences::instance()->getUseProfile() );
                 fImpl->profile->setCurrentIndex( NPreferences::NCore::CPreferences::instance()->getProfile() );
-                fImpl->onlyTranscodeVideoOnFormatChange->setChecked( NPreferences::NCore::CPreferences::instance()->getOnlyTranscodeVideoOnFormatChange() );
 
                 selectVideoCodec( NPreferences::NCore::CPreferences::instance()->getTranscodeToVideoCodec() );
 
-                slotUseExplicitCRFChanged();
+                slotQualityGoalMetricChanged();
                 slotUsePresetChanged();
                 slotUseTuneChanged();
                 slotUseProfileChanged();
@@ -101,21 +136,29 @@ namespace NMediaManager
                 slotHWAccelChanged();
             }
 
-            void CTranscodeVideoSettings::selectVideoCodec( const QString & curr )
-            {
-                auto pos = fImpl->videoCodec->findData( curr );
-                fImpl->videoCodec->setCurrentIndex( pos );
-            }
-
             void CTranscodeVideoSettings::save()
             {
+                NPreferences::NCore::CPreferences::instance()->setTranscodeVideo( fImpl->transcodeVideo->isChecked() );
+
+                NPreferences::NCore::CPreferences::instance()->setOnlyTranscodeVideoOnFormatChange( fImpl->onlyTranscodeVideoOnFormatChange->isChecked() );
+
+                NPreferences::NCore::CPreferences::instance()->setGenerateNon4kVideo( fImpl->generateNon4kVideo->isChecked() );
+
+                NPreferences::NCore::CPreferences::instance()->setAverage4kBitrate( fImpl->average4kBitRate->text().toDouble() );
+                NPreferences::NCore::CPreferences::instance()->setAverageHDBitrate( fImpl->averageHDBitRate->text().toDouble() );
+                NPreferences::NCore::CPreferences::instance()->setAverageSubHDBitrate( fImpl->averageSubHDBitRate->text().toDouble() );
+                NPreferences::NCore::CPreferences::instance()->setNonConformingResolutionDivisor( fImpl->nonConformingResolutionRatio->value() );
+
+                NPreferences::NCore::CPreferences::instance()->setGenerateLowBitrateVideo( fImpl->generateLowBitrateVideo->isChecked() );
+                NPreferences::NCore::CPreferences::instance()->setBitrateThresholdPercentage( fImpl->bitrateThreshold->value() );
+
                 NPreferences::NCore::CPreferences::instance()->setTranscodeToVideoCodec( fImpl->videoCodec->currentData().toString() );
 
-                NPreferences::NCore::CPreferences::instance()->setTranscodeVideo( fImpl->transcodeVideo->isChecked() );
                 NPreferences::NCore::CPreferences::instance()->setLosslessEncoding( fImpl->losslessEncoding->isChecked() );
+                NPreferences::NCore::CPreferences::instance()->setUseAverageBitrate( fImpl->useAvgBitrate->isChecked() );
                 NPreferences::NCore::CPreferences::instance()->setUseCRF( fImpl->useCRF->isChecked() );
-                NPreferences::NCore::CPreferences::instance()->setUseExplicitCRF( fImpl->useExplicitCRF->isChecked() );
-                NPreferences::NCore::CPreferences::instance()->setExplicitCRF( fImpl->explicitCRF->value() );
+                NPreferences::NCore::CPreferences::instance()->setCRF( fImpl->explicitCRF->value() );
+
                 NPreferences::NCore::CPreferences::instance()->setUsePreset( fImpl->usePreset->isChecked() );
                 NPreferences::NCore::CPreferences::instance()->setPreset( static_cast< NMediaManager::NPreferences::NCore::ETranscodePreset >( fImpl->preset->currentIndex() ) );
                 NPreferences::NCore::CPreferences::instance()->setUseTune( fImpl->useTune->isChecked() );
@@ -123,12 +166,18 @@ namespace NMediaManager
                 NPreferences::NCore::CPreferences::instance()->setUseProfile( fImpl->useProfile->isChecked() );
                 NPreferences::NCore::CPreferences::instance()->setProfile( static_cast< NMediaManager::NPreferences::NCore::ETranscodeProfile >( fImpl->profile->currentIndex() ) );
 
-                NPreferences::NCore::CPreferences::instance()->setOnlyTranscodeVideoOnFormatChange( fImpl->onlyTranscodeVideoOnFormatChange->isChecked() );
+                NPreferences::NCore::CPreferences::instance()->setTranscodeToVideoCodec( fImpl->videoCodec->currentData().toString() );
             }
 
-            void CTranscodeVideoSettings::slotUseExplicitCRFChanged()
+            void CTranscodeVideoSettings::selectVideoCodec( const QString &curr )
             {
-                fImpl->explicitCRF->setEnabled( fImpl->useExplicitCRF->isChecked() );
+                auto pos = fImpl->videoCodec->findData( curr );
+                fImpl->videoCodec->setCurrentIndex( pos );
+            }
+
+            void CTranscodeVideoSettings::slotQualityGoalMetricChanged()
+            {
+                fImpl->explicitCRF->setEnabled( fImpl->useCRF->isChecked() );
             }
 
             void CTranscodeVideoSettings::slotUsePresetChanged()
@@ -155,7 +204,6 @@ namespace NMediaManager
                 auto hwAccel = NPreferences::NCore::CPreferences::instance()->getTranscodeHWAccel( currentCodec );
                 auto pos = fImpl->hwAccel->findData( hwAccel );
                 fImpl->hwAccel->setCurrentIndex( pos );
-
 
                 if ( currentCodec == "hevc_qsv" )
                 {

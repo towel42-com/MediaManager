@@ -1021,16 +1021,22 @@ namespace NMediaManager
                 return true;
 
             bool aOK = true;
-            QStandardItem *myItem = nullptr;
+            std::list< QStandardItem * > myItems;
             if ( item != invisibleRootItem() )
             {
-                std::tie( aOK, myItem ) = processItem( item, displayOnly );
-                if ( myItem && ( myItem != parentItem ) )
+                std::tie( aOK, myItems ) = processItem( item, displayOnly );
+                for ( auto &&myItem : myItems )
                 {
-                    if ( parentItem )
-                        parentItem->appendRow( myItem );
-                    else
-                        fProcessResults.second->appendRow( myItem );
+                    if ( myItem && ( myItem != parentItem ) )
+                    {
+                        qDebug() << myItem->text() << myItem->rowCount();
+                        if ( myItem->text().isEmpty() )
+                            int xyz = 0;
+                        if ( parentItem )
+                            parentItem->appendRow( myItem );
+                        else
+                            fProcessResults.second->appendRow( myItem );
+                    }
                 }
             }
 
@@ -1045,7 +1051,12 @@ namespace NMediaManager
                 if ( progressCanceled() )
                     break;
 
-                aOK = process( child, displayOnly, myItem ) && aOK;
+                for ( auto &&myItem : myItems )
+                {
+                    aOK = process( child, displayOnly, myItem ) && aOK;
+                }
+                if ( myItems.empty() )
+                    aOK = process( child, displayOnly, nullptr ) && aOK;
             }
             return aOK;
         }
@@ -1075,11 +1086,14 @@ namespace NMediaManager
                 progressDlg()->setValue( fProcessResults.second->rowCount() );
         }
 
-        bool CDirModel::postExtProcess( const SProcessInfo &info, QStringList &msgList )
+        bool CDirModel::postExtProcess( const SProcessInfo * processInfo, QStringList &msgList )
         {
+            if ( !processInfo )
+                return false;
+
             QStringList retVal;
             bool aOK = true;
-            for ( auto &&ii : info.fAncillary )
+            for ( auto &&ii : processInfo->fAncillary )
             {
                 if ( !NSABUtils::NFileUtils::backup( ii ) )
                 {
@@ -1419,9 +1433,9 @@ namespace NMediaManager
             if ( fProcessQueue.empty() )
                 return;
 
-            if ( !fProcessQueue.front().fItem )
+            if ( !fProcessQueue.front()->fItem )
                 return;
-            appendError( fProcessQueue.front().fItem, tr( "%1: FAILED TO PROCESS" ).arg( msg ) );
+            appendError( fProcessQueue.front()->fItem, tr( "%1: FAILED TO PROCESS" ).arg( msg ) );
         }
 
         void CDirModel::slotRunNextProcessInQueue()
@@ -1444,13 +1458,13 @@ namespace NMediaManager
             if ( progressDlg() )
             {
                 progressDlg()->setLabelText( getProgressLabel( curr ) );
-                if ( curr.fMaximum != 0 )
-                    progressDlg()->setSecondaryMaximum( curr.fMaximum );
+                if ( curr->fMaximum != 0 )
+                    progressDlg()->setSecondaryMaximum( curr->fMaximum );
             }
 
             if ( log() )
             {
-                auto tmp = QStringList() << curr.fCmd << curr.fArgs;
+                auto tmp = QStringList() << curr->fCmd << curr->fArgs;
                 for ( auto &&ii : tmp )
                 {
                     if ( ii.contains( " " ) )
@@ -1459,15 +1473,15 @@ namespace NMediaManager
                 log()->appendPlainText( "Running Command:" + tmp.join( " " ) );
             }
 
-            if ( curr.fForceUnbuffered )
+            if ( curr->fForceUnbuffered )
                 fProcess->setCreateProcessArgumentsModifier( NSABUtils::getForceUnbufferedProcessModifier() );
             else
                 fProcess->setCreateProcessArgumentsModifier( {} );
             fLastProgress.reset();
-            fProcess->start( curr.fCmd, curr.fArgs, QProcess::ReadWrite );
+            fProcess->start( curr->fCmd, curr->fArgs, QProcess::ReadWrite );
         }
 
-        QString CDirModel::getProgressLabel( const SProcessInfo & /*processInfo*/ ) const
+        QString CDirModel::getProgressLabel( std::shared_ptr< SProcessInfo > /*processInfo*/ ) const
         {
             return {};
         }
@@ -1540,7 +1554,7 @@ namespace NMediaManager
 
             bool wasCanceled = progressCanceled();
             fProcessResults.first = !error && !wasCanceled;
-            fProcessQueue.front().cleanup( this, !error && !wasCanceled );
+            fProcessQueue.front()->cleanup( this, !error && !wasCanceled );
 
             if ( !fProcessQueue.empty() )
             {
@@ -1654,7 +1668,7 @@ namespace NMediaManager
             }
 
             QString msg;
-            if ( fSetMKVTagsOnSuccess )
+            if ( fSetMetainfoTagsOnSuccess )
             {
                 for ( auto &&ii : fNewNames )
                 {
@@ -1668,7 +1682,7 @@ namespace NMediaManager
             }
 
             QStringList msgs;
-            if ( !model->postExtProcess( *this, msgs ) )
+            if ( !model->postExtProcess( this, msgs ) )
             {
                 CDirModel::appendError( fItem, QObject::tr( "%1: FAILED TO Post Process ITEM TO %2 - %3" ).arg( model->getDispName( fOldName ) ).arg( model->getDispName( fNewNames.join( ", " ) ).arg( msgs.join( "\n" ) ) ) );
                 model->fProcessResults.first = false;
@@ -1983,11 +1997,20 @@ namespace NMediaManager
                     if ( rowStatus.has_value() )
                     {
                         rowStatus.value().first = std::max( rowStatus.value().first, status.value().first );
+
+                        rowStatus.value().second += status.value().second;
+
+                        rowStatus.value().second.replace( "<p", "<li" );
+                        rowStatus.value().second.replace( "</p>", "</li>" );
                     }
                     else
                         rowStatus = status;
                 }
             }
+
+            if ( rowStatus.has_value() && rowStatus.value().second.startsWith( "<li" ) )
+                rowStatus.value().second = "<ul>" + rowStatus.value().second + "</ul>";
+
             return rowStatus;
         }
 
@@ -2170,7 +2193,7 @@ namespace NMediaManager
             if ( msg.isEmpty() )
                 return;
 
-            auto fi = QFileInfo( fProcessQueue.front().fOldName );
+            auto fi = QFileInfo( fProcessQueue.front()->fOldName );
             fMessagesForFiles[ fi.absoluteFilePath() ] << msg;
         }
 

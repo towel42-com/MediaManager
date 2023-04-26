@@ -35,14 +35,14 @@ namespace NMediaManager
             /*
             * 
             *   VIDEO and Audio with "Add ACC" disabled
-                 TransCode Enabled | Is Format | Format Change | Only On Format || transcode
-                         0              X          X                X           ||   0
-                         1              1          X                X           ||   0
+                 TransCode Enabled | Is Format | Format Change | Only On Format Wrong || transcode
+                         0              X          X                X                 ||   0
+                         1              1          X                1                 ||   0
 
-                         1              0          0                0           ||   1
-                         1              0          0                1           ||   0
-                         1              0          1                0           ||   1
-                         1              0          1                1           ||   1
+                         1              0          0                0                 ||   1
+                         1              0          0                1                 ||   0
+                         1              0          1                0                 ||   1
+                         1              0          1                1                 ||   1
 
                 Audio with Add ACC Enabled
                  TransCode Enabled | Has AAC   | Format Change | Add AAC        || transcode
@@ -57,19 +57,29 @@ namespace NMediaManager
             STranscodeNeeded::STranscodeNeeded( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const CPreferences *prefs ) :
                 fMediaInfo( mediaInfo )
             {
-                fForce = fFormat = fVideo = fAudio = fMissingAAC = false;
+                fFormat = fVideoCodec = fVideoBitrate = fAudio = fMissingAAC = false;
                 if ( !mediaInfo || !mediaInfo->aOK() || mediaInfo->isQueued() )
                     return;
 
-                fForce = prefs->getForceTranscode();
+                fFormat = prefs->getConvertMediaContainer() && !prefs->isEncoderFormat( mediaInfo, prefs->getConvertMediaToContainer() );
+                fVideoCodec = !mediaInfo->hasVideoCodec( prefs->getTranscodeToVideoCodec(), prefs->getMediaFormats() ) && ( fFormat || !prefs->getOnlyTranscodeVideoOnFormatChange() );
 
-                fFormat = prefs->getConvertMediaContainer() && fForce || !prefs->isEncoderFormat( mediaInfo, prefs->getConvertMediaToContainer() );
-                fVideo = prefs->getTranscodeVideo() && fForce || ( !mediaInfo->hasVideoCodec( prefs->getTranscodeToVideoCodec(), prefs->getMediaFormats() ) && ( fFormat || !prefs->getOnlyTranscodeVideoOnFormatChange() ) );
+                if ( prefs->getGenerateLowBitrateVideo() )
+                {
+                    auto averageBitrateTarget = prefs->getAverageBitrateTarget( fMediaInfo, false, true );
+                    fVideoBitrate = mediaInfo->getBitRate() > averageBitrateTarget;
+                }
+
+                if ( prefs->getGenerateNon4kVideo() )
+                {
+                    fVideoResolution = mediaInfo->isGreaterThanHDResolution();
+                }
+
+                if ( !prefs->getTranscodeVideo() )
+                    fVideoCodec = fVideoBitrate = fVideoResolution = false;
+
                 fMissingAAC = prefs->getTranscodeAudio() && ( mediaInfo->numAudioStreams() != 0 ) && prefs->getAddAACAudioCodec() && !mediaInfo->hasAACCodec( prefs->getMediaFormats(), 6 );
-                fAudio = prefs->getTranscodeAudio() && ( mediaInfo->numAudioStreams() != 0 )
-                    && ( fForce || ( (
-                                  !mediaInfo->isCodec( "aac", prefs->getTranscodeToAudioCodec(), prefs->getMediaFormats() ) && !mediaInfo->hasAudioCodec( prefs->getTranscodeToAudioCodec(), prefs->getMediaFormats() )
-                                  && ( fFormat || !prefs->getOnlyTranscodeAudioOnFormatChange() ) ) ) );
+                fAudio = prefs->getTranscodeAudio() && ( mediaInfo->numAudioStreams() != 0 ) && ( ( !mediaInfo->isCodec( "aac", prefs->getTranscodeToAudioCodec(), prefs->getMediaFormats() ) && !mediaInfo->hasAudioCodec( prefs->getTranscodeToAudioCodec(), prefs->getMediaFormats() ) && ( fFormat || !prefs->getOnlyTranscodeAudioOnFormatChange() ) ) );
             }
 
             STranscodeNeeded::STranscodeNeeded( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo ) :
@@ -86,9 +96,7 @@ namespace NMediaManager
             {
                 if ( formatChangeNeeded() )
                 {
-                    auto msg = QObject::tr( "<p style='white-space:pre'>File <b>'%1'</b> is not using a %2 container</p>" )
-                                   .arg( QFileInfo( fMediaInfo->fileName() ).fileName() )
-                                   .arg( NPreferences::NCore::CPreferences::instance()->getConvertMediaToContainer() );
+                    auto msg = QObject::tr( "<p style='white-space:pre'>File <b>'%1'</b> is not using a %2 container</p>" ).arg( QFileInfo( fMediaInfo->fileName() ).fileName() ).arg( NPreferences::NCore::CPreferences::instance()->getConvertMediaToContainer() );
                     return msg;
                 }
                 return {};
@@ -96,17 +104,30 @@ namespace NMediaManager
 
             std::optional< QString > STranscodeNeeded::getVideoCodecMessage() const
             {
-                if ( fForce )
+                if ( videoCodecTranscodeNeeded() )
                 {
-                    auto msg = QObject::tr( "<p style='white-space:pre'>File <b>'%1'</b> being retranscoded because of the force option</p>" ).arg( QFileInfo( fMediaInfo->fileName() ).fileName() );
+                    auto msg = QObject::tr( "<p style='white-space:pre'>File <b>'%1'</b> is not using the '%2' video codec</p>" ).arg( QFileInfo( fMediaInfo->fileName() ).fileName() ).arg( NPreferences::NCore::CPreferences::instance()->getTranscodeToVideoCodec() );
                     return msg;
                 }
+                return {};
+            }
 
-                if ( videoTranscodeNeeded() )
+            std::optional< QString > STranscodeNeeded::getVideoBitrateMessage() const
+            {
+                if ( videoBitrateTranscodeNeeded() )
                 {
-                    auto msg = QObject::tr( "<p style='white-space:pre'>File <b>'%1'</b> is not using the '%2' video codec</p>" )
-                                   .arg( QFileInfo( fMediaInfo->fileName() ).fileName() )
-                                   .arg( NPreferences::NCore::CPreferences::instance()->getTranscodeToVideoCodec() );
+                    auto msg = QObject::tr( "<p style='white-space:pre'>File <b>'%1'</b> bit rate is higher than '%2' kbps</p>" ).arg( QFileInfo( fMediaInfo->fileName() ).fileName() ).arg( NPreferences::NCore::CPreferences::instance()->getAverageBitrateTargetDisplayString( fMediaInfo ) );
+                    return msg;
+                }
+                return {};
+            }
+
+            std::optional< QString > STranscodeNeeded::getVideoResolutionMessage() const
+            {
+                if ( videoResolutionTranscodeNeeded() )
+                {
+                    auto resolution = fMediaInfo->getResolution();
+                    auto msg = QObject::tr( "<p style='white-space:pre'>File <b>'%1'</b> resolution higher than HD resolution (1920x1080)</p>" ).arg( QFileInfo( fMediaInfo->fileName() ).fileName() );
                     return msg;
                 }
                 return {};
@@ -114,12 +135,6 @@ namespace NMediaManager
 
             std::optional< QString > STranscodeNeeded::getAudioCodecMessage() const
             {
-                if ( fForce )
-                {
-                    auto msg = QObject::tr( "<p style='white-space:pre'>File <b>'%1'</b> being retranscoded because of the force option</p>" ).arg( QFileInfo( fMediaInfo->fileName() ).fileName() );
-                    return msg;
-                }
-
                 if ( addAACAudioCodec() )
                 {
                     auto msg = QObject::tr( "<p style='white-space:pre'>File <b>'%1'</b> is missing the 'AAC 5.1' audio codec</p>" ).arg( QFileInfo( fMediaInfo->fileName() ).fileName() );
@@ -128,9 +143,7 @@ namespace NMediaManager
 
                 if ( audioTranscodeNeeded() )
                 {
-                    auto msg = QObject::tr( "<p style='white-space:pre'>File <b>'%1'</b> is not using the '%2' audio codec</p>" )
-                                   .arg( QFileInfo( fMediaInfo->fileName() ).fileName() )
-                                   .arg( NPreferences::NCore::CPreferences::instance()->getTranscodeToAudioCodec() );
+                    auto msg = QObject::tr( "<p style='white-space:pre'>File <b>'%1'</b> is not using the '%2' audio codec</p>" ).arg( QFileInfo( fMediaInfo->fileName() ).fileName() ).arg( NPreferences::NCore::CPreferences::instance()->getTranscodeToAudioCodec() );
                     return msg;
                 }
 
@@ -140,23 +153,50 @@ namespace NMediaManager
             QStringList STranscodeNeeded::getActions() const
             {
                 QStringList actions;
-                if ( !fForce )
+
+                if ( formatChangeNeeded() )
+                    actions << QObject::tr( "Convert to Container: %1" ).arg( NPreferences::NCore::CPreferences::instance()->getConvertMediaToContainer() );
+                if ( videoCodecTranscodeNeeded() )
+                    actions << QObject::tr( "Transcode video to the %1 codec" ).arg( NPreferences::NCore::CPreferences::instance()->getTranscodeToVideoCodec() );
+                if ( addAACAudioCodec() )
+                    actions << QObject::tr( "Add the AAC 5.1 codec to audio" );
+                if ( audioTranscodeNeeded() )
+                    actions << QObject::tr( "Transcode audio to %1 codec" ).arg( NPreferences::NCore::CPreferences::instance()->getTranscodeToAudioCodec() );
+
+                return actions;
+            }
+
+            QStringList STranscodeNeeded::getHighBitrateAction() const
+            {
+                QStringList actions;
+
+                if ( videoBitrateTranscodeNeeded() )
                 {
-                    if ( formatChangeNeeded() )
-                        actions << QObject::tr( "Convert to Container: %1" ).arg( NPreferences::NCore::CPreferences::instance()->getConvertMediaToContainer() );
-                    if ( videoTranscodeNeeded() )
-                        actions << QObject::tr( "Transcode video to the %1 codec" ).arg( NPreferences::NCore::CPreferences::instance()->getTranscodeToVideoCodec() );
-                    if ( addAACAudioCodec() )
-                        actions << QObject::tr( "Add the AAC 5.1 codec to audio" );
-                    if ( audioTranscodeNeeded() )
-                        actions << QObject::tr( "Transcode audio to %1 codec" ).arg( NPreferences::NCore::CPreferences::instance()->getTranscodeToAudioCodec() );
+                    actions << QObject::tr( "Transcode video to an average of %1" ).arg( NPreferences::NCore::CPreferences::instance()->getAverageBitrateTargetDisplayString( fMediaInfo ) );
+                    actions << getActions();
                 }
 
                 return actions;
             }
 
-            QString STranscodeNeeded::getProgressLabelHeader( const QString &from, const QStringList &mergedFiles, const QString &to ) const
+            QStringList STranscodeNeeded::getHighResolutionAction() const
             {
+                QStringList actions;
+
+                if ( videoResolutionTranscodeNeeded() )
+                {
+                    actions << QObject::tr( "Transcode video to a resolution of 1080p" );
+                    actions << getActions();
+                }
+
+                return actions;
+            }
+
+            QString STranscodeNeeded::getProgressLabelHeader( const QString &from, const QStringList &mergedFiles, const QString &to, const QStringList & actions ) const
+            {
+                if ( actions.isEmpty() )
+                    return {};
+
                 QString msg;
                 msg += QObject::tr( "<b>Creating:</b><ul><li>%1</li></ul><b>From:</b><ul>" ).arg( to );
 
@@ -167,26 +207,31 @@ namespace NMediaManager
                 }
                 msg += "</ul>";
 
-                QStringList actions;
-                if ( formatChangeNeeded() )
-                    actions << QObject::tr( "Converting to Container: %1" ).arg( NPreferences::NCore::CPreferences::instance()->getConvertMediaToContainer() );
-                if ( videoTranscodeNeeded() )
-                    actions << QObject::tr( "Transcode video to the %1 codec" ).arg( NPreferences::NCore::CPreferences::instance()->getTranscodeToVideoCodec() );
-                if ( addAACAudioCodec() )
-                    actions << QObject::tr( "Add the AAC 5.1 codec to audio" );
-                if ( audioTranscodeNeeded() )
-                    actions << QObject::tr( "Transcode audio to %1 codec" ).arg( NPreferences::NCore::CPreferences::instance()->getTranscodeToAudioCodec() );
-
                 if ( !actions.isEmpty() )
                 {
                     msg += QObject::tr( "<b>Transcoding Actions:</b>" ).arg( to );
                     msg += "<ul>";
-                    for( auto && ii : actions )
+                    for ( auto &&ii : actions )
                         msg += QString( "<li>%1</li>\n" ).arg( ii );
                     msg += "<ul>";
                 }
 
                 return msg;
+            }
+
+            QString STranscodeNeeded::getProgressLabelHeader( const QString &from, const QStringList &mergedFiles, const QString &to ) const
+            {
+                return getProgressLabelHeader( from, mergedFiles, to, getActions() );
+            }
+
+            QString STranscodeNeeded::getHighResolutionProgressLabelHeader( const QString &from, const QStringList &mergedFiles, const QString &to ) const
+            {
+                return getProgressLabelHeader( from, mergedFiles, to, getHighResolutionAction() );
+            }
+
+            QString STranscodeNeeded::getHighBitrateProgressLabelHeader( const QString &from, const QStringList &mergedFiles, const QString &to ) const
+            {
+                return getProgressLabelHeader( from, mergedFiles, to, getHighBitrateAction() );
             }
         }
     }

@@ -40,21 +40,23 @@ namespace NMediaManager
                 Q_OBJECT
             public:
                 CTranscodeVideoSettings( QWidget *parent = nullptr );
+
                 virtual ~CTranscodeVideoSettings() override;
 
                 virtual void load() override;
                 virtual void save() override;
                 virtual QStringList pageName() const override { return QStringList( { "Transcode Settings", "Video" } ); }
             public Q_SLOTS:
-                void slotUseExplicitCRFChanged();
                 void slotUsePresetChanged();
                 void slotUseTuneChanged();
                 void slotUseProfileChanged();
                 void slotCodecChanged();
                 void slotHWAccelChanged();
                 void slotExplicitCodecChanged();
+
+                void slotQualityGoalMetricChanged();
             private:
-                void selectVideoCodec( const QString & curr );
+                void selectVideoCodec( const QString &curr );
 
                 std::unique_ptr< Ui::CTranscodeVideoSettings > fImpl;
                 QStringList fVerboseEncoders;
