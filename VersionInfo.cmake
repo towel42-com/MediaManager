@@ -28,7 +28,7 @@ STRING(TIMESTAMP BUILD_DATE "%m/%d/%Y" UTC)
 STRING(TIMESTAMP BUILD_TIME "%H:%M:%S" UTC)
 
 SET( MAJOR_VERSION    1 )
-SET( MINOR_VERSION    32 )
+SET( MINOR_VERSION    33 )
 SET( APP_NAME         "Media Manager" )
 SET( VENDOR           "Scott Aron Bloom" )
 SET( HOMEPAGE         "www.towel42.com" )
