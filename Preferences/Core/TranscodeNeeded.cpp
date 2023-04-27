@@ -57,7 +57,7 @@ namespace NMediaManager
             STranscodeNeeded::STranscodeNeeded( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const CPreferences *prefs ) :
                 fMediaInfo( mediaInfo )
             {
-                fFormat = fVideoCodec = fVideoBitrate = fAudio = fMissingAAC = false;
+                fFormat = fVideoCodec = fVideoBitrate = fAudio = fDefaultAudioNotAAC = false;
                 if ( !mediaInfo || !mediaInfo->aOK() || mediaInfo->isQueued() )
                     return;
 
@@ -78,8 +78,8 @@ namespace NMediaManager
                 if ( !prefs->getTranscodeVideo() )
                     fVideoCodec = fVideoBitrate = fVideoResolution = false;
 
-                fMissingAAC = prefs->getTranscodeAudio() && ( mediaInfo->numAudioStreams() != 0 ) && prefs->getAddAACAudioCodec() && !mediaInfo->hasAACCodec( prefs->getMediaFormats(), 6 );
-                fAudio = prefs->getTranscodeAudio() && ( mediaInfo->numAudioStreams() != 0 ) && ( ( !mediaInfo->isCodec( "aac", prefs->getTranscodeToAudioCodec(), prefs->getMediaFormats() ) && !mediaInfo->hasAudioCodec( prefs->getTranscodeToAudioCodec(), prefs->getMediaFormats() ) && ( fFormat || !prefs->getOnlyTranscodeAudioOnFormatChange() ) ) );
+                fDefaultAudioNotAAC = prefs->getTranscodeAudio() && ( mediaInfo->numAudioStreams() != 0 ) && prefs->getAddAACAudioCodec() && !mediaInfo->isDefaultAudioCodecAAC( prefs->getMediaFormats(), 6 );
+                fAudio = prefs->getTranscodeAudio() && ( mediaInfo->numAudioStreams() != 0 ) && ( ( !mediaInfo->isCodec( "aac", prefs->getTranscodeToAudioCodec(), prefs->getMediaFormats() ) && !mediaInfo->isDefaultAudioCodec( prefs->getTranscodeToAudioCodec(), prefs->getMediaFormats() ) && ( fFormat || !prefs->getOnlyTranscodeAudioOnFormatChange() ) ) );
             }
 
             STranscodeNeeded::STranscodeNeeded( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo ) :
@@ -135,15 +135,10 @@ namespace NMediaManager
 
             std::optional< QString > STranscodeNeeded::getAudioCodecMessage() const
             {
-                if ( addAACAudioCodec() )
+                if ( defaultAudioNotAAC51() || audioTranscodeNeeded() )
                 {
-                    auto msg = QObject::tr( "<p style='white-space:pre'>File <b>'%1'</b> is missing the 'AAC 5.1' audio codec</p>" ).arg( QFileInfo( fMediaInfo->fileName() ).fileName() );
-                    return msg;
-                }
-
-                if ( audioTranscodeNeeded() )
-                {
-                    auto msg = QObject::tr( "<p style='white-space:pre'>File <b>'%1'</b> is not using the '%2' audio codec</p>" ).arg( QFileInfo( fMediaInfo->fileName() ).fileName() ).arg( NPreferences::NCore::CPreferences::instance()->getTranscodeToAudioCodec() );
+                    auto targetAudioCodec = defaultAudioNotAAC51() ? "AAC 5.1" : ( NPreferences::NCore::CPreferences::instance()->getTranscodeToAudioCodec() );
+                    auto msg = QObject::tr( "<p style='white-space:pre'>File <b>'%1'</b>'s default audio track is not the '%2' audio codec</p>" ).arg( QFileInfo( fMediaInfo->fileName() ).fileName() ).arg( targetAudioCodec );
                     return msg;
                 }
 
@@ -158,10 +153,8 @@ namespace NMediaManager
                     actions << QObject::tr( "Convert to Container: %1" ).arg( NPreferences::NCore::CPreferences::instance()->getConvertMediaToContainer() );
                 if ( videoCodecTranscodeNeeded() )
                     actions << QObject::tr( "Transcode video to the %1 codec" ).arg( NPreferences::NCore::CPreferences::instance()->getTranscodeToVideoCodec() );
-                if ( addAACAudioCodec() )
-                    actions << QObject::tr( "Add the AAC 5.1 codec to audio" );
-                if ( audioTranscodeNeeded() )
-                    actions << QObject::tr( "Transcode audio to %1 codec" ).arg( NPreferences::NCore::CPreferences::instance()->getTranscodeToAudioCodec() );
+                if ( defaultAudioNotAAC51() || audioTranscodeNeeded() )
+                    actions << QObject::tr( "Transcode the default audio stream to the '%1'" ).arg( defaultAudioNotAAC51() ? "AAC 5.1" : NPreferences::NCore::CPreferences::instance()->getTranscodeToAudioCodec() );
 
                 return actions;
             }

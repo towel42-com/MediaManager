@@ -59,14 +59,14 @@ namespace NMediaManager
                 QString getHighResolutionProgressLabelHeader( const QString &from, const QStringList &otherFiles, const QString &to ) const;
                 QString getHighBitrateProgressLabelHeader( const QString &from, const QStringList &otherFiles, const QString &to ) const;
 
-                bool transcodeNeeded() const { return fVideoCodec || fAudio || fMissingAAC || fFormat; }
+                bool transcodeNeeded() const { return fVideoCodec || fAudio || fDefaultAudioNotAAC || fFormat; }
                 bool videoBitrateTranscodeNeeded() const { return fVideoBitrate; }   // when true create a secondary video at lower bitrate
                 bool videoResolutionTranscodeNeeded() const { return fVideoResolution; }   // when true create a secondary video at lower resolution
 
-                bool formatOnly() const { return fFormat && !fVideoCodec && !fAudio && !fMissingAAC; }
+                bool formatOnly() const { return fFormat && !fVideoCodec && !fAudio && !fDefaultAudioNotAAC; }
 
                 bool formatChangeNeeded() const { return fFormat; }   // when true container format needs changing
-                bool addAACAudioCodec() const { return fMissingAAC; }  // when true aac audio is missing and needs to be added
+                bool defaultAudioNotAAC51() const { return fDefaultAudioNotAAC; }   // when true aac audio is missing and needs to be added
                 bool audioTranscodeNeeded() const { return fAudio; }   // when true the audio codec needs to be transcoded 
                 bool videoCodecTranscodeNeeded() const { return fVideoCodec; }  // when true, the video codec needs to be transcoded
 
@@ -77,7 +77,7 @@ namespace NMediaManager
                 bool fVideoBitrate{ false };
                 bool fVideoResolution{ false };
                 bool fAudio{ false };
-                bool fMissingAAC{ false };
+                bool fDefaultAudioNotAAC{ false };
                 bool fFormat{ false };
                 std::shared_ptr< NSABUtils::CMediaInfo > fMediaInfo;
             };
