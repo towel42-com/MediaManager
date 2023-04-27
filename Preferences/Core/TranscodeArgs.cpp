@@ -154,7 +154,7 @@ namespace NMediaManager
                            << "-c:v" << videoCodec   //
                         ;
 
-                    if ( !transcodeNeeded.audioTranscodeNeeded() && !transcodeNeeded.addAACAudioCodec() )
+                    if ( !transcodeNeeded.audioTranscodeNeeded() && !transcodeNeeded.defaultAudioNotAAC51() )
                     {
                         retVal << "-map"
                                << "0:a?"   //
@@ -163,27 +163,30 @@ namespace NMediaManager
                     }
                     else
                     {
+                        auto defaultStreamNum = mediaInfo->defaultAudioStream();
+
+                        // transcode or copy the default audio stream
+                        // and put it in the front
+                        auto audioFormat = transcodeNeeded.defaultAudioNotAAC51() ? "aac" : getTranscodeToAudioCodec();
+                        retVal << "-map" << QString( "0:a:%1?" ).arg( defaultStreamNum );     // map from the default stream
+                        int currStreamNum = 0;
+                        retVal << QString( "-c:a:%1" ).arg( currStreamNum ) << audioFormat;          // add a copy from the original stream to the front (since some players ignore the disposition
+                        retVal << QString( "-disposition:a:%1" ).arg( currStreamNum ) << "default";  // mark it as the default
+                        if ( transcodeNeeded.defaultAudioNotAAC51() )
+                        {
+                            auto numChannels = std::min( mediaInfo->audioChannelCount( defaultStreamNum ), 6 );
+                            retVal << QString( "-ac:a:%1" ).arg( currStreamNum ) << QString::number( numChannels );             // convert it to 5.1
+                            audioFormat += QString( " %1.1" ).arg( numChannels - 1 );
+                        }
+                        retVal << QString( "-metadata:s:a:%1" ).arg( currStreamNum ) << QString( R"(title="Transcoded Default Track #%1 from '%2' to '%3'")" ).arg( defaultStreamNum ).arg( mediaInfo->getMediaTag( defaultStreamNum, NSABUtils::EMediaTags::eAudioCodecDisp ) ).arg( audioFormat );   // set the metadata
+
+                        currStreamNum++;
                         auto numAudioStreams = mediaInfo->numAudioStreams();
-                        auto defaultAudioStream = mediaInfo->defaultAudioStream();
-                        int streamNum = 0;
                         for ( int ii = 0; ii < numAudioStreams; ++ii )
                         {
-                            retVal << "-map" << QString( "0:a:%1?" ).arg( ii );
-                            if ( ii == defaultAudioStream )   // transcode or copy the default audio stream
-                            {
-                                auto audioFormat = transcodeNeeded.addAACAudioCodec() ? "aac" : getTranscodeToAudioCodec();
-                                retVal << QString( "-c:a:%1" ).arg( ii ) << audioFormat;
-                                if ( transcodeNeeded.addAACAudioCodec() )
-                                {
-                                    retVal << QString( "-ac:a:%1" ).arg( ii ) << "6";   // convert it to 5.1
-                                    retVal << QString( "-disposition:a:%1" ).arg( ii ) << "default";
-                                }
-                                retVal << QString( "-metadata:s:a:%1" ).arg( ii ) << QString( R"(title="Transcoded from Default Track")" ).arg( audioFormat );
-                                streamNum++;
-                                retVal << "-map" << QString( "0:a:%1?" ).arg( ii );
-                            }
-                            retVal << QString( "-c:a:%1" ).arg( streamNum ) << "copy";
-                            retVal << QString( "-disposition:a:%1" ).arg( streamNum++ ) << "0";
+                            retVal << "-map" << QString( "0:a:%1?" ).arg( ii );              // map this from the original stream
+                            retVal << QString( "-c:a:%1" ).arg( currStreamNum ) << "copy";            // just copy the audio as the new stream
+                            retVal << QString( "-disposition:a:%1" ).arg( currStreamNum++ ) << "0";   // its not the default and stream number is the new stream number
                         }
                     }
 
