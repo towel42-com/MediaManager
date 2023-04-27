@@ -1991,9 +1991,6 @@ namespace NMediaManager
             std::optional< TItemStatus > rowStatus;
             for ( int ii = 0; ii < numCols; ++ii )
             {
-                if ( ii == idx.column() )
-                    continue;
-
                 auto peerIndex = this->index( idx.row(), ii, parent );
                 auto status = getItemStatus( peerIndex );
                 if ( status.has_value() )

@@ -164,18 +164,19 @@ namespace NMediaManager
                     else
                     {
                         auto numAudioStreams = mediaInfo->numAudioStreams();
+                        auto defaultAudioStream = mediaInfo->defaultAudioStream();
                         int streamNum = 0;
                         for ( int ii = 0; ii < numAudioStreams; ++ii )
                         {
                             retVal << "-map" << QString( "0:a:%1?" ).arg( ii );
-                            if ( ii == 0 )   // transcode or copy the first audio stream
+                            if ( ii == defaultAudioStream )   // transcode or copy the default audio stream
                             {
                                 auto audioFormat = transcodeNeeded.addAACAudioCodec() ? "aac" : getTranscodeToAudioCodec();
-                                retVal << QString( "-c:a:0" ) << audioFormat;
+                                retVal << QString( "-c:a:%1" ).arg( ii ) << audioFormat;
                                 if ( transcodeNeeded.addAACAudioCodec() )
                                 {
-                                    retVal << "-ac:a:0" << "6";   // convert it to 5.1
-                                    retVal << "-disposition:a:0" << "default";
+                                    retVal << QString( "-ac:a:%1" ).arg( ii ) << "6";   // convert it to 5.1
+                                    retVal << QString( "-disposition:a:%1" ).arg( ii ) << "default";
                                 }
                                 retVal << QString( "-metadata:s:a:%1" ).arg( ii ) << QString( R"(title="Transcoded from Default Track")" ).arg( audioFormat );
                                 streamNum++;
