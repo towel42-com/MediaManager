@@ -17,7 +17,7 @@
    <item row="0" column="0">
     <widget class="QGroupBox" name="transcodeAudio">
      <property name="title">
-      <string>Transcode Audio?</string>
+      <string>Transcode Default Audio Stream?</string>
      </property>
      <property name="checkable">
       <bool>true</bool>
@@ -26,11 +26,11 @@
       <item row="1" column="0" colspan="2">
        <widget class="QCheckBox" name="onlyTranscodeAudioOnFormatChange">
         <property name="text">
-         <string>Only Transcode Audio when Format requires it?</string>
+         <string>Only Transcode Audio when Format requires it? (If checked, Audio Transcoding will only occur when a format is changed, and will ignore other requirements)</string>
         </property>
        </widget>
       </item>
-      <item row="3" column="0" colspan="2">
+      <item row="2" column="0" colspan="2">
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
          <widget class="QLabel" name="label_3">
@@ -60,14 +60,7 @@
       <item row="0" column="0">
        <widget class="QCheckBox" name="addAACAudioCodec">
         <property name="text">
-         <string>Add AAC 5.1 Audio Codec if missing?</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_11">
-        <property name="text">
-         <string>     (If checked, Audio Transcoding will only occur when a format is changed, and will ignore other requirements)</string>
+         <string>Transcode Default Audio Stream to AAC 5.1 Audio Codec?</string>
         </property>
        </widget>
       </item>
@@ -77,7 +70,7 @@
    <item row="1" column="0">
     <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Audio transcoding adds an additional audio stream as the default audio stream.&lt;/p&gt;&lt;p&gt;Transcoding is done on the default audio stream (if no audio stream is marked as default the first one is used).  The new audio stream is inserted before the audio stream being transcoded, and is set as the default.&lt;br/&gt;&lt;br/&gt;If &lt;span style=&quot; font-weight:600;&quot;&gt;Add AAC 5.1&lt;/span&gt; is checked, then if there is not a AAC 5.1 (or lesser number of channels) based audio stream in the file, one is added and made the default stream. &lt;br/&gt;&lt;br/&gt;If not checked, and if &amp;quot;Only Transcode&amp;quot; is checked, Audio Transcoding will only occur when a format change is necessary.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Audio transcoding adds an additional audio stream as the default audio stream.&lt;/p&gt;&lt;p&gt;Transcoding is done on the default audio stream (if no audio stream is marked as default the first one is used). The new audio stream is set as the default stream and is inserted as stream zero (For players that ignore the default flag).&lt;br/&gt;&lt;br/&gt;If &lt;span style=&quot; font-weight:600;&quot;&gt;Transcode to AAC 5.1&lt;/span&gt; is checked, then if the default stream is not AAC 5.1 (or lesser number of channels) based audio stream, one is added and made the default stream. &lt;br/&gt;&lt;br/&gt;If not checked, and if &amp;quot;Only Transcode&amp;quot; is checked, Audio Transcoding will only occur when a format change is necessary.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="textFormat">
       <enum>Qt::RichText</enum>
