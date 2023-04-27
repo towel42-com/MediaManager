@@ -183,7 +183,7 @@ namespace NMediaManager
                                 retVal << "-map" << QString( "0:a:%1?" ).arg( ii );
                             }
                             retVal << QString( "-c:a:%1" ).arg( streamNum ) << "copy";
-                            retVal << QString( "-disposition:a:%1" ).arg( streamNum ) << "0";
+                            retVal << QString( "-disposition:a:%1" ).arg( streamNum++ ) << "0";
                         }
                     }
 
