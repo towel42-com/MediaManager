@@ -1085,7 +1085,7 @@ namespace NMediaManager
                 progressDlg()->setValue( fProcessResults.second->rowCount() );
         }
 
-        bool CDirModel::postExtProcess( const SProcessInfo * processInfo, QStringList &msgList )
+        bool CDirModel::postExtProcess( const SProcessInfo *processInfo, QStringList &msgList )
         {
             if ( !processInfo )
                 return false;
@@ -1461,16 +1461,13 @@ namespace NMediaManager
                     progressDlg()->setSecondaryMaximum( curr->fMaximum );
             }
 
-            if ( log() )
+            auto tmp = QStringList() << curr->fCmd << curr->fArgs;
+            for ( auto &&ii : tmp )
             {
-                auto tmp = QStringList() << curr->fCmd << curr->fArgs;
-                for ( auto &&ii : tmp )
-                {
-                    if ( ii.contains( " " ) )
-                        ii = "\"" + ii + "\"";
-                }
-                log()->appendPlainText( "Running Command:" + tmp.join( " " ) );
+                if ( ii.contains( " " ) )
+                    ii = "\"" + ii + "\"";
             }
+            addToLog( "Running Command:" + tmp.join( " " ), true );
 
             if ( curr->fForceUnbuffered )
                 fProcess->setCreateProcessArgumentsModifier( NSABUtils::getForceUnbufferedProcessModifier() );
@@ -1543,11 +1540,7 @@ namespace NMediaManager
             if ( fProcessQueue.empty() )
                 return;
 
-            if ( log() )
-                log()->appendPlainText( ( error ? tr( "Error: " ) : QString() ) + msg );
-            else
-                qDebug() << ( error ? tr( "Error: " ) : QString() ) + msg;
-
+            addToLog( msg, !error );
             if ( error )
                 addProcessError( msg );
 
@@ -1747,11 +1740,6 @@ namespace NMediaManager
             return progressDlg() && progressDlg()->wasCanceled();
         }
 
-        QPlainTextEdit *CDirModel::log() const
-        {
-            return fBasePage->log();
-        }
-
         NSABUtils::CDoubleProgressDlg *CDirModel::progressDlg() const
         {
             return fBasePage->progressDlg();
@@ -1825,6 +1813,11 @@ namespace NMediaManager
             return getMediaColumn( NSABUtils::EMediaTags::eDate );
         }
 
+        int CDirModel::getMediaOverallBitrateLoc() const
+        {
+            return getMediaColumn( NSABUtils::EMediaTags::eOverAllBitrateString );
+        }
+
         int CDirModel::getMediaResolutionLoc() const
         {
             return getMediaColumn( NSABUtils::EMediaTags::eResolution );
@@ -1850,6 +1843,11 @@ namespace NMediaManager
             return getMediaColumn( NSABUtils::EMediaTags::eAllAudioCodecsDisp );
         }
 
+        int CDirModel::getMediaTotalAudioBitrateLoc() const
+        {
+            return getMediaColumn( NSABUtils::EMediaTags::eTotalAudioBitrateString );
+        }
+
         int CDirModel::getMediaAudioSampleRateLoc() const
         {
             return getMediaColumn( NSABUtils::EMediaTags::eAudioSampleRateString );
@@ -1868,6 +1866,11 @@ namespace NMediaManager
         QTreeView *CDirModel::filesView() const
         {
             return fBasePage->filesView();
+        }
+
+        void CDirModel::addToLog( const QString &msg, bool stdOut )
+        {
+            fBasePage->appendToLog( stdOut ? msg : tr( "Error: %1" ).arg( msg ), stdOut );
         }
 
         void CDirModel::slotProcessStandardError()
@@ -2232,12 +2235,14 @@ namespace NMediaManager
                 << tr( "Title" )   //
                 << tr( "Length" )   //
                 << tr( "Media Date" )   //
-                << tr( "Resolution" )   //
+                << tr( "Overall Bitrate" )   //
+                << tr( "Video Resolution" )   //
                 << tr( "Video Codec(s)" )   //
                 << tr( "Video Bitrate" )   //
                 << tr( "HDR Info" )   //
                 << tr( "Audio Codec(s)" )   //
-                << tr( "Audio Sample Rate" )   //
+                << tr( "Total Audio Bitrate" )   //
+                << tr( "Default Audio Sample Rate" )   //
                 << tr( "Subtitles(s)" )   //
                 << tr( "Comment" );
 
@@ -2246,11 +2251,13 @@ namespace NMediaManager
                     NSABUtils::EMediaTags::eTitle,   //
                     NSABUtils::EMediaTags::eLength,   //
                     NSABUtils::EMediaTags::eDate,   //
+                    NSABUtils::EMediaTags::eOverAllBitrateString,   //
                     NSABUtils::EMediaTags::eResolution,   //
                     NSABUtils::EMediaTags::eAllVideoCodecs,   //
                     NSABUtils::EMediaTags::eVideoBitrateString,   //
                     NSABUtils::EMediaTags::eHDRInfo,   //
                     NSABUtils::EMediaTags::eAllAudioCodecsDisp,   //
+                    NSABUtils::EMediaTags::eTotalAudioBitrateString,   //
                     NSABUtils::EMediaTags::eAudioSampleRateString,   //
                     NSABUtils::EMediaTags::eAllSubtitleLanguages,   //
                     NSABUtils::EMediaTags::eComment   //
@@ -2270,6 +2277,11 @@ namespace NMediaManager
                 { [ this ]()
                   {
                       return getMediaDateLoc();
+                  } }   //
+                ,
+                { [ this ]()
+                  {
+                      return getMediaOverallBitrateLoc();
                   } }   //
                 ,
                 { [ this ]()
@@ -2295,6 +2307,11 @@ namespace NMediaManager
                 { [ this ]()
                   {
                       return getMediaAudioCodecLoc();
+                  } }   //
+                ,
+                { [ this ]()
+                  {
+                      return getMediaTotalAudioBitrateLoc();
                   } }   //
                 ,
                 { [ this ]()

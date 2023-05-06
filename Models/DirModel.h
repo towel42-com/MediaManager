@@ -167,7 +167,7 @@ namespace NMediaManager
             int fMaximum{ 0 };
             QString fProgressLabel;
 
-            std::function< bool( const SProcessInfo * processInfo, QString &msg ) > fPostProcess;
+            std::function< bool( const SProcessInfo *processInfo, QString &msg ) > fPostProcess;
             std::shared_ptr< QTemporaryDir > fTempDir;
             std::unordered_map< QFileDevice::FileTime, QDateTime > fTimeStamps;
         };
@@ -292,7 +292,7 @@ namespace NMediaManager
             virtual std::optional< std::pair< uint64_t, std::optional< uint64_t > > > getCurrentProgress( const QString & /*string*/ ) { return {}; }
             virtual std::optional< std::chrono::milliseconds > getMSRemaining( const QString & /*string*/, const std::pair< uint64_t, std::optional< uint64_t > > & /*currProgress*/ ) const { return {}; }
 
-            std::shared_ptr< NSABUtils::CMediaInfo > getMediaInfo( const QFileInfo &fi, bool force=false ) const;
+            std::shared_ptr< NSABUtils::CMediaInfo > getMediaInfo( const QFileInfo &fi, bool force = false ) const;
             std::shared_ptr< NSABUtils::CMediaInfo > getMediaInfo( const QModelIndex &idx, bool force = false ) const;
             std::shared_ptr< NSABUtils::CMediaInfo > getMediaInfo( const QString &path, bool force = false ) const;
 
@@ -324,7 +324,8 @@ namespace NMediaManager
             virtual QDate getMediaDate( const QFileInfo &fi ) const;
             bool progressCanceled() const;
 
-            QPlainTextEdit *log() const;
+            void addToLog( const QString &msg, bool stdOut );
+
             QTreeView *filesView() const;
             NSABUtils::CDoubleProgressDlg *progressDlg() const;
 
@@ -341,11 +342,13 @@ namespace NMediaManager
             virtual int getMediaTitleLoc() const final;
             virtual int getMediaLengthLoc() const final;
             virtual int getMediaDateLoc() const final;
+            virtual int getMediaOverallBitrateLoc() const final;
             virtual int getMediaResolutionLoc() const final;
             virtual int getMediaVideoCodecLoc() const final;
             virtual int getMediaVideoBitrateLoc() const final;
             virtual int getMediaVideoHDRLoc() const final;
             virtual int getMediaAudioCodecLoc() const final;
+            virtual int getMediaTotalAudioBitrateLoc() const final;
             virtual int getMediaAudioSampleRateLoc() const final;
             virtual int getMediaSubtitlesLoc() const final;
             virtual int getMediaCommentLoc() const final;
@@ -375,7 +378,7 @@ namespace NMediaManager
             virtual std::pair< std::function< bool( const QVariant & ) >, int > getExcludeFuncForItemCount() const;
 
             virtual void postProcess( bool /*displayOnly*/ );
-            virtual bool postExtProcess( const SProcessInfo * processInfo, QStringList &msgList );
+            virtual bool postExtProcess( const SProcessInfo *processInfo, QStringList &msgList );
             virtual QString getProgressLabel( std::shared_ptr< SProcessInfo > processInfo ) const;
             virtual bool usesQueuedProcessing() const = 0;
 
