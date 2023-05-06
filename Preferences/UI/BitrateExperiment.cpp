@@ -20,16 +20,18 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "QualityExperiment.h"
+#include "BitrateExperiment.h"
 #include "SABUtils/WidgetChanged.h"
 #include "SABUtils/MediaInfo.h"
 #include "Preferences/Core/Preferences.h"
 #include "SABUtils/FFMpegFormats.h"
 
-#include "ui_QualityExperiment.h"
+#include "ui_BitrateExperiment.h"
 
 #include <QLocale>
 #include <QFileDialog>
+#include <QMetaMethod>
+
 #include <unordered_set>
 
 namespace NMediaManager
@@ -38,16 +40,17 @@ namespace NMediaManager
     {
         namespace NUi
         {
-            CQualityExperiment::CQualityExperiment( QWidget *parent ) :
+            CBitrateExperiment::CBitrateExperiment( QWidget *parent ) :
                 QDialog( parent ),
-                fImpl( new Ui::CQualityExperiment )
+                fImpl( new Ui::CBitrateExperiment )
             {
                 fImpl->setupUi( this );
-                connect( fImpl->resolutionName, qOverload< int >( &QComboBox::currentIndexChanged ), this, &CQualityExperiment::slotResolutionChanged );
-                NSABUtils::setupWidgetChanged( this, SLOT( slotChanged() ), { fImpl->resolutionName } );
-                connect( fImpl->openBtn, &QToolButton::clicked, this, &CQualityExperiment::slotOpenFile );
-                connect( fImpl->loadFromFile, &QRadioButton::clicked, this, &CQualityExperiment::slotSourceChanged );
-                connect( fImpl->selectResolution, &QRadioButton::clicked, this, &CQualityExperiment::slotSourceChanged );
+                connect( fImpl->resolutionName, qOverload< int >( &QComboBox::currentIndexChanged ), this, &CBitrateExperiment::slotResolutionChanged );
+                NSABUtils::setupWidgetChanged( this, QMetaMethod::fromSignal( &CBitrateExperiment::sigChanged ), { fImpl->resolutionName } );
+                connect( this, &CBitrateExperiment::sigChanged, this, &CBitrateExperiment::slotChanged );
+                connect( fImpl->openBtn, &QToolButton::clicked, this, &CBitrateExperiment::slotOpenFile );
+                connect( fImpl->loadFromFile, &QRadioButton::clicked, this, &CBitrateExperiment::slotSourceChanged );
+                connect( fImpl->selectResolution, &QRadioButton::clicked, this, &CBitrateExperiment::slotSourceChanged );
 
                 fImpl->target4kBitrate->setSuffix( "(kbps)" );
                 fImpl->targetHDBitrate->setSuffix( "(kbps)" );
@@ -56,61 +59,61 @@ namespace NMediaManager
                 fImpl->targetBitrate->setSuffix( "(bps)" );
             }
 
-            CQualityExperiment::~CQualityExperiment()
+            CBitrateExperiment::~CBitrateExperiment()
             {
             }
 
-            void CQualityExperiment::setGreaterThan4kDivisor( int value )
+            void CBitrateExperiment::setGreaterThan4kDivisor( int value )
             {
                 fImpl->greaterThan4kDivisor->setValue( value );
             }
 
-            int CQualityExperiment::greaterThan4kDivisor() const
+            int CBitrateExperiment::greaterThan4kDivisor() const
             {
                 return fImpl->greaterThan4kDivisor->value();
             }
 
-            void CQualityExperiment::setTarget4kBitrate( const QString &value )
+            void CBitrateExperiment::setTarget4kBitrate( const QString &value )
             {
                 fImpl->target4kBitrate->setText( value );
             }
 
-            QString CQualityExperiment::getTarget4kBitrate() const
+            QString CBitrateExperiment::getTarget4kBitrate() const
             {
                 return fImpl->target4kBitrate->text();
             }
 
-            void CQualityExperiment::setTargetHDBitrate( const QString &value )
+            void CBitrateExperiment::setTargetHDBitrate( const QString &value )
             {
                 fImpl->targetHDBitrate->setText( value );
             }
 
-            QString CQualityExperiment::getTargetHDBitrate() const
+            QString CBitrateExperiment::getTargetHDBitrate() const
             {
                 return fImpl->targetHDBitrate->text();
             }
 
-            void CQualityExperiment::setTargetSubHDBitrate( const QString &value )
+            void CBitrateExperiment::setTargetSubHDBitrate( const QString &value )
             {
                 fImpl->targetSubHDBitrate->setText( value );
             }
 
-            QString CQualityExperiment::getTargetSubHDBitrate() const
+            QString CBitrateExperiment::getTargetSubHDBitrate() const
             {
                 return fImpl->targetSubHDBitrate->text();
             }
 
-            void CQualityExperiment::setResolutionThreshold( int value )
+            void CBitrateExperiment::setResolutionThreshold( int value )
             {
                 fImpl->resolutionThreshold->setValue( value );
             }
 
-            int CQualityExperiment::resolutionThreshold() const
+            int CBitrateExperiment::resolutionThreshold() const
             {
                 return fImpl->resolutionThreshold->value();
             }
 
-            void CQualityExperiment::slotOpenFile()
+            void CBitrateExperiment::slotOpenFile()
             {
                 auto allExtensions = NPreferences::NCore::CPreferences::instance()->getVideoExtensions( QStringList() << "*.nfo" );
 
@@ -148,13 +151,13 @@ namespace NMediaManager
                 loadFromFile();
             }
 
-            void CQualityExperiment::loadFromFile()
+            void CBitrateExperiment::loadFromFile()
             {
                 auto mediaInfo = NSABUtils::CMediaInfo( fImpl->fileName->text() );
                 load( mediaInfo.getResolutionInfo() );
             }
 
-            void CQualityExperiment::slotResolutionChanged()
+            void CBitrateExperiment::slotResolutionChanged()
             {
                 auto curr = fImpl->resolutionName->currentText();
                 NSABUtils::SResolutionInfo resDef;
@@ -175,7 +178,7 @@ namespace NMediaManager
                 load( resDef );
             }
 
-            void CQualityExperiment::load( const NSABUtils::SResolutionInfo &resDef )
+            void CBitrateExperiment::load( const NSABUtils::SResolutionInfo &resDef )
             {
                 fDisableUpdate = true;
                 fImpl->width->setValue( resDef.fResolution.first );
@@ -187,7 +190,7 @@ namespace NMediaManager
                 slotChanged();
             }
 
-            std::shared_ptr< NSABUtils::SResolutionInfo > CQualityExperiment::getResolutionDef() const
+            std::shared_ptr< NSABUtils::SResolutionInfo > CBitrateExperiment::getResolutionDef() const
             {
                 auto retVal = std::make_shared< NSABUtils::SResolutionInfo >();
 
@@ -199,7 +202,7 @@ namespace NMediaManager
                 return retVal;
             }
 
-            void CQualityExperiment::slotChanged()
+            void CBitrateExperiment::slotChanged()
             {
                 if ( fDisableUpdate )
                     return;
@@ -213,7 +216,7 @@ namespace NMediaManager
                 fImpl->targetBitrate->setText( locale.toString( static_cast< qulonglong >( targetBitrate ) ) );
             }
 
-            void CQualityExperiment::slotSourceChanged()
+            void CBitrateExperiment::slotSourceChanged()
             {
                 fImpl->fileName->setEnabled( fImpl->loadFromFile->isChecked() );
                 fImpl->openBtn->setEnabled( fImpl->loadFromFile->isChecked() );

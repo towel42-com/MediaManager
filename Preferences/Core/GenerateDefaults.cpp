@@ -332,29 +332,40 @@ namespace NMediaManager
                 if ( defaultValues == currValues )
                     return {};
 
+                //auto defaultSortedUnique = std::set< QString >( { defaultValues.begin(), defaultValues.end() } );
+                auto currSortedUnique = std::set< QString >( { currValues.begin(), currValues.end() } );
+
                 QStringList items;
-                int ii = 0;
-                for ( ; ( ii < defaultValues.count() ) && ( ii < currValues.count() ); ++ii )
+                for ( auto &&curr : defaultValues )
                 {
-                    if ( defaultValues[ ii ] != currValues[ ii ] )
+                    if ( currSortedUnique.find( curr ) == currSortedUnique.end() )
                     {
-                        items << QString( "%1 != %2" ).arg( defaultValues[ ii ] ).arg( currValues[ ii ] );
+                        items << QString( "%1 currently missing" ).arg( curr );
                     }
                 }
 
-                if ( items.count() > 15 )
-                    items.clear();
-
-                int origII = ii;
-                for ( int ii = origII; ii < defaultValues.count(); ++ii )
+                auto defaultSortedUnique = std::set< QString >( { defaultValues.begin(), defaultValues.end() } );
+                for ( auto &&curr : currValues )
                 {
-                    items << QString( "%1 currently missing" ).arg( defaultValues[ ii ] );
+                    if ( defaultSortedUnique.find( curr ) == defaultSortedUnique.end() )
+                    {
+                        items << QString( "%1 not in defaults" ).arg( curr );
+                    }
                 }
 
-                for ( int ii = origII; ii < currValues.count(); ++ii )
-                {
-                    items << QString( "%1 not in defaults" ).arg( currValues[ ii ] );
-                }
+                //if ( items.count() > 15 )
+                //    items.clear();
+
+                //int origII = ii;
+                //for ( int ii = origII; ii < defaultValues.count(); ++ii )
+                //{
+                //    items << QString( "%1 currently missing" ).arg( defaultValues[ ii ] );
+                //}
+
+                //for ( int ii = origII; ii < currValues.count(); ++ii )
+                //{
+                //    items << QString( "%1 not in defaults" ).arg( currValues[ ii ] );
+                //}
 
                 if ( items.empty() )
                     return {};
@@ -398,7 +409,8 @@ namespace NMediaManager
 
             QStringList CPreferences::getDefaultFile() const
             {
-                auto retVal = QStringList() << R"(// The MIT License( MIT ))"
+                auto retVal = QStringList() << R"(// clang-format off)"
+                                            << R"(// The MIT License( MIT ))"
                                             << R"(//)"
                                             << R"(// Copyright( c ) 2020-2023 Scott Aron Bloom)"
                                             << R"(//)"
@@ -481,6 +493,8 @@ namespace NMediaManager
                                             << R"()"
                                             << "%DEFAULT_BITRATE_THRESHOLD_PERCENTAGE%"
                                             << R"()"
+                                            << "%DEFAULT_RESOLUTION_THRESHOLD_PERCENTAGE%"
+                                            << R"()" 
                                             << "%DEFAULT_GENERATE_NON_4k_VIDEO%"
                                             << R"()"
                                             << "%DEFAULT_USE_CRF%"

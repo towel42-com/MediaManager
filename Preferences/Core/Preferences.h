@@ -33,9 +33,12 @@
 #include <unordered_set>
 #include <optional>
 #include <memory>
+
 class QFileInfo;
 class QWidget;
 class QDir;
+class QFile;
+class QTextStream;
 
 namespace NSABUtils
 {
@@ -363,6 +366,13 @@ namespace NMediaManager
                 void setExactMatchesOnly( bool value );
                 bool getExactMatchesOnly() const;
 
+                QTextStream * getLogStream();
+                void setLoggingEnabled( bool value );
+                bool getLoggingEnabled() const;
+
+                void setLogDir( const QString &value );
+                QString getLogDir() const;
+
                 void setLoadMediaInfo( bool value );
                 bool getLoadMediaInfo() const;
 
@@ -636,6 +646,9 @@ namespace NMediaManager
                 mutable std::unordered_set< QString > fSubtitleExtensionsHash;
                 mutable std::unordered_map< QString, bool > fIsSubtitleExtension;
                 mutable QStringList fKnownStringRegExsCache;
+
+                std::unique_ptr< QTextStream > fLogFileTS;
+                std::unique_ptr< QFile > fLogFile;
             };
         }
     }

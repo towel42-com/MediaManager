@@ -37,7 +37,7 @@ set(qtproject_SRCS
     MovieSettings.cpp
     TranscodeGeneralSettings.cpp
     TranscodeVideoCodec.cpp
-    TranscodeVideoQuality.cpp
+    TranscodeBitrate.cpp
     TranscodeVideoSettings.cpp
     TranscodeAudioSettings.cpp
     PathsToDelete.cpp
@@ -47,7 +47,7 @@ set(qtproject_SRCS
     SkippedPaths.cpp
     TagAnalysisSettings.cpp
     MediaNamingSettings.cpp
-    QualityExperiment.cpp
+    BitrateExperiment.cpp
     TVShowSettings.cpp
 )
 
@@ -63,7 +63,7 @@ set(qtproject_H
     KnownHyphenated.h
     TranscodeGeneralSettings.h
     TranscodeVideoCodec.h
-    TranscodeVideoQuality.h
+    TranscodeBitrate.h
     TranscodeVideoSettings.h
     TranscodeAudioSettings.h
     MovieSettings.h
@@ -74,7 +74,7 @@ set(qtproject_H
     SkippedPaths.h
     TagAnalysisSettings.h
     MediaNamingSettings.h
-    QualityExperiment.h
+    BitrateExperiment.h
     TVShowSettings.h
 )
 
@@ -92,7 +92,7 @@ set(qtproject_UIS
     KnownHyphenated.ui
     TranscodeGeneralSettings.ui
     TranscodeVideoCodec.ui
-    TranscodeVideoQuality.ui
+    TranscodeBitrate.ui
     TranscodeVideoSettings.ui
     TranscodeAudioSettings.ui
     MovieSettings.ui
@@ -103,7 +103,7 @@ set(qtproject_UIS
     SkippedPaths.ui
     TagAnalysisSettings.ui
     MediaNamingSettings.ui
-    QualityExperiment.ui
+    BitrateExperiment.ui
     TVShowSettings.ui   
 )
 

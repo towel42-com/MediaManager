@@ -53,9 +53,6 @@ namespace NMediaManager
 
                 fImpl->onlyTranscodeVideoOnFormatChange->setChecked( NPreferences::NCore::CPreferences::instance()->getOnlyTranscodeVideoOnFormatChange() );
                 fImpl->generateNon4kVideo->setChecked( NPreferences::NCore::CPreferences::instance()->getGenerateNon4kVideo() );
-
-                fImpl->generateLowBitrateVideo->setChecked( NPreferences::NCore::CPreferences::instance()->getGenerateLowBitrateVideo() );
-                fImpl->bitrateThreshold->setValue( NPreferences::NCore::CPreferences::instance()->getBitrateThresholdPercentage() );
             }
 
             void CTranscodeVideoSettings::save()
@@ -64,9 +61,6 @@ namespace NMediaManager
 
                 NPreferences::NCore::CPreferences::instance()->setOnlyTranscodeVideoOnFormatChange( fImpl->onlyTranscodeVideoOnFormatChange->isChecked() );
                 NPreferences::NCore::CPreferences::instance()->setGenerateNon4kVideo( fImpl->generateNon4kVideo->isChecked() );
-
-                NPreferences::NCore::CPreferences::instance()->setGenerateLowBitrateVideo( fImpl->generateLowBitrateVideo->isChecked() );
-                NPreferences::NCore::CPreferences::instance()->setBitrateThresholdPercentage( fImpl->bitrateThreshold->value() );
             }
         }
     }

@@ -57,29 +57,29 @@ namespace NMediaManager
             STranscodeNeeded::STranscodeNeeded( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const CPreferences *prefs ) :
                 fMediaInfo( mediaInfo )
             {
-                fFormat = fVideoCodec = fVideoBitrate = fAudio = fDefaultAudioNotAAC = false;
+                fWrongContainer = fWrongVideoCodec = fBitrateTooHigh = fWrongAudioCodec = fDefaultAudioNotAAC = false;
                 if ( !mediaInfo || !mediaInfo->aOK() || mediaInfo->isQueued() )
                     return;
 
-                fFormat = prefs->getConvertMediaContainer() && !prefs->isEncoderFormat( mediaInfo, prefs->getConvertMediaToContainer() );
-                fVideoCodec = !mediaInfo->hasVideoCodec( prefs->getTranscodeToVideoCodec(), prefs->getMediaFormats() ) && ( fFormat || !prefs->getOnlyTranscodeVideoOnFormatChange() );
+                fWrongContainer = prefs->getConvertMediaContainer() && !prefs->isEncoderFormat( mediaInfo, prefs->getConvertMediaToContainer() );
+                fWrongVideoCodec = !mediaInfo->hasVideoCodec( prefs->getTranscodeToVideoCodec(), prefs->getMediaFormats() ) && ( fWrongContainer || !prefs->getOnlyTranscodeVideoOnFormatChange() );
 
                 if ( prefs->getGenerateLowBitrateVideo() )
                 {
                     auto averageBitrateTarget = prefs->getTargetBitrate( fMediaInfo, false, true );
-                    fVideoBitrate = mediaInfo->getBitRate() > averageBitrateTarget;
+                    fBitrateTooHigh = mediaInfo->getOverallBitRate() > averageBitrateTarget;
                 }
 
                 if ( prefs->getGenerateNon4kVideo() )
                 {
-                    fVideoResolution = mediaInfo->isGreaterThanHDResolution();
+                    fVideoResolutionTooHigh = mediaInfo->isGreaterThanHDResolution();
                 }
 
                 if ( !prefs->getTranscodeVideo() )
-                    fVideoCodec = fVideoBitrate = fVideoResolution = false;
+                    fWrongVideoCodec = fBitrateTooHigh = fVideoResolutionTooHigh = false;
 
                 fDefaultAudioNotAAC = prefs->getTranscodeAudio() && ( mediaInfo->numAudioStreams() != 0 ) && prefs->getAddAACAudioCodec() && !mediaInfo->isDefaultAudioCodecAAC( prefs->getMediaFormats(), 6 );
-                fAudio = prefs->getTranscodeAudio() && ( mediaInfo->numAudioStreams() != 0 ) && ( ( !mediaInfo->isCodec( "aac", prefs->getTranscodeToAudioCodec(), prefs->getMediaFormats() ) && !mediaInfo->isDefaultAudioCodec( prefs->getTranscodeToAudioCodec(), prefs->getMediaFormats() ) && ( fFormat || !prefs->getOnlyTranscodeAudioOnFormatChange() ) ) );
+                fWrongAudioCodec = prefs->getTranscodeAudio() && ( mediaInfo->numAudioStreams() != 0 ) && ( ( !mediaInfo->isCodec( "aac", prefs->getTranscodeToAudioCodec(), prefs->getMediaFormats() ) && !mediaInfo->isDefaultAudioCodec( prefs->getTranscodeToAudioCodec(), prefs->getMediaFormats() ) && ( fWrongContainer || !prefs->getOnlyTranscodeAudioOnFormatChange() ) ) );
             }
 
             STranscodeNeeded::STranscodeNeeded( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo ) :
@@ -94,7 +94,7 @@ namespace NMediaManager
 
             std::optional< QString > STranscodeNeeded::getFormatMessage() const
             {
-                if ( formatChangeNeeded() )
+                if ( wrongContainer() )
                 {
                     auto msg = QObject::tr( "<p style='white-space:pre'>File <b>'%1'</b> is not using a %2 container</p>" ).arg( QFileInfo( fMediaInfo->fileName() ).fileName() ).arg( NPreferences::NCore::CPreferences::instance()->getConvertMediaToContainer() );
                     return msg;
@@ -104,7 +104,7 @@ namespace NMediaManager
 
             std::optional< QString > STranscodeNeeded::getVideoCodecMessage() const
             {
-                if ( videoCodecTranscodeNeeded() )
+                if ( wrongVideoCodec() )
                 {
                     auto msg = QObject::tr( "<p style='white-space:pre'>File <b>'%1'</b> is not using the '%2' video codec</p>" ).arg( QFileInfo( fMediaInfo->fileName() ).fileName() ).arg( NPreferences::NCore::CPreferences::instance()->getTranscodeToVideoCodec() );
                     return msg;
@@ -112,11 +112,11 @@ namespace NMediaManager
                 return {};
             }
 
-            std::optional< QString > STranscodeNeeded::getVideoBitrateMessage() const
+            std::optional< QString > STranscodeNeeded::getBitrateMessage() const
             {
-                if ( videoBitrateTranscodeNeeded() )
+                if ( bitrateTooHigh() )
                 {
-                    auto msg = QObject::tr( "<p style='white-space:pre'>File <b>'%1'</b> bit rate is higher than '%2' kbps</p>" ).arg( QFileInfo( fMediaInfo->fileName() ).fileName() ).arg( NPreferences::NCore::CPreferences::instance()->getTargetBitrateDisplayString( fMediaInfo ) );
+                    auto msg = QObject::tr( "<p style='white-space:pre'>File <b>'%1'</b> overall bit rate is higher than '%2'</p>" ).arg( QFileInfo( fMediaInfo->fileName() ).fileName() ).arg( NPreferences::NCore::CPreferences::instance()->getTargetBitrateDisplayString( fMediaInfo ) );
                     return msg;
                 }
                 return {};
@@ -124,7 +124,7 @@ namespace NMediaManager
 
             std::optional< QString > STranscodeNeeded::getVideoResolutionMessage() const
             {
-                if ( videoResolutionTranscodeNeeded() )
+                if ( resolutionTooHigh() )
                 {
                     auto resolution = fMediaInfo->getResolution();
                     auto msg = QObject::tr( "<p style='white-space:pre'>File <b>'%1'</b> resolution higher than HD resolution (1920x1080)</p>" ).arg( QFileInfo( fMediaInfo->fileName() ).fileName() );
@@ -135,7 +135,14 @@ namespace NMediaManager
 
             std::optional< QString > STranscodeNeeded::getAudioCodecMessage() const
             {
-                if ( defaultAudioNotAAC51() || audioTranscodeNeeded() )
+                if ( bitrateTooHigh() )
+                {
+                    auto targetAudioCodec = defaultAudioNotAAC51() ? "AAC 5.1" : ( NPreferences::NCore::CPreferences::instance()->getTranscodeToAudioCodec() );
+                    auto msg = QObject::tr( "<p style='white-space:pre'>File <b>'%1'</b>'s overall bitrate is too high, removing all audio streams except the default an transcoding the audio track to the '%2' audio codec</p>" ).arg( QFileInfo( fMediaInfo->fileName() ).fileName() ).arg( targetAudioCodec );
+                    return msg;
+                }
+
+                if ( defaultAudioNotAAC51() || wrongAudioCodec() )
                 {
                     auto targetAudioCodec = defaultAudioNotAAC51() ? "AAC 5.1" : ( NPreferences::NCore::CPreferences::instance()->getTranscodeToAudioCodec() );
                     auto msg = QObject::tr( "<p style='white-space:pre'>File <b>'%1'</b>'s default audio track is not the '%2' audio codec</p>" ).arg( QFileInfo( fMediaInfo->fileName() ).fileName() ).arg( targetAudioCodec );
@@ -149,12 +156,12 @@ namespace NMediaManager
             {
                 QStringList actions;
 
-                if ( formatChangeNeeded() )
-                    actions << QObject::tr( "Convert to Container: %1" ).arg( NPreferences::NCore::CPreferences::instance()->getConvertMediaToContainer() );
-                if ( videoCodecTranscodeNeeded() )
-                    actions << QObject::tr( "Transcode video to the %1 codec" ).arg( NPreferences::NCore::CPreferences::instance()->getTranscodeToVideoCodec() );
-                if ( defaultAudioNotAAC51() || audioTranscodeNeeded() )
-                    actions << QObject::tr( "Transcode the default audio stream to the '%1'" ).arg( defaultAudioNotAAC51() ? "AAC 5.1" : NPreferences::NCore::CPreferences::instance()->getTranscodeToAudioCodec() );
+                if ( wrongContainer() )
+                    actions << QObject::tr( "Convert to Container: '%1'" ).arg( NPreferences::NCore::CPreferences::instance()->getConvertMediaToContainer() );
+                if ( wrongVideoCodec() )
+                    actions << QObject::tr( "Transcode video to the '%1' codec" ).arg( NPreferences::NCore::CPreferences::instance()->getTranscodeToVideoCodec() );
+                if ( defaultAudioNotAAC51() || wrongAudioCodec() )
+                    actions << QObject::tr( "Transcode the default audio stream to the '%1' codec" ).arg( defaultAudioNotAAC51() ? "AAC 5.1" : NPreferences::NCore::CPreferences::instance()->getTranscodeToAudioCodec() );
 
                 return actions;
             }
@@ -163,9 +170,9 @@ namespace NMediaManager
             {
                 QStringList actions;
 
-                if ( videoBitrateTranscodeNeeded() )
+                if ( bitrateTooHigh() )
                 {
-                    actions << QObject::tr( "Transcode video to an average of %1" ).arg( NPreferences::NCore::CPreferences::instance()->getTargetBitrateDisplayString( fMediaInfo ) );
+                    actions << QObject::tr( "Transcode to an average overall bitrate of %1, removing all audio except default stream" ).arg( NPreferences::NCore::CPreferences::instance()->getTargetBitrateDisplayString( fMediaInfo ) );
                     actions << getActions();
                 }
 
@@ -176,7 +183,7 @@ namespace NMediaManager
             {
                 QStringList actions;
 
-                if ( videoResolutionTranscodeNeeded() )
+                if ( resolutionTooHigh() )
                 {
                     actions << QObject::tr( "Transcode video to a resolution of 1080p" );
                     actions << getActions();
@@ -191,9 +198,7 @@ namespace NMediaManager
                     return {};
 
                 QString msg;
-                msg += QObject::tr( "<b>Creating:</b><ul><li>%1</li></ul><b>From:</b><ul>" ).arg( to );
-
-                msg += QString( "<li>%3</li>\n" ).arg( from );
+                msg += QObject::tr( "<b>Source:</b><ul><li>%1</li></ul><b>Output:</b><ul><li>%2</li>" ).arg( from ).arg( to );
                 for ( auto &&ii : mergedFiles )
                 {
                     msg += QString( "<li>%1</li>\n" ).arg( ii );
@@ -202,7 +207,7 @@ namespace NMediaManager
 
                 if ( !actions.isEmpty() )
                 {
-                    msg += QObject::tr( "<b>Transcoding Actions:</b>" ).arg( to );
+                    msg += QObject::tr( "<b>Transcoding Actions:</b>" );
                     msg += "<ul>";
                     for ( auto &&ii : actions )
                         msg += QString( "<li>%1</li>\n" ).arg( ii );

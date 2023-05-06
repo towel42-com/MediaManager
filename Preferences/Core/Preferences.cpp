@@ -48,6 +48,7 @@
 #include <QLabel>
 #include <QImageReader>
 #include <QProcess>
+#include <QStandardPaths>
 
 #include <optional>
 #include <unordered_set>
@@ -404,6 +405,62 @@ namespace NMediaManager
             QStringList CPreferences::getSubtitleDecoderExtensions( const QStringList &exclude ) const
             {
                 return getMediaFormats()->getSubtitleDecoderExtensions( exclude );
+            }
+
+            QTextStream * CPreferences::getLogStream()
+            {
+                if ( !getLoggingEnabled() )
+                    return nullptr;
+
+                if ( !fLogFileTS )
+                {
+                    fLogFile = std::make_unique< QFile >( QDir( getLogDir() ).absoluteFilePath( QDateTime::currentDateTime().toString( "MMddyyyyThhmmss.log" ) ) );
+                    fLogFile->open( QFile::WriteOnly | QFile::Truncate | QFile::Text );
+                    if ( fLogFile->isOpen() )
+                    {
+                        fLogFileTS = std::make_unique< QTextStream >( fLogFile.get() );
+                    }
+                }
+                return fLogFileTS.get();
+            }
+
+            void CPreferences::setLoggingEnabled( bool value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
+                settings.setValue( "EnableLogging", value );
+                emitSigPreferencesChanged( EPreferenceType::eSystemPrefs );
+            }
+
+            bool CPreferences::getLoggingEnabled() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
+                return settings.value( "EnableLogging", true ).toBool();
+            }
+
+            void CPreferences::setLogDir( const QString &value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
+                settings.setValue( "LogDir", value );
+                emitSigPreferencesChanged( EPreferenceType::eSystemPrefs );
+            }
+
+            QString CPreferences::getLogDir() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
+                auto appDataDir = QDir( QStandardPaths::writableLocation( QStandardPaths::AppDataLocation ) );
+                auto retValDir = QDir( appDataDir.absoluteFilePath( "Logs" ) );
+
+                auto retVal = settings.value( "LogDir", retValDir.absolutePath() ).toString();
+
+                if ( !QDir( retVal ).exists() )
+                {
+                    QDir( retVal ).mkpath( "." );
+                }
+                return retVal;
             }
 
             void CPreferences::setLoadMediaInfo( bool value )
@@ -825,14 +882,16 @@ namespace NMediaManager
 
             QStringList CPreferences::getKnownStrings() const
             {
-                QSettings settings;
-                settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
-                auto tmp = settings.value( "KnownStrings", getDefaultKnownStrings() ).toStringList();
-                auto tmp2 = std::set< QString, SCmp >( { tmp.begin(), tmp.end() } );
-                QStringList retVal;
-                for ( auto &&ii : tmp2 )
-                    retVal.push_back( ii );
-
+                static QStringList retVal;
+                if ( retVal.isEmpty() )
+                {
+                    QSettings settings;
+                    settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
+                    auto tmp = settings.value( "KnownStrings", getDefaultKnownStrings() ).toStringList();
+                    auto tmp2 = std::set< QString, SCmp >( { tmp.begin(), tmp.end() } );
+                    for ( auto &&ii : tmp2 )
+                        retVal.push_back( ii );
+                }
                 return retVal;
             }
 
@@ -1075,7 +1134,31 @@ namespace NMediaManager
                 settings.beginGroup( toString( EPreferenceType::eTagPrefs ) );
 
                 std::list< std::pair< NSABUtils::EMediaTags, bool > > retVal = {
-                    { NSABUtils::EMediaTags::eTitle, true }, { NSABUtils::EMediaTags::eLength, true }, { NSABUtils::EMediaTags::eDate, true }, { NSABUtils::EMediaTags::eComment, true }, { NSABUtils::EMediaTags::eBPM, true }, { NSABUtils::EMediaTags::eArtist, true }, { NSABUtils::EMediaTags::eComposer, true }, { NSABUtils::EMediaTags::eGenre, true }, { NSABUtils::EMediaTags::eTrack, true }, { NSABUtils::EMediaTags::eAlbum, false }, { NSABUtils::EMediaTags::eAlbumArtist, false }, { NSABUtils::EMediaTags::eDiscnumber, false }, { NSABUtils::EMediaTags::eAspectRatio, false }, { NSABUtils::EMediaTags::eWidth, false }, { NSABUtils::EMediaTags::eHeight, false }, { NSABUtils::EMediaTags::eResolution, false }, { NSABUtils::EMediaTags::eAllVideoCodecs, false }, { NSABUtils::EMediaTags::eAllAudioCodecsDisp, false }, { NSABUtils::EMediaTags::eVideoBitrateString, false }, { NSABUtils::EMediaTags::eHDRInfo, false }, { NSABUtils::EMediaTags::eOverAllBitrateString, false }, { NSABUtils::EMediaTags::eAudioChannelCount, false }, { NSABUtils::EMediaTags::eAudioSampleRateString, false }, { NSABUtils::EMediaTags::eAllSubtitleLanguages, false }, { NSABUtils::EMediaTags::eAllSubtitleCodecs, false },
+                    { NSABUtils::EMediaTags::eTitle, true }, //
+                    { NSABUtils::EMediaTags::eLength, true }, //
+                    { NSABUtils::EMediaTags::eDate, true }, //
+                    { NSABUtils::EMediaTags::eComment, true }, //
+                    { NSABUtils::EMediaTags::eBPM, true }, //
+                    { NSABUtils::EMediaTags::eArtist, true }, //
+                    { NSABUtils::EMediaTags::eComposer, true }, //
+                    { NSABUtils::EMediaTags::eGenre, true }, //
+                    { NSABUtils::EMediaTags::eTrack, true }, //
+                    { NSABUtils::EMediaTags::eAlbum, false },   //
+                    { NSABUtils::EMediaTags::eAlbumArtist, false }, //
+                    { NSABUtils::EMediaTags::eDiscnumber, false }, //
+                    { NSABUtils::EMediaTags::eAspectRatio, false }, //
+                    { NSABUtils::EMediaTags::eWidth, false },  //
+                    { NSABUtils::EMediaTags::eHeight, false }, //
+                    { NSABUtils::EMediaTags::eResolution, false }, //
+                    { NSABUtils::EMediaTags::eAllVideoCodecs, false }, //
+                    { NSABUtils::EMediaTags::eAllAudioCodecsDisp, false },//
+                    { NSABUtils::EMediaTags::eVideoBitrateString, false },// 
+                    { NSABUtils::EMediaTags::eHDRInfo, false }, //
+                    { NSABUtils::EMediaTags::eOverAllBitrateString, false }, //
+                    { NSABUtils::EMediaTags::eAudioChannelCount, false }, //
+                    { NSABUtils::EMediaTags::eTotalAudioBitrateString, false }, //
+                    { NSABUtils::EMediaTags::eAllSubtitleLanguages, false }, //
+                    { NSABUtils::EMediaTags::eAllSubtitleCodecs, false }
                 };
 
                 if ( !settings.contains( "EnabledTags" ) )

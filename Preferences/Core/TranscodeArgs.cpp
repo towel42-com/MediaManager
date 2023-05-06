@@ -55,7 +55,7 @@ namespace NMediaManager
             {
                 auto transcodeNeeded = STranscodeNeeded( mediaInfo, this );
 
-                if ( !transcodeNeeded.transcodeNeeded() && srtFiles.empty() && subIdxFiles.empty() )
+                if ( !transcodeNeeded.transcodeNeeded() && srtFiles.empty() && subIdxFiles.empty() && !resolution.has_value() && !bitrate.has_value() )
                     return {};
 
                 auto retVal = QStringList()   //
@@ -73,22 +73,6 @@ namespace NMediaManager
                 }
 
                 retVal << "-i" << srcName;   //
-                if ( resolution.has_value() )
-                {
-                    auto currRes = mediaInfo->getResolution();
-                    auto widthDiff = 1.0 * std::abs( currRes.first - resolution.value().first ) / ( 1.0 * resolution.value().first );
-                    auto heightDiff = 1.0 * std::abs( currRes.second - resolution.value().second ) / ( 1.0 * resolution.value().second );
-
-                    auto scale = QString( "scale%1=%2:%3" ).arg( hwAccel.isEmpty() ? "" : ( "_" + hwAccel ) );
-                    if ( widthDiff > heightDiff )
-                        scale = scale.arg( resolution.value().first ).arg( -1 );
-                    else
-                        scale = scale.arg( -1 ).arg( resolution.value().second );
-                    retVal << "-vf" << scale;
-                }
-
-                if ( bitrate.has_value() )
-                    retVal << "-b:v" << QString( "%1k" ).arg( bitrate.value() );
 
                 for ( auto &&ii : srtFiles )
                 {
@@ -124,7 +108,7 @@ namespace NMediaManager
                        << "-map_chapters"
                        << "0";
 
-                if ( !bitrate.has_value() && ( transcodeNeeded.formatOnly() || !transcodeNeeded.transcodeNeeded() ) )
+                if ( !resolution.has_value() && !bitrate.has_value() && ( transcodeNeeded.containerOnly() || !transcodeNeeded.transcodeNeeded() ) )
                 {
                     // already HVEC but wrong container, just copy
                     retVal << "-map"
@@ -140,7 +124,7 @@ namespace NMediaManager
                 else
                 {
                     QString videoCodec;
-                    if ( !transcodeNeeded.videoCodecTranscodeNeeded() && !bitrate.has_value() && !resolution.has_value() )
+                    if ( !transcodeNeeded.wrongVideoCodec() && !bitrate.has_value() && !resolution.has_value() )
                     {
                         videoCodec = "copy";
                     }
@@ -154,45 +138,83 @@ namespace NMediaManager
                            << "-c:v" << videoCodec   //
                         ;
 
-                    if ( !transcodeNeeded.audioTranscodeNeeded() && !transcodeNeeded.defaultAudioNotAAC51() )
+                    uint64_t defaultAudioStreamBitrate = mediaInfo->getDefaultAudioBitRate();
+                    if ( mediaInfo->numAudioStreams() )
                     {
-                        retVal << "-map"
-                               << "0:a?"   //
-                               << "-c:a"
-                               << "copy";
-                    }
-                    else
-                    {
-                        auto defaultStreamNum = mediaInfo->defaultAudioStream();
-
-                        // transcode or copy the default audio stream
-                        // and put it in the front
                         auto audioFormat = transcodeNeeded.defaultAudioNotAAC51() ? "aac" : getTranscodeToAudioCodec();
-                        retVal << "-map" << QString( "0:a:%1?" ).arg( defaultStreamNum );     // map from the default stream
-                        int currStreamNum = 0;
-                        retVal << QString( "-c:a:%1" ).arg( currStreamNum ) << audioFormat;          // add a copy from the original stream to the front (since some players ignore the disposition
-                        retVal << QString( "-disposition:a:%1" ).arg( currStreamNum ) << "default";  // mark it as the default
-                        if ( transcodeNeeded.defaultAudioNotAAC51() )
+                        auto defaultAudioStreamNum = mediaInfo->defaultAudioStream();
+                        int currAudioStreamNum = 0;
+                        if ( !transcodeNeeded.bitrateTooHigh() && !transcodeNeeded.wrongAudioCodec() && !transcodeNeeded.defaultAudioNotAAC51() )
                         {
-                            auto numChannels = std::min( mediaInfo->audioChannelCount( defaultStreamNum ), 6 );
-                            retVal << QString( "-ac:a:%1" ).arg( currStreamNum ) << QString::number( numChannels );             // convert it to 5.1
-                            audioFormat += QString( " %1.1" ).arg( numChannels - 1 );
+                            retVal << "-map"
+                                   << "0:a?"   //
+                                   << "-c:a"
+                                   << "copy";
                         }
-                        retVal << QString( "-metadata:s:a:%1" ).arg( currStreamNum ) << QString( R"(title="Transcoded Default Track #%1 from '%2' to '%3'")" ).arg( defaultStreamNum ).arg( mediaInfo->getMediaTag( defaultStreamNum, NSABUtils::EMediaTags::eAudioCodecDisp ) ).arg( audioFormat );   // set the metadata
-
-                        currStreamNum++;
-                        auto numAudioStreams = mediaInfo->numAudioStreams();
-                        for ( int ii = 0; ii < numAudioStreams; ++ii )
+                        else
                         {
-                            retVal << "-map" << QString( "0:a:%1?" ).arg( ii );              // map this from the original stream
-                            retVal << QString( "-c:a:%1" ).arg( currStreamNum ) << "copy";            // just copy the audio as the new stream
-                            retVal << QString( "-disposition:a:%1" ).arg( currStreamNum++ ) << "0";   // its not the default and stream number is the new stream number
+                            // transcode or copy the default audio stream
+                            // and put it in the front
+                            retVal << "-map" << QString( "0:a:%1?" ).arg( defaultAudioStreamNum );   // map from the default stream
+                            retVal << QString( "-c:a:%1" ).arg( currAudioStreamNum ) << audioFormat;   // add a copy from the original stream to the front (since some players ignore the disposition
+                            retVal << QString( "-disposition:a:%1" ).arg( currAudioStreamNum ) << "default";   // mark it as the default
+                            if ( transcodeNeeded.defaultAudioNotAAC51() )
+                            {
+                                auto numChannels = std::min( mediaInfo->audioChannelCount( defaultAudioStreamNum ), 6 );
+                                retVal << QString( "-ac:a:%1" ).arg( currAudioStreamNum ) << QString::number( numChannels );   // convert it to 5.1
+                                if ( numChannels > 2 )
+                                    audioFormat += QString( " %1.1" ).arg( numChannels - 1 );
+                                else if ( numChannels == 2 )
+                                    audioFormat += " stereo";
+                                else
+                                    audioFormat += " mono";
+                            }
+                            if ( transcodeNeeded.bitrateTooHigh() && defaultAudioStreamBitrate )
+                                retVal << "-b:a" << QString( "%1" ).arg( defaultAudioStreamBitrate ) << "-maxrate" << QString( "%1" ).arg( static_cast< uint64_t >( defaultAudioStreamBitrate * 1.1 ) ) << "-bufsize" << QString( "%1" ).arg( defaultAudioStreamBitrate / 2 );
+
+                            retVal << QString( "-metadata:s:a:%1" ).arg( currAudioStreamNum ) << QString( R"(title="Transcoded Default Track #%1 from '%2' to '%3'")" ).arg( defaultAudioStreamNum ).arg( mediaInfo->getMediaTag( defaultAudioStreamNum, NSABUtils::EMediaTags::eAudioCodecDisp ) ).arg( audioFormat );   // set the metadata
+
+                            currAudioStreamNum++;
+
+                            if ( !transcodeNeeded.bitrateTooHigh() && ( transcodeNeeded.wrongAudioCodec() || transcodeNeeded.defaultAudioNotAAC51() ) )
+                            {
+                                auto numAudioStreams = mediaInfo->numAudioStreams();
+                                for ( int ii = 0; ii < numAudioStreams; ++ii )
+                                {
+                                    retVal << "-map" << QString( "0:a:%1?" ).arg( ii );   // map this from the original stream
+                                    retVal << QString( "-c:a:%1" ).arg( currAudioStreamNum ) << "copy";   // just copy the audio as the new stream
+                                    retVal << QString( "-disposition:a:%1" ).arg( currAudioStreamNum++ ) << "0";   // its not the default and stream number is the new stream number
+                                }
+                            }
                         }
                     }
 
-                    if ( transcodeNeeded.videoCodecTranscodeNeeded() && mediaInfo->isHEVCCodec( videoCodec, NPreferences::NCore::CPreferences::instance()->getMediaFormats() ) )
+                    bool isHEVC = mediaInfo->isHEVCCodec( videoCodec, NPreferences::NCore::CPreferences::instance()->getMediaFormats() );
+
+                    if ( transcodeNeeded.wrongVideoCodec() || bitrate.has_value() || resolution.has_value() )
                     {
-                        if ( !bitrate.has_value() )
+                        if ( resolution.has_value() )
+                        {
+                            auto currRes = mediaInfo->getResolution();
+                            auto widthDiff = 1.0 * std::abs( currRes.first - resolution.value().first ) / ( 1.0 * resolution.value().first );
+                            auto heightDiff = 1.0 * std::abs( currRes.second - resolution.value().second ) / ( 1.0 * resolution.value().second );
+
+                            auto scale = QString( "scale%1=%2:%3" ).arg( hwAccel.isEmpty() ? "" : ( "_" + hwAccel ) );
+                            if ( widthDiff > heightDiff )
+                                scale = scale.arg( resolution.value().first ).arg( -1 );
+                            else
+                                scale = scale.arg( -1 ).arg( resolution.value().second );
+                            retVal << "-vf" << scale;
+                        }
+
+                        if ( bitrate.has_value() || getUseTargetBitrate() )
+                        {
+                            uint64_t lclBitrate = getTargetBitrate( mediaInfo, true, false );
+                            if ( bitrate.has_value() )
+                                lclBitrate = bitrate.value() - ( defaultAudioStreamBitrate / 1000 );
+                            retVal << "-b:v" << QString( "%1k" ).arg( lclBitrate ) << "-maxrate" << QString( "%1k" ).arg( static_cast< uint64_t >( lclBitrate * 1.1 ) ) << "-bufsize" << QString( "%1k" ).arg( lclBitrate / 2 );
+                        }
+                        else if ( isHEVC )
                         {
                             if ( getLosslessEncoding() )
                             {
@@ -201,82 +223,88 @@ namespace NMediaManager
                             }
                             else if ( getUseCRF() )
                                 retVal << "-crf" << QString::number( getCRF() );
-                            else if ( getUseTargetBitrate() )
-                                retVal << "-b:v" << QString( "%1k" ).arg( getTargetBitrate( mediaInfo, true, false ) );
+
+                            if ( getUsePreset() )
+                                retVal << "-preset" << toString( getPreset() );
+                            if ( getUseTune() )
+                                retVal << "-tune" << toString( getTune() );
+                            if ( getUseProfile() )
+                                retVal << "-profile:v" << toString( getProfile() );
+                        }
+                        if ( isHEVC )
+                            retVal << "-tag:v"
+                                   << "hvc1";
+                    }
+
+                    if ( srtFiles.empty() && subIdxFiles.empty() && !transcodeNeeded.wrongVideoCodec() )   // meaning if we arent adding srt or idx files, and the video codec is correct, we dont have to worry about transcoding subtitles
+                    {
+                        retVal << "-map"
+                               << "0:s?"   //
+                               << "-c:s"
+                               << "copy";
+                    }
+                    else
+                    {
+                        auto numSubtitleStreams = mediaInfo->numSubtitleStreams();
+                        auto subtitleCodecs = mediaInfo->allSubtitleCodecs();
+                        int subTitleStreamNum = 0;
+                        for ( int ii = 0; ii < numSubtitleStreams; ++ii )
+                        {
+                            retVal << "-map" << QString( "0:s:%1?" ).arg( subTitleStreamNum );
+
+                            auto currCodec = subtitleCodecs[ ii ].toLower();
+                            auto subTitleCodec = QString( "copy" );
+                            if ( isEncoderFormat( mediaInfo, "matroska" ) )
+                            {
+                                if ( ( currCodec == "ass" ) || ( currCodec == "srt" ) || ( currCodec == "ssa" ) || ( currCodec == "hdmv_pgs_subtitle" ) || ( currCodec == "subrip" ) || ( currCodec == "xsub" ) || ( currCodec == "dvdsub" ) )
+                                    subTitleCodec = QString( "copy" );
+                                else
+                                    subTitleCodec = "srt";
+                            }
+                            else if ( isEncoderFormat( mediaInfo, "mp4" ) )
+                            {
+                                if ( currCodec == "mov_text" )
+                                    subTitleCodec = QString( "copy" );
+                                else
+                                    subTitleCodec = "mov_text";
+                            }
+                            else if ( isEncoderFormat( mediaInfo, "mov" ) )
+                            {
+                                if ( currCodec == "mov_text" )
+                                    subTitleCodec = QString( "copy" );
+                                else
+                                    subTitleCodec = "mov_text";
+                            }
+                            retVal << QString( "-c:s:%1" ).arg( subTitleStreamNum++ ) << subTitleCodec;
                         }
 
-                        if ( getUsePreset() )
-                            retVal << "-preset" << toString( getPreset() );
-                        if ( getUseTune() )
-                            retVal << "-tune" << toString( getTune() );
-                        if ( getUseProfile() )
-                            retVal << "-profile:v" << toString( getProfile() );
-                        retVal << "-tag:v"
-                               << "hvc1";
+                        int fileNum = 1;
+                        for ( auto &&srtFile : srtFiles )
+                        {
+                            retVal << "-map" << QString( "%1:0?" ).arg( fileNum++ )   //
+                                   << "-map" << QString( "0:s:%1?" ).arg( subTitleStreamNum )   //
+                                   << QString( "-metadata:s:s:%1" ).arg( subTitleStreamNum ) << QString( "language=%1" ).arg( srtFile.isoCode() )   //
+                                   << QString( "-metadata:s:s:%1" ).arg( subTitleStreamNum ) << QString( "handler_name=%1" ).arg( srtFile.language() )   //
+                                   << QString( "-metadata:s:s:%1" ).arg( subTitleStreamNum ) << QString( "title=%1" ).arg( srtFile.displayName() )   //
+                                ;
+                            subTitleStreamNum++;
+                        }
+
+                        for ( auto &&subIdxPair : subIdxFiles )
+                        {
+                            retVal << "-map" << QString( "%1:0?" ).arg( fileNum++ )   //
+                                   << "-map" << QString( "0:s:%1?" ).arg( subTitleStreamNum )   //
+                                   << QString( "-c:s:%1" ).arg( subTitleStreamNum ) << "copy" << QString( "-metadata:s:s:%1" ).arg( subTitleStreamNum ) << QString( "language=%1" ).arg( subIdxPair.first.isoCode() )   //
+                                   << QString( "-metadata:s:s:%1" ).arg( subTitleStreamNum ) << QString( "handler_name=%1" ).arg( subIdxPair.first.language() )   //
+                                   << QString( "-metadata:s:s:%1" ).arg( subTitleStreamNum ) << QString( "title=%1" ).arg( subIdxPair.first.displayName() )   //
+                                ;
+                            subTitleStreamNum++;
+                        }
                     }
                 }
-
-                auto numSubtitleStreams = mediaInfo->numSubtitleStreams();
-                auto subtitleCodecs = mediaInfo->allSubtitleCodecs();
-                int subTitleStreamNum = 0;
-                for ( int ii = 0; ii < numSubtitleStreams; ++ii )
-                {
-                    retVal << "-map" << QString( "0:s:%1?" ).arg( subTitleStreamNum );
-
-                    auto currCodec = subtitleCodecs[ ii ].toLower();
-                    auto subTitleCodec = QString( "copy" );
-                    if ( isEncoderFormat( mediaInfo, "matroska" ) )
-                    {
-                        if ( ( currCodec == "ass" ) || ( currCodec == "srt" ) || ( currCodec == "ssa" ) || ( currCodec == "hdmv_pgs_subtitle" ) || ( currCodec == "subrip" ) || ( currCodec == "xsub" ) || ( currCodec == "dvdsub" ) )
-                            subTitleCodec = QString( "copy" );
-                        else
-                            subTitleCodec = "srt";
-                    }
-                    else if ( isEncoderFormat( mediaInfo, "mp4" ) )
-                    {
-                        if ( currCodec == "mov_text" )
-                            subTitleCodec = QString( "copy" );
-                        else
-                            subTitleCodec = "mov_text";
-                    }
-                    else if ( isEncoderFormat( mediaInfo, "mov" ) )
-                    {
-                        if ( currCodec == "mov_text" )
-                            subTitleCodec = QString( "copy" );
-                        else
-                            subTitleCodec = "mov_text";
-                    }
-                    retVal << QString( "-c:s:%1" ).arg( subTitleStreamNum++ ) << subTitleCodec;
-                }
-
-                int fileNum = 1;
-                for ( auto &&srtFile : srtFiles )
-                {
-                    retVal << "-map" << QString( "%1:0?" ).arg( fileNum++ )   //
-                           << "-map" << QString( "0:s:%1?" ).arg( subTitleStreamNum )   //
-                           << QString( "-metadata:s:s:%1" ).arg( subTitleStreamNum ) << QString( "language=%1" ).arg( srtFile.isoCode() )   //
-                           << QString( "-metadata:s:s:%1" ).arg( subTitleStreamNum ) << QString( "handler_name=%1" ).arg( srtFile.language() )   //
-                           << QString( "-metadata:s:s:%1" ).arg( subTitleStreamNum ) << QString( "title=%1" ).arg( srtFile.displayName() )   //
-                        ;
-                    subTitleStreamNum++;
-                }
-
-                for ( auto &&subIdxPair : subIdxFiles )
-                {
-                    retVal << "-map" << QString( "%1:0?" ).arg( fileNum++ )   //
-                           << "-map" << QString( "0:s:%1?" ).arg( subTitleStreamNum )   //
-                           << QString( "-c:s:%1" ).arg( subTitleStreamNum ) << "copy" << QString( "-metadata:s:s:%1" ).arg( subTitleStreamNum ) << QString( "language=%1" ).arg( subIdxPair.first.isoCode() )   //
-                           << QString( "-metadata:s:s:%1" ).arg( subTitleStreamNum ) << QString( "handler_name=%1" ).arg( subIdxPair.first.language() )   //
-                           << QString( "-metadata:s:s:%1" ).arg( subTitleStreamNum ) << QString( "title=%1" ).arg( subIdxPair.first.displayName() )   //
-                        ;
-                    subTitleStreamNum++;
-                }
-
                 retVal << "-f" << getConvertMediaToContainer()   //
                        << destName;
 
-                (void)bitrate;
-                (void)resolution;
                 return retVal;
             }
         }

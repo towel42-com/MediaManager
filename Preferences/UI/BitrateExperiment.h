@@ -20,8 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef __UI_QUALITYEXPERIMENT_H
-#define __UI_QUALITYEXPERIMENT_H
+#ifndef __UI_BITRATEEXPERIMENT_H
+#define __UI_BITRATEEXPERIMENT_H
 
 #include <QDialog>
 
@@ -38,15 +38,15 @@ namespace NMediaManager
         {
             namespace Ui
             {
-                class CQualityExperiment;
+                class CBitrateExperiment;
             };
 
-            class CQualityExperiment : public QDialog
+            class CBitrateExperiment : public QDialog
             {
                 Q_OBJECT
             public:
-                CQualityExperiment( QWidget *parent = nullptr );
-                virtual ~CQualityExperiment() override;
+                CBitrateExperiment( QWidget *parent = nullptr );
+                virtual ~CBitrateExperiment() override;
 
                 void setGreaterThan4kDivisor( int value );
                 int greaterThan4kDivisor() const;
@@ -68,13 +68,15 @@ namespace NMediaManager
                 void slotChanged();
                 void slotOpenFile();
                 void slotSourceChanged();
+            Q_SIGNALS:
+                void sigChanged();
             private:
                 void loadFromFile();
                 void load( const NSABUtils::SResolutionInfo &resDef );
                 std::shared_ptr< NSABUtils::SResolutionInfo > getResolutionDef() const;
 
                 bool fDisableUpdate{ false };
-                std::unique_ptr< Ui::CQualityExperiment > fImpl;
+                std::unique_ptr< Ui::CBitrateExperiment > fImpl;
             };
         }
     }

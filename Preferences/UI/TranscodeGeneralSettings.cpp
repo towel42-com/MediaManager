@@ -57,12 +57,18 @@ namespace NMediaManager
 
                 auto pos = fImpl->mediaFormats->findData( NPreferences::NCore::CPreferences::instance()->getConvertMediaToContainer() );
                 fImpl->mediaFormats->setCurrentIndex( pos );
+
+                fImpl->generateLowBitrateVideo->setChecked( NPreferences::NCore::CPreferences::instance()->getGenerateLowBitrateVideo() );
+                fImpl->bitrateThreshold->setValue( NPreferences::NCore::CPreferences::instance()->getBitrateThresholdPercentage() );
             }
 
             void CTranscodeGeneralSettings::save()
             {
                 NPreferences::NCore::CPreferences::instance()->setConvertMediaToContainer( fImpl->mediaFormats->currentData().toString() );
                 NPreferences::NCore::CPreferences::instance()->setConvertMediaContainer( fImpl->convertMediaFormat->isChecked() );
+
+                NPreferences::NCore::CPreferences::instance()->setGenerateLowBitrateVideo( fImpl->generateLowBitrateVideo->isChecked() );
+                NPreferences::NCore::CPreferences::instance()->setBitrateThresholdPercentage( fImpl->bitrateThreshold->value() );
             }
        }
     }

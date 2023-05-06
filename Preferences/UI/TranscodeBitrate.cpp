@@ -20,13 +20,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "TranscodeVideoQuality.h"
-#include "QualityExperiment.h"
+#include "TranscodeBitrate.h"
+#include "BitrateExperiment.h"
 #include "Preferences/Core/Preferences.h"
 #include "SABUtils/MediaInfo.h"
 #include "SABUtils/FFMpegFormats.h"
 
-#include "ui_TranscodeVideoQuality.h"
+#include "ui_TranscodeBitrate.h"
 
 #include <QIntValidator>
 #include <QWidgetAction>
@@ -37,9 +37,9 @@ namespace NMediaManager
     {
         namespace NUi
         {
-            CTranscodeVideoQuality::CTranscodeVideoQuality( QWidget *parent ) :
+            CTranscodeBitrate::CTranscodeBitrate( QWidget *parent ) :
                 CBasePrefPage( parent ),
-                fImpl( new Ui::CTranscodeVideoQuality )
+                fImpl( new Ui::CTranscodeBitrate )
             {
                 fImpl->setupUi( this );
                 fImpl->target4kBitrate->setSuffix( "(kbps)" );
@@ -47,11 +47,11 @@ namespace NMediaManager
                 fImpl->targetSubHDBitrate->setSuffix( "(kbps)" );
             }
 
-            CTranscodeVideoQuality::~CTranscodeVideoQuality()
+            CTranscodeBitrate::~CTranscodeBitrate()
             {
             }
 
-            void CTranscodeVideoQuality::load()
+            void CTranscodeBitrate::load()
             {
                 fImpl->target4kBitrate->setText( QString::number( NPreferences::NCore::CPreferences::instance()->getTarget4kBitrate() ) );
                 fImpl->targetHDBitrate->setText( QString::number( NPreferences::NCore::CPreferences::instance()->getTargetHDBitrate() ) );
@@ -60,10 +60,10 @@ namespace NMediaManager
 
                 fImpl->resolutionThreshold->setValue( NPreferences::NCore::CPreferences::instance()->getResolutionThresholdPercentage() );
 
-                connect( fImpl->experiment, &QPushButton::clicked, this, &CTranscodeVideoQuality::slotExperiment );
+                connect( fImpl->experiment, &QPushButton::clicked, this, &CTranscodeBitrate::slotExperiment );
             }
 
-            void CTranscodeVideoQuality::save()
+            void CTranscodeBitrate::save()
             {
                 NPreferences::NCore::CPreferences::instance()->setTarget4kBitrate( fImpl->target4kBitrate->text().toDouble() );
                 NPreferences::NCore::CPreferences::instance()->setTargetHDBitrate( fImpl->targetHDBitrate->text().toDouble() );
@@ -73,9 +73,9 @@ namespace NMediaManager
                 NPreferences::NCore::CPreferences::instance()->setResolutionThresholdPercentage( fImpl->resolutionThreshold->value() );
             }
 
-            void CTranscodeVideoQuality::slotExperiment()
+            void CTranscodeBitrate::slotExperiment()
             {
-                CQualityExperiment dlg( this );
+                CBitrateExperiment dlg( this );
                 dlg.setGreaterThan4kDivisor( fImpl->greaterThan4kDivisor->value() );
                 dlg.setTarget4kBitrate( fImpl->target4kBitrate->text() );
                 dlg.setTargetHDBitrate( fImpl->targetHDBitrate->text() );

@@ -20,8 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef __UI_TRANSCODEVIDEOQUALITY_H
-#define __UI_TRANSCODEVIDEOQUALITY_H
+#ifndef __UI_TRANSCODEBITRATE_H
+#define __UI_TRANSCODEBITRATE_H
 
 #include "BasePrefPage.h"
 
@@ -33,23 +33,23 @@ namespace NMediaManager
         {
             namespace Ui
             {
-                class CTranscodeVideoQuality;
+                class CTranscodeBitrate;
             };
-            class CTranscodeVideoQuality : public CBasePrefPage
+            class CTranscodeBitrate : public CBasePrefPage
             {
                 Q_OBJECT
             public:
-                CTranscodeVideoQuality( QWidget *parent = nullptr );
+                CTranscodeBitrate( QWidget *parent = nullptr );
 
-                virtual ~CTranscodeVideoQuality() override;
+                virtual ~CTranscodeBitrate() override;
 
                 virtual void load() override;
                 virtual void save() override;
-                virtual QStringList pageName() const override { return QStringList( { "Transcode Settings", "Video", "Quality" } ); }
+                virtual QStringList pageName() const override { return QStringList( { "Transcode Settings", "Bitrate" } ); }
             public Q_SLOTS:
                 void slotExperiment();
             private:
-                std::unique_ptr< Ui::CTranscodeVideoQuality > fImpl;
+                std::unique_ptr< Ui::CTranscodeBitrate > fImpl;
             };
         }
     }

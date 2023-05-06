@@ -34,6 +34,39 @@
     </widget>
    </item>
    <item>
+    <widget class="QGroupBox" name="enableLogging">
+     <property name="title">
+      <string>Log Output to File?</string>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Log Directory:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="logDir"/>
+      </item>
+      <item>
+       <widget class="QToolButton" name="logDirBtn">
+        <property name="text">
+         <string>...</string>
+        </property>
+        <property name="icon">
+         <iconset resource="../../SABUtils/resources/SABUtils.qrc">
+          <normaloff>:/SABUtilsResources/open.png</normaloff>:/SABUtilsResources/open.png</iconset>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
     <spacer name="verticalSpacer_7">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -48,6 +81,15 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <tabstops>
+  <tabstop>loadMediaInfo</tabstop>
+  <tabstop>backgroundLoadMediaInfo</tabstop>
+  <tabstop>enableLogging</tabstop>
+  <tabstop>logDir</tabstop>
+  <tabstop>logDirBtn</tabstop>
+ </tabstops>
+ <resources>
+  <include location="../../SABUtils/resources/SABUtils.qrc"/>
+ </resources>
  <connections/>
 </ui>

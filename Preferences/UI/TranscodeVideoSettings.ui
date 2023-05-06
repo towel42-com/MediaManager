@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>836</width>
+    <width>485</width>
     <height>855</height>
    </rect>
   </property>
@@ -44,58 +44,6 @@
         </property>
        </widget>
       </item>
-      <item>
-       <widget class="QGroupBox" name="generateLowBitrateVideo">
-        <property name="title">
-         <string>For video with high bitrates, create secondary lower bitrate video?</string>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-        <layout class="QGridLayout" name="gridLayout">
-         <item row="0" column="2">
-          <widget class="QLabel" name="label_13">
-           <property name="text">
-            <string>(If bitrate is reported as greater than Target Bitrate +/- threshhold percentage)</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0">
-          <widget class="QLabel" name="label_12">
-           <property name="text">
-            <string>Threshold:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="3">
-          <spacer name="horizontalSpacer_9">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item row="0" column="1">
-          <widget class="QSpinBox" name="bitrateThreshold">
-           <property name="suffix">
-            <string>%</string>
-           </property>
-           <property name="minimum">
-            <number>30</number>
-           </property>
-           <property name="maximum">
-            <number>200</number>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
      </layout>
     </widget>
    </item>
@@ -118,7 +66,6 @@
   <tabstop>transcodeVideo</tabstop>
   <tabstop>onlyTranscodeVideoOnFormatChange</tabstop>
   <tabstop>generateNon4kVideo</tabstop>
-  <tabstop>bitrateThreshold</tabstop>
  </tabstops>
  <resources/>
  <connections/>

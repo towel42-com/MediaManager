@@ -87,9 +87,9 @@ namespace NMediaManager
                 if ( msg.has_value() )
                     return TItemStatus( NPreferences::EItemStatus::eWarning, msg.value() );
             }
-            else if ( idx.column() == getMediaVideoBitrateLoc() )
+            else if ( idx.column() == getMediaOverallBitrateLoc() )
             {
-                auto msg = transcodeNeeded.getVideoBitrateMessage();
+                auto msg = transcodeNeeded.getBitrateMessage();
                 if ( msg.has_value() )
                     return TItemStatus( NPreferences::EItemStatus::eWarning, msg.value() );
             }
@@ -231,7 +231,7 @@ namespace NMediaManager
             {
                 auto mediaInfo = getMediaInfo( fileInfo );
                 auto transcodeNeeded = NPreferences::NCore::STranscodeNeeded( mediaInfo );
-                retVal = !transcodeNeeded.isLoaded() || transcodeNeeded.transcodeNeeded() || transcodeNeeded.videoBitrateTranscodeNeeded() || transcodeNeeded.videoResolutionTranscodeNeeded();
+                retVal = !transcodeNeeded.isLoaded() || transcodeNeeded.transcodeNeeded() || transcodeNeeded.bitrateTooHigh() || transcodeNeeded.resolutionTooHigh();
             }
             return retVal;
         }
@@ -268,12 +268,13 @@ namespace NMediaManager
             auto mediaInfo = getMediaInfo( fi, true );
             Q_ASSERT( mediaInfo );
             auto transcodeNeeded = NPreferences::NCore::STranscodeNeeded( mediaInfo );
-            if ( !transcodeNeeded.transcodeNeeded() && !transcodeNeeded.videoBitrateTranscodeNeeded() && !transcodeNeeded.videoResolutionTranscodeNeeded() && srtFiles.empty() && subIDXFiles.empty() )
+            if ( !transcodeNeeded.transcodeNeeded() && !transcodeNeeded.bitrateTooHigh() && !transcodeNeeded.resolutionTooHigh() && srtFiles.empty() && subIDXFiles.empty() )
                 return { true, std::list< QStandardItem * >() };
 
-            if ( transcodeNeeded.videoBitrateTranscodeNeeded() )
+            if ( transcodeNeeded.bitrateTooHigh() )
             {
                 auto processInfo = std::make_shared< SProcessInfo >();
+                //processInfo->fLogFile = ;
                 processInfos[ ETranscodeType::eHighBitrate ] = processInfo;
                 processInfo->fBackupOrig = false;
                 auto retVal = setupProcessItem( processInfo, ETranscodeType::eHighBitrate, path, srtFiles, subIDXFiles, displayOnly );
@@ -281,9 +282,10 @@ namespace NMediaManager
                     return retVal;
             }
 
-            if ( transcodeNeeded.videoResolutionTranscodeNeeded() )
+            if ( transcodeNeeded.resolutionTooHigh() )
             {
                 auto processInfo = std::make_shared< SProcessInfo >();
+                //processInfo->fLogFile = true;
                 processInfos[ ETranscodeType::eHighRes ] = processInfo;
                 processInfo->fBackupOrig = false;
                 auto retVal = setupProcessItem( processInfo, ETranscodeType::eHighRes, path, srtFiles, subIDXFiles, displayOnly );
@@ -294,6 +296,7 @@ namespace NMediaManager
             if ( transcodeNeeded.transcodeNeeded() )
             {
                 auto processInfo = std::make_shared< SProcessInfo >();
+                //processInfo->fLogFile = true;
                 processInfos[ ETranscodeType::eOther ] = processInfo;
                 auto retVal = setupProcessItem( processInfo, ETranscodeType::eOther, path, srtFiles, subIDXFiles, displayOnly );
                 if ( !retVal.first )
@@ -495,7 +498,7 @@ namespace NMediaManager
 
             auto fi = QFileInfo( path );
             auto transcodeNeeded = NPreferences::NCore::STranscodeNeeded( mediaInfo );
-            if ( !transcodeNeeded.transcodeNeeded() && !transcodeNeeded.videoBitrateTranscodeNeeded() && !transcodeNeeded.videoResolutionTranscodeNeeded() && srtFiles.empty() && subIDXFiles.empty() )
+            if ( !transcodeNeeded.transcodeNeeded() && !transcodeNeeded.bitrateTooHigh() && !transcodeNeeded.resolutionTooHigh() && srtFiles.empty() && subIDXFiles.empty() )
                 return { true, {} };
 
             getActions( transcodeNeeded, processInfos, ETranscodeType::eHighBitrate );
@@ -557,7 +560,7 @@ namespace NMediaManager
 
             auto fi = QFileInfo( path );
             auto transcodeNeeded = NPreferences::NCore::STranscodeNeeded( mediaInfo );
-            if ( !transcodeNeeded.videoResolutionTranscodeNeeded() )
+            if ( !transcodeNeeded.resolutionTooHigh() )
                 return { true, nullptr };
 
             getActions( transcodeNeeded, processInfos, ETranscodeType::eHighRes );
@@ -587,7 +590,7 @@ namespace NMediaManager
 
             auto fi = QFileInfo( path );
             auto transcodeNeeded = NPreferences::NCore::STranscodeNeeded( mediaInfo );
-            if ( !transcodeNeeded.videoBitrateTranscodeNeeded() )
+            if ( !transcodeNeeded.bitrateTooHigh() )
                 return { true, nullptr };
 
             getActions( transcodeNeeded, processInfos, ETranscodeType::eHighBitrate );

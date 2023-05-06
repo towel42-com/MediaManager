@@ -370,8 +370,8 @@ namespace NMediaManager
             QString extendedInfo;
 
             fSearchName = smartTrim( stripExistingExtraInfo( fInitSearchString, extendedInfo ) );
-            fSearchName = smartTrim( stripKnownData( fSearchName ) );
             fSearchName = smartTrim( stripKnownExtendedData( fSearchName, extendedInfo ) );
+            fSearchName = smartTrim( stripKnownData( fSearchName ) );
             fSearchName = smartTrim( replaceKnownAbbreviations( fSearchName ) );
 
             fFoundExtendedInfo = extendedInfo;
