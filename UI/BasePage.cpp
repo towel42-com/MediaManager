@@ -127,13 +127,6 @@ namespace NMediaManager
             return nullptr;
         }
 
-        QPlainTextEdit *CBasePage::log() const
-        {
-            if ( fImpl )
-                return fImpl->log;
-            return nullptr;
-        }
-
         void CBasePage::clearProgressDlg( bool canceled )
         {
             fProgressDlg->reset( canceled );
@@ -392,6 +385,12 @@ namespace NMediaManager
             appendToLog( "================================", true );
         }
 
+        void CBasePage::appendToLog( const QString &msg, bool stdOut )
+        {
+            Q_ASSERT( fModel );
+            return appendToLog( msg, stdOut ? fModel->stdOutRemaining() : fModel->stdErrRemaining(), stdOut, false );
+        }
+
         void CBasePage::appendToLog( const QString &msg, std::pair< QString, bool > &previousText, bool /*stdOut*/, bool fromProcess )
         {
             showResults();
@@ -400,14 +399,9 @@ namespace NMediaManager
             if ( !fromProcess && !realMessage.endsWith( "\n" ) )
                 realMessage += "\n";
 
-            NSABUtils::appendToLog( fImpl->log, realMessage, previousText );
+            auto prevText = previousText;
+            NSABUtils::appendToLog( fImpl->log, realMessage, previousText, NPreferences::NCore::CPreferences::instance()->getLogStream() );
             fModel->processLog( realMessage, fProgressDlg );
-        }
-
-        void CBasePage::appendToLog( const QString &msg, bool stdOut )
-        {
-            Q_ASSERT( fModel );
-            return appendToLog( msg, stdOut ? fModel->stdOutRemaining() : fModel->stdErrRemaining(), stdOut, false );
         }
 
         void CBasePage::editMediaInfo( const QModelIndex &idx )

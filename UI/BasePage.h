@@ -69,8 +69,7 @@ namespace NMediaManager
             virtual bool canRun() const;
 
             QTreeView *filesView() const;
-            QPlainTextEdit *log() const;
-
+            
             virtual void appendSeparatorToLog();
             virtual void appendToLog( const QString &msg, bool stdOut ) final;
             virtual void appendToLog( const QString &msg, std::pair< QString, bool > &previousText, bool stdOut, bool fromProcess );
