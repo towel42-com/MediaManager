@@ -407,7 +407,7 @@ namespace NMediaManager
                 return getMediaFormats()->getSubtitleDecoderExtensions( exclude );
             }
 
-            QTextStream * CPreferences::getLogStream()
+            QTextStream *CPreferences::getLogStream()
             {
                 if ( !getLoggingEnabled() )
                     return nullptr;
@@ -837,6 +837,8 @@ namespace NMediaManager
                 return false;
             }
 
+            static QStringList sKnownStrings;
+
             void CPreferences::addKnownStrings( const QStringList &value )
             {
                 auto knownWords = getKnownStrings();
@@ -861,6 +863,7 @@ namespace NMediaManager
                 }
 
                 settings.setValue( "KnownStrings", realValues );
+                sKnownStrings.clear();
                 emitSigPreferencesChanged( EPreferenceType::eMediaRenamerPrefs );
             }
 
@@ -882,17 +885,16 @@ namespace NMediaManager
 
             QStringList CPreferences::getKnownStrings() const
             {
-                static QStringList retVal;
-                if ( retVal.isEmpty() )
+                if ( sKnownStrings.isEmpty() )
                 {
                     QSettings settings;
                     settings.beginGroup( toString( EPreferenceType::eMediaRenamerPrefs ) );
                     auto tmp = settings.value( "KnownStrings", getDefaultKnownStrings() ).toStringList();
                     auto tmp2 = std::set< QString, SCmp >( { tmp.begin(), tmp.end() } );
                     for ( auto &&ii : tmp2 )
-                        retVal.push_back( ii );
+                        sKnownStrings.push_back( ii );
                 }
-                return retVal;
+                return sKnownStrings;
             }
 
             QStringList CPreferences::getKnownStringRegExs() const
@@ -1134,32 +1136,31 @@ namespace NMediaManager
                 settings.beginGroup( toString( EPreferenceType::eTagPrefs ) );
 
                 std::list< std::pair< NSABUtils::EMediaTags, bool > > retVal = {
-                    { NSABUtils::EMediaTags::eTitle, true }, //
-                    { NSABUtils::EMediaTags::eLength, true }, //
-                    { NSABUtils::EMediaTags::eDate, true }, //
-                    { NSABUtils::EMediaTags::eComment, true }, //
-                    { NSABUtils::EMediaTags::eBPM, true }, //
-                    { NSABUtils::EMediaTags::eArtist, true }, //
-                    { NSABUtils::EMediaTags::eComposer, true }, //
-                    { NSABUtils::EMediaTags::eGenre, true }, //
-                    { NSABUtils::EMediaTags::eTrack, true }, //
+                    { NSABUtils::EMediaTags::eTitle, true },   //
+                    { NSABUtils::EMediaTags::eLength, true },   //
+                    { NSABUtils::EMediaTags::eDate, true },   //
+                    { NSABUtils::EMediaTags::eComment, true },   //
+                    { NSABUtils::EMediaTags::eBPM, true },   //
+                    { NSABUtils::EMediaTags::eArtist, true },   //
+                    { NSABUtils::EMediaTags::eComposer, true },   //
+                    { NSABUtils::EMediaTags::eGenre, true },   //
+                    { NSABUtils::EMediaTags::eTrack, true },   //
                     { NSABUtils::EMediaTags::eAlbum, false },   //
-                    { NSABUtils::EMediaTags::eAlbumArtist, false }, //
-                    { NSABUtils::EMediaTags::eDiscnumber, false }, //
-                    { NSABUtils::EMediaTags::eAspectRatio, false }, //
-                    { NSABUtils::EMediaTags::eWidth, false },  //
-                    { NSABUtils::EMediaTags::eHeight, false }, //
-                    { NSABUtils::EMediaTags::eResolution, false }, //
-                    { NSABUtils::EMediaTags::eAllVideoCodecs, false }, //
-                    { NSABUtils::EMediaTags::eAllAudioCodecsDisp, false },//
-                    { NSABUtils::EMediaTags::eVideoBitrateString, false },// 
-                    { NSABUtils::EMediaTags::eHDRInfo, false }, //
-                    { NSABUtils::EMediaTags::eOverAllBitrateString, false }, //
-                    { NSABUtils::EMediaTags::eAudioChannelCount, false }, //
-                    { NSABUtils::EMediaTags::eTotalAudioBitrateString, false }, //
-                    { NSABUtils::EMediaTags::eAllSubtitleLanguages, false }, //
-                    { NSABUtils::EMediaTags::eAllSubtitleCodecs, false }
-                };
+                    { NSABUtils::EMediaTags::eAlbumArtist, false },   //
+                    { NSABUtils::EMediaTags::eDiscnumber, false },   //
+                    { NSABUtils::EMediaTags::eAspectRatio, false },   //
+                    { NSABUtils::EMediaTags::eWidth, false },   //
+                    { NSABUtils::EMediaTags::eHeight, false },   //
+                    { NSABUtils::EMediaTags::eResolution, false },   //
+                    { NSABUtils::EMediaTags::eAllVideoCodecs, false },   //
+                    { NSABUtils::EMediaTags::eAllAudioCodecsDisp, false },   //
+                    { NSABUtils::EMediaTags::eVideoBitrateString, false },   //
+                    { NSABUtils::EMediaTags::eHDRInfo, false },   //
+                    { NSABUtils::EMediaTags::eOverAllBitrateString, false },   //
+                    { NSABUtils::EMediaTags::eAudioChannelCount, false },   //
+                    { NSABUtils::EMediaTags::eTotalAudioBitrateString, false },   //
+                    { NSABUtils::EMediaTags::eAllSubtitleLanguages, false },   //
+                    { NSABUtils::EMediaTags::eAllSubtitleCodecs, false } };
 
                 if ( !settings.contains( "EnabledTags" ) )
                     return retVal;
