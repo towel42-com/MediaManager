@@ -322,6 +322,8 @@ namespace NMediaManager
 
             virtual QString getMediaYear( const QFileInfo &fi ) const final;
             virtual QDate getMediaDate( const QFileInfo &fi ) const;
+            virtual QDate getMediaDate( const QModelIndex &index ) const;
+
             bool progressCanceled() const;
 
             void addToLog( const QString &msg, bool stdOut );

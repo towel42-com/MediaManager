@@ -91,6 +91,9 @@ namespace NMediaManager
             std::shared_ptr< NCore::CTransformResult > getTransformResult( const QModelIndex &idx, bool checkParents ) const;
             std::shared_ptr< NCore::CTransformResult > getTransformResult( const QString &path, bool checkParents ) const;
             std::shared_ptr< NCore::CTransformResult > getTransformResult( const QFileInfo &path, bool checkParents ) const;
+
+            virtual QDate getMediaDate( const QFileInfo &fi ) const override;
+            virtual QDate getMediaDate( const QModelIndex &idx ) const override { return CDirModel::getMediaDate( idx ); }
         public Q_SLOTS:
             void slotPatternChanged();
 
@@ -103,7 +106,6 @@ namespace NMediaManager
             virtual QStringList dirModelFilter() const override;
 
             virtual bool isTVShow( const QModelIndex &idx ) const override;
-            virtual QDate getMediaDate( const QFileInfo &fi ) const override;
 
             bool itemSearchOK( const QModelIndex &idx, QString *msg = nullptr ) const;
             virtual void updateFile( const QModelIndex &idx, const QString &oldFile, const QString &newFile ) override;

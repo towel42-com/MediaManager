@@ -1735,6 +1735,11 @@ namespace NMediaManager
             return retVal;
         }
 
+        QDate CDirModel::getMediaDate( const QModelIndex &index ) const
+        {
+            return getMediaDate( fileInfo( index ) );
+        }
+
         bool CDirModel::progressCanceled() const
         {
             return progressDlg() && progressDlg()->wasCanceled();

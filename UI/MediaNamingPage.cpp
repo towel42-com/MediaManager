@@ -141,10 +141,8 @@ namespace NMediaManager
         bool CMediaNamingPage::autoSearchForNewNames( const QModelIndex &index, bool searchChildren, std::optional< NCore::EMediaType > mediaType )
         {
             bool retVal = false;
-
-            auto parentName = model()->getSearchName( index );
-
             auto name = model()->getSearchName( index );
+
             if ( NPreferences::NCore::CPreferences::instance()->isPathToDelete( index.data( NModels::ECustomRoles::eAbsFilePath ).toString() ) )
             {
                 appendToLog( QString( "Deleting file '%1'" ).arg( index.data( NModels::ECustomRoles::eAbsFilePath ).toString() ), true );
@@ -186,6 +184,9 @@ namespace NMediaManager
                     {
                         auto titleInfo = model()->getTransformResult( searchIndex, false );
                         auto searchInfo = std::make_shared< NCore::SSearchTMDBInfo >( name, titleInfo );
+                        auto releaseDate = model()->getMediaDate( index );
+                        if ( releaseDate.isValid() )
+                            searchInfo->setReleaseDate( releaseDate.toString() );
                         if ( forcedMediaType.has_value() )
                             searchInfo->setMediaType( forcedMediaType.value() );
 
@@ -194,7 +195,8 @@ namespace NMediaManager
                             searchInfo->setMediaType( mediaType.value() );
 
                         auto msg = tr( "Adding Background Search for '%1'" ).arg( QDir( fDirName ).relativeFilePath( path ) );
-                        appendToLog( msg + QString( "\n\t%1\n" ).arg( searchInfo->toString( false ) ), true );
+                        auto fullMsg = msg + QString( "\n\t%1\n" ).arg( searchInfo->toString( false ) );
+                        appendToLog( fullMsg, true );
                         fProgressDlg->setLabelText( msg );
                         fProgressDlg->setValue( fProgressDlg->value() + 1 );
                         qApp->processEvents();
