@@ -293,7 +293,7 @@ namespace NMediaManager
                     return retVal;
             }
 
-            if ( transcodeNeeded.transcodeNeeded() )
+            if ( transcodeNeeded.transcodeNeeded() || !srtFiles.empty() || !subIDXFiles.empty() )
             {
                 auto processInfo = std::make_shared< SProcessInfo >();
                 //processInfo->fLogFile = true;
@@ -910,13 +910,13 @@ namespace NMediaManager
             {
                 //qDebug().noquote().nospace() << "Finding SRT files for '" << getDispName( videoFile ) << "' in dir '" << getDispName( dir.absolutePath() ) << "'";
 
-                srtFiles = NSABUtils::NFileUtils::findAllFiles( dir, QStringList() << "*.srt", true, false, nullptr, 
-                    []( const QDir & dir ) 
-                    { 
-                        qDebug() << dir;
+                srtFiles = NSABUtils::NFileUtils::findAllFiles(
+                    dir, QStringList() << "*.srt", true, false, nullptr,
+                    []( const QDir &dir )
+                    {
+                        //qDebug() << dir;
                         return NPreferences::NCore::CPreferences::instance()->isSkippedPath( false, dir );
-                    }
-                    );
+                    } );
                 fSRTFileCache[ dir.absolutePath() ] = srtFiles;
             }
             else
@@ -1072,8 +1072,18 @@ namespace NMediaManager
 
         bool CTranscodeModel::nameMatch( const QString &videoBasename, const QString &origSubtitleFile ) const
         {
+            // its a name match if subtitle starts with videoBaseName AND the next character is not a letter or number nor is it a .
+            // StartsWith | A-Z0-9a-z | . | retVal
+            //     0      |     0     | 0 |   0
+            //     0      |     0     | 1 |   0
+            //     0      |     1     | 0 |   0
+            //     0      |     1     | 1 |   0
+            //     1      |     0     | 0 |   1
+            //     1      |     0     | 1 |   1
+            //     1      |     1     | 0 |   0
+            //     1      |     1     | 1 |   1
             auto nextChar = ( origSubtitleFile.length() > videoBasename.length() ) ? origSubtitleFile[ videoBasename.length() ] : QChar( 0 );
-            if ( origSubtitleFile.startsWith( videoBasename ) && !nextChar.isLetterOrNumber() )
+            if ( ( !nextChar.isLetterOrNumber() || ( nextChar == QChar( '.' ) ) ) && origSubtitleFile.startsWith( videoBasename, Qt::CaseInsensitive ) )
                 return true;
 
             auto subtitleFile = origSubtitleFile;
