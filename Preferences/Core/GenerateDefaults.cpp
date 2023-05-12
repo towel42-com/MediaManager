@@ -183,19 +183,26 @@ namespace NMediaManager
                 ;
 
                 auto first = true;
-                for ( auto &&ii : value )
+                for ( auto &&ii : { NSABUtils::EFormatType::eUnknown, NSABUtils::EFormatType::eAudio, NSABUtils::EFormatType::eImage, NSABUtils::EFormatType::eSubtitle, NSABUtils::EFormatType::eVideo } )
                 {
+                    auto pos = value.find( ii );
+                    if ( pos == value.end() )
+                        continue;
+
                     function << getIndent( indent++ ) + ( first ? " " : "," ) + "{";
-                    function << getIndent( indent ) + toString( ii.first ) + ", std::unordered_map< QString, QStringList >";
+                    function << getIndent( indent ) + toString( ( *pos ).first ) + ", std::unordered_map< QString, QStringList >";
                     function << getIndent( indent++ ) + " ( {";
+
+                    auto innerMap = std::map< QString, QStringList >( ( *pos ).second.begin(), ( *pos ).second.end() );
                     bool innerFirst = true;
-                    for ( auto &&jj : ii.second )
+                    for ( auto &&jj : innerMap )
                     {
                         function << getIndent( indent ) + ( innerFirst ? " " : "," ) + "{ " + toString( jj.first ) + ", " + toString( jj.second ) + " } //";   //
                         innerFirst = false;
                     }
                     function << getIndent( --indent ) + "} )";
                     function << getIndent( --indent ) + "}";
+
                     first = false;
                 }
                 //function << toString( value, 1 );
@@ -226,13 +233,19 @@ namespace NMediaManager
                 ;
 
                 auto first = true;
-                for ( auto &&ii : value )
+                for ( auto &&ii : { NSABUtils::EFormatType::eUnknown, NSABUtils::EFormatType::eAudio, NSABUtils::EFormatType::eImage, NSABUtils::EFormatType::eSubtitle, NSABUtils::EFormatType::eVideo } )
                 {
+                    auto pos = value.find( ii );
+                    if ( pos == value.end() )
+                        continue;
+
                     function << getIndent( indent++ ) + ( first ? " " : "," ) + "{";
-                    function << getIndent( indent ) + toString( ii.first ) + ", std::unordered_multimap< QString, QString >";
+                    function << getIndent( indent ) + toString( (*pos).first ) + ", std::unordered_multimap< QString, QString >";
                     function << getIndent( indent++ ) + " ( {";
+
+                    auto innerMap = std::multimap< QString, QString >( ( *pos ).second.begin(), ( *pos ).second.end() );
                     bool innerFirst = true;
-                    for ( auto &&jj : ii.second )
+                    for ( auto &&jj : innerMap )
                     {
                         function << getIndent( indent ) + ( innerFirst ? " " : "," ) + "{ " + toString( jj.first ) + ", " + toString( jj.second ) + " } //";   //
                         innerFirst = false;
@@ -494,7 +507,7 @@ namespace NMediaManager
                                             << "%DEFAULT_BITRATE_THRESHOLD_PERCENTAGE%"
                                             << R"()"
                                             << "%DEFAULT_RESOLUTION_THRESHOLD_PERCENTAGE%"
-                                            << R"()" 
+                                            << R"()"
                                             << "%DEFAULT_GENERATE_NON_4k_VIDEO%"
                                             << R"()"
                                             << "%DEFAULT_USE_CRF%"
