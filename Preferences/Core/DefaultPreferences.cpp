@@ -152,6 +152,7 @@ namespace NMediaManager
                         ,R"(h265)" //
                         ,R"(HaB)" //
                         ,R"(HD4U)" //
+                        ,R"(HDR10Plus)" //
                         ,R"(HDR10)" //
                         ,R"(HDRip)" //
                         ,R"(HDR)" //
@@ -224,6 +225,7 @@ namespace NMediaManager
                         ,R"(WEB-DL)" //
                         ,R"(WebRip)" //
                         ,R"(WEB)" //
+                        ,R"(WELP)" //
                         ,R"(x264)" //
                         ,R"(x265)" //
                         ,R"(XviDTLF)" //
@@ -404,7 +406,7 @@ namespace NMediaManager
 
             double CPreferences::getCRFDefault() const
             {
-                return 18;
+                return 23;
             }
 
             bool CPreferences::getUseTargetBitrateDefault() const
@@ -741,143 +743,69 @@ namespace NMediaManager
                 static auto defaultValue = NSABUtils::TFormatMap(
                     {
                          {
-                            NSABUtils::EFormatType::eVideo, std::unordered_map< QString, QStringList >
-                             ( {
-                                 { R"(h263)", QStringList( { R"(*.h263)" } ) } //
-                                ,{ R"(amv)", QStringList( { R"(*.amv)" } ) } //
-                                ,{ R"(dash)", QStringList( { R"(*.mpd)" } ) } //
-                                ,{ R"(avs2)", QStringList( { R"(*.avs)", R"(*.avs2)" } ) } //
-                                ,{ R"(mpjpeg)", QStringList( { R"(*.mjpg)" } ) } //
-                                ,{ R"(dirac)", QStringList( { R"(*.drc)", R"(*.vc2)" } ) } //
-                                ,{ R"(dnxhd)", QStringList( { R"(*.dnxhd)", R"(*.dnxhr)" } ) } //
-                                ,{ R"(fits)", QStringList( { R"(*.fits)" } ) } //
-                                ,{ R"(ipod)", QStringList( { R"(*.m4v)", R"(*.m4a)", R"(*.m4b)" } ) } //
-                                ,{ R"(h261)", QStringList( { R"(*.h261)" } ) } //
-                                ,{ R"(avi)", QStringList( { R"(*.avi)" } ) } //
-                                ,{ R"(obu)", QStringList( { R"(*.obu)" } ) } //
-                                ,{ R"(yuv4mpegpipe)", QStringList( { R"(*.y4m)" } ) } //
-                                ,{ R"(h264)", QStringList( { R"(*.h264)", R"(*.264)" } ) } //
-                                ,{ R"(hevc)", QStringList( { R"(*.hevc)", R"(*.h265)", R"(*.265)" } ) } //
-                                ,{ R"(mjpeg)", QStringList( { R"(*.mjpg)", R"(*.mjpeg)" } ) } //
-                                ,{ R"(mpeg1video)", QStringList( { R"(*.mpg)", R"(*.mpeg)", R"(*.m1v)" } ) } //
-                                ,{ R"(swf)", QStringList( { R"(*.swf)" } ) } //
-                                ,{ R"(mpeg2video)", QStringList( { R"(*.m2v)" } ) } //
-                                ,{ R"(rawvideo)", QStringList( { R"(*.yuv)", R"(*.rgb)" } ) } //
-                                ,{ R"(roq)", QStringList( { R"(*.roq)" } ) } //
-                                ,{ R"(3g2)", QStringList( { R"(*.3g2)" } ) } //
-                                ,{ R"(f4v)", QStringList( { R"(*.f4v)" } ) } //
-                                ,{ R"(mov)", QStringList( { R"(*.mov)" } ) } //
-                                ,{ R"(wtv)", QStringList( { R"(*.wtv)" } ) } //
-                                ,{ R"(3gp)", QStringList( { R"(*.3gp)" } ) } //
-                                ,{ R"(gxf)", QStringList( { R"(*.gxf)" } ) } //
-                                ,{ R"(a64)", QStringList( { R"(*.a64)" } ) } //
-                                ,{ R"(asf)", QStringList( { R"(*.asf)", R"(*.wmv)", R"(*.wma)" } ) } //
-                                ,{ R"(mpeg)", QStringList( { R"(*.mpg)", R"(*.mpeg)" } ) } //
-                                ,{ R"(asf_stream)", QStringList( { R"(*.asf)", R"(*.wmv)", R"(*.wma)" } ) } //
-                                ,{ R"(ivf)", QStringList( { R"(*.ivf)" } ) } //
-                                ,{ R"(psp)", QStringList( { R"(*.mp4)", R"(*.psp)" } ) } //
-                                ,{ R"(avs3)", QStringList( { R"(*.avs3)" } ) } //
-                                ,{ R"(cavsvideo)", QStringList( { R"(*.cavs)" } ) } //
-                                ,{ R"(mxf_opatom)", QStringList( { R"(*.mxf)" } ) } //
-                                ,{ R"(dv)", QStringList( { R"(*.dv)" } ) } //
-                                ,{ R"(ogg)", QStringList( { R"(*.ogg)" } ) } //
-                                ,{ R"(svcd)", QStringList( { R"(*.vob)" } ) } //
-                                ,{ R"(dvd)", QStringList( { R"(*.dvd)" } ) } //
-                                ,{ R"(film_cpk)", QStringList( { R"(*.cpk)" } ) } //
-                                ,{ R"(mpegts)", QStringList( { R"(*.ts)", R"(*.m2t)", R"(*.m2ts)", R"(*.mts)" } ) } //
-                                ,{ R"(mxf)", QStringList( { R"(*.mxf)" } ) } //
-                                ,{ R"(filmstrip)", QStringList( { R"(*.flm)" } ) } //
-                                ,{ R"(flv)", QStringList( { R"(*.flv)" } ) } //
-                                ,{ R"(hls)", QStringList( { R"(*.m3u8)" } ) } //
-                                ,{ R"(rm)", QStringList( { R"(*.rm)", R"(*.ra)" } ) } //
-                                ,{ R"(ismv)", QStringList( { R"(*.ismv)", R"(*.isma)" } ) } //
-                                ,{ R"(vob)", QStringList( { R"(*.vob)" } ) } //
-                                ,{ R"(m4v)", QStringList( { R"(*.m4v)" } ) } //
-                                ,{ R"(matroska)", QStringList( { R"(*.mkv)" } ) } //
-                                ,{ R"(mp4)", QStringList( { R"(*.mp4)" } ) } //
-                                ,{ R"(nut)", QStringList( { R"(*.nut)" } ) } //
-                                ,{ R"(ogv)", QStringList( { R"(*.ogv)" } ) } //
-                                ,{ R"(vc1test)", QStringList( { R"(*.rcv)" } ) } //
-                                ,{ R"(vc1)", QStringList( { R"(*.vc1)" } ) } //
-                                ,{ R"(webm)", QStringList( { R"(*.webm)" } ) } //
-                                ,{ R"(webm_chunk)", QStringList( { R"(*.chk)" } ) } //
-                            } )
-                        }
-                        ,{
-                            NSABUtils::EFormatType::eImage, std::unordered_map< QString, QStringList >
-                             ( {
-                                 { R"(apng)", QStringList( { R"(*.apng)" } ) } //
-                                ,{ R"(gif)", QStringList( { R"(*.gif)" } ) } //
-                                ,{ R"(webp)", QStringList( { R"(*.webp)" } ) } //
-                                ,{ R"(avif)", QStringList( { R"(*.avif)" } ) } //
-                                ,{ R"(ico)", QStringList( { R"(*.ico)" } ) } //
-                                ,{ R"(image2)", QStringList( { R"(*.bmp)", R"(*.dpx)", R"(*.exr)", R"(*.jls)", R"(*.jpeg)", R"(*.jpg)", R"(*.jxl)", R"(*.ljpg)", R"(*.pam)", R"(*.pbm)", R"(*.pcx)", R"(*.pfm)", R"(*.pgm)", R"(*.pgmyuv)", R"(*.phm)", R"(*.png)", R"(*.ppm)", R"(*.sgi)", R"(*.tga)", R"(*.tif)", R"(*.tiff)", R"(*.jp2)", R"(*.j2c)", R"(*.j2k)", R"(*.xwd)", R"(*.sun)", R"(*.ras)", R"(*.rs)", R"(*.im1)", R"(*.im8)", R"(*.im24)", R"(*.sunras)", R"(*.vbn)", R"(*.xbm)", R"(*.xface)", R"(*.pix)", R"(*.y)", R"(*.avif)", R"(*.qoi)", R"(*.hdr)", R"(*.wbmp)" } ) } //
-                            } )
-                        }
-                        ,{
                             NSABUtils::EFormatType::eAudio, std::unordered_map< QString, QStringList >
                              ( {
-                                 { R"(mp2)", QStringList( { R"(*.mp2)", R"(*.m2a)", R"(*.mpa)" } ) } //
-                                ,{ R"(roq)", QStringList( { R"(*.roq)" } ) } //
-                                ,{ R"(latm)", QStringList( { R"(*.latm)", R"(*.loas)" } ) } //
-                                ,{ R"(alaw)", QStringList( { R"(*.al)" } ) } //
-                                ,{ R"(sbc)", QStringList( { R"(*.sbc)", R"(*.msbc)" } ) } //
-                                ,{ R"(ac3)", QStringList( { R"(*.ac3)" } ) } //
-                                ,{ R"(swf)", QStringList( { R"(*.swf)" } ) } //
-                                ,{ R"(aptx)", QStringList( { R"(*.aptx)" } ) } //
-                                ,{ R"(dts)", QStringList( { R"(*.dts)" } ) } //
-                                ,{ R"(eac3)", QStringList( { R"(*.eac3)", R"(*.ec3)" } ) } //
-                                ,{ R"(mlp)", QStringList( { R"(*.mlp)" } ) } //
-                                ,{ R"(flac)", QStringList( { R"(*.flac)" } ) } //
-                                ,{ R"(ircam)", QStringList( { R"(*.sf)", R"(*.ircam)" } ) } //
-                                ,{ R"(aptx_hd)", QStringList( { R"(*.aptxhd)" } ) } //
-                                ,{ R"(dfpwm)", QStringList( { R"(*.dfpwm)" } ) } //
-                                ,{ R"(g723_1)", QStringList( { R"(*.tco)", R"(*.rco)" } ) } //
-                                ,{ R"(caf)", QStringList( { R"(*.caf)" } ) } //
-                                ,{ R"(mp3)", QStringList( { R"(*.mp3)" } ) } //
-                                ,{ R"(argo_cvg)", QStringList( { R"(*.cvg)" } ) } //
-                                ,{ R"(opus)", QStringList( { R"(*.opus)" } ) } //
-                                ,{ R"(truehd)", QStringList( { R"(*.thd)" } ) } //
-                                ,{ R"(tta)", QStringList( { R"(*.tta)" } ) } //
-                                ,{ R"(mov)", QStringList( { R"(*.mov)" } ) } //
-                                ,{ R"(mmf)", QStringList( { R"(*.mmf)" } ) } //
-                                ,{ R"(f4v)", QStringList( { R"(*.f4v)" } ) } //
-                                ,{ R"(aiff)", QStringList( { R"(*.aif)", R"(*.aiff)", R"(*.afc)", R"(*.aifc)" } ) } //
-                                ,{ R"(3g2)", QStringList( { R"(*.3g2)" } ) } //
-                                ,{ R"(s8)", QStringList( { R"(*.sb)" } ) } //
-                                ,{ R"(rso)", QStringList( { R"(*.rso)" } ) } //
-                                ,{ R"(gxf)", QStringList( { R"(*.gxf)" } ) } //
+                                 { R"(3g2)", QStringList( { R"(*.3g2)" } ) } //
                                 ,{ R"(3gp)", QStringList( { R"(*.3gp)" } ) } //
+                                ,{ R"(ac3)", QStringList( { R"(*.ac3)" } ) } //
                                 ,{ R"(adts)", QStringList( { R"(*.aac)", R"(*.adts)" } ) } //
-                                ,{ R"(mulaw)", QStringList( { R"(*.ul)" } ) } //
                                 ,{ R"(adx)", QStringList( { R"(*.adx)" } ) } //
+                                ,{ R"(aiff)", QStringList( { R"(*.aif)", R"(*.aiff)", R"(*.afc)", R"(*.aifc)" } ) } //
+                                ,{ R"(alaw)", QStringList( { R"(*.al)" } ) } //
                                 ,{ R"(alp)", QStringList( { R"(*.tun)", R"(*.pcm)" } ) } //
                                 ,{ R"(amr)", QStringList( { R"(*.amr)" } ) } //
                                 ,{ R"(apm)", QStringList( { R"(*.apm)" } ) } //
-                                ,{ R"(bit)", QStringList( { R"(*.bit)" } ) } //
+                                ,{ R"(aptx)", QStringList( { R"(*.aptx)" } ) } //
+                                ,{ R"(aptx_hd)", QStringList( { R"(*.aptxhd)" } ) } //
+                                ,{ R"(argo_cvg)", QStringList( { R"(*.cvg)" } ) } //
                                 ,{ R"(ast)", QStringList( { R"(*.ast)" } ) } //
                                 ,{ R"(au)", QStringList( { R"(*.au)" } ) } //
+                                ,{ R"(bit)", QStringList( { R"(*.bit)" } ) } //
+                                ,{ R"(caf)", QStringList( { R"(*.caf)" } ) } //
                                 ,{ R"(codec2)", QStringList( { R"(*.c2)" } ) } //
                                 ,{ R"(dash)", QStringList( { R"(*.mpd)" } ) } //
                                 ,{ R"(daud)", QStringList( { R"(*.302)" } ) } //
-                                ,{ R"(ogg)", QStringList( { R"(*.ogg)" } ) } //
+                                ,{ R"(dfpwm)", QStringList( { R"(*.dfpwm)" } ) } //
+                                ,{ R"(dts)", QStringList( { R"(*.dts)" } ) } //
                                 ,{ R"(dv)", QStringList( { R"(*.dv)" } ) } //
-                                ,{ R"(mxf)", QStringList( { R"(*.mxf)" } ) } //
+                                ,{ R"(eac3)", QStringList( { R"(*.eac3)", R"(*.ec3)" } ) } //
+                                ,{ R"(f4v)", QStringList( { R"(*.f4v)" } ) } //
                                 ,{ R"(film_cpk)", QStringList( { R"(*.cpk)" } ) } //
+                                ,{ R"(flac)", QStringList( { R"(*.flac)" } ) } //
                                 ,{ R"(g722)", QStringList( { R"(*.g722)" } ) } //
+                                ,{ R"(g723_1)", QStringList( { R"(*.tco)", R"(*.rco)" } ) } //
                                 ,{ R"(gsm)", QStringList( { R"(*.gsm)" } ) } //
-                                ,{ R"(rm)", QStringList( { R"(*.rm)", R"(*.ra)" } ) } //
+                                ,{ R"(gxf)", QStringList( { R"(*.gxf)" } ) } //
                                 ,{ R"(hls)", QStringList( { R"(*.m3u8)" } ) } //
                                 ,{ R"(ilbc)", QStringList( { R"(*.lbc)" } ) } //
+                                ,{ R"(ircam)", QStringList( { R"(*.sf)", R"(*.ircam)" } ) } //
                                 ,{ R"(kvag)", QStringList( { R"(*.vag)" } ) } //
-                                ,{ R"(spdif)", QStringList( { R"(*.spdif)" } ) } //
+                                ,{ R"(latm)", QStringList( { R"(*.latm)", R"(*.loas)" } ) } //
+                                ,{ R"(mlp)", QStringList( { R"(*.mlp)" } ) } //
+                                ,{ R"(mmf)", QStringList( { R"(*.mmf)" } ) } //
+                                ,{ R"(mov)", QStringList( { R"(*.mov)" } ) } //
+                                ,{ R"(mp2)", QStringList( { R"(*.mp2)", R"(*.m2a)", R"(*.mpa)" } ) } //
+                                ,{ R"(mp3)", QStringList( { R"(*.mp3)" } ) } //
+                                ,{ R"(mulaw)", QStringList( { R"(*.ul)" } ) } //
+                                ,{ R"(mxf)", QStringList( { R"(*.mxf)" } ) } //
                                 ,{ R"(mxf_opatom)", QStringList( { R"(*.mxf)" } ) } //
                                 ,{ R"(oga)", QStringList( { R"(*.oga)" } ) } //
+                                ,{ R"(ogg)", QStringList( { R"(*.ogg)" } ) } //
                                 ,{ R"(oma)", QStringList( { R"(*.oma)" } ) } //
+                                ,{ R"(opus)", QStringList( { R"(*.opus)" } ) } //
                                 ,{ R"(psp)", QStringList( { R"(*.mp4)", R"(*.psp)" } ) } //
+                                ,{ R"(rm)", QStringList( { R"(*.rm)", R"(*.ra)" } ) } //
+                                ,{ R"(roq)", QStringList( { R"(*.roq)" } ) } //
+                                ,{ R"(rso)", QStringList( { R"(*.rso)" } ) } //
                                 ,{ R"(s16le)", QStringList( { R"(*.sw)" } ) } //
+                                ,{ R"(s8)", QStringList( { R"(*.sb)" } ) } //
+                                ,{ R"(sbc)", QStringList( { R"(*.sbc)", R"(*.msbc)" } ) } //
                                 ,{ R"(sox)", QStringList( { R"(*.sox)" } ) } //
+                                ,{ R"(spdif)", QStringList( { R"(*.spdif)" } ) } //
                                 ,{ R"(spx)", QStringList( { R"(*.spx)" } ) } //
+                                ,{ R"(swf)", QStringList( { R"(*.swf)" } ) } //
+                                ,{ R"(truehd)", QStringList( { R"(*.thd)" } ) } //
+                                ,{ R"(tta)", QStringList( { R"(*.tta)" } ) } //
                                 ,{ R"(u16le)", QStringList( { R"(*.uw)" } ) } //
                                 ,{ R"(u8)", QStringList( { R"(*.ub)" } ) } //
                                 ,{ R"(voc)", QStringList( { R"(*.voc)" } ) } //
@@ -889,18 +817,92 @@ namespace NMediaManager
                             } )
                         }
                         ,{
+                            NSABUtils::EFormatType::eImage, std::unordered_map< QString, QStringList >
+                             ( {
+                                 { R"(apng)", QStringList( { R"(*.apng)" } ) } //
+                                ,{ R"(avif)", QStringList( { R"(*.avif)" } ) } //
+                                ,{ R"(gif)", QStringList( { R"(*.gif)" } ) } //
+                                ,{ R"(ico)", QStringList( { R"(*.ico)" } ) } //
+                                ,{ R"(image2)", QStringList( { R"(*.bmp)", R"(*.dpx)", R"(*.exr)", R"(*.jls)", R"(*.jpeg)", R"(*.jpg)", R"(*.jxl)", R"(*.ljpg)", R"(*.pam)", R"(*.pbm)", R"(*.pcx)", R"(*.pfm)", R"(*.pgm)", R"(*.pgmyuv)", R"(*.phm)", R"(*.png)", R"(*.ppm)", R"(*.sgi)", R"(*.tga)", R"(*.tif)", R"(*.tiff)", R"(*.jp2)", R"(*.j2c)", R"(*.j2k)", R"(*.xwd)", R"(*.sun)", R"(*.ras)", R"(*.rs)", R"(*.im1)", R"(*.im8)", R"(*.im24)", R"(*.sunras)", R"(*.vbn)", R"(*.xbm)", R"(*.xface)", R"(*.pix)", R"(*.y)", R"(*.avif)", R"(*.qoi)", R"(*.hdr)", R"(*.wbmp)" } ) } //
+                                ,{ R"(webp)", QStringList( { R"(*.webp)" } ) } //
+                            } )
+                        }
+                        ,{
                             NSABUtils::EFormatType::eSubtitle, std::unordered_map< QString, QStringList >
                              ( {
-                                 { R"(lrc)", QStringList( { R"(*.lrc)" } ) } //
-                                ,{ R"(ass)", QStringList( { R"(*.ass)", R"(*.ssa)" } ) } //
-                                ,{ R"(srt)", QStringList( { R"(*.srt)" } ) } //
-                                ,{ R"(ttml)", QStringList( { R"(*.ttml)" } ) } //
+                                 { R"(ass)", QStringList( { R"(*.ass)", R"(*.ssa)" } ) } //
                                 ,{ R"(hls)", QStringList( { R"(*.m3u8)" } ) } //
-                                ,{ R"(webvtt)", QStringList( { R"(*.vtt)" } ) } //
-                                ,{ R"(scc)", QStringList( { R"(*.scc)" } ) } //
                                 ,{ R"(jacosub)", QStringList( { R"(*.jss)", R"(*.js)" } ) } //
+                                ,{ R"(lrc)", QStringList( { R"(*.lrc)" } ) } //
                                 ,{ R"(microdvd)", QStringList( { R"(*.sub)", R"(*.idx)" } ) } //
+                                ,{ R"(scc)", QStringList( { R"(*.scc)" } ) } //
+                                ,{ R"(srt)", QStringList( { R"(*.srt)" } ) } //
                                 ,{ R"(sup)", QStringList( { R"(*.sup)" } ) } //
+                                ,{ R"(ttml)", QStringList( { R"(*.ttml)" } ) } //
+                                ,{ R"(webvtt)", QStringList( { R"(*.vtt)" } ) } //
+                            } )
+                        }
+                        ,{
+                            NSABUtils::EFormatType::eVideo, std::unordered_map< QString, QStringList >
+                             ( {
+                                 { R"(3g2)", QStringList( { R"(*.3g2)" } ) } //
+                                ,{ R"(3gp)", QStringList( { R"(*.3gp)" } ) } //
+                                ,{ R"(a64)", QStringList( { R"(*.a64)" } ) } //
+                                ,{ R"(amv)", QStringList( { R"(*.amv)" } ) } //
+                                ,{ R"(asf)", QStringList( { R"(*.asf)", R"(*.wmv)", R"(*.wma)" } ) } //
+                                ,{ R"(asf_stream)", QStringList( { R"(*.asf)", R"(*.wmv)", R"(*.wma)" } ) } //
+                                ,{ R"(avi)", QStringList( { R"(*.avi)" } ) } //
+                                ,{ R"(avs2)", QStringList( { R"(*.avs)", R"(*.avs2)" } ) } //
+                                ,{ R"(avs3)", QStringList( { R"(*.avs3)" } ) } //
+                                ,{ R"(cavsvideo)", QStringList( { R"(*.cavs)" } ) } //
+                                ,{ R"(dash)", QStringList( { R"(*.mpd)" } ) } //
+                                ,{ R"(dirac)", QStringList( { R"(*.drc)", R"(*.vc2)" } ) } //
+                                ,{ R"(dnxhd)", QStringList( { R"(*.dnxhd)", R"(*.dnxhr)" } ) } //
+                                ,{ R"(dv)", QStringList( { R"(*.dv)" } ) } //
+                                ,{ R"(dvd)", QStringList( { R"(*.dvd)" } ) } //
+                                ,{ R"(f4v)", QStringList( { R"(*.f4v)" } ) } //
+                                ,{ R"(film_cpk)", QStringList( { R"(*.cpk)" } ) } //
+                                ,{ R"(filmstrip)", QStringList( { R"(*.flm)" } ) } //
+                                ,{ R"(fits)", QStringList( { R"(*.fits)" } ) } //
+                                ,{ R"(flv)", QStringList( { R"(*.flv)" } ) } //
+                                ,{ R"(gxf)", QStringList( { R"(*.gxf)" } ) } //
+                                ,{ R"(h261)", QStringList( { R"(*.h261)" } ) } //
+                                ,{ R"(h263)", QStringList( { R"(*.h263)" } ) } //
+                                ,{ R"(h264)", QStringList( { R"(*.h264)", R"(*.264)" } ) } //
+                                ,{ R"(hevc)", QStringList( { R"(*.hevc)", R"(*.h265)", R"(*.265)" } ) } //
+                                ,{ R"(hls)", QStringList( { R"(*.m3u8)" } ) } //
+                                ,{ R"(ipod)", QStringList( { R"(*.m4v)", R"(*.m4a)", R"(*.m4b)" } ) } //
+                                ,{ R"(ismv)", QStringList( { R"(*.ismv)", R"(*.isma)" } ) } //
+                                ,{ R"(ivf)", QStringList( { R"(*.ivf)" } ) } //
+                                ,{ R"(m4v)", QStringList( { R"(*.m4v)" } ) } //
+                                ,{ R"(matroska)", QStringList( { R"(*.mkv)" } ) } //
+                                ,{ R"(mjpeg)", QStringList( { R"(*.mjpg)", R"(*.mjpeg)" } ) } //
+                                ,{ R"(mov)", QStringList( { R"(*.mov)" } ) } //
+                                ,{ R"(mp4)", QStringList( { R"(*.mp4)" } ) } //
+                                ,{ R"(mpeg)", QStringList( { R"(*.mpg)", R"(*.mpeg)" } ) } //
+                                ,{ R"(mpeg1video)", QStringList( { R"(*.mpg)", R"(*.mpeg)", R"(*.m1v)" } ) } //
+                                ,{ R"(mpeg2video)", QStringList( { R"(*.m2v)" } ) } //
+                                ,{ R"(mpegts)", QStringList( { R"(*.ts)", R"(*.m2t)", R"(*.m2ts)", R"(*.mts)" } ) } //
+                                ,{ R"(mpjpeg)", QStringList( { R"(*.mjpg)" } ) } //
+                                ,{ R"(mxf)", QStringList( { R"(*.mxf)" } ) } //
+                                ,{ R"(mxf_opatom)", QStringList( { R"(*.mxf)" } ) } //
+                                ,{ R"(nut)", QStringList( { R"(*.nut)" } ) } //
+                                ,{ R"(obu)", QStringList( { R"(*.obu)" } ) } //
+                                ,{ R"(ogg)", QStringList( { R"(*.ogg)" } ) } //
+                                ,{ R"(ogv)", QStringList( { R"(*.ogv)" } ) } //
+                                ,{ R"(psp)", QStringList( { R"(*.mp4)", R"(*.psp)" } ) } //
+                                ,{ R"(rawvideo)", QStringList( { R"(*.yuv)", R"(*.rgb)" } ) } //
+                                ,{ R"(rm)", QStringList( { R"(*.rm)", R"(*.ra)" } ) } //
+                                ,{ R"(roq)", QStringList( { R"(*.roq)" } ) } //
+                                ,{ R"(svcd)", QStringList( { R"(*.vob)" } ) } //
+                                ,{ R"(swf)", QStringList( { R"(*.swf)" } ) } //
+                                ,{ R"(vc1)", QStringList( { R"(*.vc1)" } ) } //
+                                ,{ R"(vc1test)", QStringList( { R"(*.rcv)" } ) } //
+                                ,{ R"(vob)", QStringList( { R"(*.vob)" } ) } //
+                                ,{ R"(webm)", QStringList( { R"(*.webm)" } ) } //
+                                ,{ R"(webm_chunk)", QStringList( { R"(*.chk)" } ) } //
+                                ,{ R"(wtv)", QStringList( { R"(*.wtv)" } ) } //
+                                ,{ R"(yuv4mpegpipe)", QStringList( { R"(*.y4m)" } ) } //
                             } )
                         }
                     } );
@@ -1186,68 +1188,68 @@ namespace NMediaManager
                 static auto defaultValue = NSABUtils::TFormatMap(
                     {
                          {
-                            NSABUtils::EFormatType::eVideo, std::unordered_map< QString, QStringList >
-                             ( {
-                                 { R"(av1)", QStringList( { R"(*.obu)" } ) } //
-                                ,{ R"(hevc)", QStringList( { R"(*.hevc)", R"(*.h265)", R"(*.265)" } ) } //
-                                ,{ R"(avs2)", QStringList( { R"(*.avs)", R"(*.avs2)" } ) } //
-                                ,{ R"(h264)", QStringList( { R"(*.h26l)", R"(*.h264)", R"(*.264)", R"(*.avc)" } ) } //
-                                ,{ R"(bitpacked)", QStringList( { R"(*.bitpacked)" } ) } //
-                                ,{ R"(avs3)", QStringList( { R"(*.avs3)" } ) } //
-                                ,{ R"(cdxl)", QStringList( { R"(*.cdxl)", R"(*.xl)" } ) } //
-                                ,{ R"(h261)", QStringList( { R"(*.h261)" } ) } //
-                                ,{ R"(sga)", QStringList( { R"(*.sga)" } ) } //
-                                ,{ R"(idf)", QStringList( { R"(*.idf)" } ) } //
-                                ,{ R"(ipu)", QStringList( { R"(*.ipu)" } ) } //
-                                ,{ R"(mjpeg)", QStringList( { R"(*.mjpg)", R"(*.mjpeg)", R"(*.mpo)" } ) } //
-                                ,{ R"(rawvideo)", QStringList( { R"(*.yuv)", R"(*.cif)", R"(*.qcif)", R"(*.rgb)" } ) } //
-                                ,{ R"(v210)", QStringList( { R"(*.v210)" } ) } //
-                                ,{ R"(simbiosis_imx)", QStringList( { R"(*.imx)" } ) } //
-                                ,{ R"(v210x)", QStringList( { R"(*.yuv10)" } ) } //
-                                ,{ R"(vc1)", QStringList( { R"(*.vc1)" } ) } //
-                                ,{ R"(yop)", QStringList( { R"(*.yop)" } ) } //
-                            } )
-                        }
-                        ,{
                             NSABUtils::EFormatType::eAudio, std::unordered_map< QString, QStringList >
                              ( {
                                  { R"(aac)", QStringList( { R"(*.aac)" } ) } //
                                 ,{ R"(ac3)", QStringList( { R"(*.ac3)" } ) } //
-                                ,{ R"(sbc)", QStringList( { R"(*.sbc)", R"(*.msbc)" } ) } //
-                                ,{ R"(ape)", QStringList( { R"(*.ape)", R"(*.apl)", R"(*.mac)" } ) } //
                                 ,{ R"(apac)", QStringList( { R"(*.apc)" } ) } //
+                                ,{ R"(ape)", QStringList( { R"(*.ape)", R"(*.apl)", R"(*.mac)" } ) } //
                                 ,{ R"(aptx)", QStringList( { R"(*.aptx)" } ) } //
-                                ,{ R"(dts)", QStringList( { R"(*.dts)" } ) } //
                                 ,{ R"(aptx_hd)", QStringList( { R"(*.aptxhd)" } ) } //
                                 ,{ R"(bonk)", QStringList( { R"(*.bonk)" } ) } //
                                 ,{ R"(dfpwm)", QStringList( { R"(*.dfpwm)" } ) } //
+                                ,{ R"(dts)", QStringList( { R"(*.dts)" } ) } //
                                 ,{ R"(eac3)", QStringList( { R"(*.eac3)", R"(*.ec3)" } ) } //
-                                ,{ R"(wavarc)", QStringList( { R"(*.wa)" } ) } //
                                 ,{ R"(flac)", QStringList( { R"(*.flac)" } ) } //
-                                ,{ R"(mlp)", QStringList( { R"(*.mlp)" } ) } //
                                 ,{ R"(g723_1)", QStringList( { R"(*.tco)", R"(*.rco)", R"(*.g723_1)" } ) } //
                                 ,{ R"(g729)", QStringList( { R"(*.g729)" } ) } //
                                 ,{ R"(gsm)", QStringList( { R"(*.gsm)" } ) } //
                                 ,{ R"(hca)", QStringList( { R"(*.hca)" } ) } //
+                                ,{ R"(mlp)", QStringList( { R"(*.mlp)" } ) } //
                                 ,{ R"(mp3)", QStringList( { R"(*.mp2)", R"(*.mp3)", R"(*.m2a)", R"(*.mpa)" } ) } //
-                                ,{ R"(tak)", QStringList( { R"(*.tak)" } ) } //
                                 ,{ R"(rka)", QStringList( { R"(*.rka)" } ) } //
+                                ,{ R"(sbc)", QStringList( { R"(*.sbc)", R"(*.msbc)" } ) } //
+                                ,{ R"(tak)", QStringList( { R"(*.tak)" } ) } //
                                 ,{ R"(truehd)", QStringList( { R"(*.thd)" } ) } //
                                 ,{ R"(tta)", QStringList( { R"(*.tta)" } ) } //
+                                ,{ R"(wavarc)", QStringList( { R"(*.wa)" } ) } //
                             } )
                         }
                         ,{
                             NSABUtils::EFormatType::eSubtitle, std::unordered_map< QString, QStringList >
                              ( {
-                                 { R"(vplayer)", QStringList( { R"(*.txt)" } ) } //
-                                ,{ R"(realtext)", QStringList( { R"(*.rt)" } ) } //
-                                ,{ R"(mpl2)", QStringList( { R"(*.txt)", R"(*.mpl2)" } ) } //
-                                ,{ R"(subviewer1)", QStringList( { R"(*.sub), "R"(*.idx)" } ) } //
-                                ,{ R"(sami)", QStringList( { R"(*.smi)", R"(*.sami)" } ) } //
+                                 { R"(mpl2)", QStringList( { R"(*.txt)", R"(*.mpl2)" } ) } //
                                 ,{ R"(pjs)", QStringList( { R"(*.pjs)" } ) } //
+                                ,{ R"(realtext)", QStringList( { R"(*.rt)" } ) } //
+                                ,{ R"(sami)", QStringList( { R"(*.smi)", R"(*.sami)" } ) } //
                                 ,{ R"(stl)", QStringList( { R"(*.stl)" } ) } //
                                 ,{ R"(subviewer)", QStringList( { R"(*.sub), "R"(*.idx)" } ) } //
+                                ,{ R"(subviewer1)", QStringList( { R"(*.sub), "R"(*.idx)" } ) } //
+                                ,{ R"(vplayer)", QStringList( { R"(*.txt)" } ) } //
                                 ,{ R"(webvtt)", QStringList( { R"(*.vtt)" } ) } //
+                            } )
+                        }
+                        ,{
+                            NSABUtils::EFormatType::eVideo, std::unordered_map< QString, QStringList >
+                             ( {
+                                 { R"(av1)", QStringList( { R"(*.obu)" } ) } //
+                                ,{ R"(avs2)", QStringList( { R"(*.avs)", R"(*.avs2)" } ) } //
+                                ,{ R"(avs3)", QStringList( { R"(*.avs3)" } ) } //
+                                ,{ R"(bitpacked)", QStringList( { R"(*.bitpacked)" } ) } //
+                                ,{ R"(cdxl)", QStringList( { R"(*.cdxl)", R"(*.xl)" } ) } //
+                                ,{ R"(h261)", QStringList( { R"(*.h261)" } ) } //
+                                ,{ R"(h264)", QStringList( { R"(*.h26l)", R"(*.h264)", R"(*.264)", R"(*.avc)" } ) } //
+                                ,{ R"(hevc)", QStringList( { R"(*.hevc)", R"(*.h265)", R"(*.265)" } ) } //
+                                ,{ R"(idf)", QStringList( { R"(*.idf)" } ) } //
+                                ,{ R"(ipu)", QStringList( { R"(*.ipu)" } ) } //
+                                ,{ R"(mjpeg)", QStringList( { R"(*.mjpg)", R"(*.mjpeg)", R"(*.mpo)" } ) } //
+                                ,{ R"(rawvideo)", QStringList( { R"(*.yuv)", R"(*.cif)", R"(*.qcif)", R"(*.rgb)" } ) } //
+                                ,{ R"(sga)", QStringList( { R"(*.sga)" } ) } //
+                                ,{ R"(simbiosis_imx)", QStringList( { R"(*.imx)" } ) } //
+                                ,{ R"(v210)", QStringList( { R"(*.v210)" } ) } //
+                                ,{ R"(v210x)", QStringList( { R"(*.yuv10)" } ) } //
+                                ,{ R"(vc1)", QStringList( { R"(*.vc1)" } ) } //
+                                ,{ R"(yop)", QStringList( { R"(*.yop)" } ) } //
                             } )
                         }
                     } );
@@ -4291,16 +4293,52 @@ namespace NMediaManager
                 static auto defaultValue = NSABUtils::TCodecToEncoderDecoderMap(
                     {
                          {
+                            NSABUtils::EFormatType::eAudio, std::unordered_multimap< QString, QString >
+                             ( {
+                                 { R"(aac)", R"(aac)" } //
+                                ,{ R"(aac)", R"(aac_mf)" } //
+                                ,{ R"(ac3)", R"(ac3)" } //
+                                ,{ R"(ac3)", R"(ac3_fixed)" } //
+                                ,{ R"(ac3)", R"(ac3_mf)" } //
+                                ,{ R"(adpcm_g722)", R"(g722)" } //
+                                ,{ R"(adpcm_g726)", R"(g726)" } //
+                                ,{ R"(adpcm_g726le)", R"(g726le)" } //
+                                ,{ R"(amr_nb)", R"(libopencore_amrnb)" } //
+                                ,{ R"(dts)", R"(dca)" } //
+                                ,{ R"(mp2)", R"(mp2)" } //
+                                ,{ R"(mp2)", R"(mp2fixed)" } //
+                                ,{ R"(mp2)", R"(libtwolame)" } //
+                                ,{ R"(mp3)", R"(libmp3lame)" } //
+                                ,{ R"(mp3)", R"(mp3_mf)" } //
+                                ,{ R"(opus)", R"(opus)" } //
+                                ,{ R"(opus)", R"(libopus)" } //
+                                ,{ R"(ra_144)", R"(real_144)" } //
+                                ,{ R"(vorbis)", R"(vorbis)" } //
+                                ,{ R"(vorbis)", R"(libvorbis)" } //
+                            } )
+                        }
+                        ,{
+                            NSABUtils::EFormatType::eSubtitle, std::unordered_multimap< QString, QString >
+                             ( {
+                                 { R"(ass)", R"(ssa)" } //
+                                ,{ R"(ass)", R"(ass)" } //
+                                ,{ R"(dvb_subtitle)", R"(dvbsub)" } //
+                                ,{ R"(dvd_subtitle)", R"(dvdsub)" } //
+                                ,{ R"(subrip)", R"(srt)" } //
+                                ,{ R"(subrip)", R"(subrip)" } //
+                            } )
+                        }
+                        ,{
                             NSABUtils::EFormatType::eVideo, std::unordered_multimap< QString, QString >
                              ( {
-                                 { R"(av1)", R"(libaom-av1)" } //
+                                 { R"(a64_multi)", R"(a64multi)" } //
+                                ,{ R"(a64_multi5)", R"(a64multi5)" } //
+                                ,{ R"(av1)", R"(libaom-av1)" } //
                                 ,{ R"(av1)", R"(librav1e)" } //
                                 ,{ R"(av1)", R"(libsvtav1)" } //
                                 ,{ R"(av1)", R"(av1_nvenc)" } //
                                 ,{ R"(av1)", R"(av1_qsv)" } //
                                 ,{ R"(av1)", R"(av1_amf)" } //
-                                ,{ R"(a64_multi)", R"(a64multi)" } //
-                                ,{ R"(a64_multi5)", R"(a64multi5)" } //
                                 ,{ R"(avs2)", R"(libxavs2)" } //
                                 ,{ R"(dirac)", R"(vc2)" } //
                                 ,{ R"(flv1)", R"(flv)" } //
@@ -4326,10 +4364,10 @@ namespace NMediaManager
                                 ,{ R"(mpeg2video)", R"(mpeg2_qsv)" } //
                                 ,{ R"(mpeg4)", R"(mpeg4)" } //
                                 ,{ R"(mpeg4)", R"(libxvid)" } //
+                                ,{ R"(msmpeg4v3)", R"(msmpeg4)" } //
                                 ,{ R"(prores)", R"(prores)" } //
                                 ,{ R"(prores)", R"(prores_aw)" } //
                                 ,{ R"(prores)", R"(prores_ks)" } //
-                                ,{ R"(msmpeg4v3)", R"(msmpeg4)" } //
                                 ,{ R"(roq)", R"(roqvideo)" } //
                                 ,{ R"(theora)", R"(libtheora)" } //
                                 ,{ R"(vp8)", R"(libvpx)" } //
@@ -4337,42 +4375,6 @@ namespace NMediaManager
                                 ,{ R"(vp9)", R"(vp9_qsv)" } //
                                 ,{ R"(webp)", R"(libwebp_anim)" } //
                                 ,{ R"(webp)", R"(libwebp)" } //
-                            } )
-                        }
-                        ,{
-                            NSABUtils::EFormatType::eAudio, std::unordered_multimap< QString, QString >
-                             ( {
-                                 { R"(aac)", R"(aac)" } //
-                                ,{ R"(aac)", R"(aac_mf)" } //
-                                ,{ R"(adpcm_g726le)", R"(g726le)" } //
-                                ,{ R"(ac3)", R"(ac3)" } //
-                                ,{ R"(ac3)", R"(ac3_fixed)" } //
-                                ,{ R"(ac3)", R"(ac3_mf)" } //
-                                ,{ R"(adpcm_g722)", R"(g722)" } //
-                                ,{ R"(vorbis)", R"(vorbis)" } //
-                                ,{ R"(vorbis)", R"(libvorbis)" } //
-                                ,{ R"(adpcm_g726)", R"(g726)" } //
-                                ,{ R"(amr_nb)", R"(libopencore_amrnb)" } //
-                                ,{ R"(dts)", R"(dca)" } //
-                                ,{ R"(mp2)", R"(mp2)" } //
-                                ,{ R"(mp2)", R"(mp2fixed)" } //
-                                ,{ R"(mp2)", R"(libtwolame)" } //
-                                ,{ R"(mp3)", R"(libmp3lame)" } //
-                                ,{ R"(mp3)", R"(mp3_mf)" } //
-                                ,{ R"(opus)", R"(opus)" } //
-                                ,{ R"(opus)", R"(libopus)" } //
-                                ,{ R"(ra_144)", R"(real_144)" } //
-                            } )
-                        }
-                        ,{
-                            NSABUtils::EFormatType::eSubtitle, std::unordered_multimap< QString, QString >
-                             ( {
-                                 { R"(ass)", R"(ssa)" } //
-                                ,{ R"(ass)", R"(ass)" } //
-                                ,{ R"(subrip)", R"(srt)" } //
-                                ,{ R"(subrip)", R"(subrip)" } //
-                                ,{ R"(dvb_subtitle)", R"(dvbsub)" } //
-                                ,{ R"(dvd_subtitle)", R"(dvdsub)" } //
                             } )
                         }
                     } );
@@ -4384,77 +4386,15 @@ namespace NMediaManager
                 static auto defaultValue = NSABUtils::TCodecToEncoderDecoderMap(
                     {
                          {
-                            NSABUtils::EFormatType::eVideo, std::unordered_multimap< QString, QString >
-                             ( {
-                                 { R"(cmv)", R"(eacmv)" } //
-                                ,{ R"(av1)", R"(libdav1d)" } //
-                                ,{ R"(av1)", R"(libaom-av1)" } //
-                                ,{ R"(av1)", R"(av1)" } //
-                                ,{ R"(av1)", R"(av1_cuvid)" } //
-                                ,{ R"(av1)", R"(av1_qsv)" } //
-                                ,{ R"(avs2)", R"(libdavs2)" } //
-                                ,{ R"(avs3)", R"(libuavs3d)" } //
-                                ,{ R"(cscd)", R"(camstudio)" } //
-                                ,{ R"(roq)", R"(roqvideo)" } //
-                                ,{ R"(flv1)", R"(flv)" } //
-                                ,{ R"(h264)", R"(h264)" } //
-                                ,{ R"(h264)", R"(h264_qsv)" } //
-                                ,{ R"(h264)", R"(libopenh264)" } //
-                                ,{ R"(h264)", R"(h264_cuvid)" } //
-                                ,{ R"(hevc)", R"(hevc)" } //
-                                ,{ R"(hevc)", R"(hevc_qsv)" } //
-                                ,{ R"(hevc)", R"(hevc_cuvid)" } //
-                                ,{ R"(idcin)", R"(idcinvideo)" } //
-                                ,{ R"(mjpeg)", R"(mjpeg)" } //
-                                ,{ R"(mjpeg)", R"(mjpeg_cuvid)" } //
-                                ,{ R"(mjpeg)", R"(mjpeg_qsv)" } //
-                                ,{ R"(iff_ilbm)", R"(iff)" } //
-                                ,{ R"(jpeg2000)", R"(jpeg2000)" } //
-                                ,{ R"(jpeg2000)", R"(libopenjpeg)" } //
-                                ,{ R"(smackvideo)", R"(smackvid)" } //
-                                ,{ R"(jpegxl)", R"(libjxl)" } //
-                                ,{ R"(mpeg1video)", R"(mpeg1video)" } //
-                                ,{ R"(mpeg1video)", R"(mpeg1_cuvid)" } //
-                                ,{ R"(vixl)", R"(xl)" } //
-                                ,{ R"(mad)", R"(eamad)" } //
-                                ,{ R"(mpeg2video)", R"(mpeg2video)" } //
-                                ,{ R"(mpeg2video)", R"(mpegvideo)" } //
-                                ,{ R"(mpeg2video)", R"(mpeg2_qsv)" } //
-                                ,{ R"(mpeg2video)", R"(mpeg2_cuvid)" } //
-                                ,{ R"(mpeg4)", R"(mpeg4)" } //
-                                ,{ R"(mpeg4)", R"(mpeg4_cuvid)" } //
-                                ,{ R"(tgv)", R"(eatgv)" } //
-                                ,{ R"(msmpeg4v3)", R"(msmpeg4)" } //
-                                ,{ R"(ws_vqa)", R"(vqavideo)" } //
-                                ,{ R"(tgq)", R"(eatgq)" } //
-                                ,{ R"(tqi)", R"(eatqi)" } //
-                                ,{ R"(tscc)", R"(camtasia)" } //
-                                ,{ R"(ulti)", R"(ultimotion)" } //
-                                ,{ R"(vc1)", R"(vc1)" } //
-                                ,{ R"(vc1)", R"(vc1_qsv)" } //
-                                ,{ R"(vc1)", R"(vc1_cuvid)" } //
-                                ,{ R"(vp8)", R"(vp8)" } //
-                                ,{ R"(vp8)", R"(libvpx)" } //
-                                ,{ R"(vp8)", R"(vp8_cuvid)" } //
-                                ,{ R"(vp8)", R"(vp8_qsv)" } //
-                                ,{ R"(vp9)", R"(vp9)" } //
-                                ,{ R"(vp9)", R"(libvpx-vp9)" } //
-                                ,{ R"(vp9)", R"(vp9_cuvid)" } //
-                                ,{ R"(vp9)", R"(vp9_qsv)" } //
-                            } )
-                        }
-                        ,{
                             NSABUtils::EFormatType::eAudio, std::unordered_multimap< QString, QString >
                              ( {
                                  { R"(aac)", R"(aac)" } //
                                 ,{ R"(aac)", R"(aac_fixed)" } //
-                                ,{ R"(adpcm_g726le)", R"(g726le)" } //
                                 ,{ R"(ac3)", R"(ac3)" } //
                                 ,{ R"(ac3)", R"(ac3_fixed)" } //
                                 ,{ R"(adpcm_g722)", R"(g722)" } //
-                                ,{ R"(vorbis)", R"(vorbis)" } //
-                                ,{ R"(vorbis)", R"(libvorbis)" } //
                                 ,{ R"(adpcm_g726)", R"(g726)" } //
+                                ,{ R"(adpcm_g726le)", R"(g726le)" } //
                                 ,{ R"(amr_nb)", R"(amrnb)" } //
                                 ,{ R"(amr_nb)", R"(libopencore_amrnb)" } //
                                 ,{ R"(amr_wb)", R"(amrwb)" } //
@@ -4471,17 +4411,19 @@ namespace NMediaManager
                                 ,{ R"(mp3)", R"(mp3)" } //
                                 ,{ R"(mp3adu)", R"(mp3adufloat)" } //
                                 ,{ R"(mp3adu)", R"(mp3adu)" } //
-                                ,{ R"(ra_288)", R"(real_288)" } //
                                 ,{ R"(mp3on4)", R"(mp3on4float)" } //
                                 ,{ R"(mp3on4)", R"(mp3on4)" } //
-                                ,{ R"(westwood_snd1)", R"(ws_snd1)" } //
                                 ,{ R"(mp4als)", R"(als)" } //
                                 ,{ R"(musepack7)", R"(mpc7)" } //
                                 ,{ R"(musepack8)", R"(mpc8)" } //
                                 ,{ R"(opus)", R"(opus)" } //
                                 ,{ R"(opus)", R"(libopus)" } //
                                 ,{ R"(ra_144)", R"(real_144)" } //
+                                ,{ R"(ra_288)", R"(real_288)" } //
                                 ,{ R"(smackaudio)", R"(smackaud)" } //
+                                ,{ R"(vorbis)", R"(vorbis)" } //
+                                ,{ R"(vorbis)", R"(libvorbis)" } //
+                                ,{ R"(westwood_snd1)", R"(ws_snd1)" } //
                             } )
                         }
                         ,{
@@ -4491,12 +4433,72 @@ namespace NMediaManager
                                 ,{ R"(ass)", R"(ssa)" } //
                                 ,{ R"(ass)", R"(ass)" } //
                                 ,{ R"(dvb_subtitle)", R"(dvbsub)" } //
-                                ,{ R"(dvd_subtitle)", R"(dvdsub)" } //
                                 ,{ R"(dvb_teletext)", R"(libzvbi_teletextdec)" } //
+                                ,{ R"(dvd_subtitle)", R"(dvdsub)" } //
                                 ,{ R"(eia_608)", R"(cc_dec)" } //
                                 ,{ R"(hdmv_pgs_subtitle)", R"(pgssub)" } //
                                 ,{ R"(subrip)", R"(srt)" } //
                                 ,{ R"(subrip)", R"(subrip)" } //
+                            } )
+                        }
+                        ,{
+                            NSABUtils::EFormatType::eVideo, std::unordered_multimap< QString, QString >
+                             ( {
+                                 { R"(av1)", R"(libdav1d)" } //
+                                ,{ R"(av1)", R"(libaom-av1)" } //
+                                ,{ R"(av1)", R"(av1)" } //
+                                ,{ R"(av1)", R"(av1_cuvid)" } //
+                                ,{ R"(av1)", R"(av1_qsv)" } //
+                                ,{ R"(avs2)", R"(libdavs2)" } //
+                                ,{ R"(avs3)", R"(libuavs3d)" } //
+                                ,{ R"(cmv)", R"(eacmv)" } //
+                                ,{ R"(cscd)", R"(camstudio)" } //
+                                ,{ R"(flv1)", R"(flv)" } //
+                                ,{ R"(h264)", R"(h264)" } //
+                                ,{ R"(h264)", R"(h264_qsv)" } //
+                                ,{ R"(h264)", R"(libopenh264)" } //
+                                ,{ R"(h264)", R"(h264_cuvid)" } //
+                                ,{ R"(hevc)", R"(hevc)" } //
+                                ,{ R"(hevc)", R"(hevc_qsv)" } //
+                                ,{ R"(hevc)", R"(hevc_cuvid)" } //
+                                ,{ R"(idcin)", R"(idcinvideo)" } //
+                                ,{ R"(iff_ilbm)", R"(iff)" } //
+                                ,{ R"(jpeg2000)", R"(jpeg2000)" } //
+                                ,{ R"(jpeg2000)", R"(libopenjpeg)" } //
+                                ,{ R"(jpegxl)", R"(libjxl)" } //
+                                ,{ R"(mad)", R"(eamad)" } //
+                                ,{ R"(mjpeg)", R"(mjpeg)" } //
+                                ,{ R"(mjpeg)", R"(mjpeg_cuvid)" } //
+                                ,{ R"(mjpeg)", R"(mjpeg_qsv)" } //
+                                ,{ R"(mpeg1video)", R"(mpeg1video)" } //
+                                ,{ R"(mpeg1video)", R"(mpeg1_cuvid)" } //
+                                ,{ R"(mpeg2video)", R"(mpeg2video)" } //
+                                ,{ R"(mpeg2video)", R"(mpegvideo)" } //
+                                ,{ R"(mpeg2video)", R"(mpeg2_qsv)" } //
+                                ,{ R"(mpeg2video)", R"(mpeg2_cuvid)" } //
+                                ,{ R"(mpeg4)", R"(mpeg4)" } //
+                                ,{ R"(mpeg4)", R"(mpeg4_cuvid)" } //
+                                ,{ R"(msmpeg4v3)", R"(msmpeg4)" } //
+                                ,{ R"(roq)", R"(roqvideo)" } //
+                                ,{ R"(smackvideo)", R"(smackvid)" } //
+                                ,{ R"(tgq)", R"(eatgq)" } //
+                                ,{ R"(tgv)", R"(eatgv)" } //
+                                ,{ R"(tqi)", R"(eatqi)" } //
+                                ,{ R"(tscc)", R"(camtasia)" } //
+                                ,{ R"(ulti)", R"(ultimotion)" } //
+                                ,{ R"(vc1)", R"(vc1)" } //
+                                ,{ R"(vc1)", R"(vc1_qsv)" } //
+                                ,{ R"(vc1)", R"(vc1_cuvid)" } //
+                                ,{ R"(vixl)", R"(xl)" } //
+                                ,{ R"(vp8)", R"(vp8)" } //
+                                ,{ R"(vp8)", R"(libvpx)" } //
+                                ,{ R"(vp8)", R"(vp8_cuvid)" } //
+                                ,{ R"(vp8)", R"(vp8_qsv)" } //
+                                ,{ R"(vp9)", R"(vp9)" } //
+                                ,{ R"(vp9)", R"(libvpx-vp9)" } //
+                                ,{ R"(vp9)", R"(vp9_cuvid)" } //
+                                ,{ R"(vp9)", R"(vp9_qsv)" } //
+                                ,{ R"(ws_vqa)", R"(vqavideo)" } //
                             } )
                         }
                     } );
