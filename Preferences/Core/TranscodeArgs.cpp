@@ -256,7 +256,7 @@ namespace NMediaManager
                             auto subTitleCodec = QString( "copy" );
                             if ( isEncoderFormat( mediaInfo, "matroska" ) )
                             {
-                                if ( ( currCodec == "ass" ) || ( currCodec == "srt" ) || ( currCodec == "ssa" ) || ( currCodec == "hdmv_pgs_subtitle" ) || ( currCodec == "subrip" ) || ( currCodec == "xsub" ) || ( currCodec == "dvdsub" ) )
+                                if ( ( currCodec == "ass" ) || ( currCodec == "srt" ) || ( currCodec == "ssa" ) || ( currCodec == "hdmv_pgs_subtitle" ) || ( currCodec == "subrip" ) || ( currCodec == "xsub" ) || ( currCodec == "dvdsub" ) || ( currCodec == "dvd_subtitle" ) )
                                     subTitleCodec = QString( "copy" );
                                 else
                                     subTitleCodec = "srt";
