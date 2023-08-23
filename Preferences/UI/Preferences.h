@@ -58,7 +58,7 @@ namespace NMediaManager
                 void loadSettings();
                 void saveSettings();
 
-                void addPage( CBasePrefPage *page );
+                QTreeWidgetItem * addPage( CBasePrefPage *page );
                 void loadPages();
 
                 std::unordered_map< QString, QTreeWidgetItem * > fItemMap;

@@ -42,6 +42,8 @@ namespace NMediaManager
             {
                 fImpl->setupUi( this );
 
+                connect( fImpl->useAvgBitrateLabel, &QLabel::linkActivated, [ this ]() { emit sigOpenBitratePage(); } );
+
                 connect( fImpl->losslessEncoding, &QRadioButton::toggled, this, &CTranscodeVideoCodec::slotQualityGoalMetricChanged );
                 connect( fImpl->useAvgBitrate, &QRadioButton::toggled, this, &CTranscodeVideoCodec::slotQualityGoalMetricChanged );
                 connect( fImpl->useCRF, &QRadioButton::toggled, this, &CTranscodeVideoCodec::slotQualityGoalMetricChanged );

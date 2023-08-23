@@ -72,7 +72,8 @@ namespace NMediaManager
             SDirNodeItem();
             SDirNodeItem( const QString &text, int nodeType );
 
-            void setData( const QVariant &value, int role );
+            void addRole( const QVariant &value, int role );
+            QVariant data( int role ) const;
 
             QStandardItem *createStandardItem() const;
 

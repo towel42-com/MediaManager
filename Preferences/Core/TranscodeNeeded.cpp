@@ -96,7 +96,7 @@ namespace NMediaManager
             {
                 if ( wrongContainer() )
                 {
-                    auto msg = QObject::tr( "<p style='white-space:pre'>File <b>'%1'</b> is not using a %2 container</p>" ).arg( QFileInfo( fMediaInfo->fileName() ).fileName() ).arg( NPreferences::NCore::CPreferences::instance()->getConvertMediaToContainer() );
+                    auto msg = QObject::tr( "<p style='white-space:pre'>File <b>'%1'</b> is not using a '%2' container</p>" ).arg( QFileInfo( fMediaInfo->fileName() ).fileName() ).arg( NPreferences::NCore::CPreferences::instance()->getConvertMediaToContainer() );
                     return msg;
                 }
                 return {};

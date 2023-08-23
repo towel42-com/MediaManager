@@ -1196,8 +1196,8 @@ namespace NMediaManager
 
                 auto languageFileItem = SDirNodeItem( langName, EColumns::eLanguage );
                 if ( !language.isMultiLanguage() )
-                    languageFileItem.setData( language.isoCode(), ECustomRoles::eISOCodeRole );
-                languageFileItem.setData( language.language(), ECustomRoles::eLanguageName );
+                    languageFileItem.addRole( language.isoCode(), ECustomRoles::eISOCodeRole );
+                languageFileItem.addRole( language.language(), ECustomRoles::eLanguageName );
                 retVal.emplace_back( languageFileItem );
 
                 auto forcedItem = SDirNodeItem( QString(), EColumns::eForced );
@@ -1238,6 +1238,7 @@ namespace NMediaManager
                 auto language = NCore::SLanguageInfo( path );
                 fAllLangInfos[ item ] = { nullptr, language };   // need to handl subidx
             }
+            CDirModel::setupNewItem( nodeItem, nameItem, item );
         }
     }
 }

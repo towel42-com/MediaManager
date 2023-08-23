@@ -198,7 +198,9 @@ namespace NMediaManager
             CPreferences::CPreferences()
             {
                 fMediaFormats = std::make_unique< NSABUtils::CFFMpegFormats >( getFFMpegEXE() );
-                connect( NSABUtils::CMediaInfoMgr::instance(), &NSABUtils::CMediaInfoMgr::sigMediaLoaded, this, &CPreferences::sigMediaInfoLoaded );
+                connect( NSABUtils::CMediaInfoMgr::instance(), &NSABUtils::CMediaInfoMgr::sigMediaLoaded, this, &CPreferences::sigMediaLoaded );
+                connect( NSABUtils::CMediaInfoMgr::instance(), &NSABUtils::CMediaInfoMgr::sigMediaQueued, this, &CPreferences::sigMediaQueued );
+                connect( NSABUtils::CMediaInfoMgr::instance(), &NSABUtils::CMediaInfoMgr::sigMediaFinished, this, &CPreferences::sigMediaFinished );
             }
 
             CPreferences::~CPreferences()
@@ -1159,7 +1161,7 @@ namespace NMediaManager
                     { NSABUtils::EMediaTags::eOverAllBitrateString, false },   //
                     { NSABUtils::EMediaTags::eAudioChannelCount, false },   //
                     { NSABUtils::EMediaTags::eTotalAudioBitrateString, false },   //
-                    { NSABUtils::EMediaTags::eAllSubtitleLanguages, false },   //
+                    { NSABUtils::EMediaTags::eAllSubtitleDispString, false },   //
                     { NSABUtils::EMediaTags::eAllSubtitleCodecs, false } };
 
                 if ( !settings.contains( "EnabledTags" ) )

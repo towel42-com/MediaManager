@@ -56,6 +56,7 @@
 #include <QPlainTextEdit>
 #include <QMessageBox>
 #include <QThreadPool>
+#include <QComboBox>
 
 #include <QProcess>
 
@@ -179,7 +180,9 @@ namespace NMediaManager
 
             connect( this, &QStandardItemModel::dataChanged, this, &CDirModel::slotDataChanged );
 
-            connect( NPreferences::NCore::CPreferences::instance(), &NPreferences::NCore::CPreferences::sigMediaInfoLoaded, this, &CDirModel::slotUpdateMediaInfo );
+            connect( NPreferences::NCore::CPreferences::instance(), &NPreferences::NCore::CPreferences::sigMediaLoaded, this, &CDirModel::slotUpdateMediaInfo );
+            connect( NPreferences::NCore::CPreferences::instance(), &NPreferences::NCore::CPreferences::sigMediaQueued, this, &CDirModel::slotMediaQueued );
+            connect( NPreferences::NCore::CPreferences::instance(), &NPreferences::NCore::CPreferences::sigMediaFinished, this, &CDirModel::slotMediaFinished );
         }
 
         CDirModel::~CDirModel()
@@ -567,8 +570,11 @@ namespace NMediaManager
                 prevParent = nextParent;
                 fPathMapping[ nextParent->data( ECustomRoles::eAbsFilePath ).toString() ] = nextParent;
 
-                if ( filesView() && prevParent )
-                    filesView()->setExpanded( prevParent->index(), true );
+                if ( filesView() )
+                {
+                    if ( prevParent )
+                        filesView()->setExpanded( prevParent->index(), true );
+                }
             }
             return prevParent;
         }
@@ -608,8 +614,8 @@ namespace NMediaManager
 
             auto nameItem = SDirNodeItem( isRoot ? path : fModel->getTreeNodeName( fileInfo ), EColumns::eFSName );
             nameItem.fIcon = model->iconProvider()->icon( fileInfo );
-            nameItem.setData( fileInfo.absoluteFilePath(), ECustomRoles::eAbsFilePath );
-            nameItem.setData( fileInfo.isDir(), ECustomRoles::eIsDir );
+            nameItem.addRole( fileInfo.absoluteFilePath(), ECustomRoles::eAbsFilePath );
+            nameItem.addRole( fileInfo.isDir(), ECustomRoles::eIsDir );
             nameItem.fEditable = std::make_pair( EType::ePath, static_cast< NSABUtils::EMediaTags >( -1 ) );
             nameItem.fCheckable = { true, false, Qt::CheckState::Checked };
             fItems.push_back( nameItem );
@@ -1123,7 +1129,7 @@ namespace NMediaManager
             QStandardItemModel::clear();
         }
 
-        std::unordered_map< NSABUtils::EMediaTags, QString > CDirModel::getMediaTags( const QFileInfo &fi, const std::list< NSABUtils::EMediaTags > &tags ) const
+        NSABUtils::TMediaTagMap CDirModel::getMediaTags( const QFileInfo &fi, const std::list< NSABUtils::EMediaTags > &tags ) const
         {
             if ( !canShowMediaInfo() )
                 return {};
@@ -1175,6 +1181,17 @@ namespace NMediaManager
             }
         }
 
+        void CDirModel::slotMediaQueued( const QString &path )
+        {
+            addToLog( tr( "Loading media info in the background info for '%1'" ).arg( path ), true );
+        }
+
+        void CDirModel::slotMediaFinished( const QString &path, bool success )
+        {
+            auto msg = success ? tr( "Finished loading media info for '%1'" ).arg( path ) : tr( "Problem loading media info for '%1'" ).arg( path );
+            addToLog( msg, success );
+        }
+
         bool CDirModel::canShowMediaInfo() const
         {
             return true;
@@ -1197,19 +1214,40 @@ namespace NMediaManager
             auto mediaInfo = getDefaultMediaTags( fi );
             auto mediaData = getMediaDataInfo();
 
-            auto &&mediaTags = std::get< 1 >( mediaData );
-            auto &&mediaColumns = std::get< 2 >( mediaData );
-
-            auto mediaTagIter = mediaTags.begin();
-            auto columnPosIter = mediaColumns.begin();
-            for ( ; ( mediaTagIter != mediaTags.end() ) && ( columnPosIter != mediaColumns.end() ); ++mediaTagIter, ++columnPosIter )
+            for ( auto &&ii : mediaData )
             {
-                auto col = ( *columnPosIter )();
-                auto item = itemFromIndex( index( idx.row(), col, idx.parent() ) );
+                auto col = ii.getColumnNum();
+                auto colIndex = index( idx.row(), col, idx.parent() );
+                auto item = itemFromIndex( colIndex );
                 if ( !item )
                     continue;
 
-                item->setText( mediaInfo[ *mediaTagIter ] );
+                auto value = mediaInfo[ ii.fMediaTag ];
+
+                if ( filesView() && item->data( eHasMultiItemsRole ).toBool() )
+                {
+                    auto data = value.toStringList();
+                    if ( data.length() > 1 )
+                    {
+                        QComboBox *comboBox = dynamic_cast< QComboBox * >( filesView()->indexWidget( colIndex ) );
+                        if ( !comboBox )
+                        {
+                            comboBox = new QComboBox;
+                            comboBox->setEditable( false );
+                            comboBox->setDuplicatesEnabled( true );
+                            filesView()->setIndexWidget( colIndex, comboBox );
+                        }
+                        else
+                            comboBox->clear();
+
+                        comboBox->addItems( data );
+                        auto pos = data.indexOf( QRegularExpression( R"(\*.*)" ) );
+                        if ( pos != -1 )
+                            comboBox->setCurrentIndex( pos );
+                    }
+                }
+
+                item->setText( NSABUtils::getFirstString( mediaInfo[ ii.fMediaTag ] ) );
             }
 
             clearItemStatusCache( idx );
@@ -1225,19 +1263,16 @@ namespace NMediaManager
             auto mediaInfo = getDefaultMediaTags( fileInfo );
             auto mediaData = getMediaDataInfo();
 
-            auto &&mediaTags = std::get< 1 >( mediaData );
-            auto &&mediaColumns = std::get< 2 >( mediaData );
-
-            auto mediaTagIter = mediaTags.begin();
-            auto columnPosIter = mediaColumns.begin();
-            for ( ; ( mediaTagIter != mediaTags.end() ) && ( columnPosIter != mediaColumns.end() ); ++mediaTagIter, ++columnPosIter )
+            for ( auto &&ii : mediaData )
             {
-                auto &&currTag = ( *mediaTagIter );
-                retVal.emplace_back( mediaInfo[ currTag ], offset++ );
-                if ( ( currTag == NSABUtils::EMediaTags::eTitle ) || ( currTag == NSABUtils::EMediaTags::eDate ) || ( currTag == NSABUtils::EMediaTags::eComment ) )
-                    retVal.back().fEditable = std::make_pair( EType::eMediaTag, currTag );
+                retVal.emplace_back( NSABUtils::getFirstString( mediaInfo[ ii.fMediaTag ] ), offset++ );
+                if ( ( ii.fMediaTag == NSABUtils::EMediaTags::eTitle ) || ( ii.fMediaTag == NSABUtils::EMediaTags::eDate ) || ( ii.fMediaTag == NSABUtils::EMediaTags::eComment ) )
+                    retVal.back().fEditable = std::make_pair( EType::eMediaTag, ii.fMediaTag );
 
-                auto col = ( *columnPosIter )();
+                if ( ii.fMultiValue )
+                    retVal.back().addRole( true, eHasMultiItemsRole );
+
+                auto col = ii.getColumnNum();
                 auto firstCol = firstMediaItemColumn();
                 Q_ASSERT( ( col - firstCol ) == ( retVal.size() - 1 ) );
             }
@@ -1391,7 +1426,7 @@ namespace NMediaManager
                 if ( year.isEmpty() )
                     year = getMediaYear( fi );
 
-                std::unordered_map< NSABUtils::EMediaTags, QString > tags = { { NSABUtils::EMediaTags::eTitle, title }, { NSABUtils::EMediaTags::eDate, year }, { NSABUtils::EMediaTags::eComment, comment } };
+                NSABUtils::TMediaTagMap tags = { { NSABUtils::EMediaTags::eTitle, title }, { NSABUtils::EMediaTags::eDate, year }, { NSABUtils::EMediaTags::eComment, comment } };
 
                 if ( NPreferences::NCore::CPreferences::instance()->getLoadMediaInfo() )
                     aOK = NSABUtils::setMediaTags( fileName, tags, NPreferences::NCore::CPreferences::instance()->getMKVPropEditEXE(), &localMsg );
@@ -1412,7 +1447,7 @@ namespace NMediaManager
         bool CDirModel::setMediaTag( const QString &fileName, const std::pair< NSABUtils::EMediaTags, QString > &data, QString *msg ) const
         {
             NSABUtils::CAutoWaitCursor awc;
-            std::unordered_map< NSABUtils::EMediaTags, QString > tags = { data };
+            NSABUtils::TMediaTagMap tags = { data };
             QString localMsg;
             auto aOK = NSABUtils::setMediaTags( fileName, tags, NPreferences::NCore::CPreferences::instance()->getMKVPropEditEXE(), &localMsg );
             if ( !aOK )
@@ -1532,6 +1567,18 @@ namespace NMediaManager
         QStringList CDirModel::headers() const
         {
             auto retVal = QStringList() << tr( "Name" ) << tr( "Size" ) << tr( "Type" ) << tr( "Date Modified" );
+            return retVal;
+        }
+
+        std::list< int > CDirModel::getMultipleItemColumns() const
+        {
+            std::list< int > retVal;
+            auto tmp = getMediaDataInfo();
+            for ( auto &&ii : tmp )
+            {
+                if ( ii.fMultiValue )
+                    retVal.push_back( ii.getColumnNum() );
+            }
             return retVal;
         }
 
@@ -1712,32 +1759,45 @@ namespace NMediaManager
             return {};
         }
 
-        QDate CDirModel::getMediaDate( const QFileInfo &fi ) const
+        std::list< QDate > CDirModel::getMediaDates( const QFileInfo &fi ) const
         {
             auto searchPath = fi;
-            QDate retVal;
+            std::list< QDate > retVal;
 
             if ( searchPath.isFile() )
             {
-                retVal = getMediaDate( fi.absoluteDir().absolutePath() );
+                retVal = getMediaDates( fi.absoluteDir().absolutePath() );
             }
 
-            while ( !retVal.isValid() )
+            while ( !isRootPath( searchPath.absoluteFilePath() ) )
             {
                 auto baseName = searchPath.isDir() ? searchPath.fileName() : searchPath.completeBaseName();
                 NCore::SSearchTMDBInfo searchInfo( baseName, {} );
                 if ( searchInfo.releaseDateSet() )
-                    retVal = searchInfo.releaseDate().first;
-                if ( isRootPath( searchPath.absoluteFilePath() ) )
-                    break;
+                    retVal.emplace_back( searchInfo.releaseDate().first );
                 searchPath = searchPath.absolutePath();
             }
+            retVal.sort();
+            retVal.unique();
             return retVal;
+        }
+
+        QDate CDirModel::getMediaDate( const QFileInfo &fi ) const
+        {
+            auto dates = getMediaDates( fi );
+            if ( dates.empty() )
+                return {};
+            return dates.front();
         }
 
         QDate CDirModel::getMediaDate( const QModelIndex &index ) const
         {
             return getMediaDate( fileInfo( index ) );
+        }
+
+        std::list< QDate > CDirModel::getMediaDates( const QModelIndex &index ) const
+        {
+            return getMediaDates( fileInfo( index ) );
         }
 
         bool CDirModel::progressCanceled() const
@@ -1768,8 +1828,13 @@ namespace NMediaManager
 
         std::list< NSABUtils::EMediaTags > CDirModel::getMediaColumnsList() const
         {
-            auto tmp = std::get< 1 >( getMediaDataInfo() );
-            return std::list< NSABUtils::EMediaTags >( { tmp.begin(), tmp.end() } );
+            auto mediaData = getMediaDataInfo();
+            std::list< NSABUtils::EMediaTags > retVal;
+            for ( auto &&ii : mediaData )
+            {
+                retVal.emplace_back( ii.fMediaTag );
+            }
+            return retVal;
         }
 
         void CDirModel::clearMediaColumnMap()
@@ -1860,7 +1925,7 @@ namespace NMediaManager
 
         int CDirModel::getMediaSubtitlesLoc() const
         {
-            return getMediaColumn( NSABUtils::EMediaTags::eAllSubtitleLanguages );
+            return getMediaColumn( NSABUtils::EMediaTags::eAllSubtitleDispString );
         }
 
         int CDirModel::getMediaCommentLoc() const
@@ -2225,119 +2290,41 @@ namespace NMediaManager
         {
             if ( !canShowMediaInfo() )
                 return {};
-            return std::get< 0 >( getMediaDataInfo() );
+            QStringList retVal;
+            auto mediaData = getMediaDataInfo();
+            for ( auto &&ii : mediaData )
+                retVal << ii.fHeaderTitle;
+            return retVal;
         }
 
-        std::unordered_map< NSABUtils::EMediaTags, QString > CDirModel::getDefaultMediaTags( const QFileInfo &fi ) const
+        NSABUtils::TMediaTagMap CDirModel::getDefaultMediaTags( const QFileInfo &fi ) const
         {
-            return getMediaTags( fi, std::get< 1 >( getMediaDataInfo() ) );
+            std::list< NSABUtils::EMediaTags > tags;
+            auto mediaData = getMediaDataInfo();
+            for ( auto &&ii : mediaData )
+                tags.emplace_back( ii.fMediaTag );
+            return getMediaTags( fi, tags );
         }
 
-        std::tuple< QStringList, std::list< NSABUtils::EMediaTags >, std::list< std::function< int() > > > CDirModel::getMediaDataInfo() const
+        std::list< CDirModel::SMediaDataColumnInfo > CDirModel::getMediaDataInfo() const
         {
-            static auto sDefaultHeaders =   //
-                QStringList()   //
-                << tr( "Title" )   //
-                << tr( "Length" )   //
-                << tr( "Media Date" )   //
-                << tr( "Overall Bitrate" )   //
-                << tr( "Video Resolution" )   //
-                << tr( "Video Codec(s)" )   //
-                << tr( "Video Bitrate" )   //
-                << tr( "HDR Info" )   //
-                << tr( "Audio Codec(s)" )   //
-                << tr( "Total Audio Bitrate" )   //
-                << tr( "Default Audio Sample Rate" )   //
-                << tr( "Subtitles(s)" )   //
-                << tr( "Comment" );
+            static std::list< CDirModel::SMediaDataColumnInfo > retVal{
+                { tr( "Title" ), NSABUtils::EMediaTags::eTitle, this, false },   //
+                { tr( "Length" ), NSABUtils::EMediaTags::eLength, this, false },   //
+                { tr( "Media Date" ), NSABUtils::EMediaTags::eDate, this, false },   //
+                { tr( "Overall Bitrate" ), NSABUtils::EMediaTags::eOverAllBitrateString, this, false },   //
+                { tr( "Video Resolution" ), NSABUtils::EMediaTags::eResolution, this, false },   //
+                { tr( "Video Codec(s)" ), NSABUtils::EMediaTags::eAllVideoCodecs, this, true },   //
+                { tr( "Video Bitrate" ), NSABUtils::EMediaTags::eVideoBitrateString, this, false },   //
+                { tr( "HDR Info" ), NSABUtils::EMediaTags::eHDRInfo, this, false },   //
+                { tr( "Audio Codec(s)" ), NSABUtils::EMediaTags::eAllAudioCodecsDisp, this, true },   //
+                { tr( "Total Audio Bitrate" ), NSABUtils::EMediaTags::eTotalAudioBitrateString, this, false },   //
+                { tr( "Default Audio Sample Rate" ), NSABUtils::EMediaTags::eAudioSampleRateString, this, false },   //
+                { tr( "Subtitles(s)" ), NSABUtils::EMediaTags::eAllSubtitleDispString, this, true },   //
+                { tr( "Comment" ), NSABUtils::EMediaTags::eComment, this, false }   //
+            };
 
-            static auto sDefaultTags =   //
-                std::list< NSABUtils::EMediaTags >( {
-                    NSABUtils::EMediaTags::eTitle,   //
-                    NSABUtils::EMediaTags::eLength,   //
-                    NSABUtils::EMediaTags::eDate,   //
-                    NSABUtils::EMediaTags::eOverAllBitrateString,   //
-                    NSABUtils::EMediaTags::eResolution,   //
-                    NSABUtils::EMediaTags::eAllVideoCodecs,   //
-                    NSABUtils::EMediaTags::eVideoBitrateString,   //
-                    NSABUtils::EMediaTags::eHDRInfo,   //
-                    NSABUtils::EMediaTags::eAllAudioCodecsDisp,   //
-                    NSABUtils::EMediaTags::eTotalAudioBitrateString,   //
-                    NSABUtils::EMediaTags::eAudioSampleRateString,   //
-                    NSABUtils::EMediaTags::eAllSubtitleLanguages,   //
-                    NSABUtils::EMediaTags::eComment   //
-                } );
-
-            auto getPosFuncs = std::list< std::function< int() > >( {
-                { [ this ]()
-                  {
-                      return getMediaTitleLoc();
-                  } }   //
-                ,
-                { [ this ]()
-                  {
-                      return getMediaLengthLoc();
-                  } }   //
-                ,
-                { [ this ]()
-                  {
-                      return getMediaDateLoc();
-                  } }   //
-                ,
-                { [ this ]()
-                  {
-                      return getMediaOverallBitrateLoc();
-                  } }   //
-                ,
-                { [ this ]()
-                  {
-                      return getMediaResolutionLoc();
-                  } }   //
-                ,
-                { [ this ]()
-                  {
-                      return getMediaVideoCodecLoc();
-                  } }   //
-                ,
-                { [ this ]()
-                  {
-                      return getMediaVideoBitrateLoc();
-                  } }   //
-                ,
-                { [ this ]()
-                  {
-                      return getMediaVideoHDRLoc();
-                  } }   //
-                ,
-                { [ this ]()
-                  {
-                      return getMediaAudioCodecLoc();
-                  } }   //
-                ,
-                { [ this ]()
-                  {
-                      return getMediaTotalAudioBitrateLoc();
-                  } }   //
-                ,
-                { [ this ]()
-                  {
-                      return getMediaAudioSampleRateLoc();
-                  } }   //
-                ,
-                { [ this ]()
-                  {
-                      return getMediaSubtitlesLoc();
-                  } }   //
-                ,
-                { [ this ]()
-                  {
-                      return getMediaCommentLoc();
-                  } }   //
-            } );
-
-            Q_ASSERT( sDefaultHeaders.count() == sDefaultTags.size() );
-            Q_ASSERT( sDefaultHeaders.count() == getPosFuncs.size() );
-            return std::make_tuple( sDefaultHeaders, sDefaultTags, getPosFuncs );
+            return retVal;
         }
 
         QString CDirModel::getSecondaryProgressFormat( NSABUtils::CDoubleProgressDlg *progressDlg ) const
@@ -2396,5 +2383,12 @@ namespace NMediaManager
             }
             progressDlg->setSecondaryFormat( format );
         }
+
+        int CDirModel::SMediaDataColumnInfo::getColumnNum() const
+        {
+            Q_ASSERT( fModel );
+            return fModel->getMediaColumn( fMediaTag );
+        }
+
     }
 }

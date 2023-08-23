@@ -44,20 +44,25 @@ namespace NMediaManager
         {
         }
 
-        void SDirNodeItem::setData( const QVariant &value, int role )
+        void SDirNodeItem::addRole( const QVariant &value, int role )
         {
             fRoles.emplace_back( value, role );
+        }
+
+        QVariant SDirNodeItem::data( int role ) const
+        {
+            for ( auto &&ii : fRoles )
+            {
+                if ( ii.second == role )
+                    return ii.first;
+            }
+            return {};
         }
 
         QStandardItem *SDirNodeItem::createStandardItem() const
         {
             QStandardItem *retVal = nullptr;
-            if ( !fEditable.has_value() )
-            {
-                retVal = new QStandardItem( fText );
-                retVal->setEditable( false );
-            }
-            else
+            if ( fEditable.has_value() )
             {
                 retVal = new CDirModelItem( fText, fEditable.value().first );
                 bool editable = true;
@@ -69,6 +74,11 @@ namespace NMediaManager
                         editable = false;
                 }
                 retVal->setEditable( editable );
+            }
+            else
+            {
+                retVal = new QStandardItem( fText );
+                retVal->setEditable( false );
             }
 
             retVal->setIcon( fIcon );
@@ -84,6 +94,7 @@ namespace NMediaManager
                 retVal->setData( fCheckable.value().fYesNoOnly, NModels::ECustomRoles::eYesNoCheckableOnly );
                 retVal->setCheckState( fCheckable.value().fCheckState );
             }
+
             return retVal;
         }
     }

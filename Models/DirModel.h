@@ -26,7 +26,6 @@
 #include "DirNodeItem.h"
 
 #include <QStandardItemModel>
-class QTemporaryDir;
 #include <QFileInfo>   // filedevice
 #include "SABUtils/QtHashUtils.h"
 #include <unordered_set>
@@ -41,14 +40,16 @@ class QTemporaryDir;
 #include <functional>
 #include <optional>
 #include <QMutex>
+#include <QStyledItemDelegate>
 #include <QFileIconProvider>
 #include <functional>
-
+class QTemporaryDir;
 namespace NSABUtils
 {
     class CMediaInfo;
     class CDoubleProgressDlg;
     enum class EMediaTags;
+    using TMediaTagMap = std::unordered_map< EMediaTags, QVariant >;
     class CDoubleProgressDlg;
 }
 
@@ -99,7 +100,9 @@ namespace NMediaManager
             eMediaTagTypeRole,
             eYesNoCheckableOnly,
             eIsSeasonDirRole,
-            eIsSeasonDirCorrectRole
+            eIsSeasonDirCorrectRole,
+            eHasMultiItemsRole,
+            eMultiItemsRole
         };
 
         enum class EType
@@ -237,7 +240,7 @@ namespace NMediaManager
             virtual bool showMediaItems() const { return false; };
 
             bool canShowMediaInfo() const;
-            virtual std::unordered_map< NSABUtils::EMediaTags, QString > getMediaTags( const QFileInfo &fi, const std::list< NSABUtils::EMediaTags > &tags = {} ) const;
+            virtual NSABUtils::TMediaTagMap getMediaTags( const QFileInfo &fi, const std::list< NSABUtils::EMediaTags > &tags = {} ) const;
             virtual void reloadMediaInfo( const QModelIndex &idx );
             virtual void reloadMediaInfo( const QModelIndex &idx, bool force );
 
@@ -286,6 +289,8 @@ namespace NMediaManager
             void slotProgressCanceled();
             virtual void slotDataChanged( const QModelIndex &start, const QModelIndex &end, const QVector< int > &roles );
             virtual void slotUpdateMediaInfo( const QString &path );
+            virtual void slotMediaQueued( const QString &path ) final;;
+            virtual void slotMediaFinished( const QString &path, bool success ) final;;
 
         protected:
             virtual QString getSecondaryProgressFormat( NSABUtils::CDoubleProgressDlg *progressDlg ) const;
@@ -321,8 +326,12 @@ namespace NMediaManager
             virtual void clearPathStatusCache( const QString &path ) const;
 
             virtual QString getMediaYear( const QFileInfo &fi ) const final;
+
             virtual QDate getMediaDate( const QFileInfo &fi ) const;
             virtual QDate getMediaDate( const QModelIndex &index ) const;
+
+            virtual std::list< QDate > getMediaDates( const QFileInfo &fi ) const;
+            virtual std::list< QDate > getMediaDates( const QModelIndex &idx ) const;
 
             bool progressCanceled() const;
 
@@ -361,6 +370,7 @@ namespace NMediaManager
             virtual void setupNewItem( const SDirNodeItem &nodeItem, const QStandardItem *nameItem, QStandardItem *item ) const;
 
             virtual QStringList headers() const;
+            virtual std::list< int > getMultipleItemColumns() const;
             virtual void preLoad() final;
             virtual void postLoad( bool aOK ) final;
             virtual void postLoad( QTreeView *treeView );
@@ -369,9 +379,19 @@ namespace NMediaManager
             virtual bool isLoading() const final { return fIsLoading; }
             virtual void setIsLoading( bool isLoading );
 
-            std::unordered_map< NSABUtils::EMediaTags, QString > getDefaultMediaTags( const QFileInfo &fi ) const;
+            NSABUtils::TMediaTagMap getDefaultMediaTags( const QFileInfo &fi ) const;
             QStringList getMediaHeaders() const;
-            std::tuple< QStringList, std::list< NSABUtils::EMediaTags >, std::list< std::function< int() > > > getMediaDataInfo() const;
+
+            struct SMediaDataColumnInfo
+            {
+                QString fHeaderTitle;
+                NSABUtils::EMediaTags fMediaTag;
+                const CDirModel *fModel{ nullptr };
+                bool fMultiValue{ false };
+                int getColumnNum() const;
+            };
+
+            std::list< SMediaDataColumnInfo > getMediaDataInfo() const;
 
             virtual void resizeColumns() const;
 

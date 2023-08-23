@@ -610,7 +610,9 @@ namespace NMediaManager
 
             Q_SIGNALS:
                 void sigPreferencesChanged( EPreferenceTypes prefType );
-                void sigMediaInfoLoaded( const QString &fileName ) const;
+                void sigMediaLoaded( const QString &fileName );
+                void sigMediaQueued( const QString &fileName );
+                void sigMediaFinished( const QString &fileName, bool success );
 
             private:
                 QStringList getTranscodeArgs( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName, const std::list< NMediaManager::NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NMediaManager::NCore::SLanguageInfo, QString > > &subIdxFiles, const std::optional< std::pair< int, int > > &resolution, const std::optional< uint64_t > &bitrate ) const;

@@ -138,14 +138,18 @@ namespace NMediaManager
             std::list< SDirNodeItem > retVal;
             for ( auto &&ii : tagsToShow )
             {
-                QString value;
+                QVariant value;
                 auto pos = mediaInfo.find( ii );
                 if ( pos != mediaInfo.end() )
                 {
                     value = ( *pos ).second;
                 }
 
-                retVal.emplace_back( value, colNum++ );
+                if ( value.type() == QVariant::StringList )
+                    retVal.emplace_back( value.toStringList().front(), colNum++ );
+                else
+                    retVal.emplace_back( value.toString(), colNum++ );
+
                 if ( isMediaFile )
                 {
                     if ( NSABUtils::isSettableTag( ii ) )

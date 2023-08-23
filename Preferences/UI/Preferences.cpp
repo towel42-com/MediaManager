@@ -127,9 +127,18 @@ namespace NMediaManager
 
                 addPage( new CTranscodeGeneralSettings );
                 addPage( new CTranscodeVideoSettings );
-                addPage( new CTranscodeVideoCodec );
+                auto codecPage = new CTranscodeVideoCodec;
+                auto bitratePage = new CTranscodeBitrate;
+                addPage( codecPage );
                 addPage( new CTranscodeAudioSettings );
-                addPage( new CTranscodeBitrate );
+                auto codecPageItem = addPage( bitratePage );
+
+                connect(
+                    codecPage, &CTranscodeVideoCodec::sigOpenBitratePage,
+                    [ this, codecPageItem ]()
+                    {
+                        fImpl->pageSelector->setCurrentItem( codecPageItem );
+                    } );
 
                 addPage( new CExtendedInfo );
                 addPage( new CKnownAbbreviations );
@@ -151,16 +160,17 @@ namespace NMediaManager
                 addPage( new CBIFGeneration );
             }
 
-            void CPreferences::addPage( CBasePrefPage *page )
+            QTreeWidgetItem *CPreferences::addPage( CBasePrefPage *page )
             {
                 fImpl->stackedWidget->addWidget( page );
                 auto name = page->pageName();
                 //qDebug() << name;
                 Q_ASSERT( !name.isEmpty() );
                 if ( name.isEmpty() )
-                    return;
+                    return nullptr;
                 QString key;
                 QTreeWidgetItem *parentItem = nullptr;
+                QTreeWidgetItem *retVal = nullptr;
                 for ( int ii = 0; ii < name.count(); ++ii )
                 {
                     key += "__" + name[ ii ];
@@ -168,27 +178,28 @@ namespace NMediaManager
                     auto pos = fItemMap.find( key );
                     if ( pos == fItemMap.end() )
                     {
-                        QTreeWidgetItem *item = nullptr;
+                        retVal = nullptr;
                         if ( parentItem )
-                            item = new QTreeWidgetItem( parentItem );
+                            retVal = new QTreeWidgetItem( parentItem );
                         else
-                            item = new QTreeWidgetItem( fImpl->pageSelector );
-                        item->setText( 0, name[ ii ] );
+                            retVal = new QTreeWidgetItem( fImpl->pageSelector );
+                        retVal->setText( 0, name[ ii ] );
 
-                        fPageMap[ item ] = page;
-                        fItemMap[ key ] = item;
-                        parentItem = item;
+                        fPageMap[ retVal ] = page;
+                        fItemMap[ key ] = retVal;
+                        parentItem = retVal;
                     }
                     else
                     {
-                        auto item = parentItem = ( *pos ).second;
+                        retVal = parentItem = ( *pos ).second;
                         if ( ( ii + 1 ) == name.count() )
                         {
-                            Q_ASSERT( fPageMap.find( item ) == fPageMap.end() );
-                            fPageMap[ item ] = page;
+                            Q_ASSERT( fPageMap.find( retVal ) == fPageMap.end() );
+                            fPageMap[ retVal ] = page;
                         }
                     }
                 }
+                return retVal;
             }
 
             void CPreferences::slotPageSelectorCurrChanged( QTreeWidgetItem * /*current*/, QTreeWidgetItem * /*previous*/ )

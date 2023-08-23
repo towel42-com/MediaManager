@@ -57,6 +57,8 @@ namespace NMediaManager
 
                 void slotQualityGoalMetricChanged();
                 void slotExplicitCRFSliderChanged();
+            Q_SIGNALS:
+                void sigOpenBitratePage();
             private:
                 double getCurrentCRFValue() const;
                 void setCurrentCRFValue( double value );

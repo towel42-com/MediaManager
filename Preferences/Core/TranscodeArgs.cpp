@@ -172,7 +172,7 @@ namespace NMediaManager
                             if ( transcodeNeeded.bitrateTooHigh() && defaultAudioStreamBitrate )
                                 retVal << "-b:a" << QString( "%1" ).arg( defaultAudioStreamBitrate ) << "-maxrate" << QString( "%1" ).arg( static_cast< uint64_t >( defaultAudioStreamBitrate * 1.1 ) ) << "-bufsize" << QString( "%1" ).arg( defaultAudioStreamBitrate / 2 );
 
-                            retVal << QString( "-metadata:s:a:%1" ).arg( currAudioStreamNum ) << QString( R"(title="Transcoded Default Track #%1 from '%2' to '%3'")" ).arg( defaultAudioStreamNum ).arg( mediaInfo->getMediaTag( defaultAudioStreamNum, NSABUtils::EMediaTags::eAudioCodecDisp ) ).arg( audioFormat );   // set the metadata
+                            retVal << QString( "-metadata:s:a:%1" ).arg( currAudioStreamNum ) << QString( R"(title=Transcoded Default Track #%1 from '%2' to '%3')" ).arg( defaultAudioStreamNum ).arg( mediaInfo->getMediaTag( defaultAudioStreamNum, NSABUtils::EMediaTags::eAudioCodecDisp ) ).arg( audioFormat );   // set the metadata
 
                             currAudioStreamNum++;
 

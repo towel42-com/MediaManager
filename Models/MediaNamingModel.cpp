@@ -832,12 +832,12 @@ namespace NMediaManager
             return autoSearchFinished() && CDirModel::canComputeStatus();
         }
 
-        QDate CMediaNamingModel::getMediaDate( const QFileInfo &fi ) const
+        std::list< QDate > CMediaNamingModel::getMediaDates( const QFileInfo &fi ) const
         {
             auto transformResults = getTransformResult( fi, true );
             if ( transformResults )
-                return transformResults->getDate().first;
-            return CDirModel::getMediaDate( fi );
+                return { transformResults->getDate().first };
+            return CDirModel::getMediaDates( fi );
         }
 
         bool CMediaNamingModel::itemSearchOK( const QModelIndex &idx, QString *msg ) const
@@ -923,7 +923,7 @@ namespace NMediaManager
         {
             bool isTVShow = isTVType( NCore::SSearchTMDBInfo::looksLikeTVShow( fileInfo.fileName(), nullptr ) );
 
-            currItems.front().setData( isTVShow, ECustomRoles::eIsTVShowRole );
+            currItems.front().addRole( isTVShow, ECustomRoles::eIsTVShowRole );
         }
 
         void CMediaNamingModel::setupNewItem( const SDirNodeItem &nodeItem, const QStandardItem *nameItem, QStandardItem *item ) const
@@ -937,6 +937,7 @@ namespace NMediaManager
                     updateTransformPattern( nameItem, item );
                 }
             }
+            CDirModel::setupNewItem( nodeItem, nameItem, item );
         }
 
         std::list< SDirNodeItem > CMediaNamingModel::addAdditionalItems( const QFileInfo &fileInfo ) const
