@@ -29,6 +29,7 @@
 class QTemporaryDir;
 #include <QFileInfo>   // filedevice
 #include "SABUtils/QtHashUtils.h"
+#include "SABUtils/MKVUtils.h"
 #include <unordered_set>
 #include <unordered_map>
 #include <optional>
@@ -237,7 +238,7 @@ namespace NMediaManager
             virtual bool showMediaItems() const { return false; };
 
             bool canShowMediaInfo() const;
-            virtual std::unordered_map< NSABUtils::EMediaTags, QString > getMediaTags( const QFileInfo &fi, const std::list< NSABUtils::EMediaTags > &tags = {} ) const;
+            virtual NSABUtils::TMediaTagMap getMediaTags( const QFileInfo &fi, const std::list< NSABUtils::EMediaTags > &tags = {} ) const;
             virtual void reloadMediaInfo( const QModelIndex &idx );
             virtual void reloadMediaInfo( const QModelIndex &idx, bool force );
 
@@ -245,7 +246,7 @@ namespace NMediaManager
             virtual bool areMediaTagsSameAsAutoSet( const QModelIndex &idx ) const final;
 
             bool setMediaTags( const QString &fileName, QString title, QString year, QString comment, QString *msg = nullptr, bool ignoreIsMediaFile = false ) const;
-            bool setMediaTag( const QString &filename, const std::pair< NSABUtils::EMediaTags, QString > &tagData, QString *msg = nullptr ) const;   //pair => tag, value
+            bool setMediaTag( const QString &filename, const std::pair< NSABUtils::EMediaTags, QVariant > &tagData, QString *msg = nullptr ) const;   //pair => tag, value
 
             virtual void updatePath( const QModelIndex &idx, const QString &oldPath, const QString &newPath ) final;
             virtual void updateFile( const QModelIndex &idx, const QString &oldFile, const QString &newFile );
@@ -369,7 +370,7 @@ namespace NMediaManager
             virtual bool isLoading() const final { return fIsLoading; }
             virtual void setIsLoading( bool isLoading );
 
-            std::unordered_map< NSABUtils::EMediaTags, QString > getDefaultMediaTags( const QFileInfo &fi ) const;
+            NSABUtils::TMediaTagMap getDefaultMediaTags( const QFileInfo &fi ) const;
             QStringList getMediaHeaders() const;
             std::tuple< QStringList, std::list< NSABUtils::EMediaTags >, std::list< std::function< int() > > > getMediaDataInfo() const;
 

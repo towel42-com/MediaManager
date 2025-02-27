@@ -138,7 +138,7 @@ namespace NMediaManager
             std::list< SDirNodeItem > retVal;
             for ( auto &&ii : tagsToShow )
             {
-                QString value;
+                QVariant value;
                 auto pos = mediaInfo.find( ii );
                 if ( pos != mediaInfo.end() )
                 {

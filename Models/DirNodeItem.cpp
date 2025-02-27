@@ -37,8 +37,8 @@ namespace NMediaManager
         {
         }
 
-        SDirNodeItem::SDirNodeItem( const QString &text, int nodeType ) :
-            fText( text ),
+        SDirNodeItem::SDirNodeItem( const QVariant &value, int nodeType ) :
+            fText( value.toString() ),
             fType( static_cast< EColumns >( nodeType ) ),
             fMediaType( NCore::EMediaType::eUnknownType )
         {

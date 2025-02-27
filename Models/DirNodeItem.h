@@ -70,7 +70,7 @@ namespace NMediaManager
         struct SDirNodeItem
         {
             SDirNodeItem();
-            SDirNodeItem( const QString &text, int nodeType );
+            SDirNodeItem( const QVariant &value, int nodeType );
 
             void setData( const QVariant &value, int role );
 

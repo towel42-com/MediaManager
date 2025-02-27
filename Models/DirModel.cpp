@@ -19,7 +19,6 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-
 #include "DirModel.h"
 #include "Core/TransformResult.h"
 #include "Core/SearchTMDBInfo.h"
@@ -1123,7 +1122,7 @@ namespace NMediaManager
             QStandardItemModel::clear();
         }
 
-        std::unordered_map< NSABUtils::EMediaTags, QString > CDirModel::getMediaTags( const QFileInfo &fi, const std::list< NSABUtils::EMediaTags > &tags ) const
+        NSABUtils::TMediaTagMap CDirModel::getMediaTags( const QFileInfo &fi, const std::list< NSABUtils::EMediaTags > &tags ) const
         {
             if ( !canShowMediaInfo() )
                 return {};
@@ -1209,7 +1208,7 @@ namespace NMediaManager
                 if ( !item )
                     continue;
 
-                item->setText( mediaInfo[ *mediaTagIter ] );
+                item->setText( mediaInfo[ *mediaTagIter ].toString() );
             }
 
             clearItemStatusCache( idx );
@@ -1391,7 +1390,7 @@ namespace NMediaManager
                 if ( year.isEmpty() )
                     year = getMediaYear( fi );
 
-                std::unordered_map< NSABUtils::EMediaTags, QString > tags = { { NSABUtils::EMediaTags::eTitle, title }, { NSABUtils::EMediaTags::eDate, year }, { NSABUtils::EMediaTags::eComment, comment } };
+                NSABUtils::TMediaTagMap tags = { { NSABUtils::EMediaTags::eTitle, title }, { NSABUtils::EMediaTags::eDate, year }, { NSABUtils::EMediaTags::eComment, comment } };
 
                 if ( NPreferences::NCore::CPreferences::instance()->getLoadMediaInfo() )
                     aOK = NSABUtils::setMediaTags( fileName, tags, NPreferences::NCore::CPreferences::instance()->getMKVPropEditEXE(), &localMsg );
@@ -1409,10 +1408,10 @@ namespace NMediaManager
             return aOK;
         }
 
-        bool CDirModel::setMediaTag( const QString &fileName, const std::pair< NSABUtils::EMediaTags, QString > &data, QString *msg ) const
+        bool CDirModel::setMediaTag( const QString &fileName, const NSABUtils::TMediaTagPair &data, QString *msg ) const
         {
             NSABUtils::CAutoWaitCursor awc;
-            std::unordered_map< NSABUtils::EMediaTags, QString > tags = { data };
+            NSABUtils::TMediaTagMap tags = { data };
             QString localMsg;
             auto aOK = NSABUtils::setMediaTags( fileName, tags, NPreferences::NCore::CPreferences::instance()->getMKVPropEditEXE(), &localMsg );
             if ( !aOK )
@@ -1421,7 +1420,7 @@ namespace NMediaManager
                     *msg = localMsg;
                 else
                 {
-                    QMessageBox::critical( nullptr, tr( "Could not set tag" ), tr( "Could not set media tag '%1' to '%2' on file '%3'. %4" ).arg( NSABUtils::displayName( data.first ) ).arg( data.second ).arg( fileName ).arg( localMsg ) );
+                    QMessageBox::critical( nullptr, tr( "Could not set tag" ), tr( "Could not set media tag '%1' to '%2' on file '%3'. %4" ).arg( NSABUtils::displayName( data.first ) ).arg( data.second.toString() ).arg( fileName ).arg( localMsg ) );
                 }
             }
             return aOK;
@@ -2180,11 +2179,19 @@ namespace NMediaManager
             {
                 QRegularExpression regExp1( R"(Season\s+\d+\s+\(\d{4}\))" );
                 QRegularExpression regExp2( R"(Season\s+\d+)" );
+                QRegularExpression regExp3( R"(Season\d+)" );
                 auto match1 = regExp1.match( baseName );
                 auto match2 = regExp2.match( baseName );
+                auto match3 = regExp3.match( baseName );
+                auto isMatch = match1.hasMatch() && ( match1.capturedLength() == baseName.length() );
                 if ( isNameOK )
-                    *isNameOK = match1.hasMatch() && ( match1.capturedLength() == baseName.length() );
-                return ( match1.hasMatch() && ( match1.capturedLength() == baseName.length() ) ) || ( match2.hasMatch() && ( match2.capturedLength() == baseName.length() ) );
+                {
+                    *isNameOK = isMatch;
+                }
+                isMatch = isMatch || ( match2.hasMatch() && ( match2.capturedLength() == baseName.length() ) );
+                isMatch = isMatch || ( match3.hasMatch() && ( match3.capturedLength() == baseName.length() ) );
+
+                return isMatch;
             }
             return false;
         }
@@ -2228,7 +2235,7 @@ namespace NMediaManager
             return std::get< 0 >( getMediaDataInfo() );
         }
 
-        std::unordered_map< NSABUtils::EMediaTags, QString > CDirModel::getDefaultMediaTags( const QFileInfo &fi ) const
+        NSABUtils::TMediaTagMap CDirModel::getDefaultMediaTags( const QFileInfo &fi ) const
         {
             return getMediaTags( fi, std::get< 1 >( getMediaDataInfo() ) );
         }
