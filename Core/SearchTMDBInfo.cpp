@@ -457,26 +457,9 @@ namespace NMediaManager
 
         QString SSearchTMDBInfo::toString( bool forDebug ) const
         {
-            auto retVal =
-                forDebug ? QString( "SSearchTMDBInfo(%1 (%2)-S%3E%4-%5-%6-%7)" ) : QString( "Search Name: '%1' - Release Date: %2 - Season: %3 - Episode: %4 - TMDB ID: %5 - Media Type: %6 Auto Determined: %7 - Exact Match Only: %8" );
+            auto retVal = forDebug ? QString( "SSearchTMDBInfo(%1 (%2)-S%3E%4-%5-%6-%7)" ) : QString( "Search Name: '%1' - Release Date: %2 - Season: %3 - Episode: %4 - TMDB ID: %5 - Media Type: %6 Auto Determined: %7 - Exact Match Only: %8" );
 
-            retVal = retVal.arg( searchName() )
-                         .arg( forDebug ? releaseDate().second : ( releaseDate().second.isEmpty() ? "<Not Set>" : releaseDate().second ) )
-                         .arg(
-                             forDebug             ? QString::number( season() )
-                             : ( season() == -1 ) ? "<Not Set>"
-                                                  : QString::number( season() ) )
-                         .arg( episodeString( forDebug ) )
-                         .arg(
-                             forDebug                   ? tmdbIDString()
-                             : tmdbIDString().isEmpty() ? "<Not Set>"
-                                                        : tmdbIDString() )
-                         .arg( toEnumString( fMediaType.first ) )
-                         .arg( fMediaType.second ? "Yes" : "No" )
-                         .arg(
-                             forDebug           ? QString( "%1" ).arg( exactMatchOnly() )
-                             : exactMatchOnly() ? "Yes"
-                                                : "No" );
+            retVal = retVal.arg( searchName() ).arg( forDebug ? releaseDate().second : ( releaseDate().second.isEmpty() ? "<Not Set>" : releaseDate().second ) ).arg( forDebug ? QString::number( season() ) : ( season() == -1 ) ? "<Not Set>" : QString::number( season() ) ).arg( episodeString( forDebug ) ).arg( forDebug ? tmdbIDString() : tmdbIDString().isEmpty() ? "<Not Set>" : tmdbIDString() ).arg( toEnumString( fMediaType.first ) ).arg( fMediaType.second ? "Yes" : "No" ).arg( forDebug ? QString( "%1" ).arg( exactMatchOnly() ) : exactMatchOnly() ? "Yes" : "No" );
 
             return retVal;
         }
@@ -485,9 +468,7 @@ namespace NMediaManager
         {
             if ( isTVMedia() )
             {
-                return isMatch( searchResult->getShowFirstAirDate(), searchResult->getTMDBID(), searchResult->getTitle(), searchResult->mediaType(), searchResult->getSeason(), searchResult->getEpisode() )
-                       || isMatch( searchResult->getSeasonStartDate(), searchResult->getTMDBID(), searchResult->getTitle(), searchResult->mediaType(), searchResult->getSeason(), searchResult->getEpisode() )
-                       || isMatch( searchResult->getEpisodeAirDate(), searchResult->getTMDBID(), searchResult->getTitle(), searchResult->mediaType(), searchResult->getSeason(), searchResult->getEpisode() );
+                return isMatch( searchResult->getShowFirstAirDate(), searchResult->getTMDBID(), searchResult->getTitle(), searchResult->mediaType(), searchResult->getSeason(), searchResult->getEpisode() ) || isMatch( searchResult->getSeasonStartDate(), searchResult->getTMDBID(), searchResult->getTitle(), searchResult->mediaType(), searchResult->getSeason(), searchResult->getEpisode() ) || isMatch( searchResult->getEpisodeAirDate(), searchResult->getTMDBID(), searchResult->getTitle(), searchResult->mediaType(), searchResult->getSeason(), searchResult->getEpisode() );
             }
             else
                 return isMatch( searchResult->getMovieReleaseDate(), searchResult->getTMDBID(), searchResult->getTitle(), searchResult->mediaType(), searchResult->getSeason(), searchResult->getEpisode() );
@@ -808,7 +789,11 @@ namespace NMediaManager
 
                 query.addQueryItem( "include_adult", "true" );
                 if ( fReleaseDate.first.isValid() )
+                {
+                    query.addQueryItem( "year", QString::number( fReleaseDate.first.year() - 1 ) );
                     query.addQueryItem( "year", QString::number( fReleaseDate.first.year() ) );
+                    query.addQueryItem( "year", QString::number( fReleaseDate.first.year() + 1 ) );
+                }
                 if ( fPageNumber.has_value() )
                     query.addQueryItem( "page", QString::number( fPageNumber.value() ) );
 
@@ -855,7 +840,7 @@ namespace NMediaManager
 
         std::list< int > SSearchTMDBInfo::episodesFromString( const QString &episodeStr, bool &aOK ) const
         {
-            return NSABUtils::intsFromString( episodeStr, QString( R"((E|Episode\s*)?)" ), true, &aOK );
+            return NSABUtils::intsFromString( episodeStr, QString( R"((?:E|Episode\s*)?)" ), true, &aOK );
         }
     }
 }
