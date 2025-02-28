@@ -151,15 +151,10 @@ namespace NMediaManager
             if ( string.isEmpty() )
                 return string;
 
-            static std::unordered_map< std::tuple< QString, bool, bool >, QString > sCache;
-
-            auto cachePos = sCache.find( std::make_tuple( string, stripInnerSeparators, checkForKnownHyphens ) );
-            if ( cachePos != sCache.end() )
-            {
-                return ( *cachePos ).second;
-            }
 
             auto retVal = string;
+            retVal.remove( QRegularExpression( R"((\[\])|(\(\))|(\{\}))" ) );
+
             auto pos = retVal.indexOf( QRegularExpression( R"([^\.\s\-\_])" ) );
             if ( pos != -1 )
                 retVal = retVal.mid( pos );
@@ -204,7 +199,6 @@ namespace NMediaManager
                     }
                 }
             }
-            sCache[ std::make_tuple( string, stripInnerSeparators, checkForKnownHyphens ) ] = retVal;
             return retVal;
         }
 
@@ -373,7 +367,7 @@ namespace NMediaManager
             fSearchName = smartTrim( stripKnownExtendedData( fSearchName, extendedInfo ) );
             fSearchName = smartTrim( stripKnownData( fSearchName ) );
             fSearchName = smartTrim( replaceKnownAbbreviations( fSearchName ) );
-
+        
             fFoundExtendedInfo = extendedInfo;
 
             extractDiskNum();
