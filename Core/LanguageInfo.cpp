@@ -29,8 +29,8 @@
 #include <QFile>
 #include <QTextStream>
 
+#include <set>
 #include <unordered_set>
-#include <tuple>
 
 namespace NMediaManager
 {
@@ -83,6 +83,13 @@ namespace NMediaManager
             return fBaseName.isEmpty() ? fFileName : fBaseName;
         }
 
+        QString SLanguageInfo::language() const
+        {
+            if ( fLangDef )
+                return fLangDef->fLanguage;
+            return {};
+        }
+
         bool SLanguageInfo::isNameBasedLangFile() const
         {
             return !fBaseName.isEmpty();
@@ -94,21 +101,16 @@ namespace NMediaManager
             {
                 return allLanguages();
             }
-            auto retVal = fLanguage;
-            if ( !fCountry.isEmpty() )
-                retVal += " " + fCountry;
-            return retVal;
+            if ( fLangDef )
+                return fLangDef->displayName();
+            return {};
         }
 
         QString SLanguageInfo::isoCode() const
         {
-            auto retVal = fISOCode.toLower();
-            auto pos = retVal.indexOf( '_' );
-            if ( pos == -1 )
-                pos = retVal.indexOf( '-' );
-            if ( pos != -1 )
-                retVal = retVal.left( pos );
-            return retVal;
+            if ( fLangDef )
+                return fLangDef->isoCode();
+            return {};
         }
 
         QString SLanguageInfo::allLanguages() const
@@ -132,286 +134,351 @@ namespace NMediaManager
             Q_ASSERT( isKnownLanguage( value ) );
         }
 
-        std::unordered_map< QString, std::pair< QString, QString > > SLanguageInfo::sLangMap = {
-            { "af", { "Afrikaans", "" } },
-            { "af-ZA", { "Afrikaans", "(South Africa)" } },
-            { "ar", { "Arabic", "" } },
-            { "ar-AE", { "Arabic", "(U.A.E.)" } },
-            { "ar-BH", { "Arabic", "(Bahrain)" } },
-            { "ar-DZ", { "Arabic", "(Algeria)" } },
-            { "ar-EG", { "Arabic", "(Egypt)" } },
-            { "ar-IQ", { "Arabic", "(Iraq)" } },
-            { "ar-JO", { "Arabic", "(Jordan)" } },
-            { "ar-KW", { "Arabic", "(Kuwait)" } },
-            { "ar-LB", { "Arabic", "(Lebanon)" } },
-            { "ar-LY", { "Arabic", "(Libya)" } },
-            { "ar-MA", { "Arabic", "(Morocco)" } },
-            { "ar-OM", { "Arabic", "(Oman)" } },
-            { "ar-QA", { "Arabic", "(Qatar)" } },
-            { "ar-SA", { "Arabic", "(Saudi Arabia)" } },
-            { "ar-SY", { "Arabic", "(Syria)" } },
-            { "ar-TN", { "Arabic", "(Tunisia)" } },
-            { "ar-YE", { "Arabic", "(Yemen)" } },
-            { "az", { "Azeri", "(Latin)" } },
-            { "az-AZ", { "Azeri", "(Latin) (Azerbaijan)" } },
-            { "az-AZ", { "Azeri", "(Cyrillic) (Azerbaijan)" } },
-            { "be", { "Belarusian", "" } },
-            { "be-BY", { "Belarusian", "(Belarus)" } },
-            { "bg", { "Bulgarian", "" } },
-            { "bg-BG", { "Bulgarian", "(Bulgaria)" } },
-            { "bs-BA", { "Bosnian", "(Bosnia and Herzegovina)" } },
-            { "ca", { "Catalan", "" } },
-            { "ca-ES", { "Catalan", "(Spain)" } },
-            { "cs", { "Czech", "" } },
-            { "cs-CZ", { "Czech", "(Czech Republic)" } },
-            { "cy", { "Welsh", "" } },
-            { "cy-GB", { "Welsh", "(UK)" } },
-            { "da", { "Danish", "" } },
-            { "da-DK", { "Danish", "(Denmark)" } },
-            { "de", { "German", "" } },
-            { "de-AT", { "German", "(Austria)" } },
-            { "de-CH", { "German", "(Switzerland)" } },
-            { "de-DE", { "German", "(Germany)" } },
-            { "de-LI", { "German", "(Liechtenstein)" } },
-            { "de-LU", { "German", "(Luxembourg)" } },
-            { "dv", { "Divehi", "" } },
-            { "dv-MV", { "Divehi", "(Maldives)" } },
-            { "el", { "Greek", "" } },
-            { "el-GR", { "Greek", "(Greece)" } },
-            { "en", { "English", "" } },
-            { "en-AU", { "English", "(Australia)" } },
-            { "en-BZ", { "English", "(Belize)" } },
-            { "en-CA", { "English", "(Canada)" } },
-            { "en-CB", { "English", "(Caribbean)" } },
-            { "en-GB", { "English", "(UK)" } },
-            { "en-IE", { "English", "(Ireland)" } },
-            { "en-JM", { "English", "(Jamaica)" } },
-            { "en-NZ", { "English", "(New Zealand)" } },
-            { "en-PH", { "English", "(Republic of the Philippines)" } },
-            { "en-TT", { "English", "(Trinidad and Tobago)" } },
-            { "en-US", { "English", "(US)" } },
-            { "en-ZA", { "English", "(South Africa)" } },
-            { "en-ZW", { "English", "(Zimbabwe)" } },
-            { "eo", { "Esperanto", "" } },
-            { "es", { "Spanish", "" } },
-            { "es-AR", { "Spanish", "(Argentina)" } },
-            { "es-BO", { "Spanish", "(Bolivia)" } },
-            { "es-CL", { "Spanish", "(Chile)" } },
-            { "es-CO", { "Spanish", "(Colombia)" } },
-            { "es-CR", { "Spanish", "(Costa Rica)" } },
-            { "es-DO", { "Spanish", "(Dominican Republic)" } },
-            { "es-EC", { "Spanish", "(Ecuador)" } },
-            { "es-ES", { "Spanish", "(Castilian)" } },
-            { "es-ES", { "Spanish", "(Spain)" } },
-            { "es-GT", { "Spanish", "(Guatemala)" } },
-            { "es-HN", { "Spanish", "(Honduras)" } },
-            { "es-MX", { "Spanish", "(Mexico)" } },
-            { "es-NI", { "Spanish", "(Nicaragua)" } },
-            { "es-PA", { "Spanish", "(Panama)" } },
-            { "es-PE", { "Spanish", "(Peru)" } },
-            { "es-PR", { "Spanish", "(Puerto Rico)" } },
-            { "es-PY", { "Spanish", "(Paraguay)" } },
-            { "es-SV", { "Spanish", "(El Salvador)" } },
-            { "es-UY", { "Spanish", "(Uruguay)" } },
-            { "es-VE", { "Spanish", "(Venezuela)" } },
-            { "et", { "Estonian", "" } },
-            { "et-EE", { "Estonian", "(Estonia)" } },
-            { "eu", { "Basque", "" } },
-            { "eu-ES", { "Basque", "(Spain)" } },
-            { "fa", { "Farsi", "" } },
-            { "fa-IR", { "Farsi", "(Iran)" } },
-            { "fi", { "Finnish", "" } },
-            { "fi-FI", { "Finnish", "(Finland)" } },
-            { "fil", { "Filipino;Pilipino", "(Philippines)" } },
-            { "fo", { "Faroese", "" } },
-            { "fo-FO", { "Faroese", "(Faroe Islands)" } },
-            { "fr", { "French", "" } },
-            { "fr-BE", { "French", "(Belgium)" } },
-            { "fr-CA", { "French", "(Canada)" } },
-            { "fr-CH", { "French", "(Switzerland)" } },
-            { "fr-FR", { "French", "(France)" } },
-            { "fr-LU", { "French", "(Luxembourg)" } },
-            { "fr-MC", { "French", "(Principality of Monaco)" } },
-            { "gl", { "Galician", "" } },
-            { "gl-ES", { "Galician", "(Spain)" } },
-            { "gu", { "Gujarati", "" } },
-            { "gu-IN", { "Gujarati", "(India)" } },
-            { "he", { "Hebrew", "" } },
-            { "he-IL", { "Hebrew", "(Israel)" } },
-            { "hi", { "Hindi", "" } },
-            { "hi-IN", { "Hindi", "(India)" } },
-            { "hr", { "Croatian", "" } },
-            { "hr-BA", { "Croatian", "(Bosnia and Herzegovina)" } },
-            { "hr-HR", { "Croatian", "(Croatia)" } },
-            { "hu", { "Hungarian", "" } },
-            { "hu-HU", { "Hungarian", "(Hungary)" } },
-            { "hy", { "Armenian", "" } },
-            { "hy-AM", { "Armenian", "(Armenia)" } },
-            { "id", { "Indonesian", "" } },
-            { "id-ID", { "Indonesian", "(Indonesia)" } },
-            { "is", { "Icelandic", "" } },
-            { "is-IS", { "Icelandic", "(Iceland)" } },
-            { "it", { "Italian", "" } },
-            { "it-CH", { "Italian", "(Switzerland)" } },
-            { "it-IT", { "Italian", "(Italy)" } },
-            { "ja", { "Japanese", "" } },
-            { "ja-JP", { "Japanese", "(Japan)" } },
-            { "ka", { "Georgian", "" } },
-            { "ka-GE", { "Georgian", "(Georgia)" } },
-            { "kk", { "Kazakh", "" } },
-            { "kk-KZ", { "Kazakh", "(Kazakhstan)" } },
-            { "kn", { "Kannada", "" } },
-            { "kn-IN", { "Kannada", "(India)" } },
-            { "ko", { "Korean", "" } },
-            { "ko-KR", { "Korean", "(Korea)" } },
-            { "kok", { "Konkani", "" } },
-            { "kok-IN", { "Konkani", "(India)" } },
-            { "ky", { "Kyrgyz", "" } },
-            { "ky-KG", { "Kyrgyz", "(Kyrgyzstan)" } },
-            { "lt", { "Lithuanian", "" } },
-            { "lt-LT", { "Lithuanian", "(Lithuania)" } },
-            { "lv", { "Latvian", "" } },
-            { "lv-LV", { "Latvian", "(Latvia)" } },
-            { "mi", { "Maori", "" } },
-            { "mi-NZ", { "Maori", "(New Zealand)" } },
-            { "mk", { "FYRO Macedonian", "" } },
-            { "mk-MK", { "FYRO Macedonian", "(Former Yugoslav Republic of Macedonia)" } },
-            { "mn", { "Mongolian", "" } },
-            { "mn-MN", { "Mongolian", "(Mongolia)" } },
-            { "mr", { "Marathi", "" } },
-            { "mr-IN", { "Marathi", "(India)" } },
-            { "ms", { "Malay", "" } },
-            { "ms-BN", { "Malay", "(Brunei Darussalam)" } },
-            { "ms-MY", { "Malay", "(Malaysia)" } },
-            { "mt", { "Maltese", "" } },
-            { "mt-MT", { "Maltese", "(Malta)" } },
-            { "nb", { "Norwegian", "(Bokm?l)" } },
-            { "nb-NO", { "Norwegian", "(Bokm?l) (Norway)" } },
-            { "nl", { "Dutch", "" } },
-            { "nl-BE", { "Dutch", "(Belgium)" } },
-            { "nl-NL", { "Dutch", "(Netherlands)" } },
-            { "nn-NO", { "Norwegian", "(Nynorsk) (Norway)" } },
-            { "ns", { "Northern Sotho", "" } },
-            { "ns-ZA", { "Northern Sotho", "(South Africa)" } },
-            { "pa", { "Punjabi", "" } },
-            { "pa-IN", { "Punjabi", "(India)" } },
-            { "pl", { "Polish", "" } },
-            { "pl-PL", { "Polish", "(Poland)" } },
-            { "ps", { "Pashto", "" } },
-            { "ps-AR", { "Pashto", "(Afghanistan)" } },
-            { "pt", { "Portuguese", "" } },
-            { "pt-BR", { "Portuguese", "(Brazil)" } },
-            { "pt-PT", { "Portuguese", "(Portugal)" } },
-            { "qu", { "Quechua", "" } },
-            { "qu-BO", { "Quechua", "(Bolivia)" } },
-            { "qu-EC", { "Quechua", "(Ecuador)" } },
-            { "qu-PE", { "Quechua", "(Peru)" } },
-            { "ro", { "Romanian", "" } },
-            { "ro-RO", { "Romanian", "(Romania)" } },
-            { "ru", { "Russian", "" } },
-            { "ru-RU", { "Russian", "(Russia)" } },
-            { "sa", { "Sanskrit", "" } },
-            { "sa-IN", { "Sanskrit", "(India)" } },
-            { "se", { "Sami", "(Northern)" } },
-            { "se-FI", { "Sami", "(Northern) (Finland)" } },
-            { "se-FI", { "Sami", "(Skolt) (Finland)" } },
-            { "se-FI", { "Sami", "(Inari) (Finland)" } },
-            { "se-NO", { "Sami", "(Northern) (Norway)" } },
-            { "se-NO", { "Sami", "(Lule) (Norway)" } },
-            { "se-NO", { "Sami", "(Southern) (Norway)" } },
-            { "se-SE", { "Sami", "(Northern) (Sweden)" } },
-            { "se-SE", { "Sami", "(Lule) (Sweden)" } },
-            { "se-SE", { "Sami", "(Southern) (Sweden)" } },
-            { "sk", { "Slovak", "" } },
-            { "sk-SK", { "Slovak", "(Slovakia)" } },
-            { "sl", { "Slovenian", "" } },
-            { "sl-SI", { "Slovenian", "(Slovenia)" } },
-            { "sq", { "Albanian", "" } },
-            { "sq-AL", { "Albanian", "(Albania)" } },
-            { "sr-Latn-BA", { "Serbian", "(Latin) (Bosnia and Herzegovina)" } },
-            { "sr-BA", { "Serbian", "(Cyrillic) (Bosnia and Herzegovina)" } },
-            { "sr-Latn-SP", { "Serbian", "(Latin) (Serbia and Montenegro)" } },
-            { "sr-SP", { "Serbian", "(Cyrillic) (Serbia and Montenegro)" } },
-            { "sr-Latn-RS", { "Serbian", "(Latin) (Republic of Serbia)" } },
-            { "sr-RS", { "Serbian", "(Cyrillic) (Republic of Serbia)" } },
-            { "sv", { "Swedish", "" } },
-            { "sv-FI", { "Swedish", "(Finland)" } },
-            { "sv-SE", { "Swedish", "(Sweden)" } },
-            { "sw", { "Swahili", "" } },
-            { "sw-KE", { "Swahili", "(Kenya)" } },
-            { "syr", { "Syriac", "" } },
-            { "syr-SY", { "Syriac", "(Syria)" } },
-            { "ta", { "Tamil", "" } },
-            { "ta-IN", { "Tamil", "(India)" } },
-            { "te", { "Telugu", "" } },
-            { "te-IN", { "Telugu", "(India)" } },
-            { "th", { "Thai", "" } },
-            { "th-TH", { "Thai", "(Thailand)" } },
-            { "tl", { "Tagalog", "" } },
-            { "tl-PH", { "Tagalog", "(Philippines)" } },
-            { "tn", { "Tswana", "" } },
-            { "tn-ZA", { "Tswana", "(South Africa)" } },
-            { "tr", { "Turkish", "" } },
-            { "tr-TR", { "Turkish", "(Turkey)" } },
-            { "tt", { "Tatar", "" } },
-            { "tt-RU", { "Tatar", "(Russia)" } },
-            { "ts", { "Tsonga", "" } },
-            { "uk", { "Ukrainian", "" } },
-            { "uk-UA", { "Ukrainian", "(Ukraine)" } },
-            { "ukr", { "Ukrainian", "" } },
-            { "ukr-UA", { "Ukrainian", "(Ukraine)" } },
-            { "ur", { "Urdu", "" } },
-            { "ur-PK", { "Urdu", "(Islamic Republic of Pakistan)" } },
-            { "uz", { "Uzbek", "(Latin)" } },
-            { "uz-UZ", { "Uzbek", "(Latin) (Uzbekistan)" } },
-            { "uz-UZ", { "Uzbek", "(Cyrillic) (Uzbekistan)" } },
-            { "vi", { "Vietnamese", "" } },
-            { "vi-VN", { "Vietnamese", "(Viet Nam)" } },
-            { "xh", { "Xhosa", "" } },
-            { "xh-ZA", { "Xhosa", "(South Africa)" } },
-            { "zh", { "Chinese", "" } },
-            { "zh-CN", { "Chinese", "(S)" } },
-            { "zh-HK", { "Chinese", "(Hong Kong)" } },
-            { "zh-MO", { "Chinese", "(Macau)" } },
-            { "zh-SG", { "Chinese", "(Singapore)" } },
-            { "zh-TW", { "Chinese", "(T)" } },
-            { "zu", { "Zulu", "" } },
-            { "zu-ZA", { "Zulu", "(South Africa)" } } };
+        std::list< SLanguageInfo::SLangDef > SLanguageInfo::sLangDefInit =   //
+            {
+                { "af", "Afrikaans", "" },   //
+                { "af-ZA", "Afrikaans", "(South Africa)" },
+                { "ar", "Arabic", "" },
+                { "ar-AE", "Arabic", "(U.A.E.)" },
+                { "ar-BH", "Arabic", "(Bahrain)" },
+                { "ar-DZ", "Arabic", "(Algeria)" },
+                { "ar-EG", "Arabic", "(Egypt)" },
+                { "ar-IQ", "Arabic", "(Iraq)" },
+                { "ar-JO", "Arabic", "(Jordan)" },
+                { "ar-KW", "Arabic", "(Kuwait)" },
+                { "ar-LB", "Arabic", "(Lebanon)" },
+                { "ar-LY", "Arabic", "(Libya)" },
+                { "ar-MA", "Arabic", "(Morocco)" },
+                { "ar-OM", "Arabic", "(Oman)" },
+                { "ar-QA", "Arabic", "(Qatar)" },
+                { "ar-SA", "Arabic", "(Saudi Arabia)" },
+                { "ar-SY", "Arabic", "(Syria)" },
+                { "ar-TN", "Arabic", "(Tunisia)" },
+                { "ar-YE", "Arabic", "(Yemen)" },
+                { "az", "Azeri", "(Latin)" },
+                { "az-AZ", "Azeri", "(Latin) (Azerbaijan)" },
+                { "az-AZ", "Azeri", "(Cyrillic) (Azerbaijan)" },
+                { "be", "Belarusian", "" },
+                { "be-BY", "Belarusian", "(Belarus)" },
+                { "bg", "Bulgarian", "" },
+                { "bg-BG", "Bulgarian", "(Bulgaria)" },
+                { "bs-BA", "Bosnian", "(Bosnia and Herzegovina)" },
+                { "ca", "Catalan", "" },
+                { "ca-ES", "Catalan", "(Spain)" },
+                { "cs", "Czech", "" },
+                { "cs-CZ", "Czech", "(Czech Republic)" },
+                { "cy", "Welsh", "" },
+                { "cy-GB", "Welsh", "(UK)" },
+                { "da", "Danish", "" },
+                { "da-DK", "Danish", "(Denmark)" },
+                { "de", "German", "" },
+                { "de-AT", "German", "(Austria)" },
+                { "de-CH", "German", "(Switzerland)" },
+                { "de-DE", "German", "(Germany)" },
+                { "de-LI", "German", "(Liechtenstein)" },
+                { "de-LU", "German", "(Luxembourg)" },
+                { "dv", "Divehi", "" },
+                { "dv-MV", "Divehi", "(Maldives)" },
+                { "el", "Greek", "" },
+                { "el-GR", "Greek", "(Greece)" },
+                { "en", "English", "" },
+                { "en-AU", "English", "(Australia)" },
+                { "en-BZ", "English", "(Belize)" },
+                { "en-CA", "English", "(Canada)" },
+                { "en-CB", "English", "(Caribbean)" },
+                { "en-GB", "English", "(UK)" },
+                { "en-IE", "English", "(Ireland)" },
+                { "en-JM", "English", "(Jamaica)" },
+                { "en-NZ", "English", "(New Zealand)" },
+                { "en-PH", "English", "(Republic of the Philippines)" },
+                { "en-TT", "English", "(Trinidad and Tobago)" },
+                { "en-US", "English", "(US)" },
+                { "en-ZA", "English", "(South Africa)" },
+                { "en-ZW", "English", "(Zimbabwe)" },
+                { "eo", "Esperanto", "" },
+                { "es", "Spanish", "" },
+                { "es-AR", "Spanish", "(Argentina)" },
+                { "es-BO", "Spanish", "(Bolivia)" },
+                { "es-CL", "Spanish", "(Chile)" },
+                { "es-CO", "Spanish", "(Colombia)" },
+                { "es-CR", "Spanish", "(Costa Rica)" },
+                { "es-DO", "Spanish", "(Dominican Republic)" },
+                { "es-EC", "Spanish", "(Ecuador)" },
+                { "es-ES", "Spanish", "(Castilian)" },
+                { "es-ES", "Spanish", "(Spain)" },
+                { "es-GT", "Spanish", "(Guatemala)" },
+                { "es-HN", "Spanish", "(Honduras)" },
+                { "es-MX", "Spanish", "(Mexico)" },
+                { "es-NI", "Spanish", "(Nicaragua)" },
+                { "es-PA", "Spanish", "(Panama)" },
+                { "es-PE", "Spanish", "(Peru)" },
+                { "es-PR", "Spanish", "(Puerto Rico)" },
+                { "es-PY", "Spanish", "(Paraguay)" },
+                { "es-SV", "Spanish", "(El Salvador)" },
+                { "es-UY", "Spanish", "(Uruguay)" },
+                { "es-VE", "Spanish", "(Venezuela)" },
+                { "et", "Estonian", "" },
+                { "et-EE", "Estonian", "(Estonia)" },
+                { "eu", "Basque", "" },
+                { "eu-ES", "Basque", "(Spain)" },
+                { "fa", "Farsi", "" },
+                { "fa-IR", "Farsi", "(Iran)" },
+                { "fi", "Finnish", "" },
+                { "fi-FI", "Finnish", "(Finland)" },
+                { "fil", "Filipino;Pilipino", "(Philippines)" },
+                { "fo", "Faroese", "" },
+                { "fo-FO", "Faroese", "(Faroe Islands)" },
+                { "fr", "French", "" },
+                { "fr-BE", "French", "(Belgium)" },
+                { "fr-CA", "French", "(Canada)" },
+                { "fr-CH", "French", "(Switzerland)" },
+                { "fr-FR", "French", "(France)" },
+                { "fr-LU", "French", "(Luxembourg)" },
+                { "fr-MC", "French", "(Principality of Monaco)" },
+                { "gl", "Galician", "" },
+                { "gl-ES", "Galician", "(Spain)" },
+                { "gu", "Gujarati", "" },
+                { "gu-IN", "Gujarati", "(India)" },
+                { "he", "Hebrew", "" },
+                { "he-IL", "Hebrew", "(Israel)" },
+                { "hi", "Hindi", "" },
+                { "hi-IN", "Hindi", "(India)" },
+                { "hr", "Croatian", "" },
+                { "hr-BA", "Croatian", "(Bosnia and Herzegovina)" },
+                { "hr-HR", "Croatian", "(Croatia)" },
+                { "hu", "Hungarian", "" },
+                { "hu-HU", "Hungarian", "(Hungary)" },
+                { "hy", "Armenian", "" },
+                { "hy-AM", "Armenian", "(Armenia)" },
+                { "id", "Indonesian", "" },
+                { "id-ID", "Indonesian", "(Indonesia)" },
+                { "is", "Icelandic", "" },
+                { "is-IS", "Icelandic", "(Iceland)" },
+                { "it", "Italian", "" },
+                { "it-CH", "Italian", "(Switzerland)" },
+                { "it-IT", "Italian", "(Italy)" },
+                { "ja", "Japanese", "" },
+                { "ja-JP", "Japanese", "(Japan)" },
+                { "ka", "Georgian", "" },
+                { "ka-GE", "Georgian", "(Georgia)" },
+                { "kk", "Kazakh", "" },
+                { "kk-KZ", "Kazakh", "(Kazakhstan)" },
+                { "kn", "Kannada", "" },
+                { "kn-IN", "Kannada", "(India)" },
+                { "ko", "Korean", "" },
+                { "ko-KR", "Korean", "(Korea)" },
+                { "kok", "Konkani", "" },
+                { "kok-IN", "Konkani", "(India)" },
+                { "ky", "Kyrgyz", "" },
+                { "ky-KG", "Kyrgyz", "(Kyrgyzstan)" },
+                { "lt", "Lithuanian", "" },
+                { "lt-LT", "Lithuanian", "(Lithuania)" },
+                { "lv", "Latvian", "" },
+                { "lv-LV", "Latvian", "(Latvia)" },
+                { "mi", "Maori", "" },
+                { "mi-NZ", "Maori", "(New Zealand)" },
+                { "mk", "FYRO Macedonian", "" },
+                { "mk-MK", "FYRO Macedonian", "(Former Yugoslav Republic of Macedonia)" },
+                { "mn", "Mongolian", "" },
+                { "mn-MN", "Mongolian", "(Mongolia)" },
+                { "mr", "Marathi", "" },
+                { "mr-IN", "Marathi", "(India)" },
+                { "ms", "Malay", "" },
+                { "ms-BN", "Malay", "(Brunei Darussalam)" },
+                { "ms-MY", "Malay", "(Malaysia)" },
+                { "mt", "Maltese", "" },
+                { "mt-MT", "Maltese", "(Malta)" },
+                { "nb", "Norwegian", "(Bokm?l)" },
+                { "nb-NO", "Norwegian", "(Bokm?l) (Norway)" },
+                { "nl", "Dutch", "" },
+                { "nl-BE", "Dutch", "(Belgium)" },
+                { "nl-NL", "Dutch", "(Netherlands)" },
+                { "nn-NO", "Norwegian", "(Nynorsk) (Norway)" },
+                { "ns", "Northern Sotho", "" },
+                { "ns-ZA", "Northern Sotho", "(South Africa)" },
+                { "pa", "Punjabi", "" },
+                { "pa-IN", "Punjabi", "(India)" },
+                { "pl", "Polish", "" },
+                { "pl-PL", "Polish", "(Poland)" },
+                { "ps", "Pashto", "" },
+                { "ps-AR", "Pashto", "(Afghanistan)" },
+                { "pt", "Portuguese", "" },
+                { "pt-BR", "Portuguese", "(Brazil)" },
+                { "pt-PT", "Portuguese", "(Portugal)" },
+                { "qu", "Quechua", "" },
+                { "qu-BO", "Quechua", "(Bolivia)" },
+                { "qu-EC", "Quechua", "(Ecuador)" },
+                { "qu-PE", "Quechua", "(Peru)" },
+                { "ro", "Romanian", "" },
+                { "ro-RO", "Romanian", "(Romania)" },
+                { "ru", "Russian", "" },
+                { "ru-RU", "Russian", "(Russia)" },
+                { "sa", "Sanskrit", "" },
+                { "sa-IN", "Sanskrit", "(India)" },
+                { "se", "Sami", "(Northern)" },
+                { "se-FI", "Sami", "(Northern) (Finland)" },
+                { "se-FI", "Sami", "(Skolt) (Finland)" },
+                { "se-FI", "Sami", "(Inari) (Finland)" },
+                { "se-NO", "Sami", "(Northern) (Norway)" },
+                { "se-NO", "Sami", "(Lule) (Norway)" },
+                { "se-NO", "Sami", "(Southern) (Norway)" },
+                { "se-SE", "Sami", "(Northern) (Sweden)" },
+                { "se-SE", "Sami", "(Lule) (Sweden)" },
+                { "se-SE", "Sami", "(Southern) (Sweden)" },
+                { "sk", "Slovak", "" },
+                { "sk-SK", "Slovak", "(Slovakia)" },
+                { "sl", "Slovenian", "" },
+                { "sl-SI", "Slovenian", "(Slovenia)" },
+                { "sq", "Albanian", "" },
+                { "sq-AL", "Albanian", "(Albania)" },
+                { "sr-Latn-BA", "Serbian", "(Latin) (Bosnia and Herzegovina)" },
+                { "sr-BA", "Serbian", "(Cyrillic) (Bosnia and Herzegovina)" },
+                { "sr-Latn-SP", "Serbian", "(Latin) (Serbia and Montenegro)" },
+                { "sr-SP", "Serbian", "(Cyrillic) (Serbia and Montenegro)" },
+                { "sr-Latn-RS", "Serbian", "(Latin) (Republic of Serbia)" },
+                { "sr-RS", "Serbian", "(Cyrillic) (Republic of Serbia)" },
+                { "sv", "Swedish", "" },
+                { "sv-FI", "Swedish", "(Finland)" },
+                { "sv-SE", "Swedish", "(Sweden)" },
+                { "sw", "Swahili", "" },
+                { "sw-KE", "Swahili", "(Kenya)" },
+                { "syr", "Syriac", "" },
+                { "syr-SY", "Syriac", "(Syria)" },
+                { "ta", "Tamil", "" },
+                { "ta-IN", "Tamil", "(India)" },
+                { "te", "Telugu", "" },
+                { "te-IN", "Telugu", "(India)" },
+                { "th", "Thai", "" },
+                { "th-TH", "Thai", "(Thailand)" },
+                { "tl", "Tagalog", "" },
+                { "tl-PH", "Tagalog", "(Philippines)" },
+                { "tn", "Tswana", "" },
+                { "tn-ZA", "Tswana", "(South Africa)" },
+                { "tr", "Turkish", "" },
+                { "tr-TR", "Turkish", "(Turkey)" },
+                { "tt", "Tatar", "" },
+                { "tt-RU", "Tatar", "(Russia)" },
+                { "ts", "Tsonga", "" },
+                { "uk", "Ukrainian", "" },
+                { "uk-UA", "Ukrainian", "(Ukraine)" },
+                { "ukr", "Ukrainian", "" },
+                { "ukr-UA", "Ukrainian", "(Ukraine)" },
+                { "ur", "Urdu", "" },
+                { "ur-PK", "Urdu", "(Islamic Republic of Pakistan)" },
+                { "uz", "Uzbek", "(Latin)" },
+                { "uz-UZ", "Uzbek", "(Latin) (Uzbekistan)" },
+                { "uz-UZ", "Uzbek", "(Cyrillic) (Uzbekistan)" },
+                { "vi", "Vietnamese", "" },
+                { "vi-VN", "Vietnamese", "(Viet Nam)" },
+                { "xh", "Xhosa", "" },
+                { "xh-ZA", "Xhosa", "(South Africa)" },
+                { "zh", "Chinese", "" },
+                { "zh-CN", "Chinese", "(S)" },
+                { "zh-HK", "Chinese", "(Hong Kong)" },
+                { "zh-MO", "Chinese", "(Macau)" },
+                { "zh-SG", "Chinese", "(Singapore)" },
+                { "zh-TW", "Chinese", "(T)" },
+                { "zu", "Zulu", "" },
+                { "zu-ZA", "Zulu", "(South Africa)" }   //
+        };
 
-        std::unordered_map< QString, std::pair< QString, std::unordered_set< QString > > > SLanguageInfo::sPrimToSecondaryMap;
-        std::unordered_map< QString, std::pair< QString, QString > > SLanguageInfo::sNameToCodeMap;
+        SLanguageInfo::TLangMapType SLanguageInfo::sISOCodeToLangDef;
+        SLanguageInfo::TLangMapType SLanguageInfo::sMinLangMap;
+        SLanguageInfo::TLangMapType SLanguageInfo::sLanguageToDefaultDef;
+
+        void SLanguageInfo::computeMinimalKeys()
+        {
+            Q_ASSERT( !sISOCodeToLangDef.empty() );
+
+            std::map< QString, std::list< std::shared_ptr< SLangDef > > > minLangMap;
+            for ( auto &&curr : sISOCodeToLangDef )
+            {
+                auto &&language = curr.second->fLanguage.toLower();
+                std::set< QString > subStrings;
+                for ( int jj = 1; jj < language.length() + 1; ++jj )
+                {
+                    auto subString = language.mid( 0, jj );
+                    subStrings.insert( subString );
+                }
+                for ( auto &&ii : subStrings )
+                {
+                    minLangMap[ ii ].push_back( curr.second );
+                }
+            }
+
+            sMinLangMap.clear();
+            for ( auto &&curr :minLangMap )
+            {
+                if ( curr.second.empty() )
+                    continue;
+
+                if ( curr.second.size() == 1 )
+                    sMinLangMap[ curr.first ] = curr.second.front();
+                else
+                {
+                    auto lang = curr.second.front()->fLanguage;
+                    // if they are all the same language 
+                    bool allSameLang = true;
+                    for (auto&& ii : curr.second)
+                    {
+                        if ( ii->fLanguage != lang )
+                        {
+                            allSameLang = false;
+                            break;
+                        }
+                    }
+                    auto defaultPos = curr.second.end();
+                    if ( allSameLang )
+                    {
+                        // find default 
+                        for ( auto ii = curr.second.begin(); ii != curr.second.end(); ++ii )
+                        {
+                            if ( ( *ii )->fCountry.isEmpty() )
+                            {
+                                defaultPos = ii;
+                                break;
+                            }
+                        }
+                    }
+
+                    if ( defaultPos != curr.second.end() )
+                    {
+                        sMinLangMap[ curr.first ] = *defaultPos;
+                    }
+                }
+            }
+        }
 
         void SLanguageInfo::setupMaps()
         {
-            if ( sPrimToSecondaryMap.empty() )
+            if ( sISOCodeToLangDef.empty() )
             {
-                sLangMap[ "Hin" ] = ( *sLangMap.find( "hi-IN" ) ).second;
-                sLangMap[ "May" ] = ( *sLangMap.find( "ms-MY" ) ).second;
-                sLangMap[ "Tam" ] = ( *sLangMap.find( "ta-IN" ) ).second;
-                sLangMap[ "Tel" ] = ( *sLangMap.find( "te-IN" ) ).second;
-                sLangMap[ "Eng" ] = ( *sLangMap.find( "en-US" ) ).second;
-                sLangMap[ "Nor" ] = ( *sLangMap.find( "nb" ) ).second;
-                sLangMap[ "Nor-NO" ] = ( *sLangMap.find( "nb-NO" ) ).second;
-                sLangMap[ "no" ] = ( *sLangMap.find( "nb" ) ).second;
-                sLangMap[ "no-NO" ] = ( *sLangMap.find( "nb-NO" ) ).second;
-                sLangMap[ "slo" ] = ( *sLangMap.find( "sl-SI" ) ).second;
-
-                for ( auto &&ii : sLangMap )
+                for ( auto &&ii : sLangDefInit )
                 {
-                    sLangMap[ ii.first.toLower() ] = ii.second;
-                    sLangMap[ ii.first.toLower().replace( "-", "_" ) ] = ii.second;
+                    sISOCodeToLangDef[ ii.fISOCode ] = std::make_shared< SLangDef >( ii );
+                }
+                computeMinimalKeys();
 
-                    auto code = ii.first;
+                sISOCodeToLangDef[ "Fra" ] = ( *sISOCodeToLangDef.find( "fr-FR" ) ).second;
+                sISOCodeToLangDef[ "May" ] = ( *sISOCodeToLangDef.find( "ms-MY" ) ).second;
+                sISOCodeToLangDef[ "Nor-NO" ] = ( *sISOCodeToLangDef.find( "nb-NO" ) ).second;
+                sISOCodeToLangDef[ "Nor" ] = ( *sISOCodeToLangDef.find( "nb" ) ).second;
+                sISOCodeToLangDef[ "Ptb" ] = ( *sISOCodeToLangDef.find( "pt-BR" ) ).second;
+                sISOCodeToLangDef[ "portuguese-brazil" ] = ( *sISOCodeToLangDef.find( "pt-BR" ) ).second;
+                sISOCodeToLangDef[ "serbian-latin" ] = ( *sISOCodeToLangDef.find( "sr-Latn-BA" ) ).second;
+                sISOCodeToLangDef[ "no-NO" ] = ( *sISOCodeToLangDef.find( "nb-NO" ) ).second;
+                sISOCodeToLangDef[ "no" ] = ( *sISOCodeToLangDef.find( "nb" ) ).second;
+                sISOCodeToLangDef[ "slo" ] = ( *sISOCodeToLangDef.find( "sl-SI" ) ).second;
 
-                    auto prim = ii.second.first;
-                    auto secondary = ii.second.second;
+                for ( auto &&ii : sISOCodeToLangDef )
+                {
+                    sISOCodeToLangDef[ ii.first.toLower() ] = ii.second;
+                    sISOCodeToLangDef[ ii.first.toLower().replace( "-", "_" ) ] = ii.second;
 
-                    if ( secondary.isEmpty() )
-                        sNameToCodeMap[ prim.toLower() ] = std::make_pair( prim, code );
-                    else
+                    auto key = ii.second->fLanguage.toLower();
+                    if ( ii.second->fCountry.isEmpty() )
                     {
-                        sPrimToSecondaryMap[ prim.toLower() ].first = prim;
-                        sPrimToSecondaryMap[ prim.toLower() ].second.insert( secondary );
+                        sLanguageToDefaultDef[ key ] = ii.second;
                     }
                 }
             }
@@ -420,11 +487,7 @@ namespace NMediaManager
         bool SLanguageInfo::isKnownLanguage( const QString &lang ) const
         {
             setupMaps();
-            if ( sLangMap.find( lang.toLower() ) != sLangMap.end() )
-                return true;
-            if ( sNameToCodeMap.find( lang.toLower() ) != sNameToCodeMap.end() )
-                return true;
-            return false;
+            return findLangDef( lang ) != nullptr;
         }
 
         bool SLanguageInfo::isLangFileFormat( const QFileInfo &fi )
@@ -444,8 +507,11 @@ namespace NMediaManager
 
         bool SLanguageInfo::operator==( const SLanguageInfo &rhs ) const
         {
-            bool retVal = ( fFileName == rhs.fFileName ) && ( fBaseName == rhs.fBaseName ) && ( fISOCode == rhs.fISOCode ) && ( fLanguage == rhs.fLanguage ) && ( fCountry == rhs.fCountry ) && ( fIsForced == rhs.fIsForced )
-                          && ( fIsSDH == rhs.fIsSDH ) && ( fUsingDefault == rhs.fUsingDefault );
+            bool retVal = ( fFileName == rhs.fFileName ) && ( fBaseName == rhs.fBaseName ) && ( fIsForced == rhs.fIsForced ) && ( fIsSDH == rhs.fIsSDH ) && ( fUsingDefault == rhs.fUsingDefault );
+            if ( !retVal )
+                return false;
+            if ( fLangDef && rhs.fLangDef )
+                retVal = *fLangDef == *rhs.fLangDef;
             if ( !retVal )
                 return false;
             if ( fMultiLanguageList.size() != rhs.fMultiLanguageList.size() )
@@ -543,7 +609,7 @@ namespace NMediaManager
         {
             setupMaps();
 
-            fLanguage.clear();
+            fLangDef.reset();
             fIsSDH = fIsForced = false;
             if ( fFileName.isEmpty() )
                 return;
@@ -552,7 +618,7 @@ namespace NMediaManager
             auto regExp1 = QRegularExpression( regExpStr );
             Q_ASSERT( regExp1.isValid() );
 
-            regExpStr = R"((?<filename>[^<>:"\/\\|?*]+)(\.|-)(((?<isocode>[A-Za-z]{2})(?<country>_[A-Za-z]{2}(\d+)?)?$)|(?<langname>[A-Za-z]{2,3}$)))";
+            regExpStr = R"((?<filename>[^<>:"\/\\|?*]+)(\.|-|\ )(((?<isocode>[A-Za-z]{2})(?<country>_[A-Za-z]{2}(\d+)?)?$)))";
             auto regExp2 = QRegularExpression( regExpStr );
             Q_ASSERT( regExp2.isValid() );
 
@@ -581,8 +647,11 @@ namespace NMediaManager
             }
             else
             {
-                fUsingDefault = true;
-                langName = sDefaultISOCode;
+                auto pos = fFileName.lastIndexOf( QRegularExpression( R"([ \.])" ) );
+                if ( pos == -1 )
+                    langName = fFileName;
+                else
+                    langName = fFileName.mid( pos + 1 );
             }
 
             computeLanguage( langName );
@@ -590,60 +659,60 @@ namespace NMediaManager
 
         void SLanguageInfo::computeLanguage( const QString &langName )
         {
-            std::tie( fLanguage, fCountry, fISOCode, fUsingDefault ) = computeLanguageInt( langName );
+            std::tie( fLangDef, fUsingDefault ) = computeLanguageInt( langName );
         }
 
-        std::tuple< QString, QString, QString, bool > SLanguageInfo::computeLanguageInt( const QString &langName )
+        std::shared_ptr< SLanguageInfo::SLangDef > SLanguageInfo::findLangDef( const QString &langName )
+        {
+            if ( langName.isEmpty() )
+                return {};
+            auto key = langName.toLower();
+
+            auto pos1 = sISOCodeToLangDef.find( key );
+            if ( pos1 != sISOCodeToLangDef.end() )
+                return ( *pos1 ).second;
+
+            auto pos2 = sLanguageToDefaultDef.find( key );
+            if ( pos2 != sLanguageToDefaultDef.end() )
+                return ( *pos2 ).second;
+
+            auto pos3 = sMinLangMap.find( key );
+            if ( pos3 != sMinLangMap.end() )
+                return ( *pos3 ).second;
+
+            return {};
+        }
+
+        std::pair< std::shared_ptr< SLanguageInfo::SLangDef >, bool > SLanguageInfo::computeLanguageInt( const QString &langName )
         {
             setupMaps();
 
-            if ( langName.isEmpty() )
-                return {};
-
-            QString language;
-            QString country;
-            QString isoCode;
-            auto pos = sLangMap.find( langName.toLower() );
-            if ( pos != sLangMap.end() )
-            {
-                language = ( *pos ).second.first;
-                country = ( *pos ).second.second;
-                isoCode = prettyPrintISOCode( ( *pos ).first );
-            }
-            else
-            {
-                auto pos = sNameToCodeMap.find( langName.toLower() );
-                if ( pos != sNameToCodeMap.end() )
-                {
-                    language = ( *pos ).second.first;
-                    isoCode = prettyPrintISOCode( ( *pos ).second.second );
-                }
-            }
+            auto langDef = findLangDef( langName );
 
             bool usingDefault{ false };
-            if ( language.isEmpty() )
+            if ( !langDef )
             {
                 auto pos = langName.indexOf( QRegularExpression( R"([_-])" ) );
                 if ( pos != -1 )
                 {
                     auto lang = langName.left( pos );
-                    std::tie( language, country, isoCode, usingDefault ) = computeLanguageInt( lang );
-                    country = langName.mid( pos + 1 );
+                    std::tie( langDef, usingDefault ) = computeLanguageInt( lang );
                 }
             }
 
-            if ( language.isEmpty() )
+            if ( !langDef )
             {
-                std::tie( language, country, isoCode, usingDefault ) = computeLanguageInt( sDefaultISOCode );
+                std::tie( langDef, usingDefault ) = computeLanguageInt( sDefaultISOCode );
+                Q_ASSERT( langDef );
                 usingDefault = true;
             }
 
-            if ( ( isoCode.toLower() == sDefaultISOCode.left( 2 ) ) && ( isoCode.length() != 2 ) && country.isEmpty() )
+            if ( ( langDef->fISOCode.toLower() == langDef->fISOCode.left( 2 ) ) && ( langDef->fISOCode.length() != 2 ) && langDef->fCountry.isEmpty() )
             {
-                std::tie( language, country, isoCode, usingDefault ) = computeLanguageInt( sDefaultISOCode );
+                std::tie( langDef, usingDefault ) = computeLanguageInt( sDefaultISOCode );
                 usingDefault = true;
             }
-            return std::make_tuple( language, country, isoCode, usingDefault );
+            return { langDef, usingDefault };
         }
     }
 }

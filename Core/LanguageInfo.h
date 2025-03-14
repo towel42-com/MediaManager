@@ -60,7 +60,7 @@ namespace NMediaManager
             bool isNameBasedLangFile() const;   // if the filename wasnt of the form XX_Language.srt, but rather basename-xx_yy.srt or basename.xx.srt
             QString baseName() const;   // when the path sent in is a name based lang file, return basename from above
 
-            QString language() const { return fLanguage; }
+            QString language() const;
             QString displayName() const;
             bool isForced() const { return fIsForced; }
             bool isSDH() const { return fIsSDH; }
@@ -92,15 +92,45 @@ namespace NMediaManager
             void computeLanguages( const QFileInfo &fi );
             void computeLanguage();
             void computeLanguage( const QString &langName );
-            static std::tuple< QString, QString, QString, bool > computeLanguageInt( const QString &langName );   // returns lang, country, iscode, using default
+
+            struct SLangDef
+            {
+                QString fISOCode;
+                QString fLanguage;
+                QString fCountry;
+
+                QString displayName() const
+                {
+                    auto retVal = fLanguage;
+                    if ( !fCountry.isEmpty() )
+                        retVal += " " + fCountry;
+                    return retVal;
+                }
+
+                QString isoCode() const
+                {
+                    auto retVal = fISOCode.toLower();
+                    auto pos = retVal.indexOf( '_' );
+                    if ( pos == -1 )
+                        pos = retVal.indexOf( '-' );
+                    if ( pos != -1 )
+                        retVal = retVal.left( pos );
+                    return retVal;
+                }
+                bool operator==( const SLangDef &rhs ) { return ( fISOCode == rhs.fISOCode ) && ( fLanguage == rhs.fLanguage ) && ( fCountry == rhs.fCountry ); }
+            };
+
+            static std::pair< std::shared_ptr< SLanguageInfo::SLangDef >, bool > computeLanguageInt( const QString &langName );   // returns lang, country, iscode, using default
+
+            static std::shared_ptr< SLangDef > findLangDef( const QString &langName );
 
             static void setupMaps();
 
             QString fFileName;
             QString fBaseName;
-            QString fISOCode;
-            QString fLanguage;
-            QString fCountry;
+
+            std::shared_ptr< SLangDef > fLangDef;
+
             bool fIsForced{ false };
             bool fIsSDH{ false };
             static QString sDefaultISOCode;
@@ -108,9 +138,17 @@ namespace NMediaManager
 
             std::unordered_map< QString, std::vector< SMultLangInfo > > fMultiLanguageList;   // langinfo, index, numtimestamps
 
-            static std::unordered_map< QString, std::pair< QString, QString > > sLangMap;
-            static std::unordered_map< QString, std::pair< QString, std::unordered_set< QString > > > sPrimToSecondaryMap;
-            static std::unordered_map< QString, std::pair< QString, QString > > sNameToCodeMap;
+            static void computeMinimalKeys();
+
+            static std::list< SLanguageInfo::SLangDef > sLangDefInit;
+#ifdef _DEBUG
+            using TLangMapType = std::map< QString, std::shared_ptr< SLangDef > >;
+#else
+            using TLangMapType = std::unordered_map< QString, std::shared_ptr< SLangDef > >;
+#endif
+            static TLangMapType sISOCodeToLangDef;
+            static TLangMapType sMinLangMap;
+            static TLangMapType sLanguageToDefaultDef;
         };
 
         Q_DECLARE_METATYPE( SLanguageInfo );

@@ -143,28 +143,29 @@ namespace NMediaManager
 
         void CTranscodeModel::attachTreeNodes( QStandardItem * /*nextParent*/, QStandardItem *&prevParent, const STreeNode &treeNode )
         {
+            auto useAsParent = [ this ]( bool isSubFile, QStandardItem *item )
+            {
+                if ( !item )
+                    return true;
+
+                if ( item->data( ECustomRoles::eIsDir ).toBool() )
+                    return true;
+
+                auto path = item->data( ECustomRoles::eAbsFilePath ).toString();
+                if ( isSubFile )
+                {
+                    return NPreferences::NCore::CPreferences::instance()->isMediaFile( path );
+                }
+
+                return false;
+            };
+
             if ( treeNode.fIsFile )
             {
                 auto nodePath = treeNode.fullPath();
                 auto isSubFile = NPreferences::NCore::CPreferences::instance()->isSubtitleFile( treeNode.fullPath(), false );
-                auto useAsParent = [ isSubFile, this ]( QStandardItem *item )
-                {
-                    if ( !item )
-                        return true;
 
-                    if ( item->data( ECustomRoles::eIsDir ).toBool() )
-                        return true;
-
-                    auto path = item->data( ECustomRoles::eAbsFilePath ).toString();
-                    if ( isSubFile )
-                    {
-                        return NPreferences::NCore::CPreferences::instance()->isMediaFile( path );
-                    }
-
-                    return false;
-                };
-
-                while ( !useAsParent( prevParent ) )
+                while ( !useAsParent( isSubFile, prevParent ) )
                     prevParent = prevParent->parent();
             }
         }
@@ -1193,6 +1194,10 @@ namespace NMediaManager
                 auto langName = language.displayName();
                 if ( !isSubtitleFile( fileInfo ) )
                     langName.clear();
+                else if (language.usingDefault())
+                {
+                    qDebug() << "could not determine language for subtitle file" << fileInfo.absoluteFilePath();
+                }
 
                 auto languageFileItem = SDirNodeItem( langName, EColumns::eLanguage );
                 if ( !language.isMultiLanguage() )
