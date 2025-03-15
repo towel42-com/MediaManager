@@ -493,7 +493,7 @@ namespace NMediaManager
                     attachTreeNodes( tree );
 
                 if ( progressDlg() )
-                    progressDlg()->setValue( progressDlg()->value() + 1 );
+                    progressDlg()->setValue( progressDlg()->rawPrimaryValue() + 1 );
 
                 //qDebug().noquote().nospace() << "Pre File B: " << fileInfo.absoluteFilePath() << tree;
 
@@ -1442,7 +1442,7 @@ namespace NMediaManager
                 return;
 
             if ( progressDlg() && !fFirstProcess )
-                progressDlg()->setValue( progressDlg()->value() + 1 );
+                progressDlg()->setValue( progressDlg()->rawPrimaryValue() + 1 );
             fFirstProcess = false;
             if ( fProcessQueue.empty() )
             {

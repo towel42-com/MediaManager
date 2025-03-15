@@ -560,7 +560,10 @@ namespace NMediaManager
                                 appendError( myItem, tr( "Failed to Remove '%1'" ).arg( oldName ) );
                             }
                         }
-                        progressDlg()->setValue( progressDlg()->value() + 4 );
+                        progressDlg()->incPrimaryValue();
+                        progressDlg()->incPrimaryValue();
+                        progressDlg()->incPrimaryValue();
+                        progressDlg()->incPrimaryValue();
                     }
                     else
                     {
@@ -603,7 +606,7 @@ namespace NMediaManager
                             auto timeStamps = NSABUtils::NFileUtils::timeStamps( oldName );
                             if ( progressDlg() )
                             {
-                                progressDlg()->setValue( progressDlg()->value() + 1 );
+                                progressDlg()->incPrimaryValue();
                                 qApp->processEvents();
                             }
 
@@ -631,7 +634,7 @@ namespace NMediaManager
                             }
                             if ( progressDlg() )
                             {
-                                progressDlg()->setValue( progressDlg()->value() + 1 );
+                                progressDlg()->incPrimaryValue();
                                 qApp->processEvents();
                             }
 
@@ -672,7 +675,7 @@ namespace NMediaManager
                                 aOK = false;
                             if ( progressDlg() )
                             {
-                                progressDlg()->setValue( progressDlg()->value() + 1 );
+                                progressDlg()->incPrimaryValue();
                                 qApp->processEvents();
                             }
 
@@ -696,7 +699,7 @@ namespace NMediaManager
                                     aOK = setMediaTags( newName, transformResult, msg );
                                 if ( progressDlg() )
                                 {
-                                    progressDlg()->setValue( progressDlg()->value() + 1 );
+                                    progressDlg()->incPrimaryValue();
                                     qApp->processEvents();
                                 }
 
@@ -709,7 +712,7 @@ namespace NMediaManager
                                     aOK = NSABUtils::NFileUtils::setTimeStamps( newName, timeStamps );
                                     if ( progressDlg() )
                                     {
-                                        progressDlg()->setValue( progressDlg()->value() + 1 );
+                                        progressDlg()->setValue( progressDlg()->rawPrimaryValue() + 1 );
                                         qApp->processEvents();
                                     }
                                     if ( !aOK )

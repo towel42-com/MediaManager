@@ -106,7 +106,7 @@ namespace NMediaManager
             }
 
             if ( progressDlg() )
-                progressDlg()->setValue( progressDlg()->value() + 1 );
+                progressDlg()->incPrimaryValue();
             return std::make_pair( aOK, std::list< QStandardItem * >( { myItem } ) );
         }
 
