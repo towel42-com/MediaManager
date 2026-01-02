@@ -26,12 +26,12 @@ cmake_minimum_required(VERSION 3.22)
 
 project(root-MediaManager) 
 
-SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/SABUtils/Modules ${CMAKE_MODULE_PATH})
+SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/T42-CMakeUtils/Modules ${CMAKE_MODULE_PATH})
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED true)
 find_package(Threads)
-find_package(Qt5 COMPONENTS Core Widgets Multimedia REQUIRED)
+find_package(Qt6 COMPONENTS Core Widgets Multimedia REQUIRED)
 
 find_package(Deploy REQUIRED)
 find_package(CheckOpenSSL REQUIRED)
@@ -48,12 +48,12 @@ set_property( GLOBAL PROPERTY USE_FOLDERS ON )
 file( REAL_PATH ~/Dropbox/home/bin/MediaManager CMAKE_INSTALL_PREFIX EXPAND_TILDE)
 MESSAGE( STATUS "Installing to ${CMAKE_INSTALL_PREFIX}" )
 
-SET( SABUTILS_DLL ON )
+SET( TOWEL42_UTILS_DLL ON )
 SET( MKVUTILS ON )
 SET( GIFSUPPORT ON )
 SET( BIFSUPPORT ON )
 SET( QNETWORK_SUPPORT ON )
-SET( SAB_ENABLE_TESTING ON )
+SET( TOWEL42_ENABLE_TESTING ON )
 
 add_subdirectory( SABUtils )
 
