@@ -2,3 +2,7 @@
 	path = T42-CMakeUtils
 	url = https://github.com/towel42-com/T42-CMakeUtils
 	branch = trunk
+[submodule "T42-Utils"]
+	path = T42-Utils
+	url = https://github.com/towel42-com/T42-Utils
+	branch = trunk
