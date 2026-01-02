@@ -27,7 +27,7 @@
 class QVBoxLayout;
 class QAbstractItemModel;
 #include "Preferences/Core/Preferences.h"
-namespace NSABUtils
+namespace NTowel42Utils
 {
     class CDoubleProgressDlg;
     class CAutoStayAwake;
@@ -76,7 +76,7 @@ namespace NMediaManager
 
             virtual bool extendContextMenu( QMenu *menu, const QModelIndex &idx );
 
-            NSABUtils::CDoubleProgressDlg *progressDlg() const { return fProgressDlg; }
+            NTowel42Utils::CDoubleProgressDlg *progressDlg() const { return fProgressDlg; }
             bool progressCanceled() const;
 
             virtual QMenu *menu() { return nullptr; }
@@ -141,11 +141,11 @@ namespace NMediaManager
 
             bool fIsActive{ false };
 
-            NSABUtils::CDoubleProgressDlg *fProgressDlg{ nullptr };
+            NTowel42Utils::CDoubleProgressDlg *fProgressDlg{ nullptr };
             std::unique_ptr< NModels::CDirModel > fModel;
             std::unique_ptr< Ui::CBasePage > fImpl;
 
-            std::unique_ptr< NSABUtils::CAutoStayAwake > fStayAwake;
+            std::unique_ptr< NTowel42Utils::CAutoStayAwake > fStayAwake;
         };
     }
 }

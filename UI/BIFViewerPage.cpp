@@ -28,16 +28,16 @@
 #include "Preferences/Core/Preferences.h"
 #include "Models/DirModel.h"
 
-#include "SABUtils/QtUtils.h"
-#include "SABUtils/utils.h"
-#include "SABUtils/ScrollMessageBox.h"
-#include "SABUtils/AutoWaitCursor.h"
-#include "SABUtils/BIFFile.h"
-#include "SABUtils/BIFModel.h"
-#include "SABUtils/DelayComboBox.h"
+#include "T42-Utils/QtUtils.h"
+#include "T42-Utils/utils.h"
+#include "T42-Utils/ScrollMessageBox.h"
+#include "T42-Utils/AutoWaitCursor.h"
+#include "T42-Utils/BIFFile.h"
+#include "T42-Utils/BIFModel.h"
+#include "T42-Utils/DelayComboBox.h"
 #define BIF_SCROLLBAR_SUPPORT
-#include "SABUtils/ImageScrollBar.h"
-#include "SABUtils/DelayLineEdit.h"
+#include "T42-Utils/ImageScrollBar.h"
+#include "T42-Utils/DelayLineEdit.h"
 
 #include <QSettings>
 #include <QFileInfo>
@@ -64,7 +64,7 @@ namespace NMediaManager
             CBasePage::fImpl.reset();
 
             fImpl->setupUi( this );
-            fBIFScrollBar = new NSABUtils::CImageScrollBar( Qt::Vertical );
+            fBIFScrollBar = new NTowel42Utils::CImageScrollBar( Qt::Vertical );
             fImpl->bifImages->setVerticalScrollBar( fBIFScrollBar );
             fBIFScrollBar->setRange( 0, 0 );
             QObject::connect( fBIFScrollBar, SIGNAL( actionTriggered( int ) ), fImpl->bifImages, SLOT( verticalScrollbarAction( int ) ) );
@@ -72,7 +72,7 @@ namespace NMediaManager
 
             clear();
 
-            connect( fImpl->bifWidget, &NSABUtils::NBIF::CWidget::sigPlayingStarted, this, &CBIFViewerPage::slotPlayingStarted );
+            connect( fImpl->bifWidget, &NTowel42Utils::NBIF::CWidget::sigPlayingStarted, this, &CBIFViewerPage::slotPlayingStarted );
 
             fResizeTimer = new QTimer( this );
             fResizeTimer->setSingleShot( true );
@@ -108,7 +108,7 @@ namespace NMediaManager
                     fImpl->bifViewerVSplitter->setSizes( QList< int >() << 100 << 100 );
 
                 fImpl->bifViewerHSplitter->setSizes( QList< int >() << 100 << 0 );
-                setButtonsLayout( static_cast< NSABUtils::NBIF::EButtonsLayout >( settings.value( "bifPlayerButtonLayout", static_cast< int >( NSABUtils::NBIF::EButtonsLayout::eTogglePlayPause ) ).toInt() ) );
+                setButtonsLayout( static_cast< NTowel42Utils::NBIF::EButtonsLayout >( settings.value( "bifPlayerButtonLayout", static_cast< int >( NTowel42Utils::NBIF::EButtonsLayout::eTogglePlayPause ) ).toInt() ) );
             }
 
             fImpl->bifWidget->setSpeedMultiplier( NPreferences::NCore::CPreferences::instance()->bifPlayerSpeedMultiplier() );
@@ -212,15 +212,15 @@ namespace NMediaManager
 
         void CBIFViewerPage::slotFileFinishedEditing( const QString &text )
         {
-            fileNameChanged( dynamic_cast< NSABUtils::CDelayComboBox * >( sender() ), text, true );
+            fileNameChanged( dynamic_cast< NTowel42Utils::CDelayComboBox * >( sender() ), text, true );
         }
 
         void CBIFViewerPage::slotFileChanged( const QString &text )
         {
-            fileNameChanged( dynamic_cast< NSABUtils::CDelayComboBox * >( sender() ), text, false );
+            fileNameChanged( dynamic_cast< NTowel42Utils::CDelayComboBox * >( sender() ), text, false );
         }
 
-        void CBIFViewerPage::fileNameChanged( NSABUtils::CDelayComboBox *comboBox, const QString &text, bool andExecute )
+        void CBIFViewerPage::fileNameChanged( NTowel42Utils::CDelayComboBox *comboBox, const QString &text, bool andExecute )
         {
             if ( comboBox )
             {
@@ -237,7 +237,7 @@ namespace NMediaManager
             return tr( "BIF Files (*.bif);;All Files (*.*)" );
         }
 
-        bool CBIFViewerPage::setFileName( NSABUtils::CDelayComboBox *comboBox, const QString &fileName, bool andExecute )
+        bool CBIFViewerPage::setFileName( NTowel42Utils::CDelayComboBox *comboBox, const QString &fileName, bool andExecute )
         {
             if ( fileName.isEmpty() )
                 return true;
@@ -258,7 +258,7 @@ namespace NMediaManager
 
         void CBIFViewerPage::fileNameChanged()
         {
-            NSABUtils::CAutoWaitCursor awc;
+            NTowel42Utils::CAutoWaitCursor awc;
             if ( !outOfDate() )
             {
                 return;
@@ -296,7 +296,7 @@ namespace NMediaManager
             new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "Number of BIF Images" ) << tr( "12-15" ) << QString::number( fBIF->numImages().fValue ) << fBIF->numImages().fPrettyPrint );
             new QTreeWidgetItem(
                 fImpl->bifFileValues, QStringList() << tr( "milliseconds/Frame" ) << tr( "16-19" )
-                                                    << QString( "%1s (%2ms)" ).arg( NSABUtils::CTimeString( fBIF->timePerFrame().fValue ).toString( "ss.zzz" ) ).arg( fBIF->timePerFrame().fValue ) << fBIF->timePerFrame().fPrettyPrint );
+                                                    << QString( "%1s (%2ms)" ).arg( NTowel42Utils::CTimeString( fBIF->timePerFrame().fValue ).toString( "ss.zzz" ) ).arg( fBIF->timePerFrame().fValue ) << fBIF->timePerFrame().fPrettyPrint );
             new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "Reserved" ) << tr( "20-64" ) << QString() << fBIF->reserved() );
 
             formatBIFTable();
@@ -307,7 +307,7 @@ namespace NMediaManager
 
         bool CBIFViewerPage::canLoad() const
         {
-            NSABUtils::CAutoWaitCursor awc;
+            NTowel42Utils::CAutoWaitCursor awc;
 
             auto bifFile = fFileName;
             auto fi = QFileInfo( bifFile );
@@ -324,16 +324,16 @@ namespace NMediaManager
 
             formatBIFTable();
             delete fBIFModel;
-            fBIFModel = new NSABUtils::NBIF::CModel( this );
+            fBIFModel = new NTowel42Utils::NBIF::CModel( this );
             fImpl->bifImages->setModel( fBIFModel );
         }
 
-        void CBIFViewerPage::setButtonsLayout( NSABUtils::NBIF::EButtonsLayout layout )
+        void CBIFViewerPage::setButtonsLayout( NTowel42Utils::NBIF::EButtonsLayout layout )
         {
             fImpl->bifWidget->setButtonsLayout( layout );
         }
 
-        NSABUtils::NBIF::EButtonsLayout CBIFViewerPage::buttonsLayout() const
+        NTowel42Utils::NBIF::EButtonsLayout CBIFViewerPage::buttonsLayout() const
         {
             return fImpl->bifWidget->buttonsLayout();
         }
@@ -372,20 +372,20 @@ namespace NMediaManager
             return fImpl->bifWidget->actionSkipForward();
         }
 
-        void CBIFViewerPage::connectToCB( NSABUtils::CDelayComboBox *comboBox, bool connect )
+        void CBIFViewerPage::connectToCB( NTowel42Utils::CDelayComboBox *comboBox, bool connect )
         {
             if ( !comboBox )
                 return;
 
             if ( connect )
             {
-                this->connect( comboBox, &NSABUtils::CDelayComboBox::sigEditTextChangedAfterDelay, this, &CBIFViewerPage::slotFileChanged );
-                this->connect( comboBox->lineEdit(), &NSABUtils::CDelayLineEdit::sigFinishedEditingAfterDelay, this, &CBIFViewerPage::slotFileFinishedEditing );
+                this->connect( comboBox, &NTowel42Utils::CDelayComboBox::sigEditTextChangedAfterDelay, this, &CBIFViewerPage::slotFileChanged );
+                this->connect( comboBox->lineEdit(), &NTowel42Utils::CDelayLineEdit::sigFinishedEditingAfterDelay, this, &CBIFViewerPage::slotFileFinishedEditing );
             }
             else
             {
-                disconnect( comboBox, &NSABUtils::CDelayComboBox::sigEditTextChangedAfterDelay, this, &CBIFViewerPage::slotFileChanged );
-                disconnect( comboBox->lineEdit(), &NSABUtils::CDelayLineEdit::sigFinishedEditingAfterDelay, this, &CBIFViewerPage::slotFileFinishedEditing );
+                disconnect( comboBox, &NTowel42Utils::CDelayComboBox::sigEditTextChangedAfterDelay, this, &CBIFViewerPage::slotFileChanged );
+                disconnect( comboBox->lineEdit(), &NTowel42Utils::CDelayLineEdit::sigFinishedEditingAfterDelay, this, &CBIFViewerPage::slotFileFinishedEditing );
             }
         }
 

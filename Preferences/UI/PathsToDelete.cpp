@@ -27,7 +27,7 @@
 
 #include <QStringListModel>
 #include <QInputDialog>
-#include "SABUtils/ButtonEnabler.h"
+#include "T42-Utils/ButtonEnabler.h"
 
 namespace NMediaManager
 {
@@ -47,7 +47,7 @@ namespace NMediaManager
                 fPathsToDeleteModel = new QStringListModel( this );
                 fImpl->pathsToDelete->setModel( fPathsToDeleteModel );
 
-                new NSABUtils::CButtonEnabler( fImpl->pathsToDelete, fImpl->btnDelPathToDelete );
+                new NTowel42Utils::CButtonEnabler( fImpl->pathsToDelete, fImpl->btnDelPathToDelete );
             }
 
             CPathsToDelete::~CPathsToDelete()

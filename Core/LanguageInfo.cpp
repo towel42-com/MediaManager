@@ -21,7 +21,7 @@
 // SOFTWARE.
 
 #include "LanguageInfo.h"
-#include "SABUtils/StringUtils.h"
+#include "T42-Utils/StringUtils.h"
 
 #include <QFileInfo>
 #include <QRegularExpression>
@@ -499,7 +499,7 @@ namespace NMediaManager
 
         QString SLanguageInfo::prettyPrintISOCode( const QString &isoCode )
         {
-            auto tmp = isoCode.split( QRegularExpression( "_|-" ), NSABUtils::NStringUtils::TSkipEmptyParts );
+            auto tmp = isoCode.split( QRegularExpression( "_|-" ), NTowel42Utils::NStringUtils::TSkipEmptyParts );
             if ( tmp.length() > 1 )
                 tmp[ 1 ] = tmp[ 1 ].toUpper();
             return tmp.join( "_" );

@@ -27,18 +27,18 @@
 #include "UI/ProcessConfirm.h"
 #include "UI/BasePage.h"
 
-#include "SABUtils/StringUtils.h"
-#include "SABUtils/QtUtils.h"
-#include "SABUtils/AutoWaitCursor.h"
-#include "SABUtils/FileUtils.h"
-#include "SABUtils/BackupFile.h"
-#include "SABUtils/FileCompare.h"
-#include "SABUtils/MediaInfo.h"
-#include "SABUtils/MKVUtils.h"
-#include "SABUtils/ForceUnbufferedProcessModifier.h"
+#include "T42-Utils/StringUtils.h"
+#include "T42-Utils/QtUtils.h"
+#include "T42-Utils/AutoWaitCursor.h"
+#include "T42-Utils/FileUtils.h"
+#include "T42-Utils/BackupFile.h"
+#include "T42-Utils/FileCompare.h"
+#include "T42-Utils/MediaInfo.h"
+#include "T42-Utils/MKVUtils.h"
+#include "T42-Utils/ForceUnbufferedProcessModifier.h"
 
-#include "SABUtils/DoubleProgressDlg.h"
-#include "SABUtils/utils.h"
+#include "T42-Utils/DoubleProgressDlg.h"
+#include "T42-Utils/utils.h"
 
 #include <QDebug>
 #include <QUrl>
@@ -117,7 +117,7 @@ namespace NMediaManager
         {
             const int role = model() ? model()->sortRole() : Qt::DisplayRole;
             const auto &&lData = data( role );
-            if ( lData.type() == QVariant::Type::String )
+            if ( lData.typeId() == QMetaType::Type::QString )
             {
                 auto value = lData.toString();
                 auto dirs = value.split( QRegularExpression( R"([\/\\])" ) );
@@ -127,7 +127,7 @@ namespace NMediaManager
                     QString number;
                     QString extra;
                     bool numIsPrefix;
-                    if ( NSABUtils::NStringUtils::startsOrEndsWithNumber( curr, &number, &extra, &numIsPrefix ) )
+                    if ( NTowel42Utils::NStringUtils::startsOrEndsWithNumber( curr, &number, &extra, &numIsPrefix ) )
                     {
                         if ( numIsPrefix )
                             retVal << QString( "%1_%2" ).arg( number, 4, QChar( '0' ) ).arg( extra );
@@ -212,7 +212,7 @@ namespace NMediaManager
 
         void CDirModel::slotLoadRootDirectory()
         {
-            NSABUtils::CAutoWaitCursor awc;
+            NTowel42Utils::CAutoWaitCursor awc;
 
             preLoad();
 
@@ -278,7 +278,7 @@ namespace NMediaManager
 
         int CDirModel::computeNumberOfItems() const
         {
-            return NSABUtils::itemCount( fProcessResults.second.get(), true, getExcludeFuncForItemCount() );
+            return NTowel42Utils::itemCount( fProcessResults.second.get(), true, getExcludeFuncForItemCount() );
         }
 
         std::pair< std::function< bool( const QVariant &value ) >, int > CDirModel::getExcludeFuncForItemCount() const
@@ -325,7 +325,7 @@ namespace NMediaManager
                         break;
                     case EType::eMediaTag:
                         {
-                            auto mediaTagType = static_cast< NSABUtils::EMediaTags >( item->data( NModels::ECustomRoles::eMediaTagTypeRole ).toInt() );
+                            auto mediaTagType = static_cast< NTowel42Utils::EMediaTags >( item->data( NModels::ECustomRoles::eMediaTagTypeRole ).toInt() );
                             if ( !setMediaTag( fileInfo( idx ).absoluteFilePath(), { mediaTagType, value.toString() } ) )
                                 return false;
                         }
@@ -523,7 +523,7 @@ namespace NMediaManager
             iterateEveryFile( fileInfo, info, lastUpdate, false );
         }
 
-        void CDirModel::appendRow( QStandardItem *parent, QList< QStandardItem * > &items )
+        void CDirModel::appendRow( QStandardItem *parent, QList< QStandardItem * > items )
         {
             if ( parent )
                 parent->appendRow( items );
@@ -602,17 +602,17 @@ namespace NMediaManager
             QString name;
 
             auto path = QDir::toNativeSeparators( fileInfo.absoluteFilePath() );
-            if ( !NSABUtils::NFileUtils::isIPAddressNetworkPath( fileInfo ) )
+            if ( !NTowel42Utils::NFileUtils::isIPAddressNetworkPath( fileInfo ) )
                 path = QDir::toNativeSeparators( fileInfo.canonicalFilePath() );
 
             auto nameItem = SDirNodeItem( isRoot ? path : fModel->getTreeNodeName( fileInfo ), EColumns::eFSName );
             nameItem.fIcon = model->iconProvider()->icon( fileInfo );
             nameItem.setData( fileInfo.absoluteFilePath(), ECustomRoles::eAbsFilePath );
             nameItem.setData( fileInfo.isDir(), ECustomRoles::eIsDir );
-            nameItem.fEditable = std::make_pair( EType::ePath, static_cast< NSABUtils::EMediaTags >( -1 ) );
+            nameItem.fEditable = std::make_pair( EType::ePath, static_cast< NTowel42Utils::EMediaTags >( -1 ) );
             nameItem.fCheckable = { true, false, Qt::CheckState::Checked };
             fItems.push_back( nameItem );
-            fItems.emplace_back( fileInfo.isFile() ? NSABUtils::NFileUtils::byteSizeString( fileInfo ) : QString(), EColumns::eFSSize );
+            fItems.emplace_back( fileInfo.isFile() ? NTowel42Utils::NFileUtils::byteSizeString( fileInfo ) : QString(), EColumns::eFSSize );
             if ( fileInfo.isFile() )
             {
                 fItems.back().fAlignment = Qt::AlignRight | Qt::AlignVCenter;
@@ -737,6 +737,11 @@ namespace NMediaManager
             if ( pos != fPathMapping.end() )
                 return ( *pos ).second;
             return nullptr;
+        }
+
+        QStandardItem *CDirModel::getItemFromPath( const QString &path ) const
+        {
+            return getItemFromPath( QFileInfo( path ) );
         }
 
         QVariant CDirModel::data( const QModelIndex &idx, int role ) const
@@ -1061,12 +1066,12 @@ namespace NMediaManager
 
         void CDirModel::process( const QModelIndex &idx, bool displayOnly )
         {
-            NSABUtils::CAutoWaitCursor awc;
+            NTowel42Utils::CAutoWaitCursor awc;
             fProcessResults.second = std::make_shared< QStandardItemModel >();
             if ( progressDlg() )
             {
-                disconnect( progressDlg(), &NSABUtils::CDoubleProgressDlg::canceled, this, &CDirModel::slotProgressCanceled );
-                connect( progressDlg(), &NSABUtils::CDoubleProgressDlg::canceled, this, &CDirModel::slotProgressCanceled );
+                disconnect( progressDlg(), &NTowel42Utils::CDoubleProgressDlg::canceled, this, &CDirModel::slotProgressCanceled );
+                connect( progressDlg(), &NTowel42Utils::CDoubleProgressDlg::canceled, this, &CDirModel::slotProgressCanceled );
             }
 
             auto item = invisibleRootItem();
@@ -1093,7 +1098,7 @@ namespace NMediaManager
             bool aOK = true;
             for ( auto &&ii : processInfo->fAncillary )
             {
-                if ( !NSABUtils::NFileUtils::backup( ii ) )
+                if ( !NTowel42Utils::NFileUtils::backup( ii ) )
                 {
                     msgList << QString( "ERROR: Failed to backup '%1'" ).arg( ii );
                     aOK = false;
@@ -1102,14 +1107,14 @@ namespace NMediaManager
             return aOK;
         }
 
-        bool CDirModel::showProcessResults( const QString &title, const QString &label, const QMessageBox::Icon &icon, const QDialogButtonBox::StandardButtons &buttons, QWidget *parent ) const
+        bool CDirModel::showProcessResults( const QString &title, const QString &label, QStyle::StandardPixmap pm, const QDialogButtonBox::StandardButtons &buttons, QWidget *parent ) const
         {
             if ( !fProcessResults.second || fProcessResults.second->rowCount() == 0 )
                 return true;
 
             NUi::CProcessConfirm dlg( title, label, parent );
             dlg.setModel( fProcessResults.second.get() );
-            dlg.setIconLabel( icon );
+            dlg.setIconLabel( pm );
             dlg.setButtons( buttons );
             auto retVal = dlg.exec() == QDialog::Accepted;
             emit const_cast< CDirModel * >( this )->sigDialogClosed();
@@ -1122,7 +1127,7 @@ namespace NMediaManager
             QStandardItemModel::clear();
         }
 
-        NSABUtils::TMediaTagMap CDirModel::getMediaTags( const QFileInfo &fi, const std::list< NSABUtils::EMediaTags > &tags ) const
+        NTowel42Utils::TMediaTagMap CDirModel::getMediaTags( const QFileInfo &fi, const std::list< NTowel42Utils::EMediaTags > &tags ) const
         {
             if ( !canShowMediaInfo() )
                 return {};
@@ -1130,7 +1135,7 @@ namespace NMediaManager
             if ( !NPreferences::NCore::CPreferences::instance()->isMediaFile( fi ) )
                 return {};
 
-            NSABUtils::CAutoWaitCursor awc;
+            NTowel42Utils::CAutoWaitCursor awc;
             auto mediaInfo = getMediaInfo( fi );
             if ( !mediaInfo )
                 return {};
@@ -1139,17 +1144,17 @@ namespace NMediaManager
             return mediaInfo->getMediaTags( tags );
         }
 
-        std::shared_ptr< NSABUtils::CMediaInfo > CDirModel::getMediaInfo( const QString &path, bool force ) const
+        std::shared_ptr< NTowel42Utils::CMediaInfo > CDirModel::getMediaInfo( const QString &path, bool force ) const
         {
             return NPreferences::NCore::CPreferences::instance()->getMediaInfo( path, force );
         }
 
-        std::shared_ptr< NSABUtils::CMediaInfo > CDirModel::getMediaInfo( const QFileInfo &fi, bool force ) const
+        std::shared_ptr< NTowel42Utils::CMediaInfo > CDirModel::getMediaInfo( const QFileInfo &fi, bool force ) const
         {
             return NPreferences::NCore::CPreferences::instance()->getMediaInfo( fi, force );
         }
 
-        std::shared_ptr< NSABUtils::CMediaInfo > CDirModel::getMediaInfo( const QModelIndex &idx, bool force ) const
+        std::shared_ptr< NTowel42Utils::CMediaInfo > CDirModel::getMediaInfo( const QModelIndex &idx, bool force ) const
         {
             auto fileInfo = this->fileInfo( idx );
             return getMediaInfo( fileInfo, force );
@@ -1233,7 +1238,7 @@ namespace NMediaManager
             {
                 auto &&currTag = ( *mediaTagIter );
                 retVal.emplace_back( mediaInfo[ currTag ], offset++ );
-                if ( ( currTag == NSABUtils::EMediaTags::eTitle ) || ( currTag == NSABUtils::EMediaTags::eDate ) || ( currTag == NSABUtils::EMediaTags::eComment ) )
+                if ( ( currTag == NTowel42Utils::EMediaTags::eTitle ) || ( currTag == NTowel42Utils::EMediaTags::eDate ) || ( currTag == NTowel42Utils::EMediaTags::eComment ) )
                     retVal.back().fEditable = std::make_pair( EType::eMediaTag, currTag );
 
                 auto col = ( *columnPosIter )();
@@ -1257,7 +1262,7 @@ namespace NMediaManager
                 return false;
             }
 
-            bool continueOn = showProcessResults( tr( "Process:" ), tr( "Proceed?" ), QMessageBox::Information, QDialogButtonBox::Yes | QDialogButtonBox::No, parent );
+            bool continueOn = showProcessResults( tr( "Process:" ), tr( "Proceed?" ), QStyle::SP_MessageBoxInformation, QDialogButtonBox::Yes | QDialogButtonBox::No, parent );
             if ( !continueOn )
             {
                 emit sigProcessesFinished( false, false, true, false );
@@ -1270,7 +1275,7 @@ namespace NMediaManager
             process( idx, false );
             if ( !fProcessResults.first )
             {
-                showProcessResults( tr( "Error While Processing:" ), tr( "Issues:" ), QMessageBox::Critical, QDialogButtonBox::Ok, parent );
+                showProcessResults( tr( "Error While Processing:" ), tr( "Issues:" ), QStyle::SP_MessageBoxCritical, QDialogButtonBox::Ok, parent );
             }
             endProgress( !usesQueuedProcessing(), false );
             return fProcessResults.first;
@@ -1370,7 +1375,7 @@ namespace NMediaManager
 
         bool CDirModel::setMediaTags( const QString &fileName, QString title, QString year, QString comment, QString *msg, bool ignoreIsMediaFile ) const
         {
-            NSABUtils::CAutoWaitCursor awc;
+            NTowel42Utils::CAutoWaitCursor awc;
 
             auto fi = QFileInfo( fileName );
             if ( fi.isDir() )
@@ -1390,10 +1395,10 @@ namespace NMediaManager
                 if ( year.isEmpty() )
                     year = getMediaYear( fi );
 
-                NSABUtils::TMediaTagMap tags = { { NSABUtils::EMediaTags::eTitle, title }, { NSABUtils::EMediaTags::eDate, year }, { NSABUtils::EMediaTags::eComment, comment } };
+                NTowel42Utils::TMediaTagMap tags = { { NTowel42Utils::EMediaTags::eTitle, title }, { NTowel42Utils::EMediaTags::eDate, year }, { NTowel42Utils::EMediaTags::eComment, comment } };
 
                 if ( NPreferences::NCore::CPreferences::instance()->getLoadMediaInfo() )
-                    aOK = NSABUtils::setMediaTags( fileName, tags, NPreferences::NCore::CPreferences::instance()->getMKVPropEditEXE(), &localMsg );
+                    aOK = NTowel42Utils::setMediaTags( fileName, tags, NPreferences::NCore::CPreferences::instance()->getMKVPropEditEXE(), &localMsg );
             }
 
             if ( !aOK )
@@ -1408,19 +1413,19 @@ namespace NMediaManager
             return aOK;
         }
 
-        bool CDirModel::setMediaTag( const QString &fileName, const NSABUtils::TMediaTagPair &data, QString *msg ) const
+        bool CDirModel::setMediaTag( const QString &fileName, const NTowel42Utils::TMediaTagPair &data, QString *msg ) const
         {
-            NSABUtils::CAutoWaitCursor awc;
-            NSABUtils::TMediaTagMap tags = { data };
+            NTowel42Utils::CAutoWaitCursor awc;
+            NTowel42Utils::TMediaTagMap tags = { data };
             QString localMsg;
-            auto aOK = NSABUtils::setMediaTags( fileName, tags, NPreferences::NCore::CPreferences::instance()->getMKVPropEditEXE(), &localMsg );
+            auto aOK = NTowel42Utils::setMediaTags( fileName, tags, NPreferences::NCore::CPreferences::instance()->getMKVPropEditEXE(), &localMsg );
             if ( !aOK )
             {
                 if ( msg )
                     *msg = localMsg;
                 else
                 {
-                    QMessageBox::critical( nullptr, tr( "Could not set tag" ), tr( "Could not set media tag '%1' to '%2' on file '%3'. %4" ).arg( NSABUtils::displayName( data.first ) ).arg( data.second.toString() ).arg( fileName ).arg( localMsg ) );
+                    QMessageBox::critical( nullptr, tr( "Could not set tag" ), tr( "Could not set media tag '%1' to '%2' on file '%3'. %4" ).arg( NTowel42Utils::displayName( data.first ) ).arg( data.second.toString() ).arg( fileName ).arg( localMsg ) );
                 }
             }
             return aOK;
@@ -1469,7 +1474,7 @@ namespace NMediaManager
             addToLog( "Running Command:" + tmp.join( " " ), true );
 
             if ( curr->fForceUnbuffered )
-                fProcess->setCreateProcessArgumentsModifier( NSABUtils::getForceUnbufferedProcessModifier() );
+                fProcess->setCreateProcessArgumentsModifier( NTowel42Utils::getForceUnbufferedProcessModifier() );
             else
                 fProcess->setCreateProcessArgumentsModifier( {} );
             fLastProgress.reset();
@@ -1521,7 +1526,7 @@ namespace NMediaManager
 
         std::list< SDirNodeItem > CDirModel::addAdditionalItems( const QFileInfo &fileInfo ) const
         {
-            if ( showMediaItems() && canShowMediaInfo() && ( NSABUtils::CMediaInfoMgr::instance()->isMediaCached( fileInfo ) || NPreferences::NCore::CPreferences::instance()->getLoadMediaInfo() ) )
+            if ( showMediaItems() && canShowMediaInfo() && ( NTowel42Utils::CMediaInfoMgr::instance()->isMediaCached( fileInfo ) || NPreferences::NCore::CPreferences::instance()->getLoadMediaInfo() ) )
             {
                 return getMediaInfoItems( fileInfo, firstMediaItemColumn() );
             }
@@ -1615,7 +1620,7 @@ namespace NMediaManager
 
             if ( fBackupOrig )
             {
-                if ( !NSABUtils::NFileUtils::backup( fOldName ) )
+                if ( !NTowel42Utils::NFileUtils::backup( fOldName ) )
                 {
                     CDirModel::appendError( fItem, QObject::tr( "%1: FAILED TO BACKUP" ).arg( model->getDispName( fOldName ) ) );
                     model->fProcessResults.first = false;
@@ -1640,7 +1645,7 @@ namespace NMediaManager
                     auto newName = ii.mid( 0, ii.length() - 4 );
                     if ( QFileInfo( newName ).exists() )
                     {
-                        if ( !NSABUtils::NFileUtils::backup( newName ) )
+                        if ( !NTowel42Utils::NFileUtils::backup( newName ) )
                         {
                             CDirModel::appendError( fItem, QObject::tr( "%1: FAILED TO BACKUP" ).arg( model->getDispName( newName ) ) );
                             model->fProcessResults.first = false;
@@ -1681,14 +1686,14 @@ namespace NMediaManager
 
             for ( auto &&ii : fNewNames )
             {
-                if ( QFileInfo::exists( ii ) && !NSABUtils::NFileUtils::setTimeStamps( ii, fTimeStamps ) )
+                if ( QFileInfo::exists( ii ) && !NTowel42Utils::NFileUtils::setTimeStamps( ii, fTimeStamps ) )
                 {
                     CDirModel::appendError( fItem, QObject::tr( "%1: FAILED TO MODIFY TIMESTAMP ON GENERATED FILE '%2'" ).arg( model->getDispName( fOldName ) ).arg( model->getDispName( ii ) ) );
                     model->fProcessResults.first = false;
                 }
             }
 
-            if ( QFileInfo::exists( fOldName ) && !NSABUtils::NFileUtils::setTimeStamps( fOldName, fTimeStamps ) )
+            if ( QFileInfo::exists( fOldName ) && !NTowel42Utils::NFileUtils::setTimeStamps( fOldName, fTimeStamps ) )
             {
                 CDirModel::appendError( fItem, QObject::tr( "%1: FAILED TO MODIFY TIMESTAMP" ).arg( model->getDispName( fOldName ) ) );
                 model->fProcessResults.first = false;
@@ -1729,7 +1734,7 @@ namespace NMediaManager
                     retVal = searchInfo.releaseDate().first;
                 if ( isRootPath( searchPath.absoluteFilePath() ) )
                     break;
-                searchPath = searchPath.absolutePath();
+                searchPath = QFileInfo( searchPath.absolutePath() );
             }
             return retVal;
         }
@@ -1739,12 +1744,17 @@ namespace NMediaManager
             return getMediaDate( fileInfo( index ) );
         }
 
+        QDate CDirModel::getMediaDate( const QString &path ) const
+        {
+            return getMediaDate( QFileInfo( path ) );
+        }
+
         bool CDirModel::progressCanceled() const
         {
             return progressDlg() && progressDlg()->wasCanceled();
         }
 
-        NSABUtils::CDoubleProgressDlg *CDirModel::progressDlg() const
+        NTowel42Utils::CDoubleProgressDlg *CDirModel::progressDlg() const
         {
             return fBasePage->progressDlg();
         }
@@ -1765,10 +1775,10 @@ namespace NMediaManager
             return fLastMediaColumn;
         }
 
-        std::list< NSABUtils::EMediaTags > CDirModel::getMediaColumnsList() const
+        std::list< NTowel42Utils::EMediaTags > CDirModel::getMediaColumnsList() const
         {
             auto tmp = std::get< 1 >( getMediaDataInfo() );
-            return std::list< NSABUtils::EMediaTags >( { tmp.begin(), tmp.end() } );
+            return std::list< NTowel42Utils::EMediaTags >( { tmp.begin(), tmp.end() } );
         }
 
         void CDirModel::clearMediaColumnMap()
@@ -1780,7 +1790,7 @@ namespace NMediaManager
         {
             if ( !fMediaColumnMap.has_value() )
             {
-                auto map = new std::unordered_map< NSABUtils::EMediaTags, int >();
+                auto map = new std::unordered_map< NTowel42Utils::EMediaTags, int >();
                 fMediaColumnMap = map;
                 auto mediaColumnsList = getMediaColumnsList();
                 int currColumn = firstMediaItemColumn();
@@ -1791,7 +1801,7 @@ namespace NMediaManager
             }
         }
 
-        int CDirModel::getMediaColumn( NSABUtils::EMediaTags mediaTag ) const
+        int CDirModel::getMediaColumn( NTowel42Utils::EMediaTags mediaTag ) const
         {
             if ( !canShowMediaInfo() )
                 return -1;
@@ -1804,67 +1814,67 @@ namespace NMediaManager
 
         int CDirModel::getMediaTitleLoc() const
         {
-            return getMediaColumn( NSABUtils::EMediaTags::eTitle );
+            return getMediaColumn( NTowel42Utils::EMediaTags::eTitle );
         }
 
         int CDirModel::getMediaLengthLoc() const
         {
-            return getMediaColumn( NSABUtils::EMediaTags::eLength );
+            return getMediaColumn( NTowel42Utils::EMediaTags::eLength );
         }
 
         int CDirModel::getMediaDateLoc() const
         {
-            return getMediaColumn( NSABUtils::EMediaTags::eDate );
+            return getMediaColumn( NTowel42Utils::EMediaTags::eDate );
         }
 
         int CDirModel::getMediaOverallBitrateLoc() const
         {
-            return getMediaColumn( NSABUtils::EMediaTags::eOverAllBitrateString );
+            return getMediaColumn( NTowel42Utils::EMediaTags::eOverAllBitrateString );
         }
 
         int CDirModel::getMediaResolutionLoc() const
         {
-            return getMediaColumn( NSABUtils::EMediaTags::eResolution );
+            return getMediaColumn( NTowel42Utils::EMediaTags::eResolution );
         }
 
         int CDirModel::getMediaVideoCodecLoc() const
         {
-            return getMediaColumn( NSABUtils::EMediaTags::eAllVideoCodecs );
+            return getMediaColumn( NTowel42Utils::EMediaTags::eAllVideoCodecs );
         }
 
         int CDirModel::getMediaVideoBitrateLoc() const
         {
-            return getMediaColumn( NSABUtils::EMediaTags::eVideoBitrateString );
+            return getMediaColumn( NTowel42Utils::EMediaTags::eVideoBitrateString );
         }
 
         int CDirModel::getMediaVideoHDRLoc() const
         {
-            return getMediaColumn( NSABUtils::EMediaTags::eHDRInfo );
+            return getMediaColumn( NTowel42Utils::EMediaTags::eHDRInfo );
         }
 
         int CDirModel::getMediaAudioCodecLoc() const
         {
-            return getMediaColumn( NSABUtils::EMediaTags::eAllAudioCodecsDisp );
+            return getMediaColumn( NTowel42Utils::EMediaTags::eAllAudioCodecsDisp );
         }
 
         int CDirModel::getMediaTotalAudioBitrateLoc() const
         {
-            return getMediaColumn( NSABUtils::EMediaTags::eTotalAudioBitrateString );
+            return getMediaColumn( NTowel42Utils::EMediaTags::eTotalAudioBitrateString );
         }
 
         int CDirModel::getMediaAudioSampleRateLoc() const
         {
-            return getMediaColumn( NSABUtils::EMediaTags::eAudioSampleRateString );
+            return getMediaColumn( NTowel42Utils::EMediaTags::eAudioSampleRateString );
         }
 
         int CDirModel::getMediaSubtitlesLoc() const
         {
-            return getMediaColumn( NSABUtils::EMediaTags::eAllSubtitleLanguages );
+            return getMediaColumn( NTowel42Utils::EMediaTags::eAllSubtitleLanguages );
         }
 
         int CDirModel::getMediaCommentLoc() const
         {
-            return getMediaColumn( NSABUtils::EMediaTags::eComment );
+            return getMediaColumn( NTowel42Utils::EMediaTags::eComment );
         }
 
         QTreeView *CDirModel::filesView() const
@@ -1891,7 +1901,7 @@ namespace NMediaManager
 
         void CDirModel::resizeColumns() const
         {
-            NSABUtils::autoSize( filesView() );
+            NTowel42Utils::autoSize( filesView() );
         }
 
         bool CDirModel::isRootPath( const QString &path ) const
@@ -2223,7 +2233,7 @@ namespace NMediaManager
 
         QIcon CIconProvider::icon( const QFileInfo &info ) const
         {
-            if ( NSABUtils::NFileUtils::isIPAddressNetworkPath( info ) )
+            if ( NTowel42Utils::NFileUtils::isIPAddressNetworkPath( info ) )
                 return {};
             return QFileIconProvider::icon( info );
         }
@@ -2235,12 +2245,12 @@ namespace NMediaManager
             return std::get< 0 >( getMediaDataInfo() );
         }
 
-        NSABUtils::TMediaTagMap CDirModel::getDefaultMediaTags( const QFileInfo &fi ) const
+        NTowel42Utils::TMediaTagMap CDirModel::getDefaultMediaTags( const QFileInfo &fi ) const
         {
             return getMediaTags( fi, std::get< 1 >( getMediaDataInfo() ) );
         }
 
-        std::tuple< QStringList, std::list< NSABUtils::EMediaTags >, std::list< std::function< int() > > > CDirModel::getMediaDataInfo() const
+        std::tuple< QStringList, std::list< NTowel42Utils::EMediaTags >, std::list< std::function< int() > > > CDirModel::getMediaDataInfo() const
         {
             static auto sDefaultHeaders =   //
                 QStringList()   //
@@ -2259,20 +2269,20 @@ namespace NMediaManager
                 << tr( "Comment" );
 
             static auto sDefaultTags =   //
-                std::list< NSABUtils::EMediaTags >( {
-                    NSABUtils::EMediaTags::eTitle,   //
-                    NSABUtils::EMediaTags::eLength,   //
-                    NSABUtils::EMediaTags::eDate,   //
-                    NSABUtils::EMediaTags::eOverAllBitrateString,   //
-                    NSABUtils::EMediaTags::eResolution,   //
-                    NSABUtils::EMediaTags::eAllVideoCodecs,   //
-                    NSABUtils::EMediaTags::eVideoBitrateString,   //
-                    NSABUtils::EMediaTags::eHDRInfo,   //
-                    NSABUtils::EMediaTags::eAllAudioCodecsDisp,   //
-                    NSABUtils::EMediaTags::eTotalAudioBitrateString,   //
-                    NSABUtils::EMediaTags::eAudioSampleRateString,   //
-                    NSABUtils::EMediaTags::eAllSubtitleLanguages,   //
-                    NSABUtils::EMediaTags::eComment   //
+                std::list< NTowel42Utils::EMediaTags >( {
+                    NTowel42Utils::EMediaTags::eTitle,   //
+                    NTowel42Utils::EMediaTags::eLength,   //
+                    NTowel42Utils::EMediaTags::eDate,   //
+                    NTowel42Utils::EMediaTags::eOverAllBitrateString,   //
+                    NTowel42Utils::EMediaTags::eResolution,   //
+                    NTowel42Utils::EMediaTags::eAllVideoCodecs,   //
+                    NTowel42Utils::EMediaTags::eVideoBitrateString,   //
+                    NTowel42Utils::EMediaTags::eHDRInfo,   //
+                    NTowel42Utils::EMediaTags::eAllAudioCodecsDisp,   //
+                    NTowel42Utils::EMediaTags::eTotalAudioBitrateString,   //
+                    NTowel42Utils::EMediaTags::eAudioSampleRateString,   //
+                    NTowel42Utils::EMediaTags::eAllSubtitleLanguages,   //
+                    NTowel42Utils::EMediaTags::eComment   //
                 } );
 
             auto getPosFuncs = std::list< std::function< int() > >( {
@@ -2347,12 +2357,12 @@ namespace NMediaManager
             return std::make_tuple( sDefaultHeaders, sDefaultTags, getPosFuncs );
         }
 
-        QString CDirModel::getSecondaryProgressFormat( NSABUtils::CDoubleProgressDlg *progressDlg ) const
+        QString CDirModel::getSecondaryProgressFormat( NTowel42Utils::CDoubleProgressDlg *progressDlg ) const
         {
             return progressDlg->defaultSecondaryFormat();
         }
 
-        void CDirModel::processLog( const QString &string, NSABUtils::CDoubleProgressDlg *progressDlg )
+        void CDirModel::processLog( const QString &string, NTowel42Utils::CDoubleProgressDlg *progressDlg )
         {
             auto newProgress = getCurrentProgress( string );
             if ( newProgress.has_value() )
@@ -2388,11 +2398,11 @@ namespace NMediaManager
 
                 if ( msecsRemaining.has_value() )
                 {
-                    auto ts = NSABUtils::CTimeString( msecsRemaining.value() );
+                    auto ts = NTowel42Utils::CTimeString( msecsRemaining.value() );
                     if ( this->currentUnitsAreSeconds() )
                     {
-                        auto currTS = NSABUtils::CTimeString( progressDlg->secondaryValue() * 1000 );
-                        auto endTS = NSABUtils::CTimeString( progressDlg->secondaryMax() * 1000 );
+                        auto currTS = NTowel42Utils::CTimeString( progressDlg->secondaryValue() * 1000 );
+                        auto endTS = NTowel42Utils::CTimeString( progressDlg->secondaryMax() * 1000 );
                         format = QString( "Processing Position: %1 of %2 ETA: %3  " ).arg( currTS.toString( "hh:mm:ss", false ) ).arg( endTS.toString( "hh:mm:ss", false ) ).arg( ts.toString( "hh:mm:ss", false ) );
                     }
                     else

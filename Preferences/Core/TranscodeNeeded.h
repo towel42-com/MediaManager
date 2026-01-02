@@ -27,7 +27,7 @@
 #include <optional>
 #include <QString>
 
-namespace NSABUtils
+namespace NTowel42Utils
 {
     class CMediaInfo;
 }
@@ -41,8 +41,8 @@ namespace NMediaManager
             class CPreferences;
             struct STranscodeNeeded
             {
-                STranscodeNeeded( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const CPreferences *prefs );
-                STranscodeNeeded( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo );
+                STranscodeNeeded( std::shared_ptr< NTowel42Utils::CMediaInfo > mediaInfo, const CPreferences *prefs );
+                STranscodeNeeded( std::shared_ptr< NTowel42Utils::CMediaInfo > mediaInfo );
 
                 bool isLoaded() const;
                 std::optional< QString > getFormatMessage() const;
@@ -80,7 +80,7 @@ namespace NMediaManager
                 bool fWrongAudioCodec{ false };
                 bool fDefaultAudioNotAAC{ false };
                 bool fWrongContainer{ false };
-                std::shared_ptr< NSABUtils::CMediaInfo > fMediaInfo;
+                std::shared_ptr< NTowel42Utils::CMediaInfo > fMediaInfo;
             };
         }
     }

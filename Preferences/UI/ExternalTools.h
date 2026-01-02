@@ -25,7 +25,7 @@
 
 #include "BasePrefPage.h"
 
-namespace NSABUtils
+namespace NTowel42Utils
 {
     class CKeyValuePairModel;
 }

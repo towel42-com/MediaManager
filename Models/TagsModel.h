@@ -28,7 +28,7 @@
 #include <QSortFilterProxyModel>
 #include <QRegularExpression>
 
-namespace NSABUtils
+namespace NTowel42Utils
 {
     enum class EMediaTags;
 }
@@ -66,7 +66,7 @@ namespace NMediaManager
             virtual bool showMediaItemsContextMenu() const override { return true; };
 
             virtual bool showMediaItems() const override { return false; };
-            virtual std::list< NSABUtils::EMediaTags > getMediaColumnsList() const override;
+            virtual std::list< NTowel42Utils::EMediaTags > getMediaColumnsList() const override;
 
             virtual void reloadMediaInfo( const QModelIndex &idx ) override;
             virtual std::list< SDirNodeItem > addAdditionalItems( const QFileInfo &fileInfo ) const override;

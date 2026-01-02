@@ -28,8 +28,8 @@
 #include "Core/SearchTMDBInfo.h"
 #include "Core/SearchTMDB.h"
 
-#include "SABUtils/QtUtils.h"
-#include "SABUtils/DoubleProgressDlg.h"
+#include "T42-Utils/QtUtils.h"
+#include "T42-Utils/DoubleProgressDlg.h"
 
 #include <QTimer>
 #include <QDir>
@@ -45,7 +45,7 @@ namespace NMediaManager
         CMediaNamingPage::CMediaNamingPage( QWidget *parent ) :
             CBasePage( "Transform", parent )
         {
-            fSearchTMDB = new NCore::CSearchTMDB( nullptr, std::optional< QString >(), this );
+            fSearchTMDB = new NCore::CSearchTMDB( {}, {}, this );
             fSearchTMDB->setSkipImages( true );
             connect( fSearchTMDB, &NCore::CSearchTMDB::sigAutoSearchFinished, this, &CMediaNamingPage::slotAutoSearchFinished );
         }
@@ -118,7 +118,7 @@ namespace NMediaManager
             Q_ASSERT( filesView()->model() == model() );
             fSearchTMDB->resetResults();
 
-            auto count = NSABUtils::itemCount( model(), true );
+            auto count = NTowel42Utils::itemCount( model(), true );
             setupProgressDlg( tr( "Finding Results" ), tr( "Cancel" ), count, 1 );
 
             model()->computeEpisodesForDiskNumbers();

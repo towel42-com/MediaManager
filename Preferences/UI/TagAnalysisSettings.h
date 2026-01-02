@@ -25,7 +25,7 @@
 
 #include "BasePrefPage.h"
 
-namespace NSABUtils
+namespace NTowel42Utils
 {
     class CKeyValuePairModel;
     class CCheckableStringListModel;
@@ -57,7 +57,7 @@ namespace NMediaManager
             public Q_SLOTS:
             private:
                 std::unique_ptr< Ui::CTagAnalysisSettings > fImpl;
-                NSABUtils::CCheckableStringListModel *fModel{ nullptr };
+                NTowel42Utils::CCheckableStringListModel *fModel{ nullptr };
             };
         }
     }

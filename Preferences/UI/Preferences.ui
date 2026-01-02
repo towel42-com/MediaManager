@@ -70,7 +70,7 @@
   <tabstop>stackedWidget</tabstop>
  </tabstops>
  <resources>
-  <include location="../../SABUtils/resources/SABUtils.qrc"/>
+  <include location="../../T42-Utils/resources/Towel42Utils.qrc"/>
  </resources>
  <connections>
   <connection>

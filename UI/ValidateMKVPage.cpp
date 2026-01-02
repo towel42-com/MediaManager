@@ -24,7 +24,7 @@
 #include "Models/ValidateMKVModel.h"
 
 #include "Preferences/Core/Preferences.h"
-#include "SABUtils/DoubleProgressDlg.h"
+#include "T42-Utils/DoubleProgressDlg.h"
 
 #include <QRegularExpression>
 #include <QTreeView>

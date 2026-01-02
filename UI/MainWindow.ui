@@ -29,7 +29,7 @@
        </widget>
       </item>
       <item>
-       <widget class="NSABUtils::CDelayComboBox" name="directory">
+       <widget class="NTowel42Utils::CDelayComboBox" name="directory">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -40,7 +40,7 @@
          <bool>true</bool>
         </property>
         <property name="insertPolicy">
-         <enum>QComboBox::InsertAtTop</enum>
+         <enum>QComboBox::InsertPolicy::InsertAtTop</enum>
         </property>
         <property name="placeholderText">
          <string>&lt;directory&gt;</string>
@@ -59,7 +59,7 @@
        </widget>
       </item>
       <item>
-       <widget class="NSABUtils::CDelayComboBox" name="fileName">
+       <widget class="NTowel42Utils::CDelayComboBox" name="fileName">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -70,7 +70,7 @@
          <bool>true</bool>
         </property>
         <property name="insertPolicy">
-         <enum>QComboBox::InsertAtTop</enum>
+         <enum>QComboBox::InsertPolicy::InsertAtTop</enum>
         </property>
         <property name="placeholderText">
          <string>&lt;BIF File&gt;</string>
@@ -94,7 +94,7 @@
      <x>0</x>
      <y>0</y>
      <width>868</width>
-     <height>22</height>
+     <height>33</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -139,8 +139,8 @@
   </widget>
   <action name="actionOpen">
    <property name="icon">
-    <iconset resource="../SABUtils/resources/SABUtils.qrc">
-     <normaloff>:/SABUtilsResources/open.png</normaloff>:/SABUtilsResources/open.png</iconset>
+    <iconset resource="../T42-Utils/resources/Towel42Utils.qrc">
+     <normaloff>:/Towel42UtilsResources/open.png</normaloff>:/Towel42UtilsResources/open.png</iconset>
    </property>
    <property name="text">
     <string>Set &amp;Directory...</string>
@@ -158,8 +158,8 @@
   </action>
   <action name="actionRun">
    <property name="icon">
-    <iconset resource="../SABUtils/resources/SABUtils.qrc">
-     <normaloff>:/SABUtilsResources/run.png</normaloff>:/SABUtilsResources/run.png</iconset>
+    <iconset resource="../T42-Utils/resources/Towel42Utils.qrc">
+     <normaloff>:/Towel42UtilsResources/run.png</normaloff>:/Towel42UtilsResources/run.png</iconset>
    </property>
    <property name="text">
     <string>Run...</string>
@@ -170,8 +170,8 @@
   </action>
   <action name="actionLoad">
    <property name="icon">
-    <iconset resource="../SABUtils/resources/SABUtils.qrc">
-     <normaloff>:/SABUtilsResources/load.png</normaloff>:/SABUtilsResources/load.png</iconset>
+    <iconset resource="../T42-Utils/resources/Towel42Utils.qrc">
+     <normaloff>:/Towel42UtilsResources/load.png</normaloff>:/Towel42UtilsResources/load.png</iconset>
    </property>
    <property name="text">
     <string>Load...</string>
@@ -180,9 +180,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>NSABUtils::CDelayComboBox</class>
+   <class>NTowel42Utils::CDelayComboBox</class>
    <extends>QComboBox</extends>
-   <header>SABUtils/DelayComboBox.h</header>
+   <header>T42-Utils/DelayComboBox.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>
@@ -192,7 +192,7 @@
  </tabstops>
  <resources>
   <include location="resources/application.qrc"/>
-  <include location="../SABUtils/resources/SABUtils.qrc"/>
+  <include location="../T42-Utils/resources/Towel42Utils.qrc"/>
  </resources>
  <connections>
   <connection>

@@ -24,8 +24,8 @@
 
 #include "Preferences/Core/Preferences.h"
 #include "Models/TranscodeModel.h"
-#include "SABUtils/DoubleProgressDlg.h"
-#include "SABUtils/utils.h"
+#include "T42-Utils/DoubleProgressDlg.h"
+#include "T42-Utils/utils.h"
 
 #include <QRegularExpression>
 

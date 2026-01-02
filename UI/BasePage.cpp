@@ -25,10 +25,10 @@
 
 #include "Preferences/Core/Preferences.h"
 #include "Models/DirModel.h"
-#include "SABUtils/DoubleProgressDlg.h"
-#include "SABUtils/SetMKVTags.h"
-#include "SABUtils/QtUtils.h"
-#include "SABUtils/StayAwake.h"
+#include "T42-Utils/DoubleProgressDlg.h"
+#include "T42-Utils/SetMKVTags.h"
+#include "T42-Utils/QtUtils.h"
+#include "T42-Utils/StayAwake.h"
 
 #include <QSettings>
 #include <QMenu>
@@ -46,8 +46,8 @@ namespace NMediaManager
             fImpl( new Ui::CBasePage )
         {
             fImpl->setupUi( this );
-            fProgressDlg = new NSABUtils::CDoubleProgressDlg( this );
-            connect( fProgressDlg, &NSABUtils::CDoubleProgressDlg::canceled, [ this ]() { clearProgressDlg( true ); } );
+            fProgressDlg = new NTowel42Utils::CDoubleProgressDlg( this );
+            connect( fProgressDlg, &NTowel42Utils::CDoubleProgressDlg::canceled, [ this ]() { clearProgressDlg( true ); } );
             fProgressDlg->setMinimumDuration( -1 );
 
             fImpl->filesView->setExpandsOnDoubleClick( false );
@@ -77,7 +77,7 @@ namespace NMediaManager
                             fImpl->log->clear();
                             ;
                         } );
-                    menu->exec( mouseEvent->globalPos() );
+                    menu->exec( mouseEvent->globalPosition().toPoint() );
                     delete menu;
                     return true;
                 }
@@ -251,7 +251,7 @@ namespace NMediaManager
             clearProgressDlg( false );
             if ( !status && showProcessResults )
             {
-                fModel->showProcessResults( actionErrorName(), tr( "Issues:" ), QMessageBox::Critical, QDialogButtonBox::Ok, this );
+                fModel->showProcessResults( actionErrorName(), tr( "Issues:" ), QStyle::SP_MessageBoxCritical, QDialogButtonBox::Ok, this );
             }
             if ( !canceled && reloadModel )
                 load( true );
@@ -400,14 +400,14 @@ namespace NMediaManager
                 realMessage += "\n";
 
             auto prevText = previousText;
-            NSABUtils::appendToLog( fImpl->log, realMessage, previousText, NPreferences::NCore::CPreferences::instance()->getLogStream() );
+            NTowel42Utils::appendToLog( fImpl->log, realMessage, previousText, NPreferences::NCore::CPreferences::instance()->getLogStream() );
             fModel->processLog( realMessage, fProgressDlg );
         }
 
         void CBasePage::editMediaInfo( const QModelIndex &idx )
         {
             auto fn = fModel->fileInfo( idx ).absoluteFilePath();
-            NSABUtils::CSetMKVTags dlg( fn, NPreferences::NCore::CPreferences::instance()->getMKVPropEditEXE(), this );
+            NTowel42Utils::CSetMKVTags dlg( fn, NPreferences::NCore::CPreferences::instance()->getMKVPropEditEXE(), this );
             if ( dlg.exec() == QDialog::Accepted )
                 fModel->reloadMediaInfo( idx );
             emit sigDialogClosed();
@@ -433,7 +433,7 @@ namespace NMediaManager
         {
             if ( enable && !fStayAwake )
             {
-                fStayAwake = std::make_unique< NSABUtils::CAutoStayAwake >( true );
+                fStayAwake = std::make_unique< NTowel42Utils::CAutoStayAwake >( true );
             }
             else if ( !enable && fStayAwake )
             {

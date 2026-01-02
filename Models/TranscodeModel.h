@@ -74,10 +74,11 @@ namespace NMediaManager
             };
             using TTranscodeProcessInfoMap = std::map< ETranscodeType, std::shared_ptr< SProcessInfo > >;
 
-
             [[nodiscard]] std::pair< bool, std::list< QStandardItem * > > setupProcessItems( TTranscodeProcessInfoMap &processInfos, const QString &path, const std::list< NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NCore::SLanguageInfo, QString > > &subIDXFiles, bool displayOnly ) const;
 
+            [[nodiscard]] std::pair< bool, std::list< QStandardItem * > > setupProcessItem( std::shared_ptr< SProcessInfo > processInfo, ETranscodeType transcodeType, const QString &path, const std::list< NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NCore::SLanguageInfo, QString > > &subIDXFiles, bool displayOnly ) const;
             [[nodiscard]] std::pair< bool, std::list< QStandardItem * > > setupProcessItem( std::shared_ptr< SProcessInfo > processInfo, ETranscodeType transcodeType, const QFileInfo &fi, const std::list< NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NCore::SLanguageInfo, QString > > &subIDXFiles, bool displayOnly ) const;
+            [[nodiscard]] std::pair< bool, std::list< QStandardItem * > > setupProcessItem( std::shared_ptr< SProcessInfo > processInfo, ETranscodeType transcodeType, const QString &path, bool displayOnly ) const;
             [[nodiscard]] std::pair< bool, std::list< QStandardItem * > > setupProcessItem( std::shared_ptr< SProcessInfo > processInfo, ETranscodeType transcodeType, const QFileInfo &fi, bool displayOnly ) const;
 
             [[nodiscard]] std::pair< bool, std::list< QStandardItem * > > processTranscoding( TTranscodeProcessInfoMap &processInfos, const std::list< NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NCore::SLanguageInfo, QString > > &subIDXFiles, const QStandardItem *item, bool displayOnly );   // in display only mode, it ignores the creation of low res and low bitrate
@@ -128,6 +129,7 @@ namespace NMediaManager
             bool nameMatch( const QString &videoFile, const QString &subtitleFile ) const;
 
             bool isSubtitleFile( const QFileInfo &fileInfo, bool *isLangFileFormat = nullptr ) const;
+            bool isSubtitleFile( const QString &path, bool *isLangFileFormat = nullptr ) const;
 
             std::list< QStandardItem * > getChildFiles( const QStandardItem *item, const QString &ext ) const;
             QList< QStandardItem * > getChildVideoFiles( const QStandardItem *item, bool goBelowDirs ) const;   // item should be a dir file

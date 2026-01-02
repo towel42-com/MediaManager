@@ -25,8 +25,8 @@
 #include "Preferences/Core/Preferences.h"
 #include "Models/TagsModel.h"
 
-#include "SABUtils/QtUtils.h"
-#include "SABUtils/DoubleProgressDlg.h"
+#include "T42-Utils/QtUtils.h"
+#include "T42-Utils/DoubleProgressDlg.h"
 
 #include <QTimer>
 #include <QDir>

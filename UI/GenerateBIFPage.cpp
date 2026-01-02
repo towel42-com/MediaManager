@@ -24,7 +24,7 @@
 
 #include "Preferences/Core/Preferences.h"
 #include "Models/GenerateBIFModel.h"
-#include "SABUtils/DoubleProgressDlg.h"
+#include "T42-Utils/DoubleProgressDlg.h"
 
 #include <QRegularExpression>
 

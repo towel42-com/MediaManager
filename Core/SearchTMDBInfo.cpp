@@ -26,10 +26,10 @@
 #include "SearchTMDB.h"
 
 #include <QString>
-#include "SABUtils/HashUtils.h"
-#include "SABUtils/QtUtils.h"
-#include "SABUtils/StringUtils.h"
-#include "SABUtils/utils.h"
+#include "T42-Utils/HashUtils.h"
+#include "T42-Utils/QtUtils.h"
+#include "T42-Utils/StringUtils.h"
+#include "T42-Utils/utils.h"
 
 #include <QRegularExpression>
 #include <QDebug>
@@ -41,13 +41,13 @@ namespace std
     template<>
     struct hash< std::tuple< QString, bool, bool > >
     {
-        std::size_t operator()( const std::tuple< QString, bool, bool > &key ) const { return NSABUtils::HashCombine( key ); }
+        std::size_t operator()( const std::tuple< QString, bool, bool > &key ) const { return NTowel42Utils::HashCombine( key ); }
     };
 
     template<>
     struct hash< std::pair< QString, bool > >
     {
-        std::size_t operator()( const std::pair< QString, bool > &key ) const { return NSABUtils::HashCombine( key ); }
+        std::size_t operator()( const std::pair< QString, bool > &key ) const { return NTowel42Utils::HashCombine( key ); }
     };
 }
 
@@ -139,7 +139,7 @@ namespace NMediaManager
                 if ( match.hasMatch() )
                 {
                     retVal.remove( match.capturedStart( "word" ), match.capturedLength( "word" ) );
-                    extendedData = NSABUtils::NStringUtils::transformTitle( match.captured( "word" ), true );
+                    extendedData = NTowel42Utils::NStringUtils::transformTitle( match.captured( "word" ), true );
                     break;
                 }
             }
@@ -194,7 +194,7 @@ namespace NMediaManager
                             }
                         }
                         if ( !isKnown )
-                            retVal.replace( pos, ' ' );
+                            retVal[ pos ] = ' ';
                         pos = retVal.indexOf( '-', from );
                     }
                 }
@@ -397,19 +397,19 @@ namespace NMediaManager
         void SSearchTMDBInfo::setReleaseDate( const QString &releaseDate )
         {
             fReleaseDate.second = releaseDate;
-            NSABUtils::SDateSearchOptions options;
+            NTowel42Utils::SDateSearchOptions options;
             options.fAllowYearOnly = true;
             options.fAllowMonthYearOnly = true;
-            fReleaseDate.first = NSABUtils::getDate( releaseDate, options );
+            fReleaseDate.first = NTowel42Utils::getDate( releaseDate, options );
         }
 
         int SSearchTMDBInfo::releaseYear( const QString &dateStr, bool *aOK )
         {
-            NSABUtils::SDateSearchOptions options;
+            NTowel42Utils::SDateSearchOptions options;
             options.fAllowYearOnly = true;
             options.fAllowMonthYearOnly = true;
 
-            auto dt = NSABUtils::getDate( dateStr, options );
+            auto dt = NTowel42Utils::getDate( dateStr, options );
             auto lclAOK = dt.isValid();
             int retVal = 0;
             if ( lclAOK )
@@ -437,7 +437,7 @@ namespace NMediaManager
             if ( fEpisodes.empty() )
                 return forDebug ? "<Not Set>" : QString();
 
-            auto groupedEpisodes = NSABUtils::group( fEpisodes );
+            auto groupedEpisodes = NTowel42Utils::group( fEpisodes );
             QString retVal;
             //auto pos = fEpisodes.begin();
             return QString();
@@ -569,7 +569,7 @@ namespace NMediaManager
         {
             if ( !fSearchByName )
                 return true;
-            return NSABUtils::NStringUtils::isSimilar( name, fSearchName, fExactMatchOnly );   // if every word we are searching for is covered by name, we match.  For exact matches must be in same order
+            return NTowel42Utils::NStringUtils::isSimilar( name, fSearchName, fExactMatchOnly );   // if every word we are searching for is covered by name, we match.  For exact matches must be in same order
         }
 
         void SSearchTMDBInfo::extractReleaseDate()
@@ -602,10 +602,10 @@ namespace NMediaManager
 
                 if ( releaseDate != smartTrim( fSearchName ) )
                 {
-                    NSABUtils::SDateSearchOptions options;
+                    NTowel42Utils::SDateSearchOptions options;
                     options.fAllowYearOnly = true;
                     options.fAllowMonthYearOnly = true;
-                    auto date = NSABUtils::getDate( releaseDate, options );
+                    auto date = NTowel42Utils::getDate( releaseDate, options );
                     if ( date.isValid() )
                     {
                         if ( date.year() < 1900 )
@@ -829,12 +829,12 @@ namespace NMediaManager
 
         QStringList SSearchTMDBInfo::getSearchStrings() const
         {
-            return fSearchName.split( QRegularExpression( R"([\s\.])" ), NSABUtils::NStringUtils::TSkipEmptyParts );
+            return fSearchName.split( QRegularExpression( R"([\s\.])" ), NTowel42Utils::NStringUtils::TSkipEmptyParts );
         }
 
         std::list< int > SSearchTMDBInfo::episodesFromString( const QString &episodeStr, bool &aOK ) const
         {
-            return NSABUtils::intsFromString( episodeStr, QString( R"((?:E|Episode\s*)?)" ), true, &aOK );
+            return NTowel42Utils::intsFromString( episodeStr, QString( R"((?:E|Episode\s*)?)" ), true, &aOK );
         }
     }
 }

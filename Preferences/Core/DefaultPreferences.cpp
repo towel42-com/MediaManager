@@ -22,7 +22,7 @@
 // SOFTWARE.
 
 #include "Preferences.h"
-#include "SABUtils/FFMpegFormats.h"
+#include "T42-Utils/FFMpegFormats.h"
 
 namespace NMediaManager
 {
@@ -738,12 +738,12 @@ namespace NMediaManager
                 }
             }
 
-            NSABUtils::TFormatMap CPreferences::getEncoderFormatExtensionsMapStatic() const
+            NTowel42Utils::TFormatMap CPreferences::getEncoderFormatExtensionsMapStatic() const
             {
-                static auto defaultValue = NSABUtils::TFormatMap(
+                static auto defaultValue = NTowel42Utils::TFormatMap(
                     {
                          {
-                            NSABUtils::EFormatType::eAudio, std::unordered_map< QString, QStringList >
+                            NTowel42Utils::EFormatType::eAudio, std::unordered_map< QString, QStringList >
                              ( {
                                  { R"(3g2)", QStringList( { R"(*.3g2)" } ) } //
                                 ,{ R"(3gp)", QStringList( { R"(*.3gp)" } ) } //
@@ -817,7 +817,7 @@ namespace NMediaManager
                             } )
                         }
                         ,{
-                            NSABUtils::EFormatType::eImage, std::unordered_map< QString, QStringList >
+                            NTowel42Utils::EFormatType::eImage, std::unordered_map< QString, QStringList >
                              ( {
                                  { R"(apng)", QStringList( { R"(*.apng)" } ) } //
                                 ,{ R"(avif)", QStringList( { R"(*.avif)" } ) } //
@@ -828,7 +828,7 @@ namespace NMediaManager
                             } )
                         }
                         ,{
-                            NSABUtils::EFormatType::eSubtitle, std::unordered_map< QString, QStringList >
+                            NTowel42Utils::EFormatType::eSubtitle, std::unordered_map< QString, QStringList >
                              ( {
                                  { R"(ass)", QStringList( { R"(*.ass)", R"(*.ssa)" } ) } //
                                 ,{ R"(hls)", QStringList( { R"(*.m3u8)" } ) } //
@@ -843,7 +843,7 @@ namespace NMediaManager
                             } )
                         }
                         ,{
-                            NSABUtils::EFormatType::eVideo, std::unordered_map< QString, QStringList >
+                            NTowel42Utils::EFormatType::eVideo, std::unordered_map< QString, QStringList >
                              ( {
                                  { R"(3g2)", QStringList( { R"(*.3g2)" } ) } //
                                 ,{ R"(3gp)", QStringList( { R"(*.3gp)" } ) } //
@@ -1183,12 +1183,12 @@ namespace NMediaManager
                 }
             }
 
-            NSABUtils::TFormatMap CPreferences::getDecoderFormatExtensionsMapStatic() const
+            NTowel42Utils::TFormatMap CPreferences::getDecoderFormatExtensionsMapStatic() const
             {
-                static auto defaultValue = NSABUtils::TFormatMap(
+                static auto defaultValue = NTowel42Utils::TFormatMap(
                     {
                          {
-                            NSABUtils::EFormatType::eAudio, std::unordered_map< QString, QStringList >
+                            NTowel42Utils::EFormatType::eAudio, std::unordered_map< QString, QStringList >
                              ( {
                                  { R"(aac)", QStringList( { R"(*.aac)" } ) } //
                                 ,{ R"(ac3)", QStringList( { R"(*.ac3)" } ) } //
@@ -1216,7 +1216,7 @@ namespace NMediaManager
                             } )
                         }
                         ,{
-                            NSABUtils::EFormatType::eSubtitle, std::unordered_map< QString, QStringList >
+                            NTowel42Utils::EFormatType::eSubtitle, std::unordered_map< QString, QStringList >
                              ( {
                                  { R"(mpl2)", QStringList( { R"(*.txt)", R"(*.mpl2)" } ) } //
                                 ,{ R"(pjs)", QStringList( { R"(*.pjs)" } ) } //
@@ -1230,7 +1230,7 @@ namespace NMediaManager
                             } )
                         }
                         ,{
-                            NSABUtils::EFormatType::eVideo, std::unordered_map< QString, QStringList >
+                            NTowel42Utils::EFormatType::eVideo, std::unordered_map< QString, QStringList >
                              ( {
                                  { R"(av1)", QStringList( { R"(*.obu)" } ) } //
                                 ,{ R"(avs2)", QStringList( { R"(*.avs)", R"(*.avs2)" } ) } //
@@ -4288,12 +4288,12 @@ namespace NMediaManager
                 }
             }
 
-            NSABUtils::TCodecToEncoderDecoderMap CPreferences::getCodecToEncoderMapStatic() const
+            NTowel42Utils::TCodecToEncoderDecoderMap CPreferences::getCodecToEncoderMapStatic() const
             {
-                static auto defaultValue = NSABUtils::TCodecToEncoderDecoderMap(
+                static auto defaultValue = NTowel42Utils::TCodecToEncoderDecoderMap(
                     {
                          {
-                            NSABUtils::EFormatType::eAudio, std::unordered_multimap< QString, QString >
+                            NTowel42Utils::EFormatType::eAudio, std::unordered_multimap< QString, QString >
                              ( {
                                  { R"(aac)", R"(aac)" } //
                                 ,{ R"(aac)", R"(aac_mf)" } //
@@ -4318,7 +4318,7 @@ namespace NMediaManager
                             } )
                         }
                         ,{
-                            NSABUtils::EFormatType::eSubtitle, std::unordered_multimap< QString, QString >
+                            NTowel42Utils::EFormatType::eSubtitle, std::unordered_multimap< QString, QString >
                              ( {
                                  { R"(ass)", R"(ssa)" } //
                                 ,{ R"(ass)", R"(ass)" } //
@@ -4329,7 +4329,7 @@ namespace NMediaManager
                             } )
                         }
                         ,{
-                            NSABUtils::EFormatType::eVideo, std::unordered_multimap< QString, QString >
+                            NTowel42Utils::EFormatType::eVideo, std::unordered_multimap< QString, QString >
                              ( {
                                  { R"(a64_multi)", R"(a64multi)" } //
                                 ,{ R"(a64_multi5)", R"(a64multi5)" } //
@@ -4381,12 +4381,12 @@ namespace NMediaManager
                 return defaultValue;
             }
 
-            NSABUtils::TCodecToEncoderDecoderMap CPreferences::getCodecToDecoderMapStatic() const
+            NTowel42Utils::TCodecToEncoderDecoderMap CPreferences::getCodecToDecoderMapStatic() const
             {
-                static auto defaultValue = NSABUtils::TCodecToEncoderDecoderMap(
+                static auto defaultValue = NTowel42Utils::TCodecToEncoderDecoderMap(
                     {
                          {
-                            NSABUtils::EFormatType::eAudio, std::unordered_multimap< QString, QString >
+                            NTowel42Utils::EFormatType::eAudio, std::unordered_multimap< QString, QString >
                              ( {
                                  { R"(aac)", R"(aac)" } //
                                 ,{ R"(aac)", R"(aac_fixed)" } //
@@ -4427,7 +4427,7 @@ namespace NMediaManager
                             } )
                         }
                         ,{
-                            NSABUtils::EFormatType::eSubtitle, std::unordered_multimap< QString, QString >
+                            NTowel42Utils::EFormatType::eSubtitle, std::unordered_multimap< QString, QString >
                              ( {
                                  { R"(arib_caption)", R"(libaribb24)" } //
                                 ,{ R"(ass)", R"(ssa)" } //
@@ -4442,7 +4442,7 @@ namespace NMediaManager
                             } )
                         }
                         ,{
-                            NSABUtils::EFormatType::eVideo, std::unordered_multimap< QString, QString >
+                            NTowel42Utils::EFormatType::eVideo, std::unordered_multimap< QString, QString >
                              ( {
                                  { R"(av1)", R"(libdav1d)" } //
                                 ,{ R"(av1)", R"(libaom-av1)" } //

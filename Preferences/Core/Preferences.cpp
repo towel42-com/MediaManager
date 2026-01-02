@@ -24,12 +24,12 @@
 #include "TranscodeNeeded.h"
 
 #include "Core/LanguageInfo.h"
-#include "SABUtils/QtUtils.h"
-#include "SABUtils/MediaInfo.h"
-#include "SABUtils/FileUtils.h"
-#include "SABUtils/GPUDetect.h"
-#include "SABUtils/ScrollMessageBox.h"
-#include "SABUtils/FFMpegFormats.h"
+#include "T42-Utils/QtUtils.h"
+#include "T42-Utils/MediaInfo.h"
+#include "T42-Utils/FileUtils.h"
+#include "T42-Utils/GPUDetect.h"
+#include "T42-Utils/ScrollMessageBox.h"
+#include "T42-Utils/FFMpegFormats.h"
 
 #include <QSettings>
 #include <QStringListModel>
@@ -197,8 +197,8 @@ namespace NMediaManager
 
             CPreferences::CPreferences()
             {
-                fMediaFormats = std::make_unique< NSABUtils::CFFMpegFormats >( getFFMpegEXE() );
-                connect( NSABUtils::CMediaInfoMgr::instance(), &NSABUtils::CMediaInfoMgr::sigMediaLoaded, this, &CPreferences::sigMediaInfoLoaded );
+                fMediaFormats = std::make_unique< NTowel42Utils::CFFMpegFormats >( getFFMpegEXE() );
+                connect( NTowel42Utils::CMediaInfoMgr::instance(), &NTowel42Utils::CMediaInfoMgr::sigMediaLoaded, this, &CPreferences::sigMediaInfoLoaded );
             }
 
             CPreferences::~CPreferences()
@@ -272,13 +272,13 @@ namespace NMediaManager
 
             QSize CPreferences::getThumbnailSize( const QFileInfo &fi ) const
             {
-                auto mediaInfo = NSABUtils::CMediaInfo( fi.absoluteFilePath() );
-                auto tags = mediaInfo.getMediaTags( { NSABUtils::EMediaTags::eWidth, NSABUtils::EMediaTags::eHeight, NSABUtils::EMediaTags::eAspectRatio } );
+                auto mediaInfo = NTowel42Utils::CMediaInfo( fi.absoluteFilePath() );
+                auto tags = mediaInfo.getMediaTags( { NTowel42Utils::EMediaTags::eWidth, NTowel42Utils::EMediaTags::eHeight, NTowel42Utils::EMediaTags::eAspectRatio } );
 
-                auto width = tags[ NSABUtils::EMediaTags::eWidth ].toInt();
-                auto height = tags[ NSABUtils::EMediaTags::eHeight ].toInt();
+                auto width = tags[ NTowel42Utils::EMediaTags::eWidth ].toInt();
+                auto height = tags[ NTowel42Utils::EMediaTags::eHeight ].toInt();
 
-                auto aspectRatio = tags[ NSABUtils::EMediaTags::eAspectRatio ].toDouble();   // w/h
+                auto aspectRatio = tags[ NTowel42Utils::EMediaTags::eAspectRatio ].toDouble();   // w/h
                 if ( aspectRatio == 0.0 )
                     aspectRatio = ( 1.0 * width ) / ( 1.0 * height );
 
@@ -313,10 +313,10 @@ namespace NMediaManager
                 for ( auto &&ii : paths )
                 {
                     QString curr;
-                    if ( NSABUtils::NFileUtils::isIPAddressNetworkPath( ii ) )
+                    if ( NTowel42Utils::NFileUtils::isIPAddressNetworkPath( ii ) )
                         curr = ii;
                     else
-                        curr = NSABUtils::NFileUtils::getCorrectPathCase( ii );
+                        curr = NTowel42Utils::NFileUtils::getCorrectPathCase( ii );
                     if ( curr.isEmpty() )
                         continue;
                     retVal << curr;
@@ -521,7 +521,7 @@ namespace NMediaManager
                 return fMediaFormats->isEncoderFormat( fi.suffix(), formatName );
             }
 
-            bool CPreferences::isEncoderFormat( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &formatName ) const
+            bool CPreferences::isEncoderFormat( std::shared_ptr< NTowel42Utils::CMediaInfo > mediaInfo, const QString &formatName ) const
             {
                 return isEncoderFormat( QFileInfo( mediaInfo->fileName() ), formatName );
             }
@@ -536,7 +536,7 @@ namespace NMediaManager
                 return fMediaFormats->isDecoderFormat( fi.suffix(), formatName );
             }
 
-            bool CPreferences::isDecoderFormat( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &formatName ) const
+            bool CPreferences::isDecoderFormat( std::shared_ptr< NTowel42Utils::CMediaInfo > mediaInfo, const QString &formatName ) const
             {
                 return isDecoderFormat( QFileInfo( mediaInfo->fileName() ), formatName );
             }
@@ -1130,37 +1130,37 @@ namespace NMediaManager
                 emitSigPreferencesChanged( EPreferenceType::eTagPrefs );
             }
 
-            std::list< std::pair< NSABUtils::EMediaTags, bool > > CPreferences::getAllMediaTags() const
+            std::list< std::pair< NTowel42Utils::EMediaTags, bool > > CPreferences::getAllMediaTags() const
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTagPrefs ) );
 
-                std::list< std::pair< NSABUtils::EMediaTags, bool > > retVal = {
-                    { NSABUtils::EMediaTags::eTitle, true },   //
-                    { NSABUtils::EMediaTags::eLength, true },   //
-                    { NSABUtils::EMediaTags::eDate, true },   //
-                    { NSABUtils::EMediaTags::eComment, true },   //
-                    { NSABUtils::EMediaTags::eBPM, true },   //
-                    { NSABUtils::EMediaTags::eArtist, true },   //
-                    { NSABUtils::EMediaTags::eComposer, true },   //
-                    { NSABUtils::EMediaTags::eGenre, true },   //
-                    { NSABUtils::EMediaTags::eTrack, true },   //
-                    { NSABUtils::EMediaTags::eAlbum, false },   //
-                    { NSABUtils::EMediaTags::eAlbumArtist, false },   //
-                    { NSABUtils::EMediaTags::eDiscnumber, false },   //
-                    { NSABUtils::EMediaTags::eAspectRatio, false },   //
-                    { NSABUtils::EMediaTags::eWidth, false },   //
-                    { NSABUtils::EMediaTags::eHeight, false },   //
-                    { NSABUtils::EMediaTags::eResolution, false },   //
-                    { NSABUtils::EMediaTags::eAllVideoCodecs, false },   //
-                    { NSABUtils::EMediaTags::eAllAudioCodecsDisp, false },   //
-                    { NSABUtils::EMediaTags::eVideoBitrateString, false },   //
-                    { NSABUtils::EMediaTags::eHDRInfo, false },   //
-                    { NSABUtils::EMediaTags::eOverAllBitrateString, false },   //
-                    { NSABUtils::EMediaTags::eAudioChannelCount, false },   //
-                    { NSABUtils::EMediaTags::eTotalAudioBitrateString, false },   //
-                    { NSABUtils::EMediaTags::eAllSubtitleLanguages, false },   //
-                    { NSABUtils::EMediaTags::eAllSubtitleCodecs, false } };
+                std::list< std::pair< NTowel42Utils::EMediaTags, bool > > retVal = {
+                    { NTowel42Utils::EMediaTags::eTitle, true },   //
+                    { NTowel42Utils::EMediaTags::eLength, true },   //
+                    { NTowel42Utils::EMediaTags::eDate, true },   //
+                    { NTowel42Utils::EMediaTags::eComment, true },   //
+                    { NTowel42Utils::EMediaTags::eBPM, true },   //
+                    { NTowel42Utils::EMediaTags::eArtist, true },   //
+                    { NTowel42Utils::EMediaTags::eComposer, true },   //
+                    { NTowel42Utils::EMediaTags::eGenre, true },   //
+                    { NTowel42Utils::EMediaTags::eTrack, true },   //
+                    { NTowel42Utils::EMediaTags::eAlbum, false },   //
+                    { NTowel42Utils::EMediaTags::eAlbumArtist, false },   //
+                    { NTowel42Utils::EMediaTags::eDiscnumber, false },   //
+                    { NTowel42Utils::EMediaTags::eAspectRatio, false },   //
+                    { NTowel42Utils::EMediaTags::eWidth, false },   //
+                    { NTowel42Utils::EMediaTags::eHeight, false },   //
+                    { NTowel42Utils::EMediaTags::eResolution, false },   //
+                    { NTowel42Utils::EMediaTags::eAllVideoCodecs, false },   //
+                    { NTowel42Utils::EMediaTags::eAllAudioCodecsDisp, false },   //
+                    { NTowel42Utils::EMediaTags::eVideoBitrateString, false },   //
+                    { NTowel42Utils::EMediaTags::eHDRInfo, false },   //
+                    { NTowel42Utils::EMediaTags::eOverAllBitrateString, false },   //
+                    { NTowel42Utils::EMediaTags::eAudioChannelCount, false },   //
+                    { NTowel42Utils::EMediaTags::eTotalAudioBitrateString, false },   //
+                    { NTowel42Utils::EMediaTags::eAllSubtitleLanguages, false },   //
+                    { NTowel42Utils::EMediaTags::eAllSubtitleCodecs, false } };
 
                 if ( !settings.contains( "EnabledTags" ) )
                     return retVal;
@@ -1173,17 +1173,17 @@ namespace NMediaManager
                 {
                     for ( auto &&jj : retVal )
                     {
-                        if ( jj.first == static_cast< NSABUtils::EMediaTags >( ii.toInt() ) )
+                        if ( jj.first == static_cast< NTowel42Utils::EMediaTags >( ii.toInt() ) )
                             jj.second = true;
                     }
                 }
                 return retVal;
             }
 
-            std::list< NSABUtils::EMediaTags > CPreferences::getEnabledTags() const
+            std::list< NTowel42Utils::EMediaTags > CPreferences::getEnabledTags() const
             {
                 auto allTags = getAllMediaTags();
-                std::list< NSABUtils::EMediaTags > retVal;
+                std::list< NTowel42Utils::EMediaTags > retVal;
                 for ( auto &&ii : allTags )
                 {
                     if ( ii.second )
@@ -1197,11 +1197,11 @@ namespace NMediaManager
                 auto tags = getEnabledTags();
                 QStringList retVal;
                 for ( auto &&ii : tags )
-                    retVal << NSABUtils::displayName( ii );
+                    retVal << NTowel42Utils::displayName( ii );
                 return retVal;
             }
 
-            void CPreferences::setEnabledTags( const std::list< NSABUtils::EMediaTags > &values )
+            void CPreferences::setEnabledTags( const std::list< NTowel42Utils::EMediaTags > &values )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eTagPrefs ) );
@@ -1227,7 +1227,7 @@ namespace NMediaManager
                     retVal = retVal.replace( "<month>", date.toString( "(M|MM|MMM|MMMM)" ) );
                     retVal = retVal.replace( "<day>", date.toString( "(d|dd|ddd|dddd)" ) );
 
-                    auto dateFormat = "(" + NSABUtils::getDateFormats( { true, false } ).join( "|" ) + ")";
+                    auto dateFormat = "(" + NTowel42Utils::getDateFormats( { true, false } ).join( "|" ) + ")";
                     retVal = retVal.replace( "<date>", date.toString( dateFormat ) );
                 }
                 return retVal;
@@ -1444,7 +1444,7 @@ namespace NMediaManager
                 settings.setValue( "FFProbeEXE", value );
                 emitSigPreferencesChanged( EPreferenceType::eExtToolsPrefs );
 
-                NSABUtils::CMediaInfo::setFFProbeEXE( value );
+                NTowel42Utils::CMediaInfo::setFFProbeEXE( value );
             }
 
             QString CPreferences::getFFProbeEXE() const
@@ -1688,7 +1688,7 @@ namespace NMediaManager
                 return settings.value( "LoopCount", -1 ).toInt();
             }
 
-            void CPreferences::setGIFStartFrame( int startFrame )
+            void CPreferences::setGIFStartFrame( std::size_t startFrame )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eGIFPrefs ) );
@@ -1696,14 +1696,14 @@ namespace NMediaManager
                 emitSigPreferencesChanged( EPreferenceType::eGIFPrefs );
             }
 
-            int CPreferences::gifStartFrame() const
+            std::size_t CPreferences::gifStartFrame() const
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eGIFPrefs ) );
                 return settings.value( "StartFrame", 0 ).toInt();
             }
 
-            void CPreferences::setGIFEndFrame( int endFrame )
+            void CPreferences::setGIFEndFrame( std::size_t endFrame )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eGIFPrefs ) );
@@ -1711,7 +1711,7 @@ namespace NMediaManager
                 emitSigPreferencesChanged( EPreferenceType::eGIFPrefs );
             }
 
-            int CPreferences::gifEndFrame() const
+            std::size_t CPreferences::gifEndFrame() const
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eGIFPrefs ) );
@@ -1736,18 +1736,18 @@ namespace NMediaManager
             /// ////////////////////////////////////////////////////////
             /// MakeMKV Options
             /// ////////////////////////////////////////////////////////
-            std::shared_ptr< NSABUtils::CMediaInfo > CPreferences::getMediaInfo( const QString &fileName, bool force )
+            std::shared_ptr< NTowel42Utils::CMediaInfo > CPreferences::getMediaInfo( const QString &fileName, bool force )
             {
                 return getMediaInfo( std::move( QFileInfo( fileName ) ), force );
             }
 
-            std::shared_ptr< NSABUtils::CMediaInfo > CPreferences::getMediaInfo( const QFileInfo &fi, bool force )
+            std::shared_ptr< NTowel42Utils::CMediaInfo > CPreferences::getMediaInfo( const QFileInfo &fi, bool force )
             {
                 if ( !isMediaFile( fi ) )
                     return {};
 
-                if ( NSABUtils::CMediaInfoMgr::instance()->isMediaCached( fi ) )
-                    return NSABUtils::CMediaInfoMgr::instance()->getMediaInfo( fi );
+                if ( NTowel42Utils::CMediaInfoMgr::instance()->isMediaCached( fi ) )
+                    return NTowel42Utils::CMediaInfoMgr::instance()->getMediaInfo( fi );
 
                 if ( !force && !getLoadMediaInfo() )
                     return {};
@@ -1755,10 +1755,10 @@ namespace NMediaManager
                 bool delayLoad = !force && getBackgroundLoadMediaInfo();
                 if ( delayLoad )
                 {
-                    return NSABUtils::CMediaInfoMgr::instance()->getMediaInfo( fi );
+                    return NTowel42Utils::CMediaInfoMgr::instance()->getMediaInfo( fi );
                 }
                 else
-                    return std::make_shared< NSABUtils::CMediaInfo >( fi );
+                    return std::make_shared< NTowel42Utils::CMediaInfo >( fi );
             }
 
             QStringList CPreferences::availableEncoderMediaFormats( bool verbose ) const
@@ -1766,7 +1766,7 @@ namespace NMediaManager
                 return getMediaFormats()->encoderFormats( verbose );
             }
 
-            NSABUtils::TFormatMap CPreferences::getEncoderFormatExtensionsMap() const
+            NTowel42Utils::TFormatMap CPreferences::getEncoderFormatExtensionsMap() const
             {
                 return getMediaFormats()->mediaEncoderFormatExtensions();
             }
@@ -1776,7 +1776,7 @@ namespace NMediaManager
                 return getMediaFormats()->decoderFormats( verbose );
             }
 
-            NSABUtils::TFormatMap CPreferences::getDecoderFormatExtensionsMap() const
+            NTowel42Utils::TFormatMap CPreferences::getDecoderFormatExtensionsMap() const
             {
                 return getMediaFormats()->mediaDecoderFormatExtensions();
             }
@@ -1841,12 +1841,12 @@ namespace NMediaManager
                 return getMediaFormats()->subtitleDecoders( verbose );
             }
 
-            NSABUtils::TCodecToEncoderDecoderMap CPreferences::getCodecToEncoderMap() const
+            NTowel42Utils::TCodecToEncoderDecoderMap CPreferences::getCodecToEncoderMap() const
             {
                 return getMediaFormats()->codecToEncoderMap();
             }
 
-            NSABUtils::TCodecToEncoderDecoderMap CPreferences::getCodecToDecoderMap() const
+            NTowel42Utils::TCodecToEncoderDecoderMap CPreferences::getCodecToDecoderMap() const
             {
                 return getMediaFormats()->codecToDecoderMap();
             }
@@ -1874,7 +1874,7 @@ namespace NMediaManager
                 }
                 else if ( !fMediaFormats->loaded() )
                 {
-                    fMediaFormats = std::move( std::make_unique< NSABUtils::CFFMpegFormats >() );
+                    fMediaFormats = std::move( std::make_unique< NTowel42Utils::CFFMpegFormats >() );
                     fMediaFormats->setFFMpegExecutable( ffmpeg );
 
                     fMediaFormats->initEncoderFormatsFromDefaults( availableMediaEncoderFormatsStatic( false ), availableMediaEncoderFormatsStatic( true ), getEncoderFormatExtensionsMapStatic() );
@@ -1905,7 +1905,7 @@ namespace NMediaManager
                 }
             }
 
-            NSABUtils::CFFMpegFormats *CPreferences::getMediaFormats() const
+            NTowel42Utils::CFFMpegFormats *CPreferences::getMediaFormats() const
             {
                 loadMediaFormats( false );
                 return fMediaFormats.get();
@@ -2207,7 +2207,7 @@ namespace NMediaManager
                 return settings.value( "UseTargetBitrate", getUseTargetBitrateDefault() ).toBool();
             }
 
-            uint64_t CPreferences::getTargetBitrate( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, bool useKBS, bool addThreshold ) const
+            uint64_t CPreferences::getTargetBitrate( std::shared_ptr< NTowel42Utils::CMediaInfo > mediaInfo, bool useKBS, bool addThreshold ) const
             {
                 if ( !mediaInfo )
                     return 0;
@@ -2215,7 +2215,7 @@ namespace NMediaManager
                 return getTargetBitrate( mediaInfo->getResolutionInfo(), useKBS, addThreshold );
             }
 
-            uint64_t CPreferences::getTargetBitrate( const NSABUtils::SResolutionInfo &resInfo, bool useKBS, bool addThreshold, int greaterThan4kDivisor, double resThreshold, int bitrate4k, int bitrateHD, int bitrateSubHD, double bitrateThreshold )
+            uint64_t CPreferences::getTargetBitrate( const NTowel42Utils::SResolutionInfo &resInfo, bool useKBS, bool addThreshold, int greaterThan4kDivisor, double resThreshold, int bitrate4k, int bitrateHD, int bitrateSubHD, double bitrateThreshold )
             {
                 uint64_t retVal;
                 if ( resInfo.isGreaterThan4kResolution( resThreshold ) )
@@ -2252,15 +2252,15 @@ namespace NMediaManager
                 return retVal;
             }
 
-            uint64_t CPreferences::getTargetBitrate( const NSABUtils::SResolutionInfo &resInfo, bool useKBS, bool addThreshold ) const
+            uint64_t CPreferences::getTargetBitrate( const NTowel42Utils::SResolutionInfo &resInfo, bool useKBS, bool addThreshold ) const
             {
                 return getTargetBitrate( resInfo, useKBS, addThreshold, getGreaterThan4kDivisor(), getResolutionThreshold(), getTarget4kBitrate(), getTargetHDBitrate(), getTargetSubHDBitrate(), getBitrateThreshold() );
             }
 
-            QString CPreferences::getTargetBitrateDisplayString( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo ) const
+            QString CPreferences::getTargetBitrateDisplayString( std::shared_ptr< NTowel42Utils::CMediaInfo > mediaInfo ) const
             {
                 auto bps = NPreferences::NCore::CPreferences::instance()->getTargetBitrate( mediaInfo, false, false );
-                return NSABUtils::NFileUtils::byteSizeString( bps, true, false, 1, false, "bps" );
+                return NTowel42Utils::NFileUtils::byteSizeString( bps, true, false, 1, false, "bps" );
             }
 
             void CPreferences::setTarget4kBitrate( int value )
@@ -2418,7 +2418,7 @@ namespace NMediaManager
                 if ( !fHasIntelGPU.has_value() )
                 {
                     fHasIntelGPU = false;
-                    auto gpus = NSABUtils::detectGPUs();
+                    auto gpus = NTowel42Utils::detectGPUs();
                     for ( auto &&ii : gpus )
                     {
                         if ( ii->isIntelGPU() )
@@ -2436,7 +2436,7 @@ namespace NMediaManager
                 if ( !fHasNVidiaGPU.has_value() )
                 {
                     fHasNVidiaGPU = false;
-                    auto gpus = NSABUtils::detectGPUs();
+                    auto gpus = NTowel42Utils::detectGPUs();
                     for ( auto &&ii : gpus )
                     {
                         if ( ii->isNVidiaGPU() )
@@ -2454,7 +2454,7 @@ namespace NMediaManager
                 if ( !fHasAMDGPU.has_value() )
                 {
                     fHasAMDGPU = false;
-                    auto gpus = NSABUtils::detectGPUs();
+                    auto gpus = NTowel42Utils::detectGPUs();
                     for ( auto &&ii : gpus )
                     {
                         if ( ii->isAMDGPU() )
@@ -2503,7 +2503,7 @@ namespace NMediaManager
                         ii = ii.mid( pos + 1 );
                         ii = ii.toLower();
                     }
-                    hash = NSABUtils::hashFromList( suffixes );
+                    hash = NTowel42Utils::hashFromList( suffixes );
                 }
 
                 auto suffix = fi.suffix().toLower();
@@ -2519,8 +2519,12 @@ namespace NMediaManager
 
             bool CPreferences::isMediaFile( const QFileInfo &fi ) const
             {
-                return isFileWithExtension(
-                    fi, [ this ]() { return getMediaFormats()->getVideoExtensions(); }, fMediaExtensionsHash, fIsMediaExtension );
+                return isFileWithExtension( fi, [ this ]() { return getMediaFormats()->getVideoExtensions(); }, fMediaExtensionsHash, fIsMediaExtension );
+            }
+
+            bool CPreferences::isMediaFile( const QString &path ) const
+            {
+                return isMediaFile( QFileInfo( path ) );
             }
 
             // only return true for X_Lang.srt files or subs directories
@@ -2531,8 +2535,12 @@ namespace NMediaManager
                     *isLangFileFormat = NMediaManager::NCore::SLanguageInfo::isLangFileFormat( fi );
                 }
 
-                return isFileWithExtension(
-                    fi, [ this ]() { return getMediaFormats()->getSubtitleExtensions(); }, fSubtitleExtensionsHash, fIsSubtitleExtension );
+                return isFileWithExtension( fi, [ this ]() { return getMediaFormats()->getSubtitleExtensions(); }, fSubtitleExtensionsHash, fIsSubtitleExtension );
+            }
+
+            bool CPreferences::isSubtitleFile( const QString &info, bool *isLangFileFormat /*= nullptr*/ ) const
+            {
+                return isSubtitleFile( QFileInfo( info ), isLangFileFormat );
             }
 
             void CPreferences::emitSigPreferencesChanged( EPreferenceTypes preferenceTypes )

@@ -32,9 +32,9 @@
 #include <QMessageBox>
 #include <QRegularExpression>
 #include <QRegularExpressionValidator>
-#include "SABUtils/ButtonEnabler.h"
-#include "SABUtils/UtilityModels.h"
-#include "SABUtils/QtUtils.h"
+#include "T42-Utils/ButtonEnabler.h"
+#include "T42-Utils/UtilityModels.h"
+#include "T42-Utils/QtUtils.h"
 
 namespace NMediaManager
 {
@@ -75,7 +75,8 @@ namespace NMediaManager
             void CMediaNamingSettings::slotRippedRegEXChanged()
             {
                 int pos = -1;
-                auto state = fValidator->validate( fImpl->rippedWithMakeMKVRegEX->text(), pos );
+                auto regExText = fImpl->rippedWithMakeMKVRegEX->text();
+                auto state = fValidator->validate( regExText, pos );
                 if ( ( state == QValidator::State::Intermediate ) || ( state == QValidator::State::Invalid ) )
                 {
                     fImpl->rippedWithMakeMKVRegEX->setStyleSheet( "QLineEdit { background-color: red }" );

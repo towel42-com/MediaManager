@@ -110,6 +110,7 @@ namespace NMediaManager
             bool isAutoSetText() const;
 
             QString transformedName( const QFileInfo &fileInfo, const SPatternInfo &info, bool titleOnly ) const;
+            QString transformedName( const QString &path, const SPatternInfo &info, bool titleOnly ) const;
             void removeChild( std::shared_ptr< CTransformResult > info );
 
             QString toString( bool forDebug ) const;

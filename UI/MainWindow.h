@@ -33,7 +33,7 @@ class QTabWidget;
 #include <tuple>
 #include "Preferences/Core/Preferences.h"
 
-namespace NSABUtils
+namespace NTowel42Utils
 {
     class CStayAwake;
     class CBackgroundFileCheck;
@@ -101,7 +101,7 @@ namespace NMediaManager
 
         private:
             void addPages();
-            std::shared_ptr< STabDef > addPage( std::shared_ptr< STabDef > &tabDef );
+            std::shared_ptr< STabDef > addPage( std::shared_ptr< STabDef > tabDef );
 
             CBasePage *getCurrentBasePage() const;
             void clearDirModel();
@@ -122,8 +122,8 @@ namespace NMediaManager
             std::unique_ptr< Ui::CMainWindow > fImpl;
             CCompleterFileSystemModel *fDirModel{ nullptr };
             CCompleterFileSystemModel *fFileModel{ nullptr };
-            NSABUtils::CBackgroundFileCheck *fFileChecker;
-            NSABUtils::CStayAwake *fStayAwake{ nullptr };
+            NTowel42Utils::CBackgroundFileCheck *fFileChecker;
+            NTowel42Utils::CStayAwake *fStayAwake{ nullptr };
 
             std::optional< NPreferences::EPreferenceTypes > fQueuedPrefChanged;
             std::list< std::shared_ptr< STabDef > > fUIComponentMap;

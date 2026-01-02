@@ -22,12 +22,12 @@
 
 #include "GenerateBIFModel.h"
 #include "Preferences/Core/Preferences.h"
-#include "SABUtils/FileUtils.h"
-#include "SABUtils/BackupFile.h"
-#include "SABUtils/DoubleProgressDlg.h"
-#include "SABUtils/MediaInfo.h"
-#include "SABUtils/BIFFile.h"
-#include "SABUtils/GIFWriterDlg.h"
+#include "T42-Utils/FileUtils.h"
+#include "T42-Utils/BackupFile.h"
+#include "T42-Utils/DoubleProgressDlg.h"
+#include "T42-Utils/MediaInfo.h"
+#include "T42-Utils/BIFFile.h"
+#include "T42-Utils/GIFWriterDlg.h"
 
 #include <QDir>
 #include <QTimer>
@@ -94,7 +94,7 @@ namespace NMediaManager
             fFirstProcess = true;
             if ( !displayOnly )
             {
-                processInfo->fMaximum = NSABUtils::CMediaInfo::getNumberOfSeconds( processInfo->fOldName );
+                processInfo->fMaximum = NTowel42Utils::CMediaInfo::getNumberOfSeconds( processInfo->fOldName );
 
                 bool isEmbyEXE = false;
                 processInfo->fCmd = NPreferences::NCore::CPreferences::instance()->getFFMpegEmbyEXE();
@@ -116,7 +116,7 @@ namespace NMediaManager
                 }
 
                 aOK = aOK && checkProcessItemExists( processInfo->fOldName, processInfo->fItem );
-                processInfo->fTimeStamps = NSABUtils::NFileUtils::timeStamps( processInfo->fOldName );
+                processInfo->fTimeStamps = NTowel42Utils::NFileUtils::timeStamps( processInfo->fOldName );
 
                 if ( NPreferences::NCore::CPreferences::instance()->keepTempDir() )
                 {
@@ -174,7 +174,7 @@ namespace NMediaManager
 
                     bool aOK = true;
                     QString errorMsg;
-                    auto allImages = NSABUtils::NFileUtils::findAllFiles( dir, { "img_*.jpg" }, false, true, &errorMsg );
+                    auto allImages = NTowel42Utils::NFileUtils::findAllFiles( dir, { "img_*.jpg" }, false, true, &errorMsg );
                     if ( !allImages.has_value() || allImages.value().isEmpty() )
                     {
                         msg = QString( "No images exists in dir '%1' of the format 'img_*.jpg' - %2" ).arg( dir.absolutePath() ).arg( errorMsg );
@@ -183,7 +183,7 @@ namespace NMediaManager
 
                     if ( NPreferences::NCore::CPreferences::instance()->generateBIF() )
                     {
-                        auto bifFile = std::make_shared< NSABUtils::NBIF::CFile >( allImages.value(), NPreferences::NCore::CPreferences::instance()->imageInterval() * 1000, msg );
+                        auto bifFile = std::make_shared< NTowel42Utils::NBIF::CFile >( allImages.value(), NPreferences::NCore::CPreferences::instance()->imageInterval() * 1000, msg );
                         if ( !bifFile->isValid() )
                             return false;
                         aOK = bifFile->save( processInfo->primaryNewName(), msg );
@@ -192,13 +192,13 @@ namespace NMediaManager
                     if ( aOK && NPreferences::NCore::CPreferences::instance()->generateGIF() )
                     {
                         auto fi = QFileInfo( processInfo->fNewNames.back() );
-                        if ( !NSABUtils::NFileUtils::backup( processInfo->fNewNames.back() ) )
+                        if ( !NTowel42Utils::NFileUtils::backup( processInfo->fNewNames.back() ) )
                         {
                             CDirModel::appendError( processInfo->fItem, QObject::tr( "%1: FAILED TO BACKUP" ).arg( getDispName( processInfo->fNewNames.back() ) ) );
                             return false;
                         }
 
-                        aOK = NSABUtils::CGIFWriterDlg::saveToGIF(
+                        aOK = NTowel42Utils::CGIFWriterDlg::saveToGIF(
                             nullptr, processInfo->fNewNames.back(), allImages.value(), NPreferences::NCore::CPreferences::instance()->gifDitherImage(), NPreferences::NCore::CPreferences::instance()->gifFlipImage(),
                             NPreferences::NCore::CPreferences::instance()->gifLoopCount(), NPreferences::NCore::CPreferences::instance()->gifDelay(),
                             [ this, fi, processInfo ]( size_t min, size_t max )
@@ -287,7 +287,7 @@ namespace NMediaManager
             if ( NPreferences::NCore::CPreferences::instance()->generateBIF() )
             {
                 auto filter = QFileInfo( NPreferences::NCore::CPreferences::instance()->getImageFileName( fileInfo, "bif" ) ).fileName();
-                auto bifFiles = NSABUtils::NFileUtils::findAllFiles( dir, QStringList() << filter, false, false );
+                auto bifFiles = NTowel42Utils::NFileUtils::findAllFiles( dir, QStringList() << filter, false, false );
                 needsBIF = !bifFiles.has_value() || ( bifFiles.value().length() != 1 );
                 if ( !needsBIF && !bifFiles.value().empty() )
                 {
@@ -300,7 +300,7 @@ namespace NMediaManager
             if ( NPreferences::NCore::CPreferences::instance()->generateGIF() )
             {
                 auto filter = QFileInfo( NPreferences::NCore::CPreferences::instance()->getImageFileName( fileInfo, "gif" ) ).fileName();
-                auto gifFiles = NSABUtils::NFileUtils::findAllFiles( dir, QStringList() << filter, false, false );
+                auto gifFiles = NTowel42Utils::NFileUtils::findAllFiles( dir, QStringList() << filter, false, false );
                 needsGIF = !gifFiles.has_value() || ( gifFiles.value().length() != 1 );
                 if ( !needsGIF && !gifFiles.value().empty() )
                 {

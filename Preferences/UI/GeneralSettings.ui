@@ -58,8 +58,8 @@
          <string>...</string>
         </property>
         <property name="icon">
-         <iconset resource="../../SABUtils/resources/SABUtils.qrc">
-          <normaloff>:/SABUtilsResources/open.png</normaloff>:/SABUtilsResources/open.png</iconset>
+         <iconset resource="../../T42-Utils/resources/Towel42Utils.qrc">
+          <normaloff>:/Towel42UtilsResources/open.png</normaloff>:/Towel42UtilsResources/open.png</iconset>
         </property>
        </widget>
       </item>
@@ -89,7 +89,7 @@
   <tabstop>logDirBtn</tabstop>
  </tabstops>
  <resources>
-  <include location="../../SABUtils/resources/SABUtils.qrc"/>
+  <include location="../../T42-Utils/resources/Towel42Utils.qrc"/>
  </resources>
  <connections/>
 </ui>

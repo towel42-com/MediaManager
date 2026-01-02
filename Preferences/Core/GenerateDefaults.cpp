@@ -24,12 +24,12 @@
 #include "TranscodeNeeded.h"
 
 #include "Core/LanguageInfo.h"
-#include "SABUtils/QtUtils.h"
-#include "SABUtils/MediaInfo.h"
-#include "SABUtils/FileUtils.h"
-#include "SABUtils/GPUDetect.h"
-#include "SABUtils/ScrollMessageBox.h"
-#include "SABUtils/FFMpegFormats.h"
+#include "T42-Utils/QtUtils.h"
+#include "T42-Utils/MediaInfo.h"
+#include "T42-Utils/FileUtils.h"
+#include "T42-Utils/GPUDetect.h"
+#include "T42-Utils/ScrollMessageBox.h"
+#include "T42-Utils/FFMpegFormats.h"
 
 #include <QSettings>
 #include <QStringListModel>
@@ -169,21 +169,21 @@ namespace NMediaManager
                 return replaceText( txt, curr, function );
             }
 
-            void replaceText( const QString &txt, QStringList &curr, const QString &funcName, const NSABUtils::TFormatMap &value )
+            void replaceText( const QString &txt, QStringList &curr, const QString &funcName, const NTowel42Utils::TFormatMap &value )
             {
                 QStringList function;
                 function   //
-                    << QString( "NSABUtils::TFormatMap CPreferences::%1() const" ).arg( funcName )   //
+                    << QString( "NTowel42Utils::TFormatMap CPreferences::%1() const" ).arg( funcName )   //
                     << "{";
 
                 int indent = 1;
                 function   //
-                    << getIndent( indent++ ) + QString( "static auto defaultValue = NSABUtils::TFormatMap(" )   //
+                    << getIndent( indent++ ) + QString( "static auto defaultValue = NTowel42Utils::TFormatMap(" )   //
                     << getIndent( indent++ ) + "{";
                 ;
 
                 auto first = true;
-                for ( auto &&ii : { NSABUtils::EFormatType::eUnknown, NSABUtils::EFormatType::eAudio, NSABUtils::EFormatType::eImage, NSABUtils::EFormatType::eSubtitle, NSABUtils::EFormatType::eVideo } )
+                for ( auto &&ii : { NTowel42Utils::EFormatType::eUnknown, NTowel42Utils::EFormatType::eAudio, NTowel42Utils::EFormatType::eImage, NTowel42Utils::EFormatType::eSubtitle, NTowel42Utils::EFormatType::eVideo } )
                 {
                     auto pos = value.find( ii );
                     if ( pos == value.end() )
@@ -219,21 +219,21 @@ namespace NMediaManager
                 return replaceText( txt, curr, function );
             }
 
-            void replaceText( const QString &txt, QStringList &curr, const QString &funcName, const NSABUtils::TCodecToEncoderDecoderMap &value )
+            void replaceText( const QString &txt, QStringList &curr, const QString &funcName, const NTowel42Utils::TCodecToEncoderDecoderMap &value )
             {
                 QStringList function;
                 function   //
-                    << QString( "NSABUtils::TCodecToEncoderDecoderMap CPreferences::%1() const" ).arg( funcName )   //
+                    << QString( "NTowel42Utils::TCodecToEncoderDecoderMap CPreferences::%1() const" ).arg( funcName )   //
                     << "{";
 
                 int indent = 1;
                 function   //
-                    << getIndent( indent++ ) + QString( "static auto defaultValue = NSABUtils::TCodecToEncoderDecoderMap(" )   //
+                    << getIndent( indent++ ) + QString( "static auto defaultValue = NTowel42Utils::TCodecToEncoderDecoderMap(" )   //
                     << getIndent( indent++ ) + "{";
                 ;
 
                 auto first = true;
-                for ( auto &&ii : { NSABUtils::EFormatType::eUnknown, NSABUtils::EFormatType::eAudio, NSABUtils::EFormatType::eImage, NSABUtils::EFormatType::eSubtitle, NSABUtils::EFormatType::eVideo } )
+                for ( auto &&ii : { NTowel42Utils::EFormatType::eUnknown, NTowel42Utils::EFormatType::eAudio, NTowel42Utils::EFormatType::eImage, NTowel42Utils::EFormatType::eSubtitle, NTowel42Utils::EFormatType::eVideo } )
                 {
                     auto pos = value.find( ii );
                     if ( pos == value.end() )
@@ -446,7 +446,7 @@ namespace NMediaManager
                                             << R"(// SOFTWARE.)"
                                             << R"()"
                                             << R"(#include "Preferences.h")"
-                                            << R"(#include "SABUtils/FFMpegFormats.h")"
+                                            << R"(#include "T42-Utils/FFMpegFormats.h")"
                                             << R"()"
                                             << R"(namespace NMediaManager)" << getIndent( 0 ) + R"({)" << getIndent( 1 ) + R"(namespace NPreferences)" << getIndent( 1 ) + R"({)" << getIndent( 2 ) + R"(namespace NCore)" << getIndent( 2 ) + R"({)"
                                             << "%DEFAULT_SEASON_DIR_PATTERN%"
@@ -653,7 +653,7 @@ namespace NMediaManager
                 bool copyDefaults = false;
                 if ( !diffs.isEmpty() )
                 {
-                    NSABUtils::CScrollMessageBox dlg( parent );
+                    NTowel42Utils::CScrollMessageBox dlg( parent );
                     dlg.setIconLabel( QMessageBox::Warning );
                     dlg.setLabel( "Warning:" );
                     dlg.setWindowTitle( tr( "Preferences have changed:" ) );

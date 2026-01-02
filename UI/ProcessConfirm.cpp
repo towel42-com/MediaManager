@@ -23,7 +23,7 @@
 #include "ProcessConfirm.h"
 #include "ui_ProcessConfirm.h"
 
-#include "SABUtils/QtUtils.h"
+#include "T42-Utils/QtUtils.h"
 
 #include <QAbstractButton>
 #include <QMessageBox>
@@ -48,7 +48,7 @@ namespace NMediaManager
             fImpl->iconLabel->setSizePolicy( sizePolicy );
             fImpl->iconLabel->setVisible( false );
 
-            setIconLabel( QMessageBox::Information );
+            setIconLabel( QStyle::SP_MessageBoxInformation );
 
             connect( fImpl->buttonBox, &QDialogButtonBox::clicked, this, &CProcessConfirm::slotButtonClicked );
 
@@ -73,18 +73,18 @@ namespace NMediaManager
         void CProcessConfirm::setModel( QAbstractItemModel *model )
         {
             fImpl->transformations->setModel( model );
-            NSABUtils::expandAll( fImpl->transformations );
-            auto width = NSABUtils::autoSize( fImpl->transformations );
+            NTowel42Utils::expandAll( fImpl->transformations );
+            auto width = NTowel42Utils::autoSize( fImpl->transformations );
             if ( fImpl->transformations->width() < width )
             {
                 fImpl->transformations->setMinimumWidth( width );
             }
         }
 
-        void CProcessConfirm::setIconLabel( const QMessageBox::Icon &icon )
+        void CProcessConfirm::setIconLabel( const QStyle::StandardPixmap &icon )
         {
             fImpl->iconLabel->setVisible( true );
-            auto pm = QMessageBox::standardIcon( icon );
+            auto pm = style()->standardPixmap( icon );
             fImpl->iconLabel->setPixmap( pm );
             fImpl->iconLabel->setVisible( !pm.isNull() );
             if ( icon == QMessageBox::Icon::Critical )

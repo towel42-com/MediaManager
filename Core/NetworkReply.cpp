@@ -23,8 +23,8 @@
 #include "NetworkReply.h"
 #include "SearchTMDBInfo.h"
 
-#include "SABUtils/StringUtils.h"
-#include "SABUtils/QtUtils.h"
+#include "T42-Utils/StringUtils.h"
+#include "T42-Utils/QtUtils.h"
 
 #include <QUrl>
 #include <QUrlQuery>
@@ -34,7 +34,7 @@
 #include <QRegularExpression>
 #include <QImage>
 #include <QPixmap>
-#include "SABUtils/HashUtils.h"
+#include "T42-Utils/HashUtils.h"
 
 namespace NMediaManager
 {
@@ -177,7 +177,7 @@ namespace NMediaManager
             auto h1 = std::hash< ERequestType >()( fRequestType );
             auto h2 = std::hash< QString >()( fURLPathKey );
             auto h3 = std::hash< QString >()( fTMDBID );
-            return NSABUtils::HashCombine( { h1, h2, h3 } );   // as a key, it only depends on the URL and type
+            return NTowel42Utils::HashCombine( { h1, h2, h3 } );   // as a key, it only depends on the URL and type
         }
 
         void CNetworkReply::reportUnhandled() const

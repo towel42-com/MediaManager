@@ -31,9 +31,9 @@
 #include <QFileDialog>
 #include <QMessageBox>
 
-#include "SABUtils/ButtonEnabler.h"
-#include "SABUtils/UtilityModels.h"
-#include "SABUtils/QtUtils.h"
+#include "T42-Utils/ButtonEnabler.h"
+#include "T42-Utils/UtilityModels.h"
+#include "T42-Utils/QtUtils.h"
 
 namespace NMediaManager
 {
@@ -54,7 +54,7 @@ namespace NMediaManager
                 fSkipPathNamesModel = new QStringListModel( this );
                 fImpl->pathNamesToSkip->setModel( fSkipPathNamesModel );
 
-                new NSABUtils::CButtonEnabler( fImpl->pathNamesToSkip, fImpl->btnDelSkipPathName );
+                new NTowel42Utils::CButtonEnabler( fImpl->pathNamesToSkip, fImpl->btnDelSkipPathName );
             }
 
             CSkippedPaths::~CSkippedPaths()

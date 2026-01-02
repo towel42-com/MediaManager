@@ -26,7 +26,7 @@
 #include "ui_IgnoredPaths.h"
 
 #include <QStringListModel>
-#include "SABUtils/ButtonEnabler.h"
+#include "T42-Utils/ButtonEnabler.h"
 
 namespace NMediaManager
 {
@@ -46,7 +46,7 @@ namespace NMediaManager
                 fModel = new QStringListModel( this );
                 fImpl->pathNamesToIgnore->setModel( fModel );
 
-                new NSABUtils::CButtonEnabler( fImpl->pathNamesToIgnore, fImpl->btnDelIgnorePathName );
+                new NTowel42Utils::CButtonEnabler( fImpl->pathNamesToIgnore, fImpl->btnDelIgnorePathName );
             }
 
             CIgnoredPaths::~CIgnoredPaths()

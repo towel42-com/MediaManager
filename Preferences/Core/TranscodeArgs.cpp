@@ -23,9 +23,8 @@
 #include "Preferences.h"
 #include "TranscodeNeeded.h"
 #include "Core/LanguageInfo.h"
-#include "SABUtils/MediaInfo.h"
+#include "T42-Utils/MediaInfo.h"
 
-#include <QTextCodec>
 #include <QFile>
 #include <QDebug>
 
@@ -35,23 +34,23 @@ namespace NMediaManager
     {
         namespace NCore
         {
-            QStringList CPreferences::getTranscodeArgs( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName, const std::list< NMediaManager::NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NMediaManager::NCore::SLanguageInfo, QString > > &subIdxFiles ) const
+            QStringList CPreferences::getTranscodeArgs( std::shared_ptr< NTowel42Utils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName, const std::list< NMediaManager::NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NMediaManager::NCore::SLanguageInfo, QString > > &subIdxFiles ) const
             {
                 return getTranscodeArgs( mediaInfo, srcName, destName, srtFiles, subIdxFiles, {}, {} );
             }
 
-            QStringList CPreferences::getHighBitrateTranscodeArgs( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName, const std::list< NMediaManager::NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NMediaManager::NCore::SLanguageInfo, QString > > &subIdxFiles ) const
+            QStringList CPreferences::getHighBitrateTranscodeArgs( std::shared_ptr< NTowel42Utils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName, const std::list< NMediaManager::NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NMediaManager::NCore::SLanguageInfo, QString > > &subIdxFiles ) const
             {
                 auto kbps = getTargetBitrate( mediaInfo, true, false );
                 return getTranscodeArgs( mediaInfo, srcName, destName, srtFiles, subIdxFiles, {}, kbps );
             }
 
-            QStringList CPreferences::getHighResolutionTranscodeArgs( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName, const std::list< NMediaManager::NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NMediaManager::NCore::SLanguageInfo, QString > > &subIdxFiles ) const
+            QStringList CPreferences::getHighResolutionTranscodeArgs( std::shared_ptr< NTowel42Utils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName, const std::list< NMediaManager::NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NMediaManager::NCore::SLanguageInfo, QString > > &subIdxFiles ) const
             {
-                return getTranscodeArgs( mediaInfo, srcName, destName, srtFiles, subIdxFiles, NSABUtils::CMediaInfo::k1080pResolution.fResolution, {} );
+                return getTranscodeArgs( mediaInfo, srcName, destName, srtFiles, subIdxFiles, NTowel42Utils::CMediaInfo::k1080pResolution.fResolution, {} );
             }
 
-            QStringList CPreferences::getTranscodeArgs( std::shared_ptr< NSABUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName, const std::list< NMediaManager::NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NMediaManager::NCore::SLanguageInfo, QString > > &subIdxFiles, const std::optional< std::pair< int, int > > &resolution, const std::optional< uint64_t > &bitrate ) const
+            QStringList CPreferences::getTranscodeArgs( std::shared_ptr< NTowel42Utils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName, const std::list< NMediaManager::NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NMediaManager::NCore::SLanguageInfo, QString > > &subIdxFiles, const std::optional< std::pair< int, int > > &resolution, const std::optional< uint64_t > &bitrate ) const
             {
                 auto transcodeNeeded = STranscodeNeeded( mediaInfo, this );
 
@@ -172,7 +171,7 @@ namespace NMediaManager
                             if ( transcodeNeeded.bitrateTooHigh() && defaultAudioStreamBitrate )
                                 retVal << "-b:a" << QString( "%1" ).arg( defaultAudioStreamBitrate ) << "-maxrate" << QString( "%1" ).arg( static_cast< uint64_t >( defaultAudioStreamBitrate * 1.1 ) ) << "-bufsize" << QString( "%1" ).arg( defaultAudioStreamBitrate / 2 );
 
-                            retVal << QString( "-metadata:s:a:%1" ).arg( currAudioStreamNum ) << QString( R"(title="Transcoded Default Track #%1 from '%2' to '%3'")" ).arg( defaultAudioStreamNum ).arg( mediaInfo->getMediaTag( defaultAudioStreamNum, NSABUtils::EMediaTags::eAudioCodecDisp ) ).arg( audioFormat );   // set the metadata
+                            retVal << QString( "-metadata:s:a:%1" ).arg( currAudioStreamNum ) << QString( R"(title="Transcoded Default Track #%1 from '%2' to '%3'")" ).arg( defaultAudioStreamNum ).arg( mediaInfo->getMediaTag( defaultAudioStreamNum, NTowel42Utils::EMediaTags::eAudioCodecDisp ) ).arg( audioFormat );   // set the metadata
 
                             currAudioStreamNum++;
 

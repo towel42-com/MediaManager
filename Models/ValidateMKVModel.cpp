@@ -22,8 +22,8 @@
 
 #include "ValidateMKVModel.h"
 #include "Preferences/Core/Preferences.h"
-#include "SABUtils/FileUtils.h"
-#include "SABUtils/DoubleProgressDlg.h"
+#include "T42-Utils/FileUtils.h"
+#include "T42-Utils/DoubleProgressDlg.h"
 
 #include <QDir>
 #include <QTimer>

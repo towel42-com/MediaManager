@@ -27,8 +27,8 @@
 
 #include "Preferences/Core/Preferences.h"
 
-#include "SABUtils/StringUtils.h"
-#include "SABUtils/QtUtils.h"
+#include "T42-Utils/StringUtils.h"
+#include "T42-Utils/QtUtils.h"
 
 #include <QUrl>
 #include <QUrlQuery>
@@ -52,7 +52,7 @@ namespace NMediaManager
 {
     namespace NCore
     {
-        CSearchTMDB::CSearchTMDB( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::optional< QString > &configuration, QObject *parent ) :
+        CSearchTMDB::CSearchTMDB( std::shared_ptr< SSearchTMDBInfo > searchInfo, const std::optional< QString > &configuration, QObject *parent ) :
             QObject( parent ),
             fSearchInfo( searchInfo ),
             fConfiguration( configuration )
@@ -67,6 +67,11 @@ namespace NMediaManager
 
             connect( this, &CSearchTMDB::sigFakeRequestFinished, this, &CSearchTMDB::slotFakeRequestFinished );
             QTimer::singleShot( 0, this, &CSearchTMDB::slotGetConfig );
+        }
+
+        CSearchTMDB::CSearchTMDB( QObject *parent ) :
+            CSearchTMDB( std::shared_ptr< SSearchTMDBInfo >(), {}, parent )
+        {
         }
 
         CSearchTMDB::~CSearchTMDB()
@@ -202,8 +207,7 @@ namespace NMediaManager
             return kApiKeyV3;
         }
 
-        const QString kApiKeyV4 =
-            "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI3YzU4ZmYzN2M5ZmFkZDU2YzUxZGFlM2E5NzMzOTM3OCIsInN1YiI6IjVmYTAzMzJiNjM1MDEzMDAzMTViZjg2NyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.MBAzJIxvsRm54kgPKcfixxtfbg2bdNGDHKnEt15Nuac";
+        const QString kApiKeyV4 = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI3YzU4ZmYzN2M5ZmFkZDU2YzUxZGFlM2E5NzMzOTM3OCIsInN1YiI6IjVmYTAzMzJiNjM1MDEzMDAzMTViZjg2NyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.MBAzJIxvsRm54kgPKcfixxtfbg2bdNGDHKnEt15Nuac";
         QString CSearchTMDB::apiKeyV4()
         {
             return kApiKeyV4;

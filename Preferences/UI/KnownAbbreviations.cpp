@@ -27,8 +27,8 @@
 
 #include <QInputDialog>
 
-#include "SABUtils/ButtonEnabler.h"
-#include "SABUtils/UtilityModels.h"
+#include "T42-Utils/ButtonEnabler.h"
+#include "T42-Utils/UtilityModels.h"
 
 namespace NMediaManager
 {
@@ -45,10 +45,10 @@ namespace NMediaManager
                 connect( fImpl->btnAddAbbreviation, &QToolButton::clicked, this, &CKnownAbbreviations::slotAddAbbreviation );
                 connect( fImpl->btnDelAbbreviation, &QToolButton::clicked, this, &CKnownAbbreviations::slotDelAbbreviation );
 
-                fAbbreviationsModel = new NSABUtils::CKeyValuePairModel( this );
+                fAbbreviationsModel = new NTowel42Utils::CKeyValuePairModel( this );
                 fImpl->knownAbbreviations->setModel( fAbbreviationsModel );
 
-                new NSABUtils::CButtonEnabler( fImpl->knownAbbreviations, fImpl->btnDelAbbreviation );
+                new NTowel42Utils::CButtonEnabler( fImpl->knownAbbreviations, fImpl->btnDelAbbreviation );
             }
 
             CKnownAbbreviations::~CKnownAbbreviations()

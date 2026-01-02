@@ -28,8 +28,8 @@
 #include <QStandardItemModel>
 class QTemporaryDir;
 #include <QFileInfo>   // filedevice
-#include "SABUtils/QtHashUtils.h"
-#include "SABUtils/MKVUtils.h"
+#include "T42-Utils/QtHashUtils.h"
+#include "T42-Utils/MKVUtils.h"
 #include <unordered_set>
 #include <unordered_map>
 #include <optional>
@@ -39,13 +39,15 @@ class QTemporaryDir;
 #include <QDateTime>
 #include <QDir>
 #include <QDate>
+#include <QStyle>
+
 #include <functional>
 #include <optional>
 #include <QMutex>
 #include <QFileIconProvider>
 #include <functional>
 
-namespace NSABUtils
+namespace NTowel42Utils
 {
     class CMediaInfo;
     class CDoubleProgressDlg;
@@ -203,6 +205,7 @@ namespace NMediaManager
 
             QStandardItem *getPathItemFromIndex( const QModelIndex &idx ) const;
             QStandardItem *getItemFromPath( const QFileInfo &fi ) const;
+            QStandardItem *getItemFromPath( const QString &path ) const;
 
             virtual QVariant data( const QModelIndex &idx, int role ) const final;
 
@@ -227,7 +230,7 @@ namespace NMediaManager
             virtual int eventsPerPath() const { return 1; }
 
             const CIconProvider *iconProvider() const { return fIconProvider; }
-            bool showProcessResults( const QString &title, const QString &label, const QMessageBox::Icon &icon, const QDialogButtonBox::StandardButtons &buttons, QWidget *parent ) const;
+            bool showProcessResults( const QString &title, const QString &label, QStyle::StandardPixmap stdPM, const QDialogButtonBox::StandardButtons &buttons, QWidget *parent ) const;
 
             std::pair< QString, bool > &stdOutRemaining() { return fStdOutRemaining; }
             std::pair< QString, bool > &stdErrRemaining() { return fStdErrRemaining; }
@@ -238,7 +241,7 @@ namespace NMediaManager
             virtual bool showMediaItems() const { return false; };
 
             bool canShowMediaInfo() const;
-            virtual NSABUtils::TMediaTagMap getMediaTags( const QFileInfo &fi, const std::list< NSABUtils::EMediaTags > &tags = {} ) const;
+            virtual NTowel42Utils::TMediaTagMap getMediaTags( const QFileInfo &fi, const std::list< NTowel42Utils::EMediaTags > &tags = {} ) const;
             virtual void reloadMediaInfo( const QModelIndex &idx );
             virtual void reloadMediaInfo( const QModelIndex &idx, bool force );
 
@@ -246,7 +249,7 @@ namespace NMediaManager
             virtual bool areMediaTagsSameAsAutoSet( const QModelIndex &idx ) const final;
 
             bool setMediaTags( const QString &fileName, QString title, QString year, QString comment, QString *msg = nullptr, bool ignoreIsMediaFile = false ) const;
-            bool setMediaTag( const QString &filename, const std::pair< NSABUtils::EMediaTags, QVariant > &tagData, QString *msg = nullptr ) const;   //pair => tag, value
+            bool setMediaTag( const QString &filename, const std::pair< NTowel42Utils::EMediaTags, QVariant > &tagData, QString *msg = nullptr ) const;   //pair => tag, value
 
             virtual void updatePath( const QModelIndex &idx, const QString &oldPath, const QString &newPath ) final;
             virtual void updateFile( const QModelIndex &idx, const QString &oldFile, const QString &newFile );
@@ -264,7 +267,7 @@ namespace NMediaManager
             void addMessageForFile( const QString &msg );
             std::list< QStandardItem * > messageItems( bool andClear );
 
-            virtual void processLog( const QString &string, NSABUtils::CDoubleProgressDlg *progressDlg ) final;
+            virtual void processLog( const QString &string, NTowel42Utils::CDoubleProgressDlg *progressDlg ) final;
 
             virtual bool currentUnitsAreSeconds() const { return false; }
         Q_SIGNALS:
@@ -289,13 +292,13 @@ namespace NMediaManager
             virtual void slotUpdateMediaInfo( const QString &path );
 
         protected:
-            virtual QString getSecondaryProgressFormat( NSABUtils::CDoubleProgressDlg *progressDlg ) const;
+            virtual QString getSecondaryProgressFormat( NTowel42Utils::CDoubleProgressDlg *progressDlg ) const;
             virtual std::optional< std::pair< uint64_t, std::optional< uint64_t > > > getCurrentProgress( const QString & /*string*/ ) { return {}; }
             virtual std::optional< std::chrono::milliseconds > getMSRemaining( const QString & /*string*/, const std::pair< uint64_t, std::optional< uint64_t > > & /*currProgress*/ ) const { return {}; }
 
-            std::shared_ptr< NSABUtils::CMediaInfo > getMediaInfo( const QFileInfo &fi, bool force = false ) const;
-            std::shared_ptr< NSABUtils::CMediaInfo > getMediaInfo( const QModelIndex &idx, bool force = false ) const;
-            std::shared_ptr< NSABUtils::CMediaInfo > getMediaInfo( const QString &path, bool force = false ) const;
+            std::shared_ptr< NTowel42Utils::CMediaInfo > getMediaInfo( const QFileInfo &fi, bool force = false ) const;
+            std::shared_ptr< NTowel42Utils::CMediaInfo > getMediaInfo( const QModelIndex &idx, bool force = false ) const;
+            std::shared_ptr< NTowel42Utils::CMediaInfo > getMediaInfo( const QString &path, bool force = false ) const;
 
             virtual bool isTitleSameAsAutoSet( const QModelIndex &idx, QString *msg = nullptr ) const;
             virtual bool isDateSameAsAutoSet( const QModelIndex &idx, QString *msg = nullptr ) const;
@@ -322,6 +325,7 @@ namespace NMediaManager
             virtual void clearPathStatusCache( const QString &path ) const;
 
             virtual QString getMediaYear( const QFileInfo &fi ) const final;
+            virtual QDate getMediaDate( const QString &path ) const;
             virtual QDate getMediaDate( const QFileInfo &fi ) const;
             virtual QDate getMediaDate( const QModelIndex &index ) const;
 
@@ -330,14 +334,14 @@ namespace NMediaManager
             void addToLog( const QString &msg, bool stdOut );
 
             QTreeView *filesView() const;
-            NSABUtils::CDoubleProgressDlg *progressDlg() const;
+            NTowel42Utils::CDoubleProgressDlg *progressDlg() const;
 
             virtual std::pair< bool, std::list< QStandardItem * > > processItem( const QStandardItem *item, bool displayOnly ) = 0;
             virtual void postAddItems( const QFileInfo &fileInfo, std::list< SDirNodeItem > &currItems ) const;
             virtual int firstMediaItemColumn() const;
-            virtual std::list< NSABUtils::EMediaTags > getMediaColumnsList() const;
+            virtual std::list< NTowel42Utils::EMediaTags > getMediaColumnsList() const;
             virtual int lastMediaItemColumn() const final;
-            virtual int getMediaColumn( NSABUtils::EMediaTags mediaTag ) const final;
+            virtual int getMediaColumn( NTowel42Utils::EMediaTags mediaTag ) const final;
 
             virtual void computeMediaColumnMap() const final;
             virtual void clearMediaColumnMap();
@@ -370,9 +374,9 @@ namespace NMediaManager
             virtual bool isLoading() const final { return fIsLoading; }
             virtual void setIsLoading( bool isLoading );
 
-            NSABUtils::TMediaTagMap getDefaultMediaTags( const QFileInfo &fi ) const;
+            NTowel42Utils::TMediaTagMap getDefaultMediaTags( const QFileInfo &fi ) const;
             QStringList getMediaHeaders() const;
-            std::tuple< QStringList, std::list< NSABUtils::EMediaTags >, std::list< std::function< int() > > > getMediaDataInfo() const;
+            std::tuple< QStringList, std::list< NTowel42Utils::EMediaTags >, std::list< std::function< int() > > > getMediaDataInfo() const;
 
             virtual void resizeColumns() const;
 
@@ -400,7 +404,7 @@ namespace NMediaManager
 
             void processFinished( const QString &msg, bool withError );
 
-            void appendRow( QStandardItem *parent, QList< QStandardItem * > &items );
+            void appendRow( QStandardItem *parent, QList< QStandardItem * > items );
             static void appendError( QStandardItem *parent, const QString &errorMsg );
 
             struct SIterateInfo
@@ -475,7 +479,7 @@ namespace NMediaManager
             mutable std::unordered_map< QFileInfo, bool > fIsRootPathCache;
             mutable std::unordered_map< QString, QString > fDispNameCache;
             std::optional< std::pair< QDateTime, uint64_t > > fLastProgress;
-            mutable std::optional< std::unordered_map< NSABUtils::EMediaTags, int > * > fMediaColumnMap;
+            mutable std::optional< std::unordered_map< NTowel42Utils::EMediaTags, int > * > fMediaColumnMap;
             mutable int fLastMediaColumn{ -1 };
         };
     }

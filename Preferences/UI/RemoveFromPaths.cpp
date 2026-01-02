@@ -27,7 +27,7 @@
 
 #include <QStringListModel>
 #include <QInputDialog>
-#include "SABUtils/ButtonEnabler.h"
+#include "T42-Utils/ButtonEnabler.h"
 
 namespace NMediaManager
 {
@@ -47,7 +47,7 @@ namespace NMediaManager
                 fKnownStringModel = new QStringListModel( this );
                 fImpl->knownStrings->setModel( fKnownStringModel );
 
-                new NSABUtils::CButtonEnabler( fImpl->knownStrings, fImpl->btnDelKnownString );
+                new NTowel42Utils::CButtonEnabler( fImpl->knownStrings, fImpl->btnDelKnownString );
             }
 
             CRemoveFromPaths::~CRemoveFromPaths()

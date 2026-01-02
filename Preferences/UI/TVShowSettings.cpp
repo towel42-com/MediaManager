@@ -31,9 +31,9 @@
 #include <QFileDialog>
 #include <QMessageBox>
 
-#include "SABUtils/ButtonEnabler.h"
-#include "SABUtils/UtilityModels.h"
-#include "SABUtils/QtUtils.h"
+#include "T42-Utils/ButtonEnabler.h"
+#include "T42-Utils/UtilityModels.h"
+#include "T42-Utils/QtUtils.h"
 
 namespace NMediaManager
 {

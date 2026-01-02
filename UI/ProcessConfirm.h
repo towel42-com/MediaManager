@@ -24,6 +24,7 @@
 #define _PROCESSCONFIRM_H
 
 #include <QDialog>
+#include <QStyle>
 #include <QMessageBox>
 #include <QDialogButtonBox>
 #include <memory>
@@ -50,7 +51,7 @@ namespace NMediaManager
             void setLabel( const QString &label );
 
             void setModel( QAbstractItemModel *model );
-            void setIconLabel( const QMessageBox::Icon &icon );
+            void setIconLabel( const QStyle::StandardPixmap &icon );
             void setButtons( QDialogButtonBox::StandardButtons buttons );
         private Q_SLOTS:
             void slotButtonClicked( QAbstractButton *btn );

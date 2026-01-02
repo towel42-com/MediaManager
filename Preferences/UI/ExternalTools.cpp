@@ -60,8 +60,8 @@ namespace NMediaManager
                 fImpl->ffprobeExe->setCheckIsFile( true );
                 fImpl->ffprobeExe->setCheckIsExecutable( true );
 
-                connect( fImpl->ffmpegExe, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CExternalTools::slotFFToolChanged );
-                connect( fImpl->ffprobeExe, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CExternalTools::slotFFToolChanged );
+                connect( fImpl->ffmpegExe, &NTowel42Utils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CExternalTools::slotFFToolChanged );
+                connect( fImpl->ffprobeExe, &NTowel42Utils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CExternalTools::slotFFToolChanged );
 
                 fftoolToolChanged( fImpl->ffmpegExe );
                 fftoolToolChanged( fImpl->ffprobeExe );

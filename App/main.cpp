@@ -20,7 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 #include "UI/MainWindow.h"
-#include "SABUtils/ValidateOpenSSL.h"
+#include "T42-Utils/ValidateOpenSSL.h"
 #include "Version.h"
 
 #include <QApplication>
@@ -82,14 +82,12 @@ int main( int argc, char ** argv )
 {
     Q_INIT_RESOURCE( application );
 
-    QApplication::setAttribute( Qt::AA_EnableHighDpiScaling );
-    QApplication::setAttribute( Qt::AA_UseHighDpiPixmaps );
     QApplication appl( argc, argv );
     NVersion::setupApplication( appl, true );
 
     qInstallMessageHandler( myMessageOutput );
 
-    auto aOK = NSABUtils::validateOpenSSL( true );
+    auto aOK = NTowel42Utils::validateOpenSSL( true );
     if ( !aOK.first )
     {
         QMessageBox::critical( nullptr, QObject::tr( "Could not find OpenSSL libraries" ), aOK.second );

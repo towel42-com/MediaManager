@@ -26,7 +26,7 @@
 #include "ui_ExtendedInfo.h"
 
 #include <QStringListModel>
-#include "SABUtils/ButtonEnabler.h"
+#include "T42-Utils/ButtonEnabler.h"
 
 namespace NMediaManager
 {
@@ -46,7 +46,7 @@ namespace NMediaManager
                 fExtraStringModel = new QStringListModel( this );
                 fImpl->knownExtraStrings->setModel( fExtraStringModel );
 
-                new NSABUtils::CButtonEnabler( fImpl->knownExtraStrings, fImpl->btnDelExtraString );
+                new NTowel42Utils::CButtonEnabler( fImpl->knownExtraStrings, fImpl->btnDelExtraString );
             }
 
             CExtendedInfo::~CExtendedInfo()

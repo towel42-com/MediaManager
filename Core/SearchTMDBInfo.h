@@ -28,6 +28,8 @@
 #include <QDate>
 #include <optional>
 #include <memory>
+#include "T42-Utils/QtUtils.h"
+
 class QFileInfo;
 
 namespace NMediaManager
@@ -120,7 +122,7 @@ namespace NMediaManager
             template< typename T >
             bool isMatch( const QString &releaseDate, const T &tmdbid, const QString &name ) const
             {
-                return isMatch( { NSABUtils::getDate( releaseDate ), releaseDate }, tmdbid, name );
+                return isMatch( { NTowel42Utils::getDate( releaseDate ), releaseDate }, tmdbid, name );
             }
 
             template< typename T >
@@ -136,7 +138,7 @@ namespace NMediaManager
             template< typename T >
             bool isMatch( const QString &releaseDate, const T &tmdbid, const QString &name, EMediaType mediaType, const T &season, const T &episode ) const
             {
-                return isMatch( { NSABUtils::getDate( releaseDate ), releaseDate }, tmdbid, name, mediaType, season, episode );
+                return isMatch( { NTowel42Utils::getDate( releaseDate ), releaseDate }, tmdbid, name, mediaType, season, episode );
             }
 
             bool isSeasonMatch( int seasonToMatch ) const;

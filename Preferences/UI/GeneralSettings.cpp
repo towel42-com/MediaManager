@@ -32,10 +32,10 @@
 #include <QMessageBox>
 #include <QRegularExpression>
 #include <QRegularExpressionValidator>
-#include "SABUtils/ButtonEnabler.h"
-#include "SABUtils/UtilityModels.h"
-#include "SABUtils/QtUtils.h"
-#include "SABUtils/RevertValue.h"
+#include "T42-Utils/ButtonEnabler.h"
+#include "T42-Utils/UtilityModels.h"
+#include "T42-Utils/QtUtils.h"
+#include "T42-Utils/RevertValue.h"
 
 namespace NMediaManager
 {
@@ -58,7 +58,7 @@ namespace NMediaManager
 
 #ifdef Q_OS_WINDOWS
                         extern Q_CORE_EXPORT int qt_ntfs_permission_lookup;
-                        NSABUtils::CRevertValue revertValue( qt_ntfs_permission_lookup );
+                        NTowel42Utils::CRevertValue revertValue( qt_ntfs_permission_lookup );
                         qt_ntfs_permission_lookup++;
 #endif
 

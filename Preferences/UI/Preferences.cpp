@@ -49,7 +49,7 @@
 
 #include <QSettings>
 #include <QPushButton>
-#include "SABUtils/QtUtils.h"
+#include "T42-Utils/QtUtils.h"
 
 namespace NMediaManager
 {
@@ -86,7 +86,7 @@ namespace NMediaManager
                 fImpl->pageSelector->header()->setSectionResizeMode( QHeaderView::ResizeToContents );
                 fImpl->pageSelector->header()->setStretchLastSection( false );
                 fImpl->pageSelector->header()->setSectionResizeMode( QHeaderView::Stretch );
-                fImpl->pageSelector->setMinimumWidth( NSABUtils::autoSize( fImpl->pageSelector ) + 4 );
+                fImpl->pageSelector->setMinimumWidth( NTowel42Utils::autoSize( fImpl->pageSelector ) + 4 );
                 fImpl->splitter->setChildrenCollapsible( false );
             }
 

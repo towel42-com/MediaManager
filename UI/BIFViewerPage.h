@@ -31,7 +31,7 @@ class QLabel;
 class QSpinBox;
 class QMenu;
 class QToolBar;
-namespace NSABUtils
+namespace NTowel42Utils
 {
     namespace NBIF
     {
@@ -68,7 +68,7 @@ namespace NMediaManager
             virtual ~CBIFViewerPage() override;
 
             virtual void setActive( bool isActive ) override;
-            bool setFileName( NSABUtils::CDelayComboBox *comboBox, const QString &fileName, bool andExecute );
+            bool setFileName( NTowel42Utils::CDelayComboBox *comboBox, const QString &fileName, bool andExecute );
 
             QAction *actionSkipBackward();
             QAction *actionPrev();
@@ -78,8 +78,8 @@ namespace NMediaManager
             QAction *actionNext();
             QAction *actionSkipForward();
 
-            void setButtonsLayout( NSABUtils::NBIF::EButtonsLayout style );
-            NSABUtils::NBIF::EButtonsLayout buttonsLayout() const;
+            void setButtonsLayout( NTowel42Utils::NBIF::EButtonsLayout style );
+            NTowel42Utils::NBIF::EButtonsLayout buttonsLayout() const;
 
             virtual bool eventFilter( QObject *obj, QEvent *event ) override;
 
@@ -100,7 +100,7 @@ namespace NMediaManager
             virtual void slotPostInit() override;
 
         private:
-            void connectToCB( NSABUtils::CDelayComboBox *comboBox, bool connect );
+            void connectToCB( NTowel42Utils::CDelayComboBox *comboBox, bool connect );
             virtual NModels::CDirModel *createDirModel() override { return nullptr; }
             virtual QString loadTitleName() const override { return {}; }
             virtual QString loadCancelName() const override { return {}; }
@@ -110,7 +110,7 @@ namespace NMediaManager
             virtual QString actionErrorName() const override { return {}; }
 
             bool outOfDate() const;
-            void fileNameChanged( NSABUtils::CDelayComboBox *comboBox, const QString &text, bool andExecute );
+            void fileNameChanged( NTowel42Utils::CDelayComboBox *comboBox, const QString &text, bool andExecute );
             void fileNameChanged();
             bool canLoad() const;
             virtual void load( bool postRun ) override;
@@ -120,9 +120,9 @@ namespace NMediaManager
             virtual void saveSettings() override;
 
             QTimer *fResizeTimer{ nullptr };
-            std::shared_ptr< NSABUtils::NBIF::CFile > fBIF;
-            NSABUtils::NBIF::CModel *fBIFModel{ nullptr };
-            NSABUtils::CImageScrollBar *fBIFScrollBar{ nullptr };
+            std::shared_ptr< NTowel42Utils::NBIF::CFile > fBIF;
+            NTowel42Utils::NBIF::CModel *fBIFModel{ nullptr };
+            NTowel42Utils::CImageScrollBar *fBIFScrollBar{ nullptr };
             std::unique_ptr< Ui::CBIFViewerPage > fImpl;
             QString fFileName;
         };

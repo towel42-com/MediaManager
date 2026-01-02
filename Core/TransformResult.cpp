@@ -24,9 +24,9 @@
 #include "SearchTMDBInfo.h"
 #include "PatternInfo.h"
 
-#include "SABUtils/StringUtils.h"
-#include "SABUtils/QtUtils.h"
-#include "SABUtils/utils.h"
+#include "T42-Utils/StringUtils.h"
+#include "T42-Utils/QtUtils.h"
+#include "T42-Utils/utils.h"
 
 #include <QRegularExpression>
 #include <QFileInfo>
@@ -60,7 +60,7 @@ namespace NMediaManager
                 return getDeleteThis();
             if ( isNotFoundResult() )
                 return getNoMatch();
-            return NSABUtils::NStringUtils::transformTitle( title() );
+            return NTowel42Utils::NStringUtils::transformTitle( title() );
         }
 
         std::pair< QDate, QString > CTransformResult::getMovieReleaseDate() const
@@ -152,22 +152,22 @@ namespace NMediaManager
 
         void CTransformResult::setMovieReleaseDate( const QString &date )
         {
-            fMovieReleaseDate = { NSABUtils::getDate( date ), date };
+            fMovieReleaseDate = { NTowel42Utils::getDate( date ), date };
         }
 
         void CTransformResult::setShowFirstAirDate( const QString &date )
         {
-            fShowFirstAirDate = { NSABUtils::getDate( date ), date };
+            fShowFirstAirDate = { NTowel42Utils::getDate( date ), date };
         }
 
         void CTransformResult::setSeasonStartDate( const QString &date )
         {
-            fSeasonStartDate = { NSABUtils::getDate( date ), date };
+            fSeasonStartDate = { NTowel42Utils::getDate( date ), date };
         }
 
         void CTransformResult::setEpisodeAirDate( const QString &date )
         {
-            fEpisodeAirDate = { NSABUtils::getDate( date ), date };
+            fEpisodeAirDate = { NTowel42Utils::getDate( date ), date };
         }
 
         QString CTransformResult::getYear() const
@@ -225,7 +225,7 @@ namespace NMediaManager
             for ( auto &&ii : fExtraEpisodes )
                 subTitles << ii->subTitle();
 
-            return NSABUtils::NStringUtils::transformTitle( subTitles.join( "-" ) );
+            return NTowel42Utils::NStringUtils::transformTitle( subTitles.join( "-" ) );
         }
 
         QString CTransformResult::getTMDBID() const
@@ -258,7 +258,7 @@ namespace NMediaManager
             for ( auto &&ii : fExtraEpisodes )
                 episodes.push_back( ii->episode().toInt() );
 
-            auto groupedEpisodes = NSABUtils::group( episodes );
+            auto groupedEpisodes = NTowel42Utils::group( episodes );
             QStringList episodeList;
             for ( auto &&ii : groupedEpisodes )
             {
@@ -378,9 +378,7 @@ namespace NMediaManager
 
         bool CTransformResult::operator==( const CTransformResult &rhs ) const
         {
-            return ( title() == rhs.title() ) && ( fMovieReleaseDate == rhs.fMovieReleaseDate ) && ( fShowFirstAirDate == rhs.fShowFirstAirDate ) && ( fSeasonStartDate == rhs.fSeasonStartDate ) && ( fEpisodeAirDate == rhs.fEpisodeAirDate )
-                   && ( tmdbID() == rhs.tmdbID() ) && ( seasonTMDBID() == rhs.seasonTMDBID() ) && ( episodeTMDBID() == rhs.episodeTMDBID() ) && ( season() == rhs.season() ) && ( fSeasonOnly == rhs.fSeasonOnly )
-                   && ( episode() == rhs.episode() ) && ( subTitle() == rhs.subTitle() ) && ( extraInfo() == rhs.extraInfo() ) && ( diskNum() == rhs.diskNum() ) && ( description() == rhs.description() );
+            return ( title() == rhs.title() ) && ( fMovieReleaseDate == rhs.fMovieReleaseDate ) && ( fShowFirstAirDate == rhs.fShowFirstAirDate ) && ( fSeasonStartDate == rhs.fSeasonStartDate ) && ( fEpisodeAirDate == rhs.fEpisodeAirDate ) && ( tmdbID() == rhs.tmdbID() ) && ( seasonTMDBID() == rhs.seasonTMDBID() ) && ( episodeTMDBID() == rhs.episodeTMDBID() ) && ( season() == rhs.season() ) && ( fSeasonOnly == rhs.fSeasonOnly ) && ( episode() == rhs.episode() ) && ( subTitle() == rhs.subTitle() ) && ( extraInfo() == rhs.extraInfo() ) && ( diskNum() == rhs.diskNum() ) && ( description() == rhs.description() );
             // pixmap, parent, children and mediatype do not count
         }
 
@@ -417,6 +415,11 @@ namespace NMediaManager
             return retVal;
         }
 
+        QString CTransformResult::transformedName( const QString &path, const SPatternInfo &info, bool titleOnly ) const
+        {
+            return transformedName( QFileInfo( path ), info, titleOnly );
+        }
+
         void CTransformResult::removeChild( std::shared_ptr< CTransformResult > info )
         {
             for ( auto &&ii = fChildren.begin(); ii != fChildren.end(); ++ii )
@@ -435,19 +438,7 @@ namespace NMediaManager
             if ( forDebug )
             {
                 QStringList tmp;
-                tmp << "InfoType: '" + NMediaManager::NCore::toEnumString( mediaType() ) + "'"
-                    << "Title: '" + title() + "'"
-                    << "Movie ReleaseDate: '" + fMovieReleaseDate.second + "'"
-                    << "ShowFirstAirDate: '" + fShowFirstAirDate.second + "'"
-                    << "SeasonStartDate: '" + fSeasonStartDate.second + "'"
-                    << "EpisodeAirDate: '" + fEpisodeAirDate.second + "'"
-                    << "TMDBID: '" + tmdbID() + "'"
-                    << "Season TMBDID: '" + seasonTMDBID() + "'"
-                    << "Episode TMDBID: '" + episodeTMDBID() + "'"
-                    << "Season: '" + season() + "'" << QString( " Season Only? %1" ).arg( fSeasonOnly ? "Yes" : "No" ) << "Episode: '" + episode() + "'"
-                    << "Sub Title: '" + subTitle() + "'"
-                    << "ExtraInfo: '" + extraInfo() + "'"
-                    << "Description: '" + description() + "'" << QString( "Has Pixmap? %1" ).arg( pixmap().isNull() ? "No" : "Yes" );
+                tmp << "InfoType: '" + NMediaManager::NCore::toEnumString( mediaType() ) + "'" << "Title: '" + title() + "'" << "Movie ReleaseDate: '" + fMovieReleaseDate.second + "'" << "ShowFirstAirDate: '" + fShowFirstAirDate.second + "'" << "SeasonStartDate: '" + fSeasonStartDate.second + "'" << "EpisodeAirDate: '" + fEpisodeAirDate.second + "'" << "TMDBID: '" + tmdbID() + "'" << "Season TMBDID: '" + seasonTMDBID() + "'" << "Episode TMDBID: '" + episodeTMDBID() + "'" << "Season: '" + season() + "'" << QString( " Season Only? %1" ).arg( fSeasonOnly ? "Yes" : "No" ) << "Episode: '" + episode() + "'" << "Sub Title: '" + subTitle() + "'" << "ExtraInfo: '" + extraInfo() + "'" << "Description: '" + description() + "'" << QString( "Has Pixmap? %1" ).arg( pixmap().isNull() ? "No" : "Yes" );
                 QStringList children = { " - Children(" };
                 for ( auto &&ii : fChildren )
                 {
@@ -457,8 +448,7 @@ namespace NMediaManager
             }
             else
             {
-                tmp << NMediaManager::NCore::toEnumString( mediaType() ) + " -"
-                    << "Title: '" + title() + "'";
+                tmp << NMediaManager::NCore::toEnumString( mediaType() ) + " -" << "Title: '" + title() + "'";
                 switch ( mediaType() )
                 {
                     case EMediaType::eMovie:

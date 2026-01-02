@@ -24,7 +24,7 @@
 #define __KNOWNABBREVIATIONS_H
 
 #include "BasePrefPage.h"
-namespace NSABUtils
+namespace NTowel42Utils
 {
     class CKeyValuePairModel;
 }
@@ -53,7 +53,7 @@ namespace NMediaManager
                 void slotDelAbbreviation();
 
             private:
-                NSABUtils::CKeyValuePairModel *fAbbreviationsModel{ nullptr };
+                NTowel42Utils::CKeyValuePairModel *fAbbreviationsModel{ nullptr };
                 std::unique_ptr< Ui::CKnownAbbreviations > fImpl;
             };
         }

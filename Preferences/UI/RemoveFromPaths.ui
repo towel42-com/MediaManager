@@ -42,8 +42,8 @@
          <string>...</string>
         </property>
         <property name="icon">
-         <iconset resource="../../SABUtils/resources/SABUtils.qrc">
-          <normaloff>:/SABUtilsResources/add.png</normaloff>:/SABUtilsResources/add.png</iconset>
+         <iconset resource="../../T42-Utils/resources/Towel42Utils.qrc">
+          <normaloff>:/Towel42UtilsResources/add.png</normaloff>:/Towel42UtilsResources/add.png</iconset>
         </property>
        </widget>
       </item>
@@ -53,8 +53,8 @@
          <string>...</string>
         </property>
         <property name="icon">
-         <iconset resource="../../SABUtils/resources/SABUtils.qrc">
-          <normaloff>:/SABUtilsResources/delete.png</normaloff>:/SABUtilsResources/delete.png</iconset>
+         <iconset resource="../../T42-Utils/resources/Towel42Utils.qrc">
+          <normaloff>:/Towel42UtilsResources/delete.png</normaloff>:/Towel42UtilsResources/delete.png</iconset>
         </property>
        </widget>
       </item>
@@ -77,7 +77,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../../SABUtils/resources/SABUtils.qrc"/>
+  <include location="../../T42-Utils/resources/Towel42Utils.qrc"/>
  </resources>
  <connections/>
 </ui>

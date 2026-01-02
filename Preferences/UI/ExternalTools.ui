@@ -55,8 +55,8 @@
          <string>...</string>
         </property>
         <property name="icon">
-         <iconset resource="../../SABUtils/resources/SABUtils.qrc">
-          <normaloff>:/SABUtilsResources/open.png</normaloff>:/SABUtilsResources/open.png</iconset>
+         <iconset resource="../../T42-Utils/resources/Towel42Utils.qrc">
+          <normaloff>:/Towel42UtilsResources/open.png</normaloff>:/Towel42UtilsResources/open.png</iconset>
         </property>
        </widget>
       </item>
@@ -66,13 +66,13 @@
          <string>...</string>
         </property>
         <property name="icon">
-         <iconset resource="../../SABUtils/resources/SABUtils.qrc">
-          <normaloff>:/SABUtilsResources/open.png</normaloff>:/SABUtilsResources/open.png</iconset>
+         <iconset resource="../../T42-Utils/resources/Towel42Utils.qrc">
+          <normaloff>:/Towel42UtilsResources/open.png</normaloff>:/Towel42UtilsResources/open.png</iconset>
         </property>
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="NSABUtils::CPathBasedDelayLineEdit" name="mkvPropEditExe">
+       <widget class="NTowel42Utils::CPathBasedDelayLineEdit" name="mkvPropEditExe">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -97,8 +97,8 @@
          <string>...</string>
         </property>
         <property name="icon">
-         <iconset resource="../../SABUtils/resources/SABUtils.qrc">
-          <normaloff>:/SABUtilsResources/open.png</normaloff>:/SABUtilsResources/open.png</iconset>
+         <iconset resource="../../T42-Utils/resources/Towel42Utils.qrc">
+          <normaloff>:/Towel42UtilsResources/open.png</normaloff>:/Towel42UtilsResources/open.png</iconset>
         </property>
        </widget>
       </item>
@@ -113,7 +113,7 @@
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="NSABUtils::CPathBasedDelayLineEdit" name="ffmpegExe"/>
+       <widget class="NTowel42Utils::CPathBasedDelayLineEdit" name="ffmpegExe"/>
       </item>
       <item row="0" column="2">
        <widget class="QToolButton" name="btnSelectMKVPropEditExe">
@@ -121,8 +121,8 @@
          <string>...</string>
         </property>
         <property name="icon">
-         <iconset resource="../../SABUtils/resources/SABUtils.qrc">
-          <normaloff>:/SABUtilsResources/open.png</normaloff>:/SABUtilsResources/open.png</iconset>
+         <iconset resource="../../T42-Utils/resources/Towel42Utils.qrc">
+          <normaloff>:/Towel42UtilsResources/open.png</normaloff>:/Towel42UtilsResources/open.png</iconset>
         </property>
        </widget>
       </item>
@@ -134,7 +134,7 @@
        </widget>
       </item>
       <item row="4" column="1">
-       <widget class="NSABUtils::CPathBasedDelayLineEdit" name="ffprobeExe"/>
+       <widget class="NTowel42Utils::CPathBasedDelayLineEdit" name="ffprobeExe"/>
       </item>
       <item row="1" column="0" colspan="3">
        <widget class="QLabel" name="label_4">
@@ -184,13 +184,13 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>NSABUtils::CPathBasedDelayLineEdit</class>
+   <class>NTowel42Utils::CPathBasedDelayLineEdit</class>
    <extends>QLineEdit</extends>
-   <header>SABUtils/DelayLineEdit.h</header>
+   <header>T42-Utils/DelayLineEdit.h</header>
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../../SABUtils/resources/SABUtils.qrc"/>
+  <include location="../../T42-Utils/resources/Towel42Utils.qrc"/>
  </resources>
  <connections/>
 </ui>

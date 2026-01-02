@@ -26,11 +26,11 @@
 
 #include "Preferences/Core/Preferences.h"
 #include "Preferences/Core/TranscodeNeeded.h"
-#include "SABUtils/FileUtils.h"
-#include "SABUtils/DoubleProgressDlg.h"
-#include "SABUtils/MediaInfo.h"
-#include "SABUtils/utils.h"
-#include "SABUtils/StringUtils.h"
+#include "T42-Utils/FileUtils.h"
+#include "T42-Utils/DoubleProgressDlg.h"
+#include "T42-Utils/MediaInfo.h"
+#include "T42-Utils/utils.h"
+#include "T42-Utils/StringUtils.h"
 
 #include <QDir>
 #include <QTimer>
@@ -163,7 +163,7 @@ namespace NMediaManager
             if ( treeNode.fIsFile )
             {
                 auto nodePath = treeNode.fullPath();
-                auto isSubFile = NPreferences::NCore::CPreferences::instance()->isSubtitleFile( treeNode.fullPath(), false );
+                auto isSubFile = NPreferences::NCore::CPreferences::instance()->isSubtitleFile( treeNode.fullPath(), nullptr );
 
                 while ( !useAsParent( isSubFile, prevParent ) )
                     prevParent = prevParent->parent();
@@ -358,7 +358,7 @@ namespace NMediaManager
                             appendError( processInfo->fItem, tr( "ffmpeg '%1' is not an executable" ).arg( processInfo->fCmd ) );
                         return { false, { processInfo->fItem } };
                     }
-                    processInfo->fTimeStamps = NSABUtils::NFileUtils::timeStamps( processInfo->fOldName );
+                    processInfo->fTimeStamps = NTowel42Utils::NFileUtils::timeStamps( processInfo->fOldName );
                 }
             }
             return { true, { processInfo->fItem } };
@@ -391,6 +391,16 @@ namespace NMediaManager
             }
 
             return { true, std::list< QStandardItem * >( { processInfo->fItem } ) };
+        }
+
+        std::pair< bool, std::list< QStandardItem * > > CTranscodeModel::setupProcessItem( std::shared_ptr< SProcessInfo > processInfo, ETranscodeType transcodeType, const QString &path, const std::list< NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NCore::SLanguageInfo, QString > > &subIDXFiles, bool displayOnly ) const
+        {
+            return setupProcessItem( processInfo, transcodeType, QFileInfo( path ), srtFiles, subIDXFiles, displayOnly );
+        }
+
+        std::pair< bool, std::list< QStandardItem * > > CTranscodeModel::setupProcessItem( std::shared_ptr< SProcessInfo > processInfo, ETranscodeType transcodeType, const QString &path, bool displayOnly ) const
+        {
+            return setupProcessItem( processInfo, transcodeType, QFileInfo( path ), displayOnly );
         }
 
         std::pair< bool, std::list< QStandardItem * > > CTranscodeModel::processItem( const QStandardItem *videoFileItem, bool displayOnly )
@@ -520,7 +530,7 @@ namespace NMediaManager
                     for ( auto &&ii : tmp )
                         ii = getDispName( ii );
 
-                    processInfo->fTimeStamps = NSABUtils::NFileUtils::timeStamps( processInfo->fOldName );
+                    processInfo->fTimeStamps = NTowel42Utils::NFileUtils::timeStamps( processInfo->fOldName );
 
                     if ( transcodeType == ETranscodeType::eOther )
                     {
@@ -911,7 +921,7 @@ namespace NMediaManager
             {
                 //qDebug().noquote().nospace() << "Finding SRT files for '" << getDispName( videoFile ) << "' in dir '" << getDispName( dir.absolutePath() ) << "'";
 
-                srtFiles = NSABUtils::NFileUtils::findAllFiles(
+                srtFiles = NTowel42Utils::NFileUtils::findAllFiles(
                     dir, QStringList() << "*.srt", true, false, nullptr,
                     []( const QDir &dir )
                     {
@@ -1095,7 +1105,7 @@ namespace NMediaManager
             if ( subtitleFile.isEmpty() )
                 return true;
 
-            return NSABUtils::NStringUtils::startsOrEndsWithNumber( subtitleFile );
+            return NTowel42Utils::NStringUtils::startsOrEndsWithNumber( subtitleFile );
         }
 
         bool CTranscodeModel::isNameBasedMatch( const QFileInfo &videoFile, const QFileInfo &srtFile ) const
@@ -1132,6 +1142,11 @@ namespace NMediaManager
             if ( !CDirModel::isSubtitleFile( fileInfo, isLangFileFormat ) )
                 return false;
             return fileInfo.suffix() != "sub";
+        }
+
+        bool CTranscodeModel::isSubtitleFile( const QString &path, bool *isLangFileFormat /*= nullptr */ ) const
+        {
+            return isSubtitleFile( QFileInfo( path ), isLangFileFormat );
         }
 
         QList< QStandardItem * > CTranscodeModel::getChildVideoFiles( const QStandardItem *item, bool goBelowDirs ) const
@@ -1194,7 +1209,7 @@ namespace NMediaManager
                 auto langName = language.displayName();
                 if ( !isSubtitleFile( fileInfo ) )
                     langName.clear();
-                else if (language.usingDefault())
+                else if ( language.usingDefault() )
                 {
                     qDebug() << "could not determine language for subtitle file" << fileInfo.absoluteFilePath();
                 }

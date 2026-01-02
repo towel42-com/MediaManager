@@ -27,8 +27,8 @@
 
 #include <QInputDialog>
 
-#include "SABUtils/ButtonEnabler.h"
-#include "SABUtils/UtilityModels.h"
+#include "T42-Utils/ButtonEnabler.h"
+#include "T42-Utils/UtilityModels.h"
 
 namespace NMediaManager
 {
@@ -48,7 +48,7 @@ namespace NMediaManager
                 fKnownHyphenatedModel = new QStringListModel( this );
                 fImpl->knownHyphenated->setModel( fKnownHyphenatedModel );
 
-                new NSABUtils::CButtonEnabler( fImpl->knownHyphenated, fImpl->btnDelHyphenated );
+                new NTowel42Utils::CButtonEnabler( fImpl->knownHyphenated, fImpl->btnDelHyphenated );
             }
 
             CKnownHyphenated::~CKnownHyphenated()

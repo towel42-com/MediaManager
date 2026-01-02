@@ -48,7 +48,7 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="NSABUtils::CLineEditWithSuffix" name="target4kBitrate">
+       <widget class="NTowel42Utils::CLineEditWithSuffix" name="target4kBitrate">
         <property name="placeholderText">
          <string>Bitrate in kbps</string>
         </property>
@@ -75,7 +75,7 @@
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="NSABUtils::CLineEditWithSuffix" name="targetHDBitrate">
+       <widget class="NTowel42Utils::CLineEditWithSuffix" name="targetHDBitrate">
         <property name="maxLength">
          <number>10</number>
         </property>
@@ -92,7 +92,7 @@
        </widget>
       </item>
       <item row="3" column="1">
-       <widget class="NSABUtils::CLineEditWithSuffix" name="targetSubHDBitrate">
+       <widget class="NTowel42Utils::CLineEditWithSuffix" name="targetSubHDBitrate">
         <property name="maxLength">
          <number>10</number>
         </property>
@@ -194,9 +194,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>NSABUtils::CLineEditWithSuffix</class>
+   <class>NTowel42Utils::CLineEditWithSuffix</class>
    <extends>QLineEdit</extends>
-   <header>SABUtils/LineEditWithSuffix.h</header>
+   <header>T42-Utils/LineEditWithSuffix.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>

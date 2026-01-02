@@ -35,19 +35,19 @@
 #include "Models/DirModel.h"
 #include "Core/SearchTMDBInfo.h"
 #include "Core/SearchTMDB.h"
-#include "SABUtils/FileUtils.h"
-#include "SABUtils/MediaInfo.h"
+#include "T42-Utils/FileUtils.h"
+#include "T42-Utils/MediaInfo.h"
 
-#include "SABUtils/QtUtils.h"
-#include "SABUtils/utils.h"
-#include "SABUtils/ScrollMessageBox.h"
-#include "SABUtils/AutoWaitCursor.h"
-#include "SABUtils/DelayLineEdit.h"
-#include "SABUtils/DoubleProgressDlg.h"
-#include "SABUtils/StayAwake.h"
-#include "SABUtils/BackgroundFileCheck.h"
-#include "SABUtils/SelectFileUrl.h"
-#include "SABUtils/uiUtils.h"
+#include "T42-Utils/QtUtils.h"
+#include "T42-Utils/utils.h"
+#include "T42-Utils/ScrollMessageBox.h"
+#include "T42-Utils/AutoWaitCursor.h"
+#include "T42-Utils/DelayLineEdit.h"
+#include "T42-Utils/DoubleProgressDlg.h"
+#include "T42-Utils/StayAwake.h"
+#include "T42-Utils/BackgroundFileCheck.h"
+#include "T42-Utils/SelectFileUrl.h"
+#include "T42-Utils/uiUtils.h"
 
 #include <QSettings>
 #include <QFileInfo>
@@ -98,7 +98,7 @@ namespace NMediaManager
             CClickOnTitleBar() = default;
             ~CClickOnTitleBar() override = default;
 
-            bool nativeEventFilter( const QByteArray &eventType, void *message, long *result ) override
+            bool nativeEventFilter( const QByteArray &eventType, void *message, qintptr *result ) override
             {
 #ifdef Q_OS_WINDOWS
                 (void)result;
@@ -128,15 +128,15 @@ namespace NMediaManager
         {
             fImpl->setupUi( this );
 
-            fFileChecker = new NSABUtils::CBackgroundFileCheck( this );
-            connect( fFileChecker, &NSABUtils::CBackgroundFileCheck::sigFinished, this, &CMainWindow::slotFileCheckFinished );
+            fFileChecker = new NTowel42Utils::CBackgroundFileCheck( this );
+            connect( fFileChecker, &NTowel42Utils::CBackgroundFileCheck::sigFinished, this, &CMainWindow::slotFileCheckFinished );
 
-            NSABUtils::CMediaInfo::setFFProbeEXE( NPreferences::NCore::CPreferences::instance()->getFFProbeEXE() );
+            NTowel42Utils::CMediaInfo::setFFProbeEXE( NPreferences::NCore::CPreferences::instance()->getFFProbeEXE() );
 
             addPages();
 
             fImpl->directory->setDelay( 1000 );
-            auto delayLE = new NSABUtils::CPathBasedDelayLineEdit;
+            auto delayLE = new NTowel42Utils::CPathBasedDelayLineEdit;
             delayLE->setCheckExists( true );
             delayLE->setCheckIsDir( true );
             delayLE->setCheckIsExecutable( true );
@@ -150,9 +150,9 @@ namespace NMediaManager
             completer->setCaseSensitivity( Qt::CaseInsensitive );
 
             fImpl->directory->setCompleter( completer );
-            connect( fImpl->directory, &NSABUtils::CDelayComboBox::sigEditTextChangedAfterDelay, this, &CMainWindow::slotDirectoryChanged );
-            connect( fImpl->directory, &NSABUtils::CDelayComboBox::editTextChanged, this, &CMainWindow::slotDirectoryChangedImmediate );
-            connect( fImpl->directory->lineEdit(), &NSABUtils::CDelayLineEdit::sigFinishedEditingAfterDelay, this, &CMainWindow::slotLoad );
+            connect( fImpl->directory, &NTowel42Utils::CDelayComboBox::sigEditTextChangedAfterDelay, this, &CMainWindow::slotDirectoryChanged );
+            connect( fImpl->directory, &NTowel42Utils::CDelayComboBox::editTextChanged, this, &CMainWindow::slotDirectoryChangedImmediate );
+            connect( fImpl->directory->lineEdit(), &NTowel42Utils::CDelayLineEdit::sigFinishedEditingAfterDelay, this, &CMainWindow::slotLoad );
 
             completer = new QCompleter( this );
             fFileModel = new CCompleterFileSystemModel( completer );
@@ -164,7 +164,7 @@ namespace NMediaManager
             fImpl->fileName->setCompleter( completer );
 
             fImpl->fileName->setDelay( 1000 );
-            delayLE = new NSABUtils::CPathBasedDelayLineEdit;
+            delayLE = new NTowel42Utils::CPathBasedDelayLineEdit;
             delayLE->setCheckExists( true );
             delayLE->setCheckIsFile( true );
             delayLE->setCheckIsReadable( true );
@@ -182,7 +182,7 @@ namespace NMediaManager
 
             connect( NPreferences::NCore::CPreferences::instance(), &NPreferences::NCore::CPreferences::sigPreferencesChanged, this, &CMainWindow::slotPreferencesChanged );
 
-            new NSABUtils::CSelectFileUrl( this );
+            new NTowel42Utils::CSelectFileUrl( this );
 
             qApp->installNativeEventFilter( new CClickOnTitleBar );
 
@@ -205,7 +205,7 @@ namespace NMediaManager
             connect( basePage, &CBasePage::sigDialogClosed, this, &CMainWindow::slotQueuedPrefChange );
         }
 
-        std::shared_ptr< STabDef > CMainWindow::addPage( std::shared_ptr< STabDef > &tabDef )
+        std::shared_ptr< STabDef > CMainWindow::addPage( std::shared_ptr< STabDef > tabDef )
         {
             fImpl->menuView->addAction( tabDef->fViewAction );
 
@@ -237,8 +237,8 @@ namespace NMediaManager
             addPage( std::make_shared< STabDef >( new CGenerateBIFPage( nullptr ), tr( "Generate Thumbnail Videos" ), QString::fromUtf8( ":/roku.png" ), fImpl->tabWidget ) );
             auto bifPage = addPage( std::make_shared< STabDef >( new CBIFViewerPage( nullptr ), tr( "Thumbnail Viewer" ), QString::fromUtf8( ":/roku.png" ), fImpl->tabWidget ) );
 
-            connect( fImpl->fileName, &NSABUtils::CDelayComboBox::sigEditTextChangedAfterDelay, dynamic_cast< CBIFViewerPage * >( bifPage->fPage ), &CBIFViewerPage::slotFileChanged );
-            connect( fImpl->fileName->lineEdit(), &NSABUtils::CDelayLineEdit::sigFinishedEditingAfterDelay, dynamic_cast< CBIFViewerPage * >( bifPage->fPage ), &CBIFViewerPage::slotFileFinishedEditing );
+            connect( fImpl->fileName, &NTowel42Utils::CDelayComboBox::sigEditTextChangedAfterDelay, dynamic_cast< CBIFViewerPage * >( bifPage->fPage ), &CBIFViewerPage::slotFileChanged );
+            connect( fImpl->fileName->lineEdit(), &NTowel42Utils::CDelayLineEdit::sigFinishedEditingAfterDelay, dynamic_cast< CBIFViewerPage * >( bifPage->fPage ), &CBIFViewerPage::slotFileFinishedEditing );
         }
 
         void CMainWindow::slotValidateDefaults()
@@ -377,7 +377,7 @@ namespace NMediaManager
             slotDirectoryChangedImmediate();
             fImpl->actionRun->setEnabled( false );
 
-            NSABUtils::CAutoWaitCursor awc;
+            NTowel42Utils::CAutoWaitCursor awc;
             qApp->processEvents();
 
             validateLoadAction();
@@ -487,7 +487,7 @@ namespace NMediaManager
         {
             auto localPt = mapFromGlobal( pt );
             auto title = windowTitle();
-            return NSABUtils::launchIfURLClicked( title, localPt, fImpl->menubar->font() );
+            return NTowel42Utils::launchIfURLClicked( title, localPt, fImpl->menubar->font() );
         }
 
         void CMainWindow::slotQueuedPrefChange()

@@ -34,6 +34,7 @@
 #include <unordered_map>
 #include <memory>
 #include <functional>
+#include <QSslError>
 
 class QNetworkAccessManager;
 class QNetworkReply;
@@ -62,7 +63,8 @@ namespace NMediaManager
         {
             Q_OBJECT
         public:
-            CSearchTMDB( std::shared_ptr< SSearchTMDBInfo > searchInfo, std::optional< QString > &configuration, QObject *parent = nullptr );
+            CSearchTMDB( QObject *parent );
+            CSearchTMDB( std::shared_ptr< SSearchTMDBInfo > searchInfo, const std::optional< QString > &configuration, QObject *parent = nullptr );
             virtual ~CSearchTMDB() override;
 
             void setSkipImages( bool value ) { fSkipImages = value; }

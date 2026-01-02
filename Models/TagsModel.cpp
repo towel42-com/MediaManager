@@ -25,11 +25,11 @@
 #include "Preferences/Core/Preferences.h"
 #include "Core/TransformResult.h"
 
-#include "SABUtils/QtUtils.h"
-#include "SABUtils/FileUtils.h"
-#include "SABUtils/FileCompare.h"
-#include "SABUtils/DoubleProgressDlg.h"
-#include "SABUtils/MediaInfo.h"
+#include "T42-Utils/QtUtils.h"
+#include "T42-Utils/FileUtils.h"
+#include "T42-Utils/FileCompare.h"
+#include "T42-Utils/DoubleProgressDlg.h"
+#include "T42-Utils/MediaInfo.h"
 
 #include <QDir>
 #include <QTimer>
@@ -114,7 +114,7 @@ namespace NMediaManager
         {
         }
 
-        std::list< NSABUtils::EMediaTags > CTagsModel::getMediaColumnsList() const
+        std::list< NTowel42Utils::EMediaTags > CTagsModel::getMediaColumnsList() const
         {
             return NPreferences::NCore::CPreferences::instance()->getEnabledTags();
         }
@@ -148,7 +148,7 @@ namespace NMediaManager
                 retVal.emplace_back( value, colNum++ );
                 if ( isMediaFile )
                 {
-                    if ( NSABUtils::isSettableTag( ii ) )
+                    if ( NTowel42Utils::isSettableTag( ii ) )
                         retVal.back().fEditable = std::make_pair( EType::eMediaTag, ii );
                 }
             }

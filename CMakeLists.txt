@@ -55,10 +55,10 @@ SET( BIFSUPPORT ON )
 SET( QNETWORK_SUPPORT ON )
 SET( TOWEL42_ENABLE_TESTING ON )
 
-add_subdirectory( SABUtils )
+add_subdirectory( T42-Utils )
 
-add_subdirectory( SABUtils/bif)
-add_subdirectory( SABUtils/gif)
+add_subdirectory( T42-Utils/bif)
+add_subdirectory( T42-Utils/gif)
 add_subdirectory( UI )
 add_subdirectory( Preferences/UI )
 add_subdirectory( Preferences/Core )

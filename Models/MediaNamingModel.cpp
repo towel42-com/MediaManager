@@ -24,12 +24,12 @@
 #include "Core/TransformResult.h"
 #include "Core/SearchTMDBInfo.h"
 #include "Preferences/Core/Preferences.h"
-#include "SABUtils/QtUtils.h"
-#include "SABUtils/FileUtils.h"
-#include "SABUtils/BackupFile.h"
-#include "SABUtils/FileCompare.h"
+#include "T42-Utils/QtUtils.h"
+#include "T42-Utils/FileUtils.h"
+#include "T42-Utils/BackupFile.h"
+#include "T42-Utils/FileCompare.h"
 
-#include "SABUtils/DoubleProgressDlg.h"
+#include "T42-Utils/DoubleProgressDlg.h"
 
 #include <QDir>
 #include <QTimer>
@@ -304,6 +304,11 @@ namespace NMediaManager
             return isTVType( mediaType );
         }
 
+        bool CMediaNamingModel::treatAsTVShow( const QString &path, bool defaultValue ) const
+        {
+            return treatAsTVShow( QFileInfo( path ), defaultValue );
+        }
+
         void CMediaNamingModel::processPostAutoSearch()
         {
             processPostAutoSearch( invisibleRootItem() );
@@ -355,7 +360,7 @@ namespace NMediaManager
         NCore::EMediaType CMediaNamingModel::searchForMediaType( const QModelIndex &idx ) const
         {
             auto name = getSearchName( idx );
-            auto retVal = NCore::SSearchTMDBInfo::looksLikeTVShow( name, nullptr, nullptr, nullptr, false );
+            auto retVal = NCore::SSearchTMDBInfo::looksLikeTVShow( name, nullptr, nullptr, nullptr, nullptr, false );
             if ( !isTVType( retVal ) && !isMovieType( retVal ) )
             {
                 auto child = index( 0, 0, idx );
@@ -540,7 +545,7 @@ namespace NMediaManager
                             auto oldPath = fi.absoluteFilePath();
                             auto relPath = QDir( oldFileInfo.absoluteFilePath() ).relativeFilePath( oldPath );
                             auto newPath = QDir( newFileInfo.absoluteFilePath() ).absoluteFilePath( relPath );
-                            if ( !NSABUtils::NFileUtils::backup( newPath ) )
+                            if ( !NTowel42Utils::NFileUtils::backup( newPath ) )
                             {
                                 appendError( myItem, tr( "%1: FAILED TO BACKUP ITEM" ).arg( newPath ) );
                                 allDeletedOK = false;
@@ -603,7 +608,7 @@ namespace NMediaManager
                         }
                         else
                         {
-                            auto timeStamps = NSABUtils::NFileUtils::timeStamps( oldName );
+                            auto timeStamps = NTowel42Utils::NFileUtils::timeStamps( oldName );
                             if ( progressDlg() )
                             {
                                 progressDlg()->incPrimaryValue();
@@ -643,7 +648,7 @@ namespace NMediaManager
                             {
                                 if ( newFileInfo.exists() && newFileInfo.isFile() && oldFileInfo.isFile() && newFileInfo != oldFileInfo )
                                 {
-                                    if ( NSABUtils::NFileUtils::CFileCompare( oldFileInfo, newFileInfo ).compare() )
+                                    if ( NTowel42Utils::NFileUtils::CFileCompare( oldFileInfo, newFileInfo ).compare() )
                                     {
                                         aOK = QFile( oldName ).remove();
                                         if ( !aOK )
@@ -652,12 +657,12 @@ namespace NMediaManager
                                     else
                                     {
                                         aOK = false;
-                                        errorMsg = QString( "Destination file Exists - Old Size: %1 New Size: %2" ).arg( NSABUtils::NFileUtils::byteSizeString( oldName, false ) ).arg( NSABUtils::NFileUtils::byteSizeString( newName, false ) );
+                                        errorMsg = QString( "Destination file Exists - Old Size: %1 New Size: %2" ).arg( NTowel42Utils::NFileUtils::byteSizeString( QFileInfo( oldName ), false ) ).arg( NTowel42Utils::NFileUtils::byteSizeString( QFileInfo( newName ), false ) );
                                     }
                                 }
                                 else
                                 {
-                                    if ( !NSABUtils::NFileUtils::backup( newName ) )
+                                    if ( !NTowel42Utils::NFileUtils::backup( newName ) )
                                     {
                                         errorMsg = tr( "Could not backup %1" ).arg( newName );
                                     }
@@ -709,7 +714,7 @@ namespace NMediaManager
                                 }
                                 else
                                 {
-                                    aOK = NSABUtils::NFileUtils::setTimeStamps( newName, timeStamps );
+                                    aOK = NTowel42Utils::NFileUtils::setTimeStamps( newName, timeStamps );
                                     if ( progressDlg() )
                                     {
                                         progressDlg()->setValue( progressDlg()->rawPrimaryValue() + 1 );

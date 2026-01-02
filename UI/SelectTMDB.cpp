@@ -28,9 +28,9 @@
 #include "Core/SearchTMDBInfo.h"
 #include "Preferences/Core/Preferences.h"
 
-#include "SABUtils/ButtonEnabler.h"
-#include "SABUtils/QtUtils.h"
-#include "SABUtils/StringUtils.h"
+#include "T42-Utils/ButtonEnabler.h"
+#include "T42-Utils/QtUtils.h"
+#include "T42-Utils/StringUtils.h"
 
 #include <QTimer>
 #include <QDebug>
@@ -105,11 +105,11 @@ namespace NMediaManager
             fImpl->searchReleaseYear->setDelay( 1000 );
             fImpl->searchTMDBID->setDelay( 1000 );
 
-            QObject::connect( fImpl->searchName, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchTextChanged );
-            QObject::connect( fImpl->searchSeason, &NSABUtils::CDelaySpinBox::sigValueChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
-            QObject::connect( fImpl->searchEpisode, &NSABUtils::CDelaySpinBox::sigValueChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
-            QObject::connect( fImpl->searchReleaseYear, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
-            QObject::connect( fImpl->searchTMDBID, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
+            QObject::connect( fImpl->searchName, &NTowel42Utils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchTextChanged );
+            QObject::connect( fImpl->searchSeason, &NTowel42Utils::CDelaySpinBox::sigValueChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
+            QObject::connect( fImpl->searchEpisode, &NTowel42Utils::CDelaySpinBox::sigValueChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
+            QObject::connect( fImpl->searchReleaseYear, &NTowel42Utils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
+            QObject::connect( fImpl->searchTMDBID, &NTowel42Utils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
         }
 
         void CSelectTMDB::disconnect()
@@ -124,11 +124,11 @@ namespace NMediaManager
             fImpl->searchReleaseYear->setDelay( -1 );
             fImpl->searchTMDBID->setDelay( -1 );
 
-            QObject::disconnect( fImpl->searchName, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchTextChanged );
-            QObject::disconnect( fImpl->searchSeason, &NSABUtils::CDelaySpinBox::sigValueChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
-            QObject::disconnect( fImpl->searchEpisode, &NSABUtils::CDelaySpinBox::sigValueChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
-            QObject::disconnect( fImpl->searchReleaseYear, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
-            QObject::disconnect( fImpl->searchTMDBID, &NSABUtils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
+            QObject::disconnect( fImpl->searchName, &NTowel42Utils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchTextChanged );
+            QObject::disconnect( fImpl->searchSeason, &NTowel42Utils::CDelaySpinBox::sigValueChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
+            QObject::disconnect( fImpl->searchEpisode, &NTowel42Utils::CDelaySpinBox::sigValueChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
+            QObject::disconnect( fImpl->searchReleaseYear, &NTowel42Utils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
+            QObject::disconnect( fImpl->searchTMDBID, &NTowel42Utils::CDelayLineEdit::sigTextChangedAfterDelay, this, &CSelectTMDB::slotSearchCriteriaChanged );
         }
 
         void CSelectTMDB::slotReset()
@@ -299,7 +299,7 @@ namespace NMediaManager
                 setResultsLabel();
 
                 delete fButtonEnabler;
-                fButtonEnabler = new NSABUtils::CButtonEnabler( fImpl->results, fImpl->buttonBox->button( QDialogButtonBox::Ok ) );
+                fButtonEnabler = new NTowel42Utils::CButtonEnabler( fImpl->results, fImpl->buttonBox->button( QDialogButtonBox::Ok ) );
 
                 fLoading = false;
                 fSearchTMDB->resetResults();
@@ -565,7 +565,7 @@ namespace NMediaManager
         {
             if ( fPrevSearchName.startsWith( fImpl->searchName->text() ) )
             {
-                auto tmp = fPrevSearchName.mid( fImpl->searchName->text().length() ).split( QRegularExpression( "\\W" ), NSABUtils::NStringUtils::TSkipEmptyParts );
+                auto tmp = fPrevSearchName.mid( fImpl->searchName->text().length() ).split( QRegularExpression( "\\W" ), NTowel42Utils::NStringUtils::TSkipEmptyParts );
                 if ( !tmp.isEmpty() )
                 {
                     auto origWords = tmp;

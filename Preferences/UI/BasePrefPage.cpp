@@ -21,7 +21,7 @@
 // SOFTWARE.
 
 #include "BasePrefPage.h"
-#include "SABUtils/StringUtils.h"
+#include "T42-Utils/StringUtils.h"
 
 #include <QInputDialog>
 #include <QRegularExpression>
@@ -51,7 +51,7 @@ namespace NMediaManager
 
                 QStringList words;
                 if ( splitWords )
-                    words = text.split( QRegularExpression( "\\s" ), NSABUtils::NStringUtils::TSkipEmptyParts );
+                    words = text.split( QRegularExpression( "\\s" ), NTowel42Utils::NStringUtils::TSkipEmptyParts );
                 else
                     words.push_back( text );
 

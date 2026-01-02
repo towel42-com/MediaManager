@@ -145,8 +145,8 @@
          <string>...</string>
         </property>
         <property name="icon">
-         <iconset resource="../../SABUtils/resources/SABUtils.qrc">
-          <normaloff>:/SABUtilsResources/open.png</normaloff>:/SABUtilsResources/open.png</iconset>
+         <iconset resource="../../T42-Utils/resources/Towel42Utils.qrc">
+          <normaloff>:/Towel42UtilsResources/open.png</normaloff>:/Towel42UtilsResources/open.png</iconset>
         </property>
        </widget>
       </item>
@@ -214,7 +214,7 @@
        </widget>
       </item>
       <item row="2" column="1" colspan="2">
-       <widget class="NSABUtils::CLineEditWithSuffix" name="targetHDBitrate">
+       <widget class="NTowel42Utils::CLineEditWithSuffix" name="targetHDBitrate">
         <property name="maxLength">
          <number>10</number>
         </property>
@@ -238,14 +238,14 @@
        </widget>
       </item>
       <item row="1" column="1" colspan="2">
-       <widget class="NSABUtils::CLineEditWithSuffix" name="target4kBitrate">
+       <widget class="NTowel42Utils::CLineEditWithSuffix" name="target4kBitrate">
         <property name="placeholderText">
          <string>Bitrate in kbps</string>
         </property>
        </widget>
       </item>
       <item row="3" column="1" colspan="2">
-       <widget class="NSABUtils::CLineEditWithSuffix" name="targetSubHDBitrate">
+       <widget class="NTowel42Utils::CLineEditWithSuffix" name="targetSubHDBitrate">
         <property name="maxLength">
          <number>10</number>
         </property>
@@ -267,7 +267,7 @@
    <item row="1" column="1" colspan="2">
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="NSABUtils::CLineEditWithSuffix" name="uncompressedBitrate">
+      <widget class="NTowel42Utils::CLineEditWithSuffix" name="uncompressedBitrate">
        <property name="readOnly">
         <bool>true</bool>
        </property>
@@ -301,7 +301,7 @@
    <item row="2" column="1" colspan="2">
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
-      <widget class="NSABUtils::CLineEditWithSuffix" name="targetBitrate">
+      <widget class="NTowel42Utils::CLineEditWithSuffix" name="targetBitrate">
        <property name="readOnly">
         <bool>true</bool>
        </property>
@@ -326,9 +326,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>NSABUtils::CLineEditWithSuffix</class>
+   <class>NTowel42Utils::CLineEditWithSuffix</class>
    <extends>QLineEdit</extends>
-   <header>SABUtils/LineEditWithSuffix.h</header>
+   <header>T42-Utils/LineEditWithSuffix.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>
@@ -352,7 +352,7 @@
  </tabstops>
  <resources>
   <include location="../../UI/resources/application.qrc"/>
-  <include location="../../SABUtils/resources/SABUtils.qrc"/>
+  <include location="../../T42-Utils/resources/Towel42Utils.qrc"/>
  </resources>
  <connections>
   <connection>
