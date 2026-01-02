@@ -21,10 +21,10 @@
 # SOFTWARE.
 
 cmake_minimum_required(VERSION 3.30)
-include( ${CMAKE_SOURCE_DIR}/SABUtils/QtProject.cmake )
+include( ${CMAKE_SOURCE_DIR}/T42-CMakeUtils/QtProject.cmake )
 
 SET( project_pub_DEPS
-     Qt5::Network
+     Qt6::Network
      ${project_pub_DEPS}
      )
 
