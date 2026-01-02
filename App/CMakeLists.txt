@@ -46,7 +46,7 @@ get_filename_component( QTDIR ${DEPLOYQT_EXECUTABLE} DIRECTORY )
 
 set ( DEBUG_PATH 
         "%PATH%"
-        "$<TARGET_FILE_DIR:SABUtils>"
+        "$<TARGET_FILE_DIR:Towel42Utils>"
         "${QTDIR}"
         )
 if ( MKVUTILS )
