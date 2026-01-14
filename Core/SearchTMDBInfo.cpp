@@ -151,7 +151,6 @@ namespace NMediaManager
             if ( string.isEmpty() )
                 return string;
 
-
             auto retVal = string;
             retVal.remove( QRegularExpression( R"((\[\])|(\(\))|(\{\}))" ) );
 
@@ -367,7 +366,7 @@ namespace NMediaManager
             fSearchName = smartTrim( stripKnownExtendedData( fSearchName, extendedInfo ) );
             fSearchName = smartTrim( stripKnownData( fSearchName ) );
             fSearchName = smartTrim( replaceKnownAbbreviations( fSearchName ) );
-        
+
             fFoundExtendedInfo = extendedInfo;
 
             extractDiskNum();
@@ -396,11 +395,15 @@ namespace NMediaManager
 
         void SSearchTMDBInfo::setReleaseDate( const QString &releaseDate )
         {
-            fReleaseDate.second = releaseDate;
             NTowel42Utils::SDateSearchOptions options;
             options.fAllowYearOnly = true;
             options.fAllowMonthYearOnly = true;
-            fReleaseDate.first = NTowel42Utils::getDate( releaseDate, options );
+            fReleaseDate = std::make_pair( NTowel42Utils::getDate( releaseDate, options ), releaseDate );
+        }
+
+        std::pair< QDate, QString > SSearchTMDBInfo::releaseDate() const
+        {
+            return fReleaseDate.has_value() ? fReleaseDate.value() : std::pair< QDate, QString >();
         }
 
         int SSearchTMDBInfo::releaseYear( const QString &dateStr, bool *aOK )
@@ -423,8 +426,8 @@ namespace NMediaManager
         int SSearchTMDBInfo::releaseYear( bool *aOK ) const
         {
             if ( aOK )
-                *aOK = fReleaseDate.first.isValid();
-            return fReleaseDate.first.year();
+                *aOK = fReleaseDate.has_value() && fReleaseDate.value().first.isValid();
+            return fReleaseDate.has_value() ? fReleaseDate.value().first.year() : 0;
         }
 
         int SSearchTMDBInfo::tmdbID( bool *aOK ) const
@@ -546,20 +549,20 @@ namespace NMediaManager
             if ( !releaseDateSet() )
                 return true;
 
-            if ( fReleaseDate.first.isValid() != releaseDate.first.isValid() )
+            if ( fReleaseDate.value().first.isValid() != releaseDate.first.isValid() )
                 return false;
 
-            if ( !fReleaseDate.first.isValid() )
+            if ( !fReleaseDate.value().first.isValid() )
                 return true;
 
-            if ( ( ( fReleaseDate.first.month() == 1 ) && ( fReleaseDate.first.day() == 1 ) ) || ( ( releaseDate.first.month() == 1 ) && ( releaseDate.first.day() == 1 ) ) )
+            if ( ( ( fReleaseDate.value().first.month() == 1 ) && ( fReleaseDate.value().first.day() == 1 ) ) || ( ( releaseDate.first.month() == 1 ) && ( releaseDate.first.day() == 1 ) ) )
             {
-                return fReleaseDate.first.year() == releaseDate.first.year();
+                return fReleaseDate.value().first.year() == releaseDate.first.year();
             }
 
             if ( fExactMatchOnly )
             {
-                return fReleaseDate.first.year() == releaseDate.first.year() && fReleaseDate.first.month() == releaseDate.first.month();
+                return ( fReleaseDate.value().first.year() == releaseDate.first.year() ) && ( fReleaseDate.value().first.month() == releaseDate.first.month() );
             }
 
             return true;
@@ -572,8 +575,29 @@ namespace NMediaManager
             return NTowel42Utils::NStringUtils::isSimilar( name, fSearchName, fExactMatchOnly );   // if every word we are searching for is covered by name, we match.  For exact matches must be in same order
         }
 
+        std::unordered_map< QString, std::pair< QDate, QString > > SSearchTMDBInfo::sReleaseDateLookup;
+
         void SSearchTMDBInfo::extractReleaseDate()
         {
+            if ( fReleaseDate.has_value() )
+                return;
+
+            if ( fSearchResult )
+            {
+                fReleaseDate = fSearchResult->getDate();
+                if ( fReleaseDate.has_value() && fReleaseDate.value().first.isValid() )
+                    return;
+                else
+                    fReleaseDate.reset();
+            }
+
+            auto pos = sReleaseDateLookup.find( smartTrim( fSearchName ) );
+            if ( pos != sReleaseDateLookup.end() )
+            {
+                fReleaseDate = ( *pos ).second;
+                return;
+            }
+
             //basically capture anything inside parens that doesnt start with imdb
             auto regExpStr1 = R"((?<releaseDate1>\d{2}|\d{4}))";
             auto regExpStr = QString( R"((?<fulltext>\(%1\)))" ).arg( regExpStr1 );
@@ -613,13 +637,12 @@ namespace NMediaManager
                         else
                         {
                             fReleaseDate = { date, releaseDate };
+                            sReleaseDateLookup[ smartTrim( fSearchName ) ] = fReleaseDate.value();
                             fSearchName.replace( match.capturedStart( "fulltext" ), match.capturedLength( "fulltext" ), "" );
                         }
                     }
                 }
             }
-            if ( fSearchResult )
-                fReleaseDate = fSearchResult->getDate();
         }
 
         bool SSearchTMDBInfo::isTVMedia() const
@@ -782,11 +805,11 @@ namespace NMediaManager
                 query.addQueryItem( "api_key", CSearchTMDB::apiKeyV3() );
 
                 query.addQueryItem( "include_adult", "true" );
-                if ( fReleaseDate.first.isValid() )
+                if ( fReleaseDate.has_value() && fReleaseDate.value().first.isValid() )
                 {
-                    query.addQueryItem( "year", QString::number( fReleaseDate.first.year() - 1 ) );
-                    query.addQueryItem( "year", QString::number( fReleaseDate.first.year() ) );
-                    query.addQueryItem( "year", QString::number( fReleaseDate.first.year() + 1 ) );
+                    query.addQueryItem( "year", QString::number( fReleaseDate.value().first.year() - 1 ) );
+                    query.addQueryItem( "year", QString::number( fReleaseDate.value().first.year() ) );
+                    query.addQueryItem( "year", QString::number( fReleaseDate.value().first.year() + 1 ) );
                 }
                 if ( fPageNumber.has_value() )
                     query.addQueryItem( "page", QString::number( fPageNumber.value() ) );

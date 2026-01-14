@@ -85,10 +85,10 @@ namespace NMediaManager
 
             void setPageNumber( int pageNumber );
             void setReleaseDate( const QString &releaseDate );
-            std::pair< QDate, QString > releaseDate() const { return fReleaseDate; }
+            std::pair< QDate, QString > releaseDate() const;
             int releaseYear( bool *aOK = nullptr ) const;
             static int releaseYear( const QString &dateStr, bool *aOK = nullptr );
-            bool releaseDateSet() const { return !fReleaseDate.second.isEmpty(); }
+            bool releaseDateSet() const { return fReleaseDate.has_value(); }
 
             void setTMDBID( const QString &tmdbID ) { fTMDBID = tmdbID; }
             QString tmdbIDString() const { return fTMDBID; }
@@ -165,7 +165,8 @@ namespace NMediaManager
             static QStringList stripOutPositions( const QString &inString, const std::list< std::pair< int, int > > &positions );
 
             QString fSearchName;
-            std::pair< QDate, QString > fReleaseDate;
+            std::optional< std::pair< QDate, QString > > fReleaseDate;
+            static std::unordered_map< QString, std::pair< QDate, QString > > sReleaseDateLookup;
             std::optional< int > fPageNumber;
             int fSeason{ -1 };
             std::list< int > fEpisodes;
