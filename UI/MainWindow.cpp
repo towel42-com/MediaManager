@@ -132,6 +132,7 @@ namespace NMediaManager
             connect( fFileChecker, &NTowel42Utils::CBackgroundFileCheck::sigFinished, this, &CMainWindow::slotFileCheckFinished );
 
             NTowel42Utils::CMediaInfo::setFFProbeEXE( NPreferences::NCore::CPreferences::instance()->getFFProbeEXE() );
+            connect( NTowel42Utils::CMediaInfoMgr::instance(), &NTowel42Utils::CMediaInfoMgr::sigStatusMessage, []( const QString &msg ) { qDebug() << msg; } );
 
             addPages();
 
