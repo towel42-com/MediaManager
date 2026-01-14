@@ -202,6 +202,7 @@ namespace NMediaManager
                 connect( fModel.get(), &NModels::CDirModel::sigProcessingStarted, this, &CBasePage::slotProcessingStarted );
                 connect( fModel.get(), &NModels::CDirModel::sigProcessesFinished, this, &CBasePage::slotProcessesFinished );
                 connect( fModel.get(), &NModels::CDirModel::sigDialogClosed, this, &CBasePage::sigDialogClosed );
+                connect( fModel.get(), &NModels::CDirModel::sigStatusMessage, this, &CBasePage::sigStatusMessage );
             }
             appendSeparatorToLog();
             appendToLog( tr( "Loading Directory: '%1'" ).arg( fDirName ), true );

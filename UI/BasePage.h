@@ -107,7 +107,7 @@ namespace NMediaManager
             void sigLoading();
             void sigLoadFinished( bool canceled );
             void sigDialogClosed();
-
+            void sigStatusMessage( const QString &status );
         protected:
             virtual QMenu *menuForIndex( const QModelIndex &idx ) final;
             virtual void openLocation( const QModelIndex &idx ) final;
