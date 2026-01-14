@@ -21,6 +21,7 @@
 // SOFTWARE.
 #include "UI/MainWindow.h"
 #include "T42-Utils/ValidateOpenSSL.h"
+#include "T42-Utils/ProgressBarProxyStyle.h"
 #include "Version.h"
 
 #include <QApplication>
@@ -84,6 +85,8 @@ int main( int argc, char ** argv )
 
     QApplication appl( argc, argv );
     NVersion::setupApplication( appl, true );
+    auto proxyStyle = new NTowel42Utils::CProgressBarProxyStyle( QApplication::style() );
+    QApplication::setStyle( proxyStyle );
 
     qInstallMessageHandler( myMessageOutput );
 
