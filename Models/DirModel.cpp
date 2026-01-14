@@ -1166,6 +1166,7 @@ namespace NMediaManager
                 return;
 
             qDebug() << "Updating media info for" << path;
+            emit sigStatusMessage( tr( "Updating media info for '%1'" ).arg( path ) );
             auto item = getItemFromPath( path );
             if ( item )
             {

@@ -275,6 +275,8 @@ namespace NMediaManager
             void sigProcessesFinished( bool status, bool showProcessResults, bool cancelled, bool reloadModel );
             void sigProcessingStarted();
             void sigDialogClosed();
+            void sigStatusMessage( const QString &msg );
+
         public Q_SLOTS:
             virtual bool isTVShow( const QModelIndex &idx ) const;
             void slotLoadRootDirectory();
