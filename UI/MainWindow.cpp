@@ -135,13 +135,6 @@ namespace NMediaManager
 
             addPages();
 
-            connect(
-                NTowel42Utils::CMediaInfoMgr::instance(), &NTowel42Utils::CMediaInfoMgr::sigStatusMessage,   //
-                [ & ]( const QString &msg )   //
-                {   //
-                    statusBar()->showMessage( msg );
-                } );
-
             fImpl->directory->setDelay( 1000 );
             auto delayLE = new NTowel42Utils::CPathBasedDelayLineEdit;
             delayLE->setCheckExists( true );
