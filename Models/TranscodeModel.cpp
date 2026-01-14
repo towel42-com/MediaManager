@@ -799,7 +799,7 @@ namespace NMediaManager
             QRegularExpressionMatch match;
             auto pos = string.lastIndexOf( regEx, -1, &match );
             if ( ( pos == -1 ) || !match.hasMatch() )
-                return 0;
+                return {};
 
             auto hours = match.captured( "hours" );
             auto mins = match.captured( "mins" );
