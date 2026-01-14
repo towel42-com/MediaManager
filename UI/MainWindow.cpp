@@ -135,6 +135,13 @@ namespace NMediaManager
 
             addPages();
 
+            connect(
+                NTowel42Utils::CMediaInfoMgr::instance(), &NTowel42Utils::CMediaInfoMgr::sigStatusMessage,   //
+                [ & ]( const QString &msg )   //
+                {   //
+                    statusBar()->showMessage( msg );
+                } );
+
             fImpl->directory->setDelay( 1000 );
             auto delayLE = new NTowel42Utils::CPathBasedDelayLineEdit;
             delayLE->setCheckExists( true );
@@ -203,6 +210,12 @@ namespace NMediaManager
             connect( this, &CMainWindow::sigPreferencesChanged, basePage, &CBasePage::slotPreferencesChanged );
             connect( basePage, &CBasePage::sigLoadFinished, this, &CMainWindow::slotLoadFinished );
             connect( basePage, &CBasePage::sigDialogClosed, this, &CMainWindow::slotQueuedPrefChange );
+            connect(
+                basePage, &CBasePage::sigStatusMessage,   //
+                [ & ]( const QString &status )   //
+                {   //
+                    this->statusBar()->showMessage( status, 500 );
+                } );
         }
 
         std::shared_ptr< STabDef > CMainWindow::addPage( std::shared_ptr< STabDef > tabDef )
