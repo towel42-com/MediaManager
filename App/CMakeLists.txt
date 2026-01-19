@@ -84,21 +84,28 @@ INSTALL( TARGETS ${PROJECT_NAME} RUNTIME DESTINATION . )
 INSTALL( FILES ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.pdb DESTINATION . CONFIGURATIONS Debug RelWithDebInfo )
 
 file( REAL_PATH ~/Dropbox/home/bin BINDIR EXPAND_TILDE)
-file( REAL_PATH $ENV{APPDATA} APPDATA EXPAND_TILDE)
 file( REAL_PATH $ENV{PROGRAMFILES} PROGRAMFILES EXPAND_TILDE)
 
+#set(CMAKE_FIND_DEBUG_MODE TRUE)
 find_program( FFMPEG_EXEC ffmpeg.exe
     PATHS "${BINDIR}/ffmpeg/bin"
-    REQUIRED )
+    REQUIRED NO_DEFAULT_PATH NO_SYSTEM_ENVIRONMENT_PATH  )
 find_program( FFPROBE_EXEC ffprobe.exe
     PATHS "${BINDIR}/ffmpeg/bin"
-    REQUIRED )
-find_program( FFMPEG_EMBY_EXEC ffmpeg.exe
-    PATHS "${APPDATA}/Emby-Server/system"
-    )
+    REQUIRED NO_DEFAULT_PATH NO_SYSTEM_ENVIRONMENT_PATH  )
+#find_program( FFMPEG_EMBY_EXEC ffmpeg.exe
+#    PATHS "${BINDIR}/EmbyServer/system"
+#    REQUIRED NO_DEFAULT_PATH NO_SYSTEM_ENVIRONMENT_PATH ) 
 find_program( MKVPROPEDIT_EXEC mkvpropedit.exe
     PATHS "${PROGRAMFILES}/MKVToolNix"
-    REQUIRED )
+    REQUIRED NO_DEFAULT_PATH NO_SYSTEM_ENVIRONMENT_PATH  )
+#set(CMAKE_FIND_DEBUG_MODE FALSE)
+
+Message( STATUS "Using the following external executables for installation:
+         ffmpeg: ${FFMPEG_EXEC}
+        ffprobe: ${FFPROBE_EXEC}
+    mkvpropedit: ${MKVPROPEDIT_EXEC}")
+#message( STATUS ${msg} )
 
 INSTALL( FILES "${FFMPEG_EXEC}" "${FFPROBE_EXEC}" "${MKVPROPEDIT_EXEC}"  DESTINATION . )
 
