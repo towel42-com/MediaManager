@@ -1042,8 +1042,6 @@ namespace NMediaManager
                     if ( myItem && ( myItem != parentItem ) )
                     {
                         qDebug() << myItem->text() << myItem->rowCount();
-                        if ( myItem->text().isEmpty() )
-                            int xyz = 0;
                         if ( parentItem )
                             parentItem->appendRow( myItem );
                         else
