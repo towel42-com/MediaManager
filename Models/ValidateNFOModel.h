@@ -56,6 +56,15 @@ namespace NMediaManager
 
             virtual bool oneStatusForAllColumns() const { return true; }
             virtual std::optional< TItemStatus > computeItemStatus( const QModelIndex &idx ) const override;
+            
+        private:
+            struct STMDBInfo
+            {
+                bool matches() const { return fPathTMDBID == fNFOTMDBID; }
+                QString fPathTMDBID;
+                QString fNFOTMDBID;
+            };
+            std::optional< STMDBInfo > tmdbidMatches( const QFileInfo &fi ) const;
 
         };
     }

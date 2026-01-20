@@ -114,8 +114,17 @@ namespace NMediaManager
         {
         }
 
-        bool CValidateNFOModel::preFileFunction( const QFileInfo & /*fileInfo*/, std::unordered_set< QString > & /*alreadyAdded*/, TParentTree & /*tree*/, bool /*countOnly*/ )
+        bool CValidateNFOModel::preFileFunction( const QFileInfo &fileInfo, std::unordered_set< QString > & /*alreadyAdded*/, TParentTree & /*tree*/, bool countOnly )
         {
+            if ( countOnly )
+                return true;
+
+            if ( fileInfo.isFile() )
+            {
+                auto match = tmdbidMatches( fileInfo );
+                return !match.has_value() || !match.value().matches();
+            }
+
             return true;
         }
 
@@ -161,6 +170,22 @@ namespace NMediaManager
                 return {};
 
             auto fileInfo = this->fileInfo( idx );
+
+            auto matches = tmdbidMatches( fileInfo );
+            if ( !matches.has_value() )
+                return {};
+
+            auto retVal = std::make_pair( NPreferences::EItemStatus::eOK, QString() );
+            if ( !matches.value().matches() )
+            {
+                retVal = std::make_pair( NPreferences::EItemStatus::eError, tr( "TMDB value in NFO is '%1' should be '%2'" ).arg( matches.value().fNFOTMDBID ).arg( matches.value().fPathTMDBID ) );
+            }
+
+            return retVal;
+        }
+
+        std::optional< CValidateNFOModel::STMDBInfo > CValidateNFOModel::tmdbidMatches( const QFileInfo &fileInfo ) const
+        {
             if ( fileInfo.isDir() )
                 return {};
             auto path = fileInfo.absoluteFilePath();
@@ -170,7 +195,8 @@ namespace NMediaManager
             if ( !match.hasMatch() )
                 return {};
 
-            auto pathTMDBID = match.captured( 1 );
+            STMDBInfo retVal;
+            retVal.fPathTMDBID = match.captured( 1 );
 
             QFile file( path );
             if ( !file.open( QFile::ReadOnly | QFile::Text ) )
@@ -179,7 +205,6 @@ namespace NMediaManager
 
             QStringList elementStack;
             bool inMovie = false;
-            std::optional< QString > nfoTMDBID;
             while ( !reader.atEnd() && !reader.hasError() )
             {
                 reader.readNext();
@@ -193,7 +218,7 @@ namespace NMediaManager
                     }
                     else if ( inMovie && ( elementStack.size() == 2 ) && ( name == "tmdbid" ) )
                     {
-                        nfoTMDBID = reader.readElementText();
+                        retVal.fNFOTMDBID = reader.readElementText();
                         break;
                     }
                 }
@@ -214,16 +239,10 @@ namespace NMediaManager
             }
 
             file.close();
-            if ( !nfoTMDBID.has_value() )
+            if ( retVal.fNFOTMDBID.isEmpty() )
                 return {};
-
-            TItemStatus retVal = { NPreferences::EItemStatus::eOK, QString() };
-            if ( nfoTMDBID.value() != pathTMDBID )
-            {
-                retVal = std::make_pair( NPreferences::EItemStatus::eError, tr( "TMDB value in NFO is '%1' should be '%2'" ).arg( nfoTMDBID.value() ).arg( pathTMDBID ) );
-            }
-
             return retVal;
         }
+
     }
 }
