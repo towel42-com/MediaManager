@@ -159,6 +159,7 @@ namespace NMediaManager
             QString primaryNewName() const;
 
             bool fBackupOrig{ true };
+            bool fModifyTimestampsOnNewFiles{ true };
             bool fSetMetainfoTagsOnSuccess{ false };
             bool fForceUnbuffered{ false };
             QString fCmd;
@@ -313,13 +314,16 @@ namespace NMediaManager
             virtual QVariant getPathDecoration( const QModelIndex &idx, const QVariant &baseDecoration ) const final;
 
             virtual bool canComputeStatus() const;
+            virtual bool oneStatusForAllColumns() const { return false; }
             virtual std::optional< TItemStatus > getIndexStatus( const QModelIndex &idx ) const final;   // checks the item then the path status
 
             virtual std::optional< TItemStatus > getRowStatus( const QModelIndex &idx ) const final;
             virtual std::optional< TItemStatus > getItemStatus( const QModelIndex &idx ) const final;
+            virtual std::optional< TItemStatus > getItemStatus( const QStandardItem *item ) const final;
+            virtual std::optional< TItemStatus > getItemStatus( const QFileInfo &fi ) const final;
+
             virtual std::optional< TItemStatus > computeItemStatus( const QModelIndex &idx ) const;   // the one to override
             virtual std::optional< TItemStatus > computeItemStatus( QStandardItem *item ) const final;
-            virtual std::optional< TItemStatus > getPathStatus( const QFileInfo &fi ) const final;
             virtual std::optional< TItemStatus > computePathStatus( const QFileInfo &fi ) const;
 
             virtual void clearItemStatusCache( const QModelIndex &idx ) const;   // const due to possible (often) calls in ::data
@@ -417,7 +421,7 @@ namespace NMediaManager
                 std::function< void( const QFileInfo &dir, bool aOK ) > fPostFileFunction;
             };
 
-            void iterateEveryFile( const QFileInfo &fileInfo, const SIterateInfo &iterInfo, std::optional< QDateTime > &lastUpdateUI, bool countOnly ) const;
+            void iterateEveryFile( const QFileInfo &fileInfo, const SIterateInfo &iterInfo, bool countOnly ) const;
             std::pair< uint64_t, uint64_t > computeNumberOfFiles( const QFileInfo &fileInfo );
             void loadFileInfo( const QFileInfo &info );
 
@@ -483,6 +487,9 @@ namespace NMediaManager
             std::optional< std::pair< QDateTime, uint64_t > > fLastProgress;
             mutable std::optional< std::unordered_map< NTowel42Utils::EMediaTags, int > * > fMediaColumnMap;
             mutable int fLastMediaColumn{ -1 };
+
+            mutable std::optional< QDateTime > fLastUpdateUI;
+            mutable std::optional< QDateTime > fLastResizeColumns;
         };
     }
 }

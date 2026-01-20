@@ -345,7 +345,7 @@ namespace NMediaManager
             return std::move( retVal );
         }
 
-        void CDirModel::iterateEveryFile( const QFileInfo &fileInfo, const SIterateInfo &iterInfo, std::optional< QDateTime > &lastUpdateUI, bool countOnly ) const
+        void CDirModel::iterateEveryFile( const QFileInfo &fileInfo, const SIterateInfo &iterInfo, bool countOnly ) const
         {
             //qDebug() << fileInfo;
             if ( progressCanceled() )
@@ -371,11 +371,17 @@ namespace NMediaManager
                     {
                         ii->next();
                         auto fi = ii->fileInfo();
-                        iterateEveryFile( fi, iterInfo, lastUpdateUI, countOnly );
-                        if ( progressDlg() && ( !lastUpdateUI.has_value() || ( lastUpdateUI.value().msecsTo( QDateTime::currentDateTime() ) > 250 ) ) )
+                        iterateEveryFile( fi, iterInfo, countOnly );
+                        if ( progressDlg() && ( !fLastUpdateUI.has_value() || ( fLastUpdateUI.value().msecsTo( QDateTime::currentDateTime() ) > 250 ) ) )
                         {
                             qApp->processEvents();
-                            lastUpdateUI = QDateTime::currentDateTime();
+                            fLastUpdateUI = QDateTime::currentDateTime();
+                        }
+
+                        if ( !countOnly && ( !fLastResizeColumns.has_value() || ( fLastResizeColumns.value().msecsTo( QDateTime::currentDateTime() ) > 5000 ) ) )
+                        {
+                            resizeColumns();
+                            fLastResizeColumns = QDateTime::currentDateTime();
                         }
                     }
                     qApp->processEvents();
@@ -439,8 +445,10 @@ namespace NMediaManager
                     numFiles++;
                 return false;
             };
-            std::optional< QDateTime > lastUpdate;
-            iterateEveryFile( fileInfo, info, lastUpdate, true );
+
+            fLastUpdateUI.reset();
+            fLastResizeColumns.reset();
+            iterateEveryFile( fileInfo, info, true );
 
             return std::make_pair( numDirs, numFiles );
         }
@@ -519,8 +527,9 @@ namespace NMediaManager
                 //qDebug().noquote().nospace() << "Post File B: " << dirInfo.absoluteFilePath() << tree;
             };
 
-            std::optional< QDateTime > lastUpdate;
-            iterateEveryFile( fileInfo, info, lastUpdate, false );
+            fLastUpdateUI.reset();
+            fLastResizeColumns.reset();
+            iterateEveryFile( fileInfo, info, false );
         }
 
         void CDirModel::appendRow( QStandardItem *parent, QList< QStandardItem * > items )
@@ -1465,20 +1474,27 @@ namespace NMediaManager
                     progressDlg()->setSecondaryMaximum( curr->fMaximum );
             }
 
-            auto tmp = QStringList() << curr->fCmd << curr->fArgs;
-            for ( auto &&ii : tmp )
+            if ( !curr->fCmd.isEmpty() )
             {
-                if ( ii.contains( " " ) )
-                    ii = "\"" + ii + "\"";
-            }
-            addToLog( "Running Command:" + tmp.join( " " ), true );
+                auto tmp = QStringList() << curr->fCmd << curr->fArgs;
+                for ( auto &&ii : tmp )
+                {
+                    if ( ii.contains( " " ) )
+                        ii = "\"" + ii + "\"";
+                }
+                addToLog( "Running Command:" + tmp.join( " " ), true );
 
-            if ( curr->fForceUnbuffered )
-                fProcess->setCreateProcessArgumentsModifier( NTowel42Utils::getForceUnbufferedProcessModifier() );
+                if ( curr->fForceUnbuffered )
+                    fProcess->setCreateProcessArgumentsModifier( NTowel42Utils::getForceUnbufferedProcessModifier() );
+                else
+                    fProcess->setCreateProcessArgumentsModifier( {} );
+                fLastProgress.reset();
+                fProcess->start( curr->fCmd, curr->fArgs, QProcess::ReadWrite );
+            }
             else
-                fProcess->setCreateProcessArgumentsModifier( {} );
-            fLastProgress.reset();
-            fProcess->start( curr->fCmd, curr->fArgs, QProcess::ReadWrite );
+            {
+                slotProcessFinished( 0, QProcess::ExitStatus::NormalExit );
+            }
         }
 
         QString CDirModel::getProgressLabel( std::shared_ptr< SProcessInfo > /*processInfo*/ ) const
@@ -1544,9 +1560,12 @@ namespace NMediaManager
             if ( fProcessQueue.empty() )
                 return;
 
-            addToLog( msg, !error );
-            if ( error )
-                addProcessError( msg );
+            if ( !fProcessQueue.front()->fCmd.isEmpty() )
+            {
+                addToLog( msg, !error );
+                if ( error )
+                    addProcessError( msg );
+            }
 
             bool wasCanceled = progressCanceled();
             fProcessResults.first = !error && !wasCanceled;
@@ -1684,12 +1703,15 @@ namespace NMediaManager
                 model->fProcessResults.first = false;
             }
 
-            for ( auto &&ii : fNewNames )
+            if ( fModifyTimestampsOnNewFiles )
             {
-                if ( QFileInfo::exists( ii ) && !NTowel42Utils::NFileUtils::setTimeStamps( ii, fTimeStamps ) )
+                for ( auto &&ii : fNewNames )
                 {
-                    CDirModel::appendError( fItem, QObject::tr( "%1: FAILED TO MODIFY TIMESTAMP ON GENERATED FILE '%2'" ).arg( model->getDispName( fOldName ) ).arg( model->getDispName( ii ) ) );
-                    model->fProcessResults.first = false;
+                    if ( QFileInfo::exists( ii ) && !NTowel42Utils::NFileUtils::setTimeStamps( ii, fTimeStamps ) )
+                    {
+                        CDirModel::appendError( fItem, QObject::tr( "%1: FAILED TO MODIFY TIMESTAMP ON GENERATED FILE '%2'" ).arg( model->getDispName( fOldName ) ).arg( model->getDispName( ii ) ) );
+                        model->fProcessResults.first = false;
+                    }
                 }
             }
 
@@ -2006,10 +2028,18 @@ namespace NMediaManager
             auto parent = idx.parent();
             int numCols = columnCount( parent );
             std::optional< TItemStatus > rowStatus;
+            if ( oneStatusForAllColumns() )
+            {
+                numCols = 1;
+            }
             for ( int ii = 0; ii < numCols; ++ii )
             {
                 auto peerIndex = this->index( idx.row(), ii, parent );
                 auto status = getItemStatus( peerIndex );
+                if ( status.has_value() && !status.value().second.startsWith( "<" ) )
+                {
+                    status.value().second = "<p style='white-space:pre'>" + status.value().second + "</p>";
+                }
                 if ( status.has_value() )
                 {
                     if ( rowStatus.has_value() )
@@ -2044,7 +2074,7 @@ namespace NMediaManager
             if ( !retVal.has_value() )
             {
                 auto fi = fileInfo( idx );
-                retVal = getPathStatus( fi );
+                retVal = getItemStatus( fi );
             }
 
             return retVal;
@@ -2069,9 +2099,12 @@ namespace NMediaManager
             auto fi = fileInfo( idx );
 
             auto pos = fItemStatusCache.find( fi.absoluteFilePath() );
+            auto statusColumn = idx.column();
+            if ( oneStatusForAllColumns() )
+                statusColumn = 0;
             if ( useStatusCache() && ( pos != fItemStatusCache.end() ) )
             {
-                auto pos2 = ( *pos ).second.find( idx.column() );
+                auto pos2 = ( *pos ).second.find( statusColumn );
                 if ( pos2 != ( *pos ).second.end() )
                     return ( *pos2 ).second;
             }
@@ -2080,17 +2113,11 @@ namespace NMediaManager
                 return {};
 
             auto retVal = computeItemStatus( idx );
-            fItemStatusCache[ fi.absoluteFilePath() ][ idx.column() ] = retVal;
+            fItemStatusCache[ fi.absoluteFilePath() ][ statusColumn ] = retVal;
             return retVal;
         }
 
-        std::optional< TItemStatus > CDirModel::computePathStatus( const QFileInfo &fi ) const
-        {
-            (void)fi;
-            return {};
-        }
-
-        std::optional< TItemStatus > CDirModel::getPathStatus( const QFileInfo &fi ) const
+        std::optional< TItemStatus > CDirModel::getItemStatus( const QFileInfo &fi ) const
         {
             auto pos = fPathStatusCache.find( fi.absoluteFilePath() );
             if ( useStatusCache() && ( pos != fPathStatusCache.end() ) )
@@ -2102,6 +2129,22 @@ namespace NMediaManager
             auto retVal = computePathStatus( fi );
             fPathStatusCache[ fi.absoluteFilePath() ] = retVal;
             return retVal;
+        }
+
+        std::optional< NMediaManager::NModels::TItemStatus > CDirModel::getItemStatus( const QStandardItem *item ) const
+        {
+            if ( !item )
+                return {};
+            auto fi = fileInfo( item );
+            return getItemStatus( fi );
+        }
+
+        std::optional< TItemStatus > CDirModel::computePathStatus( const QFileInfo &fi ) const
+        {
+            if ( !oneStatusForAllColumns() )
+                return {};
+            else
+                return computeItemStatus( getItemFromPath( fi ) );
         }
 
         QVariant CDirModel::getItemBackground( const QModelIndex &idx ) const
