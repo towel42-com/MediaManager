@@ -122,7 +122,7 @@ namespace NMediaManager
             if ( fileInfo.isFile() )
             {
                 auto match = tmdbidMatches( fileInfo );
-                if ( match.has_value() && !match.value().hasNFOValue() )
+                if ( match.has_value() && ( !match.value().hasNFOValue() || !match.value().hasPathValue() ) )
                     return false;
                 return !match.has_value() || !match.value().matches();
             }
@@ -178,9 +178,9 @@ namespace NMediaManager
                 return {};
 
             auto retVal = std::make_pair( NPreferences::EItemStatus::eOK, QString() );
-            if ( matches.value().hasNFOValue() && !matches.value().matches() )
+            if ( matches.value().hasNFOValue() && matches.value().hasPathValue() && !matches.value().matches() )
             {
-                retVal = std::make_pair( NPreferences::EItemStatus::eError, tr( "TMDB value in NFO is '%1' should be '%2'" ).arg( matches.value().fNFOTMDBID.value() ).arg( matches.value().fPathTMDBID ) );
+                retVal = std::make_pair( NPreferences::EItemStatus::eError, tr( "TMDB value in NFO is '%1' should be '%2'" ).arg( matches.value().fNFOTMDBID.value() ).arg( matches.value().fPathTMDBID.value() ) );
             }
 
             return retVal;
@@ -194,11 +194,10 @@ namespace NMediaManager
 
             QRegularExpression regEx( R"__(\[tmdbid=(\d+)\])__" );
             auto match = regEx.match( path );
-            if ( !match.hasMatch() )
-                return {};
-
+            
             STMDBInfo retVal;
-            retVal.fPathTMDBID = match.captured( 1 );
+            if ( match.hasMatch() )
+                retVal.fPathTMDBID = match.captured( 1 );
 
             QFile file( path );
             if ( !file.open( QFile::ReadOnly | QFile::Text ) )
