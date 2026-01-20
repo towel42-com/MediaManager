@@ -122,6 +122,8 @@ namespace NMediaManager
             if ( fileInfo.isFile() )
             {
                 auto match = tmdbidMatches( fileInfo );
+                if ( match.has_value() && !match.value().hasNFOValue() )
+                    return false;
                 return !match.has_value() || !match.value().matches();
             }
 
@@ -176,9 +178,9 @@ namespace NMediaManager
                 return {};
 
             auto retVal = std::make_pair( NPreferences::EItemStatus::eOK, QString() );
-            if ( !matches.value().matches() )
+            if ( matches.value().hasNFOValue() && !matches.value().matches() )
             {
-                retVal = std::make_pair( NPreferences::EItemStatus::eError, tr( "TMDB value in NFO is '%1' should be '%2'" ).arg( matches.value().fNFOTMDBID ).arg( matches.value().fPathTMDBID ) );
+                retVal = std::make_pair( NPreferences::EItemStatus::eError, tr( "TMDB value in NFO is '%1' should be '%2'" ).arg( matches.value().fNFOTMDBID.value() ).arg( matches.value().fPathTMDBID ) );
             }
 
             return retVal;
@@ -239,8 +241,6 @@ namespace NMediaManager
             }
 
             file.close();
-            if ( retVal.fNFOTMDBID.isEmpty() )
-                return {};
             return retVal;
         }
 

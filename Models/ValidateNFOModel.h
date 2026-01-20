@@ -60,9 +60,10 @@ namespace NMediaManager
         private:
             struct STMDBInfo
             {
-                bool matches() const { return fPathTMDBID == fNFOTMDBID; }
+                bool hasNFOValue() const { return fNFOTMDBID.has_value(); }
+                bool matches() const { return hasNFOValue() && ( fPathTMDBID == fNFOTMDBID.value() ); }
                 QString fPathTMDBID;
-                QString fNFOTMDBID;
+                std::optional< QString > fNFOTMDBID;
             };
             std::optional< STMDBInfo > tmdbidMatches( const QFileInfo &fi ) const;
 
