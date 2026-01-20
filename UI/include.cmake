@@ -35,6 +35,7 @@ set(qtproject_SRCS
     TagsPage.cpp
     MediaNamingPage.cpp
     ValidateMKVPage.cpp
+    ValidateNFOPage.cpp
 )
 
 set(qtproject_H
@@ -48,6 +49,7 @@ set(qtproject_H
     TagsPage.h
     MediaNamingPage.h
     ValidateMKVPage.h
+    ValidateNFOPage.h
 )
 
 set(project_H

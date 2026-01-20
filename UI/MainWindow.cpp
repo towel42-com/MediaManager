@@ -27,6 +27,7 @@
 #include "TagsPage.h"
 #include "BIFViewerPage.h"
 #include "GenerateBIFPage.h"
+#include "ValidateNFOPage.h"
 
 #include "ui_MainWindow.h"
 
@@ -240,6 +241,7 @@ namespace NMediaManager
             addPage( std::make_shared< STabDef >( new CTranscodePage( nullptr ), tr( "Transcode Media" ), QString::fromUtf8( ":/convert.png" ), fImpl->tabWidget ) );
             addPage( std::make_shared< STabDef >( new CMediaNamingPage( nullptr ), tr( "Media Namer" ), QString::fromUtf8( ":/rename.png" ), fImpl->tabWidget ) );
             addPage( std::make_shared< STabDef >( new CTagsPage( nullptr ), tr( "Media Tags" ), QString::fromUtf8( ":/tag.png" ), fImpl->tabWidget ) );
+            addPage( std::make_shared< STabDef >( new CValidateNFOPage( nullptr ), tr( "Validate NFO Files" ), QString::fromUtf8( ":/nfo.png" ), fImpl->tabWidget ) );
             addPage( std::make_shared< STabDef >( new CValidateMKVPage( nullptr ), tr( "Validate MKV" ), QString::fromUtf8( ":/mkv.png" ), fImpl->tabWidget ) );
             addPage( std::make_shared< STabDef >( new CGenerateBIFPage( nullptr ), tr( "Generate Thumbnail Videos" ), QString::fromUtf8( ":/roku.png" ), fImpl->tabWidget ) );
             auto bifPage = addPage( std::make_shared< STabDef >( new CBIFViewerPage( nullptr ), tr( "Thumbnail Viewer" ), QString::fromUtf8( ":/roku.png" ), fImpl->tabWidget ) );

@@ -32,6 +32,7 @@ set(qtproject_SRCS
     TagsModel.cpp
     MediaNamingModel.cpp
     ValidateMKVModel.cpp
+    ValidateNFOModel.cpp
 )
 
 set(qtproject_H
@@ -41,6 +42,7 @@ set(qtproject_H
     TagsModel.h
     MediaNamingModel.h
     ValidateMKVModel.h
+    ValidateNFOModel.h
 )
 
 set(project_H
