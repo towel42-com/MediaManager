@@ -34,6 +34,7 @@ class QFileInfo;
 
 namespace NMediaManager
 {
+    using TDateStringPair = std::pair< QDate, QString >;
     namespace NCore
     {
         class CTransformResult;
@@ -85,7 +86,7 @@ namespace NMediaManager
 
             void setPageNumber( int pageNumber );
             void setReleaseDate( const QString &releaseDate );
-            std::pair< QDate, QString > releaseDate() const;
+            TDateStringPair releaseDate() const;
             int releaseYear( bool *aOK = nullptr ) const;
             static int releaseYear( const QString &dateStr, bool *aOK = nullptr );
             bool releaseDateSet() const { return fReleaseDate.has_value(); }
@@ -113,7 +114,7 @@ namespace NMediaManager
             bool isMatch( std::shared_ptr< CTransformResult > searchResult ) const;
 
             template< typename T >
-            bool isMatch( const std::pair< QDate, QString > &releaseDate, const T &tmdbid, const QString &name ) const
+            bool isMatch( const TDateStringPair &releaseDate, const T &tmdbid, const QString &name ) const
             {
                 auto retVal = ( tmdbIDSet() && isMatchingTMDBID( tmdbid ) ) || ( isMatchingDate( releaseDate ) && isMatchingTMDBID( tmdbid ) && isMatchingName( name ) );
                 return retVal;
@@ -126,7 +127,7 @@ namespace NMediaManager
             }
 
             template< typename T >
-            bool isMatch( const std::pair< QDate, QString > &releaseDate, const T &tmdbid, const QString &name, EMediaType mediaType, const T &season, const T &episode ) const
+            bool isMatch( const TDateStringPair &releaseDate, const T &tmdbid, const QString &name, EMediaType mediaType, const T &season, const T &episode ) const
             {
                 bool retVal = isMatch( releaseDate, tmdbid, name ) && ( fMediaType.first == mediaType );
 
@@ -151,7 +152,7 @@ namespace NMediaManager
 
             QStringList getSearchStrings() const;
 
-            bool isMatchingDate( const std::pair< QDate, QString > &releaseDate ) const;
+            bool isMatchingDate( const TDateStringPair &releaseDate ) const;
             bool isMatchingTMDBID( int tmdbid ) const;
             bool isMatchingTMDBID( const QString &tmdbd ) const;
             bool isMatchingName( const QString &name ) const;
@@ -165,8 +166,8 @@ namespace NMediaManager
             static QStringList stripOutPositions( const QString &inString, const std::list< std::pair< int, int > > &positions );
 
             QString fSearchName;
-            std::optional< std::pair< QDate, QString > > fReleaseDate;
-            static std::unordered_map< QString, std::pair< QDate, QString > > sReleaseDateLookup;
+            std::optional< TDateStringPair > fReleaseDate;
+            static std::unordered_map< QString, std::pair< QString, TDateStringPair > > sReleaseDateLookup;
             std::optional< int > fPageNumber;
             int fSeason{ -1 };
             std::list< int > fEpisodes;

@@ -362,6 +362,7 @@ namespace NMediaManager
         {
             QString extendedInfo;
 
+            fReleaseDate.reset();
             fSearchName = smartTrim( stripExistingExtraInfo( fInitSearchString, extendedInfo ) );
             fSearchName = smartTrim( stripKnownExtendedData( fSearchName, extendedInfo ) );
             fSearchName = smartTrim( stripKnownData( fSearchName ) );
@@ -401,9 +402,9 @@ namespace NMediaManager
             fReleaseDate = std::make_pair( NTowel42Utils::getDate( releaseDate, options ), releaseDate );
         }
 
-        std::pair< QDate, QString > SSearchTMDBInfo::releaseDate() const
+        TDateStringPair SSearchTMDBInfo::releaseDate() const
         {
-            return fReleaseDate.has_value() ? fReleaseDate.value() : std::pair< QDate, QString >();
+            return fReleaseDate.has_value() ? fReleaseDate.value() : TDateStringPair();
         }
 
         int SSearchTMDBInfo::releaseYear( const QString &dateStr, bool *aOK )
@@ -544,7 +545,7 @@ namespace NMediaManager
             return tmdbid == myTmdbID;
         }
 
-        bool SSearchTMDBInfo::isMatchingDate( const std::pair< QDate, QString > &releaseDate ) const
+        bool SSearchTMDBInfo::isMatchingDate( const TDateStringPair &releaseDate ) const
         {
             if ( !releaseDateSet() )
                 return true;
@@ -575,7 +576,7 @@ namespace NMediaManager
             return NTowel42Utils::NStringUtils::isSimilar( name, fSearchName, fExactMatchOnly );   // if every word we are searching for is covered by name, we match.  For exact matches must be in same order
         }
 
-        std::unordered_map< QString, std::pair< QDate, QString > > SSearchTMDBInfo::sReleaseDateLookup;
+        std::unordered_map< QString, std::pair< QString, TDateStringPair > > SSearchTMDBInfo::sReleaseDateLookup;
 
         void SSearchTMDBInfo::extractReleaseDate()
         {
@@ -594,13 +595,17 @@ namespace NMediaManager
             auto pos = sReleaseDateLookup.find( smartTrim( fSearchName ) );
             if ( pos != sReleaseDateLookup.end() )
             {
-                fReleaseDate = ( *pos ).second;
+                fSearchName = ( *pos ).second.first;
+                fReleaseDate = ( *pos ).second.second;
+                if ( fSearchName.indexOf( "2025" ) != -1 )
+                    int xyz = 0;
+
                 return;
             }
 
             //basically capture anything inside parens that doesnt start with imdb
             auto regExpStr1 = R"((?<releaseDate1>\d{2}|\d{4}))";
-            auto regExpStr = QString( R"((?<fulltext>\(%1\)))" ).arg( regExpStr1 );
+            auto regExpStr = QString( R"((?<fulltext>[\.\(\[]%1([\.\)\]]|$)))" ).arg( regExpStr1 );
             auto regExp = QRegularExpression( regExpStr );
             Q_ASSERT( regExp.isValid() );
             auto match = regExp.match( fSearchName );
@@ -637,8 +642,14 @@ namespace NMediaManager
                         else
                         {
                             fReleaseDate = { date, releaseDate };
-                            sReleaseDateLookup[ smartTrim( fSearchName ) ] = fReleaseDate.value();
-                            fSearchName.replace( match.capturedStart( "fulltext" ), match.capturedLength( "fulltext" ), "" );
+                            auto newSearchName = fSearchName;
+                            newSearchName.replace( match.capturedStart( "fulltext" ), match.capturedLength( "fulltext" ), "" );
+                            if ( newSearchName.indexOf( "2025" ) != -1 )
+                                int xyz = 0;
+                            sReleaseDateLookup[ smartTrim( fSearchName ) ] = std::make_pair( newSearchName, fReleaseDate.value() );
+                            fSearchName = newSearchName;
+                            if ( fSearchName.indexOf( "2025" ) != -1 )
+                                int xyz = 0;
                         }
                     }
                 }
