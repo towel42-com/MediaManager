@@ -23,6 +23,7 @@
 #include "ProcessConfirm.h"
 #include "ui_ProcessConfirm.h"
 
+#include "T42-Utils/AutoSize.h"
 #include "T42-Utils/QtUtils.h"
 
 #include <QAbstractButton>
@@ -75,9 +76,9 @@ namespace NMediaManager
             fImpl->transformations->setModel( model );
             NTowel42Utils::expandAll( fImpl->transformations );
             auto width = NTowel42Utils::autoSize( fImpl->transformations );
-            if ( fImpl->transformations->width() < width )
+            if ( width.has_value() && ( fImpl->transformations->width() < width.value() ) )
             {
-                fImpl->transformations->setMinimumWidth( width );
+                fImpl->transformations->setMinimumWidth( width.value() );
             }
         }
 
