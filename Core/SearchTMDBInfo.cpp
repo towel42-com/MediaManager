@@ -112,7 +112,7 @@ namespace NMediaManager
 
         QString SSearchTMDBInfo::stripExistingExtraInfo( const QString &string, QString &extendedData )
         {
-            auto regExStr = R"([\)\]]\s*(?<total>( - )(?<extendedData>[^\[\(]+))$)";
+            auto regExStr = QStringLiteral( R"([\)\]]\s*(?<total>( - )(?<extendedData>[^\[\(]+))$)" );
             auto regEx = QRegularExpression( regExStr );
             QString retVal = string;
             auto match = regEx.match( retVal );
@@ -169,7 +169,7 @@ namespace NMediaManager
                 while ( prev != retVal )
                 {
                     prev = retVal;
-                    retVal.replace( QRegularExpression( checkForKnownHyphens ? R"(\s+|_|\.)" : R"(\s+|-|_|\.)" ), " " );
+                    retVal.replace( QRegularExpression( checkForKnownHyphens ? QStringLiteral( R"(\s+|_|\.)" ) : QStringLiteral( R"(\s+|-|_|\.)" ) ), " " );
                 }
                 retVal = retVal.trimmed();
 
@@ -263,8 +263,8 @@ namespace NMediaManager
                 retVal = EMediaType::eTVSeason;
             }
 
-            auto regExpStr1 = R"((^|[^A-Z])E(?<garbage1>PISODE)?(?<startEpisode>\d{1,4})(?<dash>\-)?E(?<garbage2>PISODE)?(?<endEpisode>\d{1,4}))";
-            auto regExpStr2 = R"((^|[^A-Z])E(?<garbage>PISODE)?(?<episode>\d{1,4})(?![E-]))";
+            auto regExpStr1 = QStringLiteral( R"((^|[^A-Z])E(?<garbage1>PISODE)?(?<startEpisode>\d{1,4})(?<dash>\-)?E(?<garbage2>PISODE)?(?<endEpisode>\d{1,4}))" );
+            auto regExpStr2 = QStringLiteral( R"((^|[^A-Z])E(?<garbage>PISODE)?(?<episode>\d{1,4})(?![E-]))" );
             regExpStr = QString( R"(((%1)|(%2)))" ).arg( regExpStr1 ).arg( regExpStr2 );
             regExp = QRegularExpression( regExpStr, QRegularExpression::PatternOption::CaseInsensitiveOption );
             match = regExp.match( title );
@@ -457,7 +457,7 @@ namespace NMediaManager
         {
             auto retVal = forDebug ? QString( "SSearchTMDBInfo(%1 (%2)-S%3E%4-%5-%6-%7)" ) : QString( "Search Name: '%1' - Release Date: %2 - Season: %3 - Episode: %4 - TMDB ID: %5 - Media Type: %6 Auto Determined: %7 - Exact Match Only: %8" );
 
-            retVal = retVal.arg( searchName() ).arg( forDebug ? releaseDate().second : ( releaseDate().second.isEmpty() ? "<Not Set>" : releaseDate().second ) ).arg( forDebug ? QString::number( season() ) : ( season() == -1 ) ? "<Not Set>" : QString::number( season() ) ).arg( episodeString( forDebug ) ).arg( forDebug ? tmdbIDString() : tmdbIDString().isEmpty() ? "<Not Set>" : tmdbIDString() ).arg( toEnumString( fMediaType.first ) ).arg( fMediaType.second ? "Yes" : "No" ).arg( forDebug ? QString( "%1" ).arg( exactMatchOnly() ) : exactMatchOnly() ? "Yes" : "No" );
+            retVal = retVal.arg( searchName() ).arg( forDebug ? releaseDate().second : ( releaseDate().second.isEmpty() ? "<Not Set>" : releaseDate().second ) ).arg( forDebug ? QString::number( season() ) : ( season() == -1 ) ? "<Not Set>" : QString::number( season() ) ).arg( episodeString( forDebug ) ).arg( forDebug ? tmdbIDString() : tmdbIDString().isEmpty() ? "<Not Set>" : tmdbIDString() ).arg( toEnumString( fMediaType.first ) ).arg( fMediaType.second ? QStringLiteral( "Yes" ) : QStringLiteral( "No" ) ).arg( forDebug ? QString( "%1" ).arg( exactMatchOnly() ) : exactMatchOnly() ? QStringLiteral( "Yes" ) : QStringLiteral( "No" ) );
 
             return retVal;
         }
@@ -604,7 +604,7 @@ namespace NMediaManager
             }
 
             //basically capture anything inside parens that doesnt start with imdb
-            auto regExpStr1 = R"((?<releaseDate1>\d{2}|\d{4}))";
+            auto regExpStr1 = QStringLiteral( R"((?<releaseDate1>\d{2}|\d{4}))" );
             auto regExpStr = QString( R"((?<fulltext>[\.\(\[]%1([\.\)\]]|$)))" ).arg( regExpStr1 );
             auto regExp = QRegularExpression( regExpStr );
             Q_ASSERT( regExp.isValid() );
@@ -612,8 +612,8 @@ namespace NMediaManager
 
             if ( !match.hasMatch() )
             {
-                auto regExpStr2 = R"((([\(\[])\s*(?<!(tv|im|tm)dbid\=))(?<releaseDate2>[^\(\[\)\]]+)\s*(\)|\]))";
-                auto regExpStr3 = R"((([\(\[]|^)|(?<!(\d|t)))(?<releaseDate3>\d{2}|\d{4})([^0-9sS]|\)|\]|$))";
+                auto regExpStr2 = QStringLiteral( R"((([\(\[])\s*(?<!(tv|im|tm)dbid\=))(?<releaseDate2>[^\(\[\)\]]+)\s*(\)|\]))" );
+                auto regExpStr3 = QStringLiteral( R"((([\(\[]|^)|(?<!(\d|t)))(?<releaseDate3>\d{2}|\d{4})([^0-9sS]|\)|\]|$))" );
                 regExpStr = QString( "(?<fulltext>(%2|%3))" ).arg( regExpStr2 ).arg( regExpStr3 );
 
                 regExp = QRegularExpression( regExpStr );
@@ -708,7 +708,7 @@ namespace NMediaManager
             }
 
             QString diskStr;
-            auto regExpStr = "[^A-Za-z](?<fulltext>D(ISC|ISK)?_?(?<num>\\d+))(\\D|$)";
+            auto regExpStr = QStringLiteral( "[^A-Za-z](?<fulltext>D(ISC|ISK)?_?(?<num>\\d+))(\\D|$)" );
             auto regExp = QRegularExpression( regExpStr, QRegularExpression::CaseInsensitiveOption );
             auto match = regExp.match( searchString );
             if ( match.hasMatch() )
@@ -818,9 +818,8 @@ namespace NMediaManager
                 query.addQueryItem( "include_adult", "true" );
                 if ( fReleaseDate.has_value() && fReleaseDate.value().first.isValid() )
                 {
-                    query.addQueryItem( "year", QString::number( fReleaseDate.value().first.year() - 1 ) );
-                    query.addQueryItem( "year", QString::number( fReleaseDate.value().first.year() ) );
-                    query.addQueryItem( "year", QString::number( fReleaseDate.value().first.year() + 1 ) );
+                    auto year = fReleaseDate.value().first.year();
+                    query.addQueryItem( "primary_year", QString::number( year ) );
                 }
                 if ( fPageNumber.has_value() )
                     query.addQueryItem( "page", QString::number( fPageNumber.value() ) );
