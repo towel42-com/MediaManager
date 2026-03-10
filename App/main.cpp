@@ -36,7 +36,7 @@ void myMessageOutput( QtMsgType type, const QMessageLogContext & context, const 
 {
     static QFile * sOutFile{ nullptr };
     QByteArray localMsg = msg.toLocal8Bit();
-    QString realMsg = QString( "%1 (%2:%3, %4)" ).arg( localMsg.constData() ).arg( ( QFileInfo( context.file ).fileName() ) ).arg( context.line ).arg( context.function );
+    QString realMsg = QString( "%1 (%2:%3, %4)" ).arg( QString::fromLocal8Bit( localMsg ) ).arg( ( QFileInfo( QString::fromLocal8Bit( context.file ) ).fileName() ) ).arg( context.line ).arg( QString::fromLocal8Bit( context.function ) );
 
     QString typeString;
     switch ( type )
@@ -100,7 +100,7 @@ int main( int argc, char ** argv )
     QString bifName;
     for ( int ii = 1; ii < argc; ++ii )
     {
-        QString name = argv[ ii ];
+        auto name = QString::fromLocal8Bit( argv[ ii ] );
         if ( name.toLower().endsWith( ".bif" ) )
         {
             bifName = name;

@@ -795,11 +795,11 @@ namespace NMediaManager
 
             if ( resultItem.contains( "number_of_seasons" ) )
             {
-                searchResult->setSeason( QString( "%1 Season%2" ).arg( resultItem[ "number_of_seasons" ].toInt() ).arg( resultItem[ "number_of_seasons" ].toInt() == 1 ? "" : "s" ) );
+                searchResult->setSeason( QString( "%1 Season%2" ).arg( resultItem[ "number_of_seasons" ].toInt() ).arg( resultItem[ "number_of_seasons" ].toInt() == 1 ? QStringLiteral( "" ) : QStringLiteral( "s" ) ) );
             }
             if ( resultItem.contains( "number_of_episodes" ) )
             {
-                searchResult->setEpisode( QString( "%1 Episode%2" ).arg( resultItem[ "number_of_episodes" ].toInt() ).arg( resultItem[ "number_of_episodes" ].toInt() == 1 ? "" : "s" ) );
+                searchResult->setEpisode( QString( "%1 Episode%2" ).arg( resultItem[ "number_of_episodes" ].toInt() ).arg( resultItem[ "number_of_episodes" ].toInt() == 1 ? QStringLiteral( "" ) : QStringLiteral( "s" ) ) );
             }
             if ( !posterPath.isEmpty() && hasConfiguration() && !fSkipImages )
             {
@@ -930,7 +930,7 @@ namespace NMediaManager
             seasonInfo->setSeasonOnly( true );
 
             auto episodes = doc.object()[ "episodes" ].toArray();
-            seasonInfo->setEpisode( QString( "%1 Episode%2" ).arg( episodes.count() ).arg( episodes.count() == 1 ? "" : "s" ) );
+            seasonInfo->setEpisode( QString( "%1 Episode%2" ).arg( episodes.count() ).arg( episodes.count() == 1 ? QStringLiteral( "" ) : QStringLiteral( "s" ) ) );
             seasonInfo->setSeasonTMDBID( doc.object().contains( "id" ) ? QString::number( doc.object()[ "id" ].toInt() ) : QString() );
 
             // season match

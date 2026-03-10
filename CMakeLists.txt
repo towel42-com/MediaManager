@@ -66,8 +66,9 @@ add_subdirectory( Preferences/UI )
 add_subdirectory( Preferences/Core )
 add_subdirectory( Core )
 add_subdirectory( Models )
-add_subdirectory( App )
 add_subdirectory( mkvalidator-0.6.0 )
+
+add_subdirectory( App )
                          
 set_target_properties( branch      PROPERTIES FOLDER MKVValidator )
 set_target_properties( bzlib       PROPERTIES FOLDER MKVValidator )

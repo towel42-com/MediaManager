@@ -28,12 +28,11 @@
 #include "T42-Utils/MediaInfo.h"
 #include "T42-Utils/FileUtils.h"
 #include "T42-Utils/GPUDetect.h"
-#include "T42-Utils/ScrollMessageBox.h"
 #include "T42-Utils/FFMpegFormats.h"
 
 #include <QSettings>
 #include <QStringListModel>
-#include <QInputDialog>
+#include <QColor>
 #include <QFileInfo>
 #include <QRegularExpression>
 #include <QMap>
@@ -41,11 +40,8 @@
 #include <QVariant>
 #include <QString>
 #include <QTimer>
-#include <QMessageBox>
-#include <QClipboard>
-#include <QGuiApplication>
-#include <QPushButton>
-#include <QLabel>
+#include <QSize>
+#include <QCoreApplication>
 #include <QImageReader>
 #include <QProcess>
 #include <QStandardPaths>
@@ -77,23 +73,23 @@ namespace NMediaManager
             switch ( prefType )
             {
                 case eSystemPrefs:
-                    return forEnum ? "NMediaManager::NPreferences::eSystemPrefs" : "System";
+                    return forEnum ? QStringLiteral( "NMediaManager::NPreferences::eSystemPrefs" ) : QStringLiteral( "System" );
                 case eLoadPrefs:
-                    return forEnum ? "NMediaManager::NPreferences::eLoadPrefs" : "Load";
+                    return forEnum ? QStringLiteral( "NMediaManager::NPreferences::eLoadPrefs" ) : QStringLiteral( "Load" );
                 case eMediaRenamerPrefs:
-                    return forEnum ? "NMediaManager::NPreferences::eMediaRenamerPrefs" : "MediaRenamer";
+                    return forEnum ? QStringLiteral( "NMediaManager::NPreferences::eMediaRenamerPrefs" ) : QStringLiteral( "MediaRenamer" );
                 case eTagPrefs:
-                    return forEnum ? "NMediaManager::NPreferences::eTagPrefs" : "Tags";
+                    return forEnum ? QStringLiteral( "NMediaManager::NPreferences::eTagPrefs" ) : QStringLiteral( "Tags" );
                 case eExtToolsPrefs:
-                    return forEnum ? "NMediaManager::NPreferences::eExtToolsPrefs" : "ExternalTools";
+                    return forEnum ? QStringLiteral( "NMediaManager::NPreferences::eExtToolsPrefs" ) : QStringLiteral( "ExternalTools" );
                 case eGIFPrefs:
-                    return forEnum ? "NMediaManager::NPreferences::eGIFPrefs" : "GIF";
+                    return forEnum ? QStringLiteral( "NMediaManager::NPreferences::eGIFPrefs" ) : QStringLiteral( "GIF" );
                 case eBIFPrefs:
-                    return forEnum ? "NMediaManager::NPreferences::eBIFPrefs" : "BIF";
+                    return forEnum ? QStringLiteral( "NMediaManager::NPreferences::eBIFPrefs" ) : QStringLiteral( "BIF" );
                 case eTranscodePrefs:
-                    return forEnum ? "NMediaManager::NPreferences::eTranscodePrefs" : "Transcode";
+                    return forEnum ? QStringLiteral( "NMediaManager::NPreferences::eTranscodePrefs" ) : QStringLiteral( "Transcode" );
                 default:
-                    return "";
+                    return QString();
             }
         }
 
@@ -104,23 +100,23 @@ namespace NMediaManager
                 switch ( preset )
                 {
                     case ETranscodePreset::eUltraFast:
-                        return forEnum ? "NMediaManager::NPreferences::NCore::ETranscodePreset::eUltraFast" : "ultrafast";
+                        return forEnum ? QStringLiteral( "NMediaManager::NPreferences::NCore::ETranscodePreset::eUltraFast" ) : QStringLiteral( "ultrafast" );
                     case ETranscodePreset::eSuperFast:
-                        return forEnum ? "NMediaManager::NPreferences::NCore::ETranscodePreset::eSuperFast" : "superfast";
+                        return forEnum ? QStringLiteral( "NMediaManager::NPreferences::NCore::ETranscodePreset::eSuperFast" ) : QStringLiteral( "superfast" );
                     case ETranscodePreset::eVeryFast:
-                        return forEnum ? "NMediaManager::NPreferences::NCore::ETranscodePreset::eVeryFast" : "veryfast";
+                        return forEnum ? QStringLiteral( "NMediaManager::NPreferences::NCore::ETranscodePreset::eVeryFast" ) : QStringLiteral( "veryfast" );
                     case ETranscodePreset::eFaster:
-                        return forEnum ? "NMediaManager::NPreferences::NCore::ETranscodePreset::eFaster" : "faster";
+                        return forEnum ? QStringLiteral( "NMediaManager::NPreferences::NCore::ETranscodePreset::eFaster" ) : QStringLiteral( "faster" );
                     case ETranscodePreset::eFast:
-                        return forEnum ? "NMediaManager::NPreferences::NCore::ETranscodePreset::eFast" : "fast";
+                        return forEnum ? QStringLiteral( "NMediaManager::NPreferences::NCore::ETranscodePreset::eFast" ) : QStringLiteral( "fast" );
                     case ETranscodePreset::eMedium:
-                        return forEnum ? "NMediaManager::NPreferences::NCore::ETranscodePreset::eMedium" : "medium";
+                        return forEnum ? QStringLiteral( "NMediaManager::NPreferences::NCore::ETranscodePreset::eMedium" ) : QStringLiteral( "medium" );
                     case ETranscodePreset::eSlow:
-                        return forEnum ? "NMediaManager::NPreferences::NCore::ETranscodePreset::eSlow" : "slow";
+                        return forEnum ? QStringLiteral( "NMediaManager::NPreferences::NCore::ETranscodePreset::eSlow" ) : QStringLiteral( "slow" );
                     case ETranscodePreset::eSlower:
-                        return forEnum ? "NMediaManager::NPreferences::NCore::ETranscodePreset::eSlower" : "slower";
+                        return forEnum ? QStringLiteral( "NMediaManager::NPreferences::NCore::ETranscodePreset::eSlower" ) : QStringLiteral( "slower" );
                     case ETranscodePreset::eVerySlow:
-                        return forEnum ? "NMediaManager::NPreferences::NCore::ETranscodePreset::eVerySlow" : "veryslow";
+                        return forEnum ? QStringLiteral( "NMediaManager::NPreferences::NCore::ETranscodePreset::eVerySlow" ) : QStringLiteral( "veryslow" );
                 }
                 return toString( ETranscodePreset::eMedium, forEnum );
             }
@@ -130,17 +126,17 @@ namespace NMediaManager
                 switch ( preset )
                 {
                     case ETranscodeTune::eFilm:
-                        return forEnum ? "NMediaManager::NPreferences::NCore::ETranscodeTune::eFilm" : "film";
+                        return forEnum ? QStringLiteral( "NMediaManager::NPreferences::NCore::ETranscodeTune::eFilm" ) : QStringLiteral( "film" );
                     case ETranscodeTune::eAnimation:
-                        return forEnum ? "NMediaManager::NPreferences::NCore::ETranscodeTune::eAnimation" : "animation";
+                        return forEnum ? QStringLiteral( "NMediaManager::NPreferences::NCore::ETranscodeTune::eAnimation" ) : QStringLiteral( "animation" );
                     case ETranscodeTune::eGrain:
-                        return forEnum ? "NMediaManager::NPreferences::NCore::ETranscodeTune::eGrain" : "grain";
+                        return forEnum ? QStringLiteral( "NMediaManager::NPreferences::NCore::ETranscodeTune::eGrain" ) : QStringLiteral( "grain" );
                     case ETranscodeTune::eStillImage:
-                        return forEnum ? "NMediaManager::NPreferences::NCore::ETranscodeTune::eStilImage" : "stillimage";
+                        return forEnum ? QStringLiteral( "NMediaManager::NPreferences::NCore::ETranscodeTune::eStilImage" ) : QStringLiteral( "stillimage" );
                     case ETranscodeTune::eFastDecode:
-                        return forEnum ? "NMediaManager::NPreferences::NCore::ETranscodeTune::eFastDecode" : "fastdecode";
+                        return forEnum ? QStringLiteral( "NMediaManager::NPreferences::NCore::ETranscodeTune::eFastDecode" ) : QStringLiteral( "fastdecode" );
                     case ETranscodeTune::eZeroLatency:
-                        return forEnum ? "NMediaManager::NPreferences::NCore::ETranscodeTune::eZeroLatency" : "zerolatency";
+                        return forEnum ? QStringLiteral( "NMediaManager::NPreferences::NCore::ETranscodeTune::eZeroLatency" ) : QStringLiteral( "zerolatency" );
                 }
                 return toString( ETranscodeTune::eFilm, forEnum );
             }
@@ -150,41 +146,41 @@ namespace NMediaManager
                 switch ( profile )
                 {
                     case ETranscodeProfile::eMain:
-                        return forEnum ? "NMediaManager::NPreferences::NCore::ETranscodeProfile::eMain" : "main";
+                        return forEnum ? QStringLiteral( "NMediaManager::NPreferences::NCore::ETranscodeProfile::eMain" ) : QStringLiteral( "main" );
                     case ETranscodeProfile::eMainIntra:
-                        return forEnum ? "NMediaManager::NPreferences::NCore::ETranscodeProfile::eMainIntra" : "main-intra";
+                        return forEnum ? QStringLiteral( "NMediaManager::NPreferences::NCore::ETranscodeProfile::eMainIntra" ) : QStringLiteral( "main-intra" );
                     case ETranscodeProfile::eMailStillPicture:
-                        return forEnum ? "NMediaManager::NPreferences::NCore::ETranscodeProfile::eMailStillPicture" : "mailstillpicture";
+                        return forEnum ? QStringLiteral( "NMediaManager::NPreferences::NCore::ETranscodeProfile::eMailStillPicture" ) : QStringLiteral( "mailstillpicture" );
                     case ETranscodeProfile::eMain444_8:
-                        return forEnum ? "NMediaManager::NPreferences::NCore::ETranscodeProfile::eMain444_8" : "main444-8";
+                        return forEnum ? QStringLiteral( "NMediaManager::NPreferences::NCore::ETranscodeProfile::eMain444_8" ) : QStringLiteral( "main444-8" );
                     case ETranscodeProfile::eMain444Intra:
-                        return forEnum ? "NMediaManager::NPreferences::NCore::ETranscodeProfile::eMain444Intra" : "main444-intra";
+                        return forEnum ? QStringLiteral( "NMediaManager::NPreferences::NCore::ETranscodeProfile::eMain444Intra" ) : QStringLiteral( "main444-intra" );
                     case ETranscodeProfile::eMain444StillPicture:
-                        return forEnum ? "NMediaManager::NPreferences::NCore::ETranscodeProfile::eMain444StillPicture" : "main444-stillpicture";
+                        return forEnum ? QStringLiteral( "NMediaManager::NPreferences::NCore::ETranscodeProfile::eMain444StillPicture" ) : QStringLiteral( "main444-stillpicture" );
                     case ETranscodeProfile::eMain10:
-                        return forEnum ? "NMediaManager::NPreferences::NCore::ETranscodeProfile::eMain10" : "main10";
+                        return forEnum ? QStringLiteral( "NMediaManager::NPreferences::NCore::ETranscodeProfile::eMain10" ) : QStringLiteral( "main10" );
                     case ETranscodeProfile::eMain10Intra:
-                        return forEnum ? "NMediaManager::NPreferences::NCore::ETranscodeProfile::eMain10Intra" : "main10-intra";
+                        return forEnum ? QStringLiteral( "NMediaManager::NPreferences::NCore::ETranscodeProfile::eMain10Intra" ) : QStringLiteral( "main10-intra" );
                     case ETranscodeProfile::eMain422_10:
-                        return forEnum ? "NMediaManager::NPreferences::NCore::ETranscodeProfile::eMain422_10" : "main422-10";
+                        return forEnum ? QStringLiteral( "NMediaManager::NPreferences::NCore::ETranscodeProfile::eMain422_10" ) : QStringLiteral( "main422-10" );
                     case ETranscodeProfile::eMain422_10Intra:
-                        return forEnum ? "NMediaManager::NPreferences::NCore::ETranscodeProfile::eMain422_10Intra" : "main422-10-intra";
+                        return forEnum ? QStringLiteral( "NMediaManager::NPreferences::NCore::ETranscodeProfile::eMain422_10Intra" ) : QStringLiteral( "main422-10-intra" );
                     case ETranscodeProfile::eMain444_10:
-                        return forEnum ? "NMediaManager::NPreferences::NCore::ETranscodeProfile::eMain444_10" : "main444-10";
+                        return forEnum ? QStringLiteral( "NMediaManager::NPreferences::NCore::ETranscodeProfile::eMain444_10" ) : QStringLiteral( "main444-10" );
                     case ETranscodeProfile::eMain444_10Intra:
-                        return forEnum ? "NMediaManager::NPreferences::NCore::ETranscodeProfile::eMain444_10Intra" : "main444-10-intra";
+                        return forEnum ? QStringLiteral( "NMediaManager::NPreferences::NCore::ETranscodeProfile::eMain444_10Intra" ) : QStringLiteral( "main444-10-intra" );
                     case ETranscodeProfile::eMain12:
-                        return forEnum ? "NMediaManager::NPreferences::NCore::ETranscodeProfile::eMain12" : "main12";
+                        return forEnum ? QStringLiteral( "NMediaManager::NPreferences::NCore::ETranscodeProfile::eMain12" ) : QStringLiteral( "main12" );
                     case ETranscodeProfile::eMain12Intra:
-                        return forEnum ? "NMediaManager::NPreferences::NCore::ETranscodeProfile::eMain12Intra" : "main12-intra";
+                        return forEnum ? QStringLiteral( "NMediaManager::NPreferences::NCore::ETranscodeProfile::eMain12Intra" ) : QStringLiteral( "main12-intra" );
                     case ETranscodeProfile::eMain422_12:
-                        return forEnum ? "NMediaManager::NPreferences::NCore::ETranscodeProfile::eMain422_12" : "main422-12";
+                        return forEnum ? QStringLiteral( "NMediaManager::NPreferences::NCore::ETranscodeProfile::eMain422_12" ) : QStringLiteral( "main422-12" );
                     case ETranscodeProfile::eMain422_12Intra:
-                        return forEnum ? "NMediaManager::NPreferences::NCore::ETranscodeProfile::eMain422_12Intra" : "main422-12-intra";
+                        return forEnum ? QStringLiteral( "NMediaManager::NPreferences::NCore::ETranscodeProfile::eMain422_12Intra" ) : QStringLiteral( "main422-12-intra" );
                     case ETranscodeProfile::eMain444_12:
-                        return forEnum ? "NMediaManager::NPreferences::NCore::ETranscodeProfile::eMain444_12" : "main444-12";
+                        return forEnum ? QStringLiteral( "NMediaManager::NPreferences::NCore::ETranscodeProfile::eMain444_12" ) : QStringLiteral( "main444-12" );
                     case ETranscodeProfile::eMain444_12Intra:
-                        return forEnum ? "NMediaManager::NPreferences::NCore::ETranscodeProfile::eMain444_12Intra" : "main444012-intra";
+                        return forEnum ? QStringLiteral( "NMediaManager::NPreferences::NCore::ETranscodeProfile::eMain444_12Intra" ) : QStringLiteral( "main444012-intra" );
                 }
                 return toString( ETranscodeProfile::eMain, forEnum );
             }
@@ -225,14 +221,14 @@ namespace NMediaManager
                         defaultColor = background ? Qt::yellow : Qt::black;
                         break;
                 };
-                return settings.value( QString( "%1-%2ground" ).arg( toString( status ) ).arg( background ? "Back" : "Fore" ), defaultColor ).value< QColor >();
+                return settings.value( QString( "%1-%2ground" ).arg( toString( status ) ).arg( background ? QStringLiteral( "Back" ) : QStringLiteral( "Fore" ) ), defaultColor ).value< QColor >();
             }
 
             void CPreferences::setColorForStatus( EItemStatus status, bool background, const QColor &value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eColorsPrefs ) );
-                settings.setValue( QString( "%1-%2ground" ).arg( toString( status ) ).arg( background ? "Back" : "Fore" ), value );
+                settings.setValue( QString( "%1-%2ground" ).arg( toString( status ) ).arg( background ? QStringLiteral( "Back" ) : QStringLiteral( "Fore" ) ), value );
                 emitSigPreferencesChanged( EPreferenceType::eColorsPrefs );
             }
 
@@ -745,7 +741,7 @@ namespace NMediaManager
 
                 QStringList retVal;
                 for ( auto &&ii : imageFormats )
-                    retVal << "*." + ii;
+                    retVal << QStringLiteral( "*." ) + QString::fromLocal8Bit( ii );
 
                 return retVal;
             }
@@ -1040,7 +1036,7 @@ namespace NMediaManager
                 for ( auto &&ii : realValues )
                     ii = ii.toLower();
 #endif
-                settings.setValue( QString( "SkippedDirs (%1)" ).arg( forMediaNaming ? "Media Transform" : "Media Tagging" ), realValues );
+                settings.setValue( QString( "SkippedDirs (%1)" ).arg( forMediaNaming ? QStringLiteral( "Media Transform" ) : QStringLiteral( "Media Tagging" ) ), realValues );
                 emitSigPreferencesChanged( EPreferenceType::eLoadPrefs );
             }
 
@@ -1048,7 +1044,7 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eLoadPrefs ) );
-                settings.setValue( QString( "IgnoreSkipFileNames (%1)" ).arg( forMediaNaming ? "Media Transform" : "Media Tagging" ), value );
+                settings.setValue( QString( "IgnoreSkipFileNames (%1)" ).arg( forMediaNaming ? QStringLiteral( "Media Transform" ) : QStringLiteral( "Media Tagging" ) ), value );
                 emitSigPreferencesChanged( EPreferenceType::eLoadPrefs );
             }
 
@@ -1056,14 +1052,14 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eLoadPrefs ) );
-                return settings.value( QString( "IgnoreSkipFileNames (%1)" ).arg( forMediaNaming ? "Media Transform" : "Media Tagging" ), false ).toBool();
+                return settings.value( QString( "IgnoreSkipFileNames (%1)" ).arg( forMediaNaming ? QStringLiteral( "Media Transform" ) : QStringLiteral( "Media Tagging" ) ), false ).toBool();
             }
 
             QStringList CPreferences::getSkippedPaths( bool forMediaNaming ) const
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eLoadPrefs ) );
-                return settings.value( QString( "SkippedDirs (%1)" ).arg( forMediaNaming ? "Media Transform" : "Media Tagging" ), getDefaultSkippedPaths( forMediaNaming ) ).toStringList();
+                return settings.value( QString( "SkippedDirs (%1)" ).arg( forMediaNaming ? QStringLiteral( "Media Transform" ) : QStringLiteral( "Media Tagging" ) ), getDefaultSkippedPaths( forMediaNaming ) ).toStringList();
             }
 
             bool CPreferences::isIgnoredPath( const QFileInfo &fileInfo ) const

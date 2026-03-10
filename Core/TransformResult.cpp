@@ -269,7 +269,7 @@ namespace NMediaManager
                 else
                 {
                     auto curr = QString( "E%1%3E%2" ).arg( ii.front(), 2, 10, QChar( '0' ) ).arg( ii.back(), 2, 10, QChar( '0' ) );
-                    curr = curr.arg( ( std::abs( ii.back() - ii.front() ) == 1 ) ? "" : "-" );
+                    curr = curr.arg( ( std::abs( ii.back() - ii.front() ) == 1 ) ? QString() : QStringLiteral( "-" ) );
                     episodeList << curr;
                 }
             }
@@ -438,7 +438,7 @@ namespace NMediaManager
             if ( forDebug )
             {
                 QStringList tmp;
-                tmp << "InfoType: '" + NMediaManager::NCore::toEnumString( mediaType() ) + "'" << "Title: '" + title() + "'" << "Movie ReleaseDate: '" + fMovieReleaseDate.second + "'" << "ShowFirstAirDate: '" + fShowFirstAirDate.second + "'" << "SeasonStartDate: '" + fSeasonStartDate.second + "'" << "EpisodeAirDate: '" + fEpisodeAirDate.second + "'" << "TMDBID: '" + tmdbID() + "'" << "Season TMBDID: '" + seasonTMDBID() + "'" << "Episode TMDBID: '" + episodeTMDBID() + "'" << "Season: '" + season() + "'" << QString( " Season Only? %1" ).arg( fSeasonOnly ? "Yes" : "No" ) << "Episode: '" + episode() + "'" << "Sub Title: '" + subTitle() + "'" << "ExtraInfo: '" + extraInfo() + "'" << "Description: '" + description() + "'" << QString( "Has Pixmap? %1" ).arg( pixmap().isNull() ? "No" : "Yes" );
+                tmp << "InfoType: '" + NMediaManager::NCore::toEnumString( mediaType() ) + "'" << "Title: '" + title() + "'" << "Movie ReleaseDate: '" + fMovieReleaseDate.second + "'" << "ShowFirstAirDate: '" + fShowFirstAirDate.second + "'" << "SeasonStartDate: '" + fSeasonStartDate.second + "'" << "EpisodeAirDate: '" + fEpisodeAirDate.second + "'" << "TMDBID: '" + tmdbID() + "'" << "Season TMBDID: '" + seasonTMDBID() + "'" << "Episode TMDBID: '" + episodeTMDBID() + "'" << "Season: '" + season() + "'" << QString( QStringLiteral( " Season Only? %1" ) ).arg( fSeasonOnly ? QStringLiteral( "Yes" ) : QStringLiteral( "No" )) << "Episode: '" + episode() + "'" << "Sub Title: '" + subTitle() + "'" << "ExtraInfo: '" + extraInfo() + "'" << "Description: '" + description() + "'" << QString( "Has Pixmap? %1" ).arg( pixmap().isNull() ? QStringLiteral( "No" ) : QStringLiteral( "Yes" ) );
                 QStringList children = { " - Children(" };
                 for ( auto &&ii : fChildren )
                 {
@@ -484,7 +484,7 @@ namespace NMediaManager
 
                 tmp << "ExtraInfo: '" + extraInfo() + "'";
             }
-            QString retVal = QString( forDebug ? "STitleInfo(%1)" : "%1" ).arg( tmp.join( " " ) );
+            QString retVal = QString( forDebug ? QStringLiteral( "STitleInfo(%1)" ) : QStringLiteral( "%1" ) ).arg( tmp.join( " " ) );
             return retVal;
         }
 

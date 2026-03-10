@@ -29,6 +29,7 @@
 
 #include "T42-Utils/StringUtils.h"
 #include "T42-Utils/QtUtils.h"
+#include "T42-Utils/AutoSize.h"
 #include "T42-Utils/AutoWaitCursor.h"
 #include "T42-Utils/FileUtils.h"
 #include "T42-Utils/BackupFile.h"
@@ -844,7 +845,7 @@ namespace NMediaManager
             if ( isDir( idx ) )
             {
                 auto name = fileInfo( idx ).fileName();
-                auto regExpStr = R"(\[\s*(tmdbid=(?<tmdbid>\d+)|(imdbid=<?<imdbid>tt.*))\s*\])";
+                auto regExpStr = QStringLiteral( R"(\[\s*(tmdbid=(?<tmdbid>\d+)|(imdbid=<?<imdbid>tt.*))\s*\])" );
                 auto regExp = QRegularExpression( regExpStr, QRegularExpression::CaseInsensitiveOption );
                 auto match = regExp.match( name );
                 if ( match.hasMatch() )
@@ -855,7 +856,7 @@ namespace NMediaManager
                     if ( !imdbid.isEmpty() )
                         urlPath = QString( "https://imdb.com/title/%1" ).arg( imdbid );
                     else if ( !tmdbid.isEmpty() )
-                        urlPath = QString( "https://themoviedb.org/%1/%2" ).arg( this->isTVShow( idx ) ? "tv" : "movie" ).arg( tmdbid );
+                        urlPath = QString( "https://themoviedb.org/%1/%2" ).arg( this->isTVShow( idx ) ? QStringLiteral( "tv" ) : QStringLiteral( "movie" ) ).arg( tmdbid );
 
                     if ( !urlPath.isEmpty() )
                         return QUrl( urlPath );
@@ -1909,13 +1910,13 @@ namespace NMediaManager
 
         void CDirModel::slotProcessStandardError()
         {
-            auto currText = fProcess->readAllStandardError();
+            auto currText = QString::fromLocal8Bit( fProcess->readAllStandardError() );
             fBasePage->appendToLog( currText, stdErrRemaining(), false, true );
         }
 
         void CDirModel::slotProcessStandardOutput()
         {
-            auto currText = fProcess->readAllStandardOutput();
+            auto currText = QString::fromLocal8Bit( fProcess->readAllStandardOutput() );
             fBasePage->appendToLog( currText, stdOutRemaining(), true, true );
         }
 

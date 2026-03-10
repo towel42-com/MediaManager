@@ -34,27 +34,16 @@ add_executable( ${PROJECT_NAME} WIN32
                 ${_CMAKE_MODULE_FILES}
                 application.rc 
           )
-if ( NOT DEPLOYQT_EXECUTABLE )
-    message( FATAL_ERROR "DEPLOYQT_EXECUTABLE not set" )
-endif()
-
 if ( NOT OPENSSL_DEPLOY_BINDIR )
     message( FATAL_ERROR "OPENSSL_DEPLOY_BINDIR not set" )
 endif()
 
-get_filename_component( QTDIR ${DEPLOYQT_EXECUTABLE} DIRECTORY )
-
 set ( DEBUG_PATH 
         "%PATH%"
         "$<TARGET_FILE_DIR:Towel42Utils>"
-        "${QTDIR}"
-        )
-if ( MKVUTILS )
-    set ( DEBUG_PATH 
-        ${DEBUG_PATH}
         "$<TARGET_FILE_DIR:mediainfo>"
-    )
-endif()
+        "${QT6_INSTALL_PREFIX}/bin"
+        )
 
 set ( DEBUG_PLUGINPATH 
         "$<TARGET_FILE_DIR:bif>/.."

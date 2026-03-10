@@ -1,5 +1,4 @@
 set(_PROJECT_NAME MediaManager)
-set(USE_QT TRUE)
 set(FOLDER_NAME Apps)
 
 set(qtproject_SRCS
@@ -26,4 +25,9 @@ set( project_pub_DEPS
         PreferencesCore
         Core
         Models
+)
+
+SET( project_pri_DEPS
+    Qt6::Core
+    ${project_pri_DEPS}
 )

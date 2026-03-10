@@ -640,7 +640,7 @@ namespace NMediaManager
                         auto forcedItem = getItem( jj, EColumns::eForced );
                         auto sdhItem = getItem( jj, EColumns::eSDH );
 
-                        auto srtFileItem = new QStandardItem( tr( "'%2' - Default: %3 Forced : %4 SDH : %5" ).arg( jj->text() ).arg( ( defaultItem && defaultItem->checkState() == Qt::Checked ) ? "Yes" : "No" ).arg( ( forcedItem && forcedItem->checkState() == Qt::Checked ) ? "Yes" : "No" ).arg( ( sdhItem && sdhItem->checkState() == Qt::Checked ) ? "Yes" : "No" ) );
+                        auto srtFileItem = new QStandardItem( tr( "'%2' - Default: %3 Forced : %4 SDH : %5" ).arg( jj->text() ).arg( ( defaultItem && defaultItem->checkState() == Qt::Checked ) ? tr( "Yes" ) : tr( "No" ) ).arg( ( forcedItem && forcedItem->checkState() == Qt::Checked ) ? tr( "Yes" ) : tr( "No" ) ).arg( ( sdhItem && sdhItem->checkState() == Qt::Checked ) ? tr( "Yes" ) : tr( "No" ) ) );
                         languageItem->appendRow( srtFileItem );
                     }
                 }

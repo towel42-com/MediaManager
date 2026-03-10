@@ -21,7 +21,6 @@
 # SOFTWARE.
 
 set(_PROJECT_NAME PreferencesCore)
-set(USE_QT TRUE)
 set(FOLDER_NAME Libs/Preferences)
 
 set(qtproject_SRCS
@@ -49,3 +48,8 @@ set(qtproject_QRC
 
 file(GLOB qtproject_QRC_SOURCES "resources/*")
 
+SET( project_pri_DEPS
+    Qt6::Core
+    Qt6::Gui
+    ${project_pri_DEPS}
+)

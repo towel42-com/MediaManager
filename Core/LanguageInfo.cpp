@@ -540,10 +540,10 @@ namespace NMediaManager
             if ( !file.isOpen() )
                 return;
 
-            auto regExStr = R"(^id\:\s?(?<isocode>[A-Za-z]{2})(?<country>_[A-Za-z]{2}(\d+)?)?,\s?index\:\s?(?<index>\d+)\s?$)";
+            auto regExStr = QStringLiteral( R"(^id\:\s?(?<isocode>[A-Za-z]{2})(?<country>_[A-Za-z]{2}(\d+)?)?,\s?index\:\s?(?<index>\d+)\s?$)" );
             auto regExp = QRegularExpression( regExStr, QRegularExpression::CaseInsensitiveOption );
 
-            regExStr = R"(^timestamp\:)";
+            regExStr = QStringLiteral( R"(^timestamp\:)" );
             auto tsRegExp = QRegularExpression( regExStr, QRegularExpression::CaseInsensitiveOption );
 
             std::list< SMultLangInfo > languages;
@@ -614,11 +614,11 @@ namespace NMediaManager
             if ( fFileName.isEmpty() )
                 return;
 
-            auto regExpStr = R"((?<num>\d+)_(?<langname>\S+))";
+            auto regExpStr = QStringLiteral( R"((?<num>\d+)_(?<langname>\S+))" );
             auto regExp1 = QRegularExpression( regExpStr );
             Q_ASSERT( regExp1.isValid() );
 
-            regExpStr = R"((?<filename>[^<>:"\/\\|?*]+)(\.|-|\ )(((?<isocode>[A-Za-z]{2})(?<country>_[A-Za-z]{2}(\d+)?)?$)))";
+            regExpStr = QStringLiteral( R"((?<filename>[^<>:"\/\\|?*]+)(\.|-|\ )(((?<isocode>[A-Za-z]{2})(?<country>_[A-Za-z]{2}(\d+)?)?$)))" );
             auto regExp2 = QRegularExpression( regExpStr );
             Q_ASSERT( regExp2.isValid() );
 

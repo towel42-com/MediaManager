@@ -38,6 +38,7 @@
 #include <QVariant>
 
 #include <QDirIterator>
+#include <QRegularExpression>
 
 namespace NMediaManager
 {
@@ -1140,7 +1141,7 @@ namespace NMediaManager
             if ( isRootPath( fi.absoluteFilePath() ) )
                 return {};
 
-            auto regExStr = R"(^([A-Z]\:(\\|\/)|(\/))$)";
+            auto regExStr = QStringLiteral( R"(^([A-Z]\:(\\|\/)|(\/))$)" );
             auto regEx = QRegularExpression( regExStr, QRegularExpression::CaseInsensitiveOption );
             auto match = regEx.match( path );
             if ( match.hasMatch() )
