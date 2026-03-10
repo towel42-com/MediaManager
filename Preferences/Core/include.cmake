@@ -25,7 +25,6 @@ set(FOLDER_NAME Libs/Preferences)
 
 set(qtproject_SRCS
     Preferences.cpp
-    GenerateDefaults.cpp
     DefaultPreferences.cpp
     TranscodeNeeded.cpp
     TranscodeArgs.cpp

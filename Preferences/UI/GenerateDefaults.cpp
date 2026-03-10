@@ -21,7 +21,8 @@
 // SOFTWARE.
 
 #include "Preferences.h"
-#include "TranscodeNeeded.h"
+#include "Preferences/Core/Preferences.h"
+#include "Preferences/Core/TranscodeNeeded.h"
 
 #include "Core/LanguageInfo.h"
 #include "T42-Utils/QtUtils.h"
@@ -83,7 +84,7 @@ namespace NMediaManager
 
             QString toString( const QString &value )
             {
-                return QString( "R\"(%1)\"" ).arg( value );
+                return QStringLiteral( "R\"(%1)\"" ).arg( value );
             }
 
             QString toString( const QStringList &values )
@@ -104,42 +105,42 @@ namespace NMediaManager
             template< typename FIRST, typename SECOND >
             QString toString( const std::pair< FIRST, SECOND > &value )
             {
-                return QString( "{ %1, %2 }" ).arg( toString( value.first ) ).arg( toString( value.second ) );
+                return QStringLiteral( "{ %1, %2 }" ).arg( toString( value.first ) ).arg( toString( value.second ) );
             }
 
             QStringList toString( const QString &retValType, const QStringList &newValues, bool asString, int indent )
             {
                 QStringList retVal;
-                retVal << getIndent( indent ) + QString( "static auto defaultValue =" );
+                retVal << getIndent( indent ) + QStringLiteral( "static auto defaultValue =" );
 
                 if ( newValues.empty() )
                 {
-                    retVal.back() += QString( " %1();" ).arg( retValType );
+                    retVal.back() += QStringLiteral( " %1();" ).arg( retValType );
                 }
                 else
                 {
-                    retVal << getIndent( indent + 1 ) + QString( "%1(" ).arg( retValType ) << getIndent( indent + 1 ) + "{";
+                    retVal << getIndent( indent + 1 ) + QStringLiteral( "%1(" ).arg( retValType ) << getIndent( indent + 1 ) + "{";
 
                     bool first = true;
                     for ( auto &&ii : newValues )
                     {
-                        auto stringFmt = QString( "%2" );
+                        auto stringFmt = QStringLiteral( "%2" );
                         if ( asString )
                             stringFmt = toString( stringFmt );
-                        auto fmt = QString( "%3%1" ) + stringFmt + " //";
+                        auto fmt = QStringLiteral( "%3%1" ) + stringFmt + " //";
                         retVal << fmt.arg( first ? " " : "," ).arg( ii ).arg( getIndent( indent + 2 ) );
                         first = false;
                     }
-                    retVal << QString( "%1} );" ).arg( ( getIndent( indent + 1 ) ) );
+                    retVal << QStringLiteral( "%1} );" ).arg( ( getIndent( indent + 1 ) ) );
                 }
 
-                retVal << QString( "%1return defaultValue;" ).arg( getIndent( indent ) );
+                retVal << QStringLiteral( "%1return defaultValue;" ).arg( getIndent( indent ) );
                 return retVal;
             }
             void replaceText( const QString &txt, QStringList &curr, const QString &funcName, const QString &boolVariable, const QString &trueValue, const QString &falseValue )
             {
                 QStringList function;
-                function << QString( "QString CPreferences::%1( bool %2 ) const" ).arg( funcName ).arg( boolVariable ) << "{" << getIndent( 1 ) + QString( "if ( %2 )" ).arg( boolVariable ) << getIndent( 2 ) + QString( "return %1;" ).arg( toString( trueValue ) ) << getIndent( 1 ) + QString( "else" ) << getIndent( 2 ) + QString( "return %1;" ).arg( toString( falseValue ) ) << "}";
+                function << QStringLiteral( "QString CPreferences::%1( bool %2 ) const" ).arg( funcName ).arg( boolVariable ) << "{" << getIndent( 1 ) + QStringLiteral( "if ( %2 )" ).arg( boolVariable ) << getIndent( 2 ) + QStringLiteral( "return %1;" ).arg( toString( trueValue ) ) << getIndent( 1 ) + QStringLiteral( "else" ) << getIndent( 2 ) + QStringLiteral( "return %1;" ).arg( toString( falseValue ) ) << "}";
                 for ( auto &&ii : function )
                 {
                     ii = getIndent( 3 ) + ii;
@@ -150,7 +151,7 @@ namespace NMediaManager
             void replaceText( const QString &txt, QStringList &curr, const QString &funcName, const QString &value )
             {
                 QStringList function;
-                function << QString( "QString CPreferences::%1() const" ).arg( funcName ) << "{" << getIndent( 1 ) + QString( "return %1;" ).arg( toString( value ) ) << "}";
+                function << QStringLiteral( "QString CPreferences::%1() const" ).arg( funcName ) << "{" << getIndent( 1 ) + QStringLiteral( "return %1;" ).arg( toString( value ) ) << "}";
                 for ( auto &&ii : function )
                 {
                     ii = getIndent( 3 ) + ii;
@@ -161,7 +162,7 @@ namespace NMediaManager
             void replaceText( const QString &txt, QStringList &curr, const QString &funcName, const char *value )
             {
                 QStringList function;
-                function << QString( "bool CPreferences::%1() const" ).arg( funcName ) << "{" << getIndent( 1 ) + QString( "return %1;" ).arg( value ) << "}";
+                function << QStringLiteral( "bool CPreferences::%1() const" ).arg( funcName ) << "{" << getIndent( 1 ) + QStringLiteral( "return %1;" ).arg( QString::fromUtf8( value ) ) << "}";
                 for ( auto &&ii : function )
                 {
                     ii = getIndent( 3 ) + ii;
@@ -173,12 +174,12 @@ namespace NMediaManager
             {
                 QStringList function;
                 function   //
-                    << QString( "NTowel42Utils::TFormatMap CPreferences::%1() const" ).arg( funcName )   //
+                    << QStringLiteral( "NTowel42Utils::TFormatMap CPreferences::%1() const" ).arg( funcName )   //
                     << "{";
 
                 int indent = 1;
                 function   //
-                    << getIndent( indent++ ) + QString( "static auto defaultValue = NTowel42Utils::TFormatMap(" )   //
+                    << getIndent( indent++ ) + QStringLiteral( "static auto defaultValue = NTowel42Utils::TFormatMap(" )   //
                     << getIndent( indent++ ) + "{";
                 ;
 
@@ -208,7 +209,7 @@ namespace NMediaManager
                 //function << toString( value, 1 );
 
                 function << getIndent( --indent ) + "} );";
-                function << getIndent( --indent ) + QString( "return defaultValue;" );
+                function << getIndent( --indent ) + QStringLiteral( "return defaultValue;" );
                 function << getIndent( --indent ) + "}";
                 Q_ASSERT( indent == 0 );
 
@@ -223,12 +224,12 @@ namespace NMediaManager
             {
                 QStringList function;
                 function   //
-                    << QString( "NTowel42Utils::TCodecToEncoderDecoderMap CPreferences::%1() const" ).arg( funcName )   //
+                    << QStringLiteral( "NTowel42Utils::TCodecToEncoderDecoderMap CPreferences::%1() const" ).arg( funcName )   //
                     << "{";
 
                 int indent = 1;
                 function   //
-                    << getIndent( indent++ ) + QString( "static auto defaultValue = NTowel42Utils::TCodecToEncoderDecoderMap(" )   //
+                    << getIndent( indent++ ) + QStringLiteral( "static auto defaultValue = NTowel42Utils::TCodecToEncoderDecoderMap(" )   //
                     << getIndent( indent++ ) + "{";
                 ;
 
@@ -240,7 +241,7 @@ namespace NMediaManager
                         continue;
 
                     function << getIndent( indent++ ) + ( first ? " " : "," ) + "{";
-                    function << getIndent( indent ) + toString( (*pos).first ) + ", std::unordered_multimap< QString, QString >";
+                    function << getIndent( indent ) + toString( ( *pos ).first ) + ", std::unordered_multimap< QString, QString >";
                     function << getIndent( indent++ ) + " ( {";
 
                     auto innerMap = std::multimap< QString, QString >( ( *pos ).second.begin(), ( *pos ).second.end() );
@@ -257,7 +258,7 @@ namespace NMediaManager
                 //function << toString( value, 1 );
 
                 function << getIndent( --indent ) + "} );";
-                function << getIndent( --indent ) + QString( "return defaultValue;" );
+                function << getIndent( --indent ) + QStringLiteral( "return defaultValue;" );
                 function << getIndent( --indent ) + "}";
                 Q_ASSERT( indent == 0 );
 
@@ -272,7 +273,7 @@ namespace NMediaManager
             auto replaceText( const QString &txt, QStringList &curr, const QString &funcName, T value ) -> typename std::enable_if< std::is_same< bool, T >::value, void >::type
             {
                 QStringList function;
-                function << QString( "%1 CPreferences::%2() const" ).arg( typeid( T ).name() ).arg( funcName ) << "{" << getIndent( 1 ) + QString( "return %1;" ).arg( value ? "true" : "false" ) << "}";
+                function << QStringLiteral( "%1 CPreferences::%2() const" ).arg( QString::fromUtf8( typeid( T ).name() ) ).arg( funcName ) << "{" << getIndent( 1 ) + QStringLiteral( "return %1;" ).arg( value ? QStringLiteral( "true" ) : QStringLiteral( "false" ) ) << "}";
                 for ( auto &&ii : function )
                 {
                     ii = getIndent( 3 ) + ii;
@@ -284,7 +285,7 @@ namespace NMediaManager
             auto replaceText( const QString &txt, QStringList &curr, const QString &funcName, T value ) -> typename std::enable_if< !std::is_same< bool, T >::value && !std::is_enum< T >::value && !std::is_same< QString, T >::value && !std::is_same< char *, T >::value, void >::type
             {
                 QStringList function;
-                function << QString( "%1 CPreferences::%2() const" ).arg( typeid( T ).name() ).arg( funcName ) << "{" << getIndent( 1 ) + QString( "return %1;" ).arg( value ) << "}";
+                function << QStringLiteral( "%1 CPreferences::%2() const" ).arg( QString::fromUtf8( typeid( T ).name() ) ).arg( funcName ) << "{" << getIndent( 1 ) + QStringLiteral( "return %1;" ).arg( value ) << "}";
                 for ( auto &&ii : function )
                 {
                     ii = getIndent( 3 ) + ii;
@@ -296,7 +297,7 @@ namespace NMediaManager
             auto replaceText( const QString &txt, const QString &returnType, QStringList &curr, const QString &funcName, T value ) -> typename std::enable_if< std::is_enum< T >::value, void >::type
             {
                 QStringList function;
-                function << QString( "%1 CPreferences::%2() const" ).arg( returnType ).arg( funcName ) << "{" << getIndent( 1 ) + QString( "return %1;" ).arg( toString( value, true ) ) << "}";
+                function << QStringLiteral( "%1 CPreferences::%2() const" ).arg( returnType ).arg( funcName ) << "{" << getIndent( 1 ) + QStringLiteral( "return %1;" ).arg( toString( value, true ) ) << "}";
                 for ( auto &&ii : function )
                 {
                     ii = getIndent( 3 ) + ii;
@@ -307,8 +308,7 @@ namespace NMediaManager
             void replaceText( const QString &txt, QStringList &curr, const QString &funcName, const QString &boolVariable, const QStringList &trueValue, const QStringList &falseValue, const QString &retValType = "QStringList", bool asString = true )
             {
                 QStringList function;
-                function << QString( "%3 CPreferences::%1( bool %2 ) const" ).arg( funcName ).arg( boolVariable ).arg( retValType ) << "{" << getIndent( 1 ) + QString( "if ( %2 )" ).arg( boolVariable ) << getIndent( 1 ) + "{" << toString( retValType, trueValue, asString, 2 ) << getIndent( 1 ) + "}" << getIndent( 1 ) + "else" << getIndent( 1 ) + "{" << toString( retValType, falseValue, asString, 2 ) << getIndent( 1 ) + "}"
-                         << "}";
+                function << QStringLiteral( "%3 CPreferences::%1( bool %2 ) const" ).arg( funcName ).arg( boolVariable ).arg( retValType ) << "{" << getIndent( 1 ) + QStringLiteral( "if ( %2 )" ).arg( boolVariable ) << getIndent( 1 ) + "{" << toString( retValType, trueValue, asString, 2 ) << getIndent( 1 ) + "}" << getIndent( 1 ) + "else" << getIndent( 1 ) + "{" << toString( retValType, falseValue, asString, 2 ) << getIndent( 1 ) + "}" << "}";
                 for ( auto &&ii : function )
                 {
                     ii = getIndent( 3 ) + ii;
@@ -319,7 +319,7 @@ namespace NMediaManager
             void replaceText( const QString &txt, QStringList &curr, const QString &funcName, const QStringList &newValues, const QString &retValType = "QStringList", bool asString = true )
             {
                 QStringList function;
-                function << QString( "%2 CPreferences::%1() const" ).arg( funcName ).arg( retValType ) << "{";
+                function << QStringLiteral( "%2 CPreferences::%1() const" ).arg( funcName ).arg( retValType ) << "{";
 
                 function << toString( retValType, newValues, asString, 1 ) << "}";
 
@@ -335,7 +335,7 @@ namespace NMediaManager
                 QStringList varList;
                 for ( auto &&ii = newValues.cbegin(); ii != newValues.cend(); ++ii )
                 {
-                    varList << QString( "{ %1, %2 }" ).arg( toString( ii.key() ) ).arg( toString( ii.value().toString() ) );
+                    varList << QStringLiteral( "{ %1, %2 }" ).arg( toString( ii.key() ) ).arg( toString( ii.value().toString() ) );
                 }
                 replaceText( txt, curr, funcName, varList, "QVariantMap", false );
             }
@@ -353,7 +353,7 @@ namespace NMediaManager
                 {
                     if ( currSortedUnique.find( curr ) == currSortedUnique.end() )
                     {
-                        items << QString( "%1 currently missing" ).arg( curr );
+                        items << QStringLiteral( "%1 currently missing" ).arg( curr );
                     }
                 }
 
@@ -362,7 +362,7 @@ namespace NMediaManager
                 {
                     if ( defaultSortedUnique.find( curr ) == defaultSortedUnique.end() )
                     {
-                        items << QString( "%1 not in defaults" ).arg( curr );
+                        items << QStringLiteral( "%1 not in defaults" ).arg( curr );
                     }
                 }
 
@@ -372,12 +372,12 @@ namespace NMediaManager
                 //int origII = ii;
                 //for ( int ii = origII; ii < defaultValues.count(); ++ii )
                 //{
-                //    items << QString( "%1 currently missing" ).arg( defaultValues[ ii ] );
+                //    items << QStringLiteral( "%1 currently missing" ).arg( defaultValues[ ii ] );
                 //}
 
                 //for ( int ii = origII; ii < currValues.count(); ++ii )
                 //{
-                //    items << QString( "%1 not in defaults" ).arg( currValues[ ii ] );
+                //    items << QStringLiteral( "%1 not in defaults" ).arg( currValues[ ii ] );
                 //}
 
                 if ( items.empty() )
@@ -388,7 +388,7 @@ namespace NMediaManager
                     ii = "<li>" + ii.toHtmlEscaped() + "</li>";
                 }
 
-                auto retVal = QString( "<li>%1\n<ul>%2</ul>\n</li>\n" ).arg( title ).arg( items.join( "\n" ) );
+                auto retVal = QStringLiteral( "<li>%1\n<ul>%2</ul>\n</li>\n" ).arg( title ).arg( items.join( "\n" ) );
                 ;
                 return retVal;
             }
@@ -397,7 +397,7 @@ namespace NMediaManager
             {
                 QStringList retVal;
                 for ( auto &&ii = data.cbegin(); ii != data.cend(); ++ii )
-                    retVal << QString( "%1=%2" ).arg( ii.key() ).arg( ii.value().toString() );
+                    retVal << QStringLiteral( "%1=%2" ).arg( ii.key() ).arg( ii.value().toString() );
                 return retVal;
             }
 
@@ -416,169 +416,25 @@ namespace NMediaManager
                 if ( defaultValue == currValue )
                     return {};
 
-                auto retVal = QString( "<li>%1\n<ul>Default is %2, current setting is %3</ul>\n</li>\n" ).arg( title ).arg( defaultValue ? "true" : "false" ).arg( currValue ? "true" : "false" );
+                auto retVal = QStringLiteral( "<li>%1\n<ul>Default is %2, current setting is %3</ul>\n</li>\n" ).arg( title ).arg( defaultValue ? QStringLiteral( "true" ) : QStringLiteral( "false" ) ).arg( currValue ? QStringLiteral( "true" ) : QStringLiteral( "false" ) );
                 return retVal;
             }
 
             QStringList CPreferences::getDefaultFile() const
             {
-                auto retVal = QStringList() << R"(// clang-format off)"
-                                            << R"(// The MIT License( MIT ))"
-                                            << R"(//)"
-                                            << R"(// Copyright( c ) 2020-2023 Scott Aron Bloom)"
-                                            << R"(//)"
-                                            << R"(// Permission is hereby granted, free of charge, to any person obtaining a copy)"
-                                            << R"(// of this software and associated documentation files( the "Software" ), to deal)"
-                                            << R"(// in the Software without restriction, including without limitation the rights)"
-                                            << R"(// to use, copy, modify, merge, publish, distribute, sub-license, and/or sell)"
-                                            << R"(// copies of the Software, and to permit persons to whom the Software is)"
-                                            << R"(// furnished to do so, subject to the following conditions :)"
-                                            << R"(//)"
-                                            << R"(// The above copyright notice and this permission notice shall be included in)"
-                                            << R"(// all copies or substantial portions of the Software.)"
-                                            << R"(//)"
-                                            << R"(// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR)"
-                                            << R"(// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,)"
-                                            << R"(// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE)"
-                                            << R"(// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER)"
-                                            << R"(// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,)"
-                                            << R"(// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE)"
-                                            << R"(// SOFTWARE.)"
-                                            << R"()"
-                                            << R"(#include "Preferences.h")"
-                                            << R"(#include "T42-Utils/FFMpegFormats.h")"
-                                            << R"()"
-                                            << R"(namespace NMediaManager)" << getIndent( 0 ) + R"({)" << getIndent( 1 ) + R"(namespace NPreferences)" << getIndent( 1 ) + R"({)" << getIndent( 2 ) + R"(namespace NCore)" << getIndent( 2 ) + R"({)"
-                                            << "%DEFAULT_SEASON_DIR_PATTERN%"
-                                            << R"()"
-                                            << "%DEFAULT_OUT_DIR_PATTERN%"
-                                            << R"()"
-                                            << "%DEFAULT_OUT_FILE_PATTERN%"
-                                            << R"()"
-                                            << "%DEFAULT_CUSTOM_PATHS_TO_DELETE%"
-                                            << R"()"
-                                            << "%DEFAULT_DELETE_CUSTOM%"
-                                            << R"()"
-                                            << "%DEFAULT_RIPPED_WITH_MKV_REGEX%"
-                                            << R"()"
-                                            << "%DEFAULT_DELETE_EXE%"
-                                            << R"()"
-                                            << "%DEFAULT_DELETE_NFO%"
-                                            << R"()"
-                                            << "%DEFAULT_DELETE_BAK%"
-                                            << R"()"
-                                            << "%DEFAULT_DELETE_IMAGES%"
-                                            << R"()"
-                                            << "%DEFAULT_KNOWN_STRINGS%"
-                                            << R"()"
-                                            << "%DEFAULT_KNOWN_EXTENDED_STRINGS%"
-                                            << R"()"
-                                            << "%DEFAULT_IGNORED_PATHS%"
-                                            << R"()"
-                                            << "%DEFAULT_KNOWN_ABBREVIATIONS%"
-                                            << R"()"
-                                            << "%DEFAULT_KNOWN_HYPHENATED%"
-                                            << R"()"
-                                            << "%DEFAULT_SKIPPED_PATHS%"
-                                            << R"()"
+                auto retVal = QStringList() << QStringLiteral( R"(// clang-format off)" ) << QStringLiteral( R"(// The MIT License( MIT ))" ) << QStringLiteral( R"(//)" ) << QStringLiteral( R"(// Copyright( c ) 2020-2026 Towel42 Development, LLC and Scott Aron Bloom)" ) << QStringLiteral( R"(//)" ) << QStringLiteral( R"(// Permission is hereby granted, free of charge, to any person obtaining a copy)" ) << QStringLiteral( R"(// of this software and associated documentation files( the "Software" ), to deal)" ) << QStringLiteral( R"(// in the Software without restriction, including without limitation the rights)" ) << QStringLiteral( R"(// to use, copy, modify, merge, publish, distribute, sub-license, and/or sell)" ) << QStringLiteral( R"(// copies of the Software, and to permit persons to whom the Software is)" ) << QStringLiteral( R"(// furnished to do so, subject to the following conditions :)" ) << QStringLiteral( R"(//)" ) << QStringLiteral( R"(// The above copyright notice and this permission notice shall be included in)" ) << QStringLiteral( R"(// all copies or substantial portions of the Software.)" ) << QStringLiteral( R"(//)" ) << QStringLiteral( R"(// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR)" ) << QStringLiteral( R"(// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,)" ) << QStringLiteral( R"(// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE)" ) << QStringLiteral( R"(// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER)" ) << QStringLiteral( R"(// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,)" ) << QStringLiteral( R"(// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE)" ) << QStringLiteral( R"(// SOFTWARE.)" ) << QStringLiteral( R"()" ) << QStringLiteral( R"(#include "Preferences.h")" ) << QStringLiteral( R"(#include "T42-Utils/FFMpegFormats.h")" ) << QStringLiteral( R"()" ) << QStringLiteral( R"(namespace NMediaManager)" ) << getIndent( 0 ) + R"({)" << getIndent( 1 ) + R"(namespace NPreferences)" << getIndent( 1 ) + R"({)" << getIndent( 2 ) + R"(namespace NCore)" << getIndent( 2 ) + R"({)" << "%DEFAULT_SEASON_DIR_PATTERN%" << QStringLiteral( R"()" ) << "%DEFAULT_OUT_DIR_PATTERN%" << QStringLiteral( R"()" ) << "%DEFAULT_OUT_FILE_PATTERN%" << QStringLiteral( R"()" ) << "%DEFAULT_CUSTOM_PATHS_TO_DELETE%" << QStringLiteral( R"()" ) << "%DEFAULT_DELETE_CUSTOM%" << QStringLiteral( R"()" ) << "%DEFAULT_RIPPED_WITH_MKV_REGEX%" << QStringLiteral( R"()" ) << "%DEFAULT_DELETE_EXE%" << QStringLiteral( R"()" ) << "%DEFAULT_DELETE_NFO%" << QStringLiteral( R"()" ) << "%DEFAULT_DELETE_BAK%" << QStringLiteral( R"()" ) << "%DEFAULT_DELETE_IMAGES%" << QStringLiteral( R"()" ) << "%DEFAULT_KNOWN_STRINGS%" << QStringLiteral( R"()" ) << "%DEFAULT_KNOWN_EXTENDED_STRINGS%" << QStringLiteral( R"()" ) << "%DEFAULT_IGNORED_PATHS%" << QStringLiteral( R"()" ) << "%DEFAULT_KNOWN_ABBREVIATIONS%" << QStringLiteral( R"()" ) << "%DEFAULT_KNOWN_HYPHENATED%" << QStringLiteral( R"()" ) << "%DEFAULT_SKIPPED_PATHS%" << QStringLiteral( R"()" )
 
-                                            << "%DEFAULT_FORCE_MEDIA_CONTAINER%"
-                                            << R"()"
-                                            << "%DEFAULT_MEDIA_CONTAINER_NAME%"
-                                            << R"()"
-                                            << "%DEFAULT_TRANSCODE_AUDIO%"
-                                            << R"()"
-                                            << "%DEFAULT_ONLY_TRANSCODE_AUDIO_ON_FORMAT_CHANGE%"
-                                            << R"()"
-                                            << "%DEFAULT_ADD_AAC%"
-                                            << R"()"
-                                            << "%DEFAULT_TRANSCODE_TO_AUDIO_CODEC%"
-                                            << R"()"
-                                            << "%DEFAULT_TRANSCODE_VIDEO%"
-                                            << R"()"
-                                            << "%DEFAULT_ONLY_TRANSCODE_VIDEO_ON_FORMAT_OR_BITRATE_CHANGE%"
-                                            << R"()"
-                                            << "%DEFAULT_TRANSCODE_TO_VIDEO_CODEC%"
-                                            << R"()"
-                                            << "%DEFAULT_LOSSLESS_TRANSCODING%"
-                                            << R"()"
-                                            << "%DEFAULT_GENERATE_LOW_BITRATE_VIDEO%"
-                                            << R"()"
-                                            << "%DEFAULT_BITRATE_THRESHOLD_PERCENTAGE%"
-                                            << R"()"
-                                            << "%DEFAULT_RESOLUTION_THRESHOLD_PERCENTAGE%"
-                                            << R"()"
-                                            << "%DEFAULT_GENERATE_NON_4k_VIDEO%"
-                                            << R"()"
-                                            << "%DEFAULT_USE_CRF%"
-                                            << R"()"
-                                            << "%DEFAULT_CRF%"
-                                            << R"()"
-                                            << "%DEFAULT_USE_TARGET_BITRATE%"
-                                            << R"()"
-                                            << "%DEFAULT_TARGET_4K_BITRATE%"
-                                            << R"()"
-                                            << "%DEFAULT_TARGET_HD_BITRATE%"
-                                            << R"()"
-                                            << "%DEFAULT_TARGET_SUBHD_BITRATE%"
-                                            << R"()"
-                                            << "%DEFAULT_GREATER_THAN_4K_DIVISOR%"
-                                            << R"()"
-                                            << "%DEFAULT_USE_PRESET%"
-                                            << R"()"
-                                            << "%DEFAULT_PRESET%"
-                                            << R"()"
-                                            << "%DEFAULT_USE_TUNE%"
-                                            << R"()"
-                                            << "%DEFAULT_TUNE%"
-                                            << R"()"
-                                            << "%DEFAULT_USE_PROFILE%"
-                                            << R"()"
-                                            << "%DEFAULT_PROFILE%"
-                                            << R"()"
+                                            << "%DEFAULT_FORCE_MEDIA_CONTAINER%" << QStringLiteral( R"()" ) << "%DEFAULT_MEDIA_CONTAINER_NAME%" << QStringLiteral( R"()" ) << "%DEFAULT_TRANSCODE_AUDIO%" << QStringLiteral( R"()" ) << "%DEFAULT_ONLY_TRANSCODE_AUDIO_ON_FORMAT_CHANGE%" << QStringLiteral( R"()" ) << "%DEFAULT_ADD_AAC%" << QStringLiteral( R"()" ) << "%DEFAULT_TRANSCODE_TO_AUDIO_CODEC%" << QStringLiteral( R"()" ) << "%DEFAULT_TRANSCODE_VIDEO%" << QStringLiteral( R"()" ) << "%DEFAULT_ONLY_TRANSCODE_VIDEO_ON_FORMAT_OR_BITRATE_CHANGE%" << QStringLiteral( R"()" ) << "%DEFAULT_TRANSCODE_TO_VIDEO_CODEC%" << QStringLiteral( R"()" ) << "%DEFAULT_LOSSLESS_TRANSCODING%" << QStringLiteral( R"()" ) << "%DEFAULT_GENERATE_LOW_BITRATE_VIDEO%" << QStringLiteral( R"()" ) << "%DEFAULT_BITRATE_THRESHOLD_PERCENTAGE%" << QStringLiteral( R"()" ) << "%DEFAULT_RESOLUTION_THRESHOLD_PERCENTAGE%" << QStringLiteral( R"()" ) << "%DEFAULT_GENERATE_NON_4k_VIDEO%" << QStringLiteral( R"()" ) << "%DEFAULT_USE_CRF%" << QStringLiteral( R"()" ) << "%DEFAULT_CRF%" << QStringLiteral( R"()" ) << "%DEFAULT_USE_TARGET_BITRATE%" << QStringLiteral( R"()" ) << "%DEFAULT_TARGET_4K_BITRATE%" << QStringLiteral( R"()" ) << "%DEFAULT_TARGET_HD_BITRATE%" << QStringLiteral( R"()" ) << "%DEFAULT_TARGET_SUBHD_BITRATE%" << QStringLiteral( R"()" ) << "%DEFAULT_GREATER_THAN_4K_DIVISOR%" << QStringLiteral( R"()" ) << "%DEFAULT_USE_PRESET%" << QStringLiteral( R"()" ) << "%DEFAULT_PRESET%" << QStringLiteral( R"()" ) << "%DEFAULT_USE_TUNE%" << QStringLiteral( R"()" ) << "%DEFAULT_TUNE%" << QStringLiteral( R"()" ) << "%DEFAULT_USE_PROFILE%" << QStringLiteral( R"()" ) << "%DEFAULT_PROFILE%" << QStringLiteral( R"()" )
 
-                                            << "%MEDIA_FORMAT_ENCODER%"
-                                            << R"()"
-                                            << "%MEDIA_FORMAT_ENCODER_EXTENSION_MAP%"
-                                            << R"()"
-                                            << "%MEDIA_FORMAT_DECODER%"
-                                            << R"()"
-                                            << "%MEDIA_FORMAT_DECODER_EXTENSION_MAP%"
-                                            << R"()"
+                                            << "%MEDIA_FORMAT_ENCODER%" << QStringLiteral( R"()" ) << "%MEDIA_FORMAT_ENCODER_EXTENSION_MAP%" << QStringLiteral( R"()" ) << "%MEDIA_FORMAT_DECODER%" << QStringLiteral( R"()" ) << "%MEDIA_FORMAT_DECODER_EXTENSION_MAP%" << QStringLiteral( R"()" )
 
-                                            << "%AVAILABLE_VIDEO_ENCODING_CODECS%"
-                                            << R"()"
-                                            << "%AVAILABLE_VIDEO_DECODING_CODECS%"
-                                            << R"()"
-                                            << "%AVAILABLE_AUDIO_ENCODING_CODECS%"
-                                            << R"()"
-                                            << "%AVAILABLE_AUDIO_DECODING_CODECS%"
-                                            << R"()"
-                                            << "%AVAILABLE_SUBTITLE_ENCODING_CODECS%"
-                                            << R"()"
-                                            << "%AVAILABLE_SUBTITLE_DECODING_CODECS%"
-                                            << R"()"
+                                            << "%AVAILABLE_VIDEO_ENCODING_CODECS%" << QStringLiteral( R"()" ) << "%AVAILABLE_VIDEO_DECODING_CODECS%" << QStringLiteral( R"()" ) << "%AVAILABLE_AUDIO_ENCODING_CODECS%" << QStringLiteral( R"()" ) << "%AVAILABLE_AUDIO_DECODING_CODECS%" << QStringLiteral( R"()" ) << "%AVAILABLE_SUBTITLE_ENCODING_CODECS%" << QStringLiteral( R"()" ) << "%AVAILABLE_SUBTITLE_DECODING_CODECS%" << QStringLiteral( R"()" )
 
-                                            << "%AVAILABLE_VIDEO_ENCODERS%"
-                                            << R"()"
-                                            << "%AVAILABLE_VIDEO_DECODERS%"
-                                            << R"()"
-                                            << "%AVAILABLE_AUDIO_ENCODERS%"
-                                            << R"()"
-                                            << "%AVAILABLE_AUDIO_DECODERS%"
-                                            << R"()"
-                                            << "%AVAILABLE_SUBTITLE_ENCODERS%"
-                                            << R"()"
-                                            << "%AVAILABLE_SUBTITLE_DECODERS%"
-                                            << R"()"
+                                            << "%AVAILABLE_VIDEO_ENCODERS%" << QStringLiteral( R"()" ) << "%AVAILABLE_VIDEO_DECODERS%" << QStringLiteral( R"()" ) << "%AVAILABLE_AUDIO_ENCODERS%" << QStringLiteral( R"()" ) << "%AVAILABLE_AUDIO_DECODERS%" << QStringLiteral( R"()" ) << "%AVAILABLE_SUBTITLE_ENCODERS%" << QStringLiteral( R"()" ) << "%AVAILABLE_SUBTITLE_DECODERS%" << QStringLiteral( R"()" )
 
-                                            << "%CODEC_TO_ENCODER_MAP%"
-                                            << R"()"
-                                            << "%CODEC_TO_DECODER_MAP%"
-                                            << R"()"
+                                            << "%CODEC_TO_ENCODER_MAP%" << QStringLiteral( R"()" ) << "%CODEC_TO_DECODER_MAP%" << QStringLiteral( R"()" )
 
-                                            << "%AVAILABLE_HW_ACCELS%"
-                                            << R"()"
+                                            << "%AVAILABLE_HW_ACCELS%" << QStringLiteral( R"()" )
 
                                             << getIndent( 2 ) + R"(})" << getIndent( 1 ) + R"(})" << getIndent( 0 ) + R"(})";
                 return retVal;
@@ -640,7 +496,7 @@ namespace NMediaManager
 
                 QString retVal;
                 if ( !items.isEmpty() )
-                    retVal = QString( "<style>p{ white-space:nowrap }</style>\n<p>Difference in Settings:\n<ul>\n%2\n</ul>\n</p>" ).arg( items.join( "\n" ) );
+                    retVal = QStringLiteral( "<style>p{ white-space:nowrap }</style>\n<p>Difference in Settings:\n<ul>\n%2\n</ul>\n</p>" ).arg( items.join( "\n" ) );
                 return retVal;
             }
 

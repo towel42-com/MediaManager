@@ -30,6 +30,7 @@ set(qtproject_SRCS
     FFMpegInfo.cpp
     ExternalTools.cpp
     GeneralSettings.cpp
+    GenerateDefaults.cpp
     IgnoredPaths.cpp
     KnownAbbreviations.cpp
     KnownHyphenated.cpp
