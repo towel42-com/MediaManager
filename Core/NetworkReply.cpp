@@ -197,8 +197,8 @@ namespace NMediaManager
 
         QString CNetworkReply::toString() const
         {
-            auto reply = fReply ? QString( "0x%1" ).arg( reinterpret_cast< uintptr_t >( fReply ), 0, 16 ) : QString( "CACHED" );
-            auto retVal = QString( "CNetworkReply( %1 - %2 - %3)" ).arg( NMediaManager::NCore::toString( fRequestType ) ).arg( reply ).arg( fURLPathKey );
+            auto reply = fReply ? QStringLiteral( "0x%1" ).arg( reinterpret_cast< uintptr_t >( fReply ), 0, 16 ) : QStringLiteral( "CACHED" );
+            auto retVal = QStringLiteral( "CNetworkReply( %1 - %2 - %3)" ).arg( NMediaManager::NCore::toString( fRequestType ) ).arg( reply ).arg( fURLPathKey );
             return retVal;
         }
     }

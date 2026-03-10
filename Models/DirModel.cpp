@@ -131,9 +131,9 @@ namespace NMediaManager
                     if ( NTowel42Utils::NStringUtils::startsOrEndsWithNumber( curr, &number, &extra, &numIsPrefix ) )
                     {
                         if ( numIsPrefix )
-                            retVal << QString( "%1_%2" ).arg( number, 4, QChar( '0' ) ).arg( extra );
+                            retVal << QStringLiteral( "%1_%2" ).arg( number, 4, QChar( '0' ) ).arg( extra );
                         else
-                            retVal << QString( "%1_%2" ).arg( extra ).arg( number, 4, QChar( '0' ) );
+                            retVal << QStringLiteral( "%1_%2" ).arg( extra ).arg( number, 4, QChar( '0' ) );
                     }
                     else
                         retVal << curr;
@@ -854,9 +854,9 @@ namespace NMediaManager
                     auto imdbid = match.captured( "imdbid" );
                     auto tmdbid = match.captured( "tmdbid" );
                     if ( !imdbid.isEmpty() )
-                        urlPath = QString( "https://imdb.com/title/%1" ).arg( imdbid );
+                        urlPath = QStringLiteral( "https://imdb.com/title/%1" ).arg( imdbid );
                     else if ( !tmdbid.isEmpty() )
-                        urlPath = QString( "https://themoviedb.org/%1/%2" ).arg( this->isTVShow( idx ) ? QStringLiteral( "tv" ) : QStringLiteral( "movie" ) ).arg( tmdbid );
+                        urlPath = QStringLiteral( "https://themoviedb.org/%1/%2" ).arg( this->isTVShow( idx ) ? QStringLiteral( "tv" ) : QStringLiteral( "movie" ) ).arg( tmdbid );
 
                     if ( !urlPath.isEmpty() )
                         return QUrl( urlPath );
@@ -1108,7 +1108,7 @@ namespace NMediaManager
             {
                 if ( !NTowel42Utils::NFileUtils::backup( ii ) )
                 {
-                    msgList << QString( "ERROR: Failed to backup '%1'" ).arg( ii );
+                    msgList << QStringLiteral( "ERROR: Failed to backup '%1'" ).arg( ii );
                     aOK = false;
                 }
             }
@@ -2445,7 +2445,7 @@ namespace NMediaManager
                     {
                         auto currTS = NTowel42Utils::CTimeString( progressDlg->secondaryValue() * 1000 );
                         auto endTS = NTowel42Utils::CTimeString( progressDlg->secondaryMax() * 1000 );
-                        format = QString( "Processing Position: %1 of %2 ETA: %3  " ).arg( currTS.toString( "hh:mm:ss", false ) ).arg( endTS.toString( "hh:mm:ss", false ) ).arg( ts.toString( "hh:mm:ss", false ) );
+                        format = QStringLiteral( "Processing Position: %1 of %2 ETA: %3  " ).arg( currTS.toString( "hh:mm:ss", false ) ).arg( endTS.toString( "hh:mm:ss", false ) ).arg( ts.toString( "hh:mm:ss", false ) );
                     }
                     else
                     {

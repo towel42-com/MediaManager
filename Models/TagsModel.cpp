@@ -222,7 +222,7 @@ namespace NMediaManager
                 if ( !regExp.match( tag ).hasMatch() )
                 {
                     if ( tag.isEmpty() )
-                        tag = QString( "<EMPTY>" ).toHtmlEscaped();
+                        tag = QStringLiteral( "<EMPTY>" ).toHtmlEscaped();
 
                     auto msg = tr( "<p style='white-space:pre'>File <b>'%1'</b> does not meet <b>'%2'</b> Meta Tag requirement '%3' - Currently <b>'%4'</b></p>" ).arg( fileInfo.fileName() ).arg( tagName ).arg( expr.toHtmlEscaped() ).arg( tag );
 

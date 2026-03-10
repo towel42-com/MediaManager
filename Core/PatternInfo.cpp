@@ -39,12 +39,12 @@ namespace NMediaManager
                 return inPattern;
 
             // see if the capture name exists in the return pattern
-            auto capRegEx = QString( R"({(?<optname>[^\{\}]+)}(\\)?\:\<%1\>)" ).arg( captureName );
+            auto capRegEx = QStringLiteral( R"({(?<optname>[^\{\}]+)}(\\)?\:\<%1\>)" ).arg( captureName );
             auto regExp = QRegularExpression( capRegEx );
             auto retVal = inPattern;
-            retVal = retVal.replace( regExp, removeOptional ? R"(\1)" : R"((\1)?)" );
+            retVal = retVal.replace( regExp, removeOptional ? QStringLiteral( R"(\1)" ) : QStringLiteral( R"((\1)?)" ) );
 
-            capRegEx = QString( R"(\<%1\>)" ).arg( captureName );
+            capRegEx = QStringLiteral( R"(\<%1\>)" ).arg( captureName );
             regExp = QRegularExpression( capRegEx );
             retVal = retVal.replace( regExp, value );
 

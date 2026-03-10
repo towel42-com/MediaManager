@@ -201,7 +201,7 @@ namespace NMediaManager
                 msg += QObject::tr( "<b>Source:</b><ul><li>%1</li></ul><b>Output:</b><ul><li>%2</li>" ).arg( from ).arg( to );
                 for ( auto &&ii : mergedFiles )
                 {
-                    msg += QString( "<li>%1</li>\n" ).arg( ii );
+                    msg += QStringLiteral( "<li>%1</li>\n" ).arg( ii );
                 }
                 msg += "</ul>";
 
@@ -210,7 +210,7 @@ namespace NMediaManager
                     msg += QObject::tr( "<b>Transcoding Actions:</b>" );
                     msg += "<ul>";
                     for ( auto &&ii : actions )
-                        msg += QString( "<li>%1</li>\n" ).arg( ii );
+                        msg += QStringLiteral( "<li>%1</li>\n" ).arg( ii );
                     msg += "<ul>";
                 }
 

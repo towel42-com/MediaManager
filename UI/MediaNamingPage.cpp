@@ -145,7 +145,7 @@ namespace NMediaManager
 
             if ( NPreferences::NCore::CPreferences::instance()->isPathToDelete( index.data( NModels::ECustomRoles::eAbsFilePath ).toString() ) )
             {
-                appendToLog( QString( "Deleting file '%1'" ).arg( index.data( NModels::ECustomRoles::eAbsFilePath ).toString() ), true );
+                appendToLog( QStringLiteral( "Deleting file '%1'" ).arg( index.data( NModels::ECustomRoles::eAbsFilePath ).toString() ), true );
                 model()->setDeleteItem( index );
             }
             else
@@ -195,7 +195,7 @@ namespace NMediaManager
                             searchInfo->setMediaType( mediaType.value() );
 
                         auto msg = tr( "Adding Background Search for '%1'" ).arg( QDir( fDirName ).relativeFilePath( path ) );
-                        auto fullMsg = msg + QString( "\n\t%1\n" ).arg( searchInfo->toString( false ) );
+                        auto fullMsg = msg + QStringLiteral( "\n\t%1\n" ).arg( searchInfo->toString( false ) );
                         appendToLog( fullMsg, true );
                         fProgressDlg->setLabelText( msg );
                         fProgressDlg->setValue( fProgressDlg->value() + 1 );
@@ -256,7 +256,7 @@ namespace NMediaManager
                 model()->setInAutoSearch( false, true );
             }
 
-            auto logMsg = QString( "\n\t" );
+            auto logMsg = QStringLiteral( "\n\t" );
             if ( notFound )
                 logMsg += tr( "Found: <No Match>" );
             else

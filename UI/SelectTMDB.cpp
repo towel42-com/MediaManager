@@ -571,7 +571,7 @@ namespace NMediaManager
                     auto origWords = tmp;
                     for ( auto &&curr : tmp )
                     {
-                        curr = QString( "<li>%1</li>" ).arg( curr );
+                        curr = QStringLiteral( "<li>%1</li>" ).arg( curr );
                     }
                     auto msg = tr( "Words you removed: <ul>%1</ul>" ).arg( tmp.join( "" ) );
                     if ( QMessageBox::question( this, tr( "Would you like to add these words to the known words list?" ), msg, QMessageBox::StandardButton::Yes, QMessageBox::StandardButton::No ) == QMessageBox::StandardButton::Yes )

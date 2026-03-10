@@ -338,7 +338,7 @@ namespace NMediaManager
                 {
                     processInfo->fNewNames.front() += ".new";
                 }
-                processInfo->fItem = new QStandardItem( QString( "Convert '%1' => '%2'" ).arg( getDispName( processInfo->fOldName ) ).arg( getDispName( processInfo->primaryNewName() ) ) );
+                processInfo->fItem = new QStandardItem( QStringLiteral( "Convert '%1' => '%2'" ).arg( getDispName( processInfo->fOldName ) ).arg( getDispName( processInfo->primaryNewName() ) ) );
                 processInfo->fItem->setData( processInfo->fOldName, ECustomRoles::eOldName );
                 processInfo->fItem->setData( processInfo->fNewNames, ECustomRoles::eNewName );
                 processInfo->fItem->setData( fi.absoluteFilePath(), ECustomRoles::eAbsFilePath );
@@ -771,15 +771,15 @@ namespace NMediaManager
             auto dir = QFileInfo( processInfo.primaryNewName() ).absolutePath();
             auto fname = QFileInfo( processInfo.fOldName ).fileName();
 
-            auto retVal = QString( "Muxing MKV %1<ul><li>%2</li>" ).arg( getDispName( dir ) ).arg( fname );
+            auto retVal = QStringLiteral( "Muxing MKV %1<ul><li>%2</li>" ).arg( getDispName( dir ) ).arg( fname );
             for ( auto &&ii : processInfo.fAncillary )
             {
                 auto fname = QFileInfo( ii ).fileName();
-                retVal += QString( "<li>%1</li>" ).arg( fname );
+                retVal += QStringLiteral( "<li>%1</li>" ).arg( fname );
             }
             retVal += "</ul>";
             fname = QFileInfo( processInfo.primaryNewName() ).fileName();
-            retVal += QString( "to create %1" ).arg( fname );
+            retVal += QStringLiteral( "to create %1" ).arg( fname );
             return retVal;
         }
 

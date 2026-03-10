@@ -114,27 +114,27 @@ namespace NMediaManager
 
         QString CSearchTMDB::toString() const
         {
-            QString retVal = QString( "CSearchTMDB(Manager: 0x%1 " ).arg( reinterpret_cast< uintptr_t >( fManager ), 0, 16 )
-                //+ QString( "ConfigReply: 0x%1 " ).arg( reinterpret_cast<uintptr_t>( fConfigReply.ifrst ), 0, 16 )
-                //+ QString( "SearchReply: 0x%1 " ).arg( reinterpret_cast<uintptr_t>( fSearchReply ), 0, 16 )
-                //+ QString( "GetMovieReply: 0x%1 " ).arg( reinterpret_cast<uintptr_t>( fGetMovieReply ), 0, 16 )
-                //+ QString( "GetTVReply: 0x%1 " ).arg( reinterpret_cast<uintptr_t>( fGetTVReply ), 0, 16 )
+            QString retVal = QStringLiteral( "CSearchTMDB(Manager: 0x%1 " ).arg( reinterpret_cast< uintptr_t >( fManager ), 0, 16 )
+                //+ QStringLiteral( "ConfigReply: 0x%1 " ).arg( reinterpret_cast<uintptr_t>( fConfigReply.ifrst ), 0, 16 )
+                //+ QStringLiteral( "SearchReply: 0x%1 " ).arg( reinterpret_cast<uintptr_t>( fSearchReply ), 0, 16 )
+                //+ QStringLiteral( "GetMovieReply: 0x%1 " ).arg( reinterpret_cast<uintptr_t>( fGetMovieReply ), 0, 16 )
+                //+ QStringLiteral( "GetTVReply: 0x%1 " ).arg( reinterpret_cast<uintptr_t>( fGetTVReply ), 0, 16 )
                 ;
 
-            //retVal += QString( "ImageInfoReplies( %1 -" ).arg( fImageInfoReplies.size() );
+            //retVal += QStringLiteral( "ImageInfoReplies( %1 -" ).arg( fImageInfoReplies.size() );
             //for ( auto &&ii : fImageInfoReplies )
-            //    retVal += QString( "Reply: 0x%1 - Title Info: %3" ).arg( reinterpret_cast<uintptr_t>( ii.first ), 0, 16 ).arg( ii.second->toString() );
+            //    retVal += QStringLiteral( "Reply: 0x%1 - Title Info: %3" ).arg( reinterpret_cast<uintptr_t>( ii.first ), 0, 16 ).arg( ii.second->toString() );
             //retVal += ") ";
 
-            //retVal += QString( "TVInfoReplies( %1 -" ).arg( fTVInfoReplies.size() );
+            //retVal += QStringLiteral( "TVInfoReplies( %1 -" ).arg( fTVInfoReplies.size() );
             //for ( auto &&ii : fTVInfoReplies )
-            //    retVal += QString( "Reply: 0x%1 - Title Info: %3" ).arg( reinterpret_cast<uintptr_t>( ii.first ), 0, 16 ).arg( ii.second->toString() );
+            //    retVal += QStringLiteral( "Reply: 0x%1 - Title Info: %3" ).arg( reinterpret_cast<uintptr_t>( ii.first ), 0, 16 ).arg( ii.second->toString() );
             //retVal += ") ";
 
-            //retVal += QString( "SeasonInfoReplies( %1 -" ).arg( fSeasonInfoReplies.first.size() );
+            //retVal += QStringLiteral( "SeasonInfoReplies( %1 -" ).arg( fSeasonInfoReplies.first.size() );
             //for ( auto &&ii : fSeasonInfoReplies.first )
-            //    retVal += QString( "Reply: 0x%1 - Title Info: %3" ).arg( reinterpret_cast<uintptr_t>( ii.first ), 0, 16 ).arg( ii.second->toString() );
-            //retVal += ") Episode Found: " + QString( "%1" ).arg( fSeasonInfoReplies.second.has_value() ? fSeasonInfoReplies.second.value() : "No Value" ) + " ";
+            //    retVal += QStringLiteral( "Reply: 0x%1 - Title Info: %3" ).arg( reinterpret_cast<uintptr_t>( ii.first ), 0, 16 ).arg( ii.second->toString() );
+            //retVal += ") Episode Found: " + QStringLiteral( "%1" ).arg( fSeasonInfoReplies.second.has_value() ? fSeasonInfoReplies.second.value() : "No Value" ) + " ";
 
             retVal += ( fSearchInfo ? fSearchInfo->toString( true ) : "nullptr" ) + " ";
             retVal += "CurrentQueuedSearch(";
@@ -146,10 +146,10 @@ namespace NMediaManager
                 retVal += "nullptr";
             retVal += ") ";
 
-            retVal += QString( "QueuedResults( %1 -" ).arg( fQueuedResults.size() );
+            retVal += QStringLiteral( "QueuedResults( %1 -" ).arg( fQueuedResults.size() );
             for ( auto &&ii : fQueuedResults )
             {
-                retVal += QString( "(%1 - (" ).arg( ii.first );
+                retVal += QStringLiteral( "(%1 - (" ).arg( ii.first );
                 bool first = true;
                 for ( auto &&jj : ii.second )
                 {
@@ -161,26 +161,26 @@ namespace NMediaManager
             }
             retVal += ") ";
 
-            retVal += QString( "SearchQueue( %1 -" ).arg( fSearchQueue.size() );
+            retVal += QStringLiteral( "SearchQueue( %1 -" ).arg( fSearchQueue.size() );
             for ( auto &&ii : fSearchQueue )
             {
-                retVal += QString( "(%1 - %2)" ).arg( ii.first ).arg( ii.second->toString( true ) );
+                retVal += QStringLiteral( "(%1 - %2)" ).arg( ii.first ).arg( ii.second->toString( true ) );
             }
             retVal += ") ";
-            retVal += QString( "AutoSearchTimer isActive? %1 " ).arg( fAutoSearchTimer.first && fAutoSearchTimer.first->isActive() );
-            retVal += QString( "AutoSearch Enabled? %1 " ).arg( fAutoSearchTimer.second );
+            retVal += QStringLiteral( "AutoSearchTimer isActive? %1 " ).arg( fAutoSearchTimer.first && fAutoSearchTimer.first->isActive() );
+            retVal += QStringLiteral( "AutoSearch Enabled? %1 " ).arg( fAutoSearchTimer.second );
 
-            retVal += QString( "Error Message: %1 " ).arg( fErrorMessage.has_value() ? fErrorMessage.value() : QString() );
-            retVal += QString( "Configuration: %1 ErrorCount: %2 " ).arg( fConfiguration.has_value() ? fConfiguration.value() : QString( "<notset>" ) ).arg( fConfigErrorCount );
+            retVal += QStringLiteral( "Error Message: %1 " ).arg( fErrorMessage.has_value() ? fErrorMessage.value() : QString() );
+            retVal += QStringLiteral( "Configuration: %1 ErrorCount: %2 " ).arg( fConfiguration.has_value() ? fConfiguration.value() : QStringLiteral( "<notset>" ) ).arg( fConfigErrorCount );
             ;
 
-            retVal += QString( "StopSearching: %1 SkipImages: %2 " ).arg( fStopSearching ).arg( fSkipImages );
+            retVal += QStringLiteral( "StopSearching: %1 SkipImages: %2 " ).arg( fStopSearching ).arg( fSkipImages );
             ;
-            //retVal += QString( "BestMatch: %1" ).arg( fResults.first ? fResults.first->toString() : QString() );
-            retVal += QString( "Results( %1 -" ).arg( fResults.size() );
+            //retVal += QStringLiteral( "BestMatch: %1" ).arg( fResults.first ? fResults.first->toString() : QString() );
+            retVal += QStringLiteral( "Results( %1 -" ).arg( fResults.size() );
             for ( auto &&ii : fResults )
             {
-                retVal += QString( "(%1) " ).arg( ii->toString( true ) );
+                retVal += QStringLiteral( "(%1) " ).arg( ii->toString( true ) );
             }
             retVal += ") ";
             retVal += ")";
@@ -429,7 +429,7 @@ namespace NMediaManager
                 return;
             if ( fSearchInfo && fSeasonInfoReplies.second.has_value() && !fSeasonInfoReplies.second.value() )
             {
-                fErrorMessage = QString( "Could not find episode '%1' for TV show '%2'" ).arg( fSearchInfo->episodeString( false ) ).arg( fSearchInfo->searchName() );
+                fErrorMessage = QStringLiteral( "Could not find episode '%1' for TV show '%2'" ).arg( fSearchInfo->episodeString( false ) ).arg( fSearchInfo->searchName() );
             }
 
             //qDebug() << "After" << *this;
@@ -795,11 +795,11 @@ namespace NMediaManager
 
             if ( resultItem.contains( "number_of_seasons" ) )
             {
-                searchResult->setSeason( QString( "%1 Season%2" ).arg( resultItem[ "number_of_seasons" ].toInt() ).arg( resultItem[ "number_of_seasons" ].toInt() == 1 ? QStringLiteral( "" ) : QStringLiteral( "s" ) ) );
+                searchResult->setSeason( QStringLiteral( "%1 Season%2" ).arg( resultItem[ "number_of_seasons" ].toInt() ).arg( resultItem[ "number_of_seasons" ].toInt() == 1 ? QStringLiteral( "" ) : QStringLiteral( "s" ) ) );
             }
             if ( resultItem.contains( "number_of_episodes" ) )
             {
-                searchResult->setEpisode( QString( "%1 Episode%2" ).arg( resultItem[ "number_of_episodes" ].toInt() ).arg( resultItem[ "number_of_episodes" ].toInt() == 1 ? QStringLiteral( "" ) : QStringLiteral( "s" ) ) );
+                searchResult->setEpisode( QStringLiteral( "%1 Episode%2" ).arg( resultItem[ "number_of_episodes" ].toInt() ).arg( resultItem[ "number_of_episodes" ].toInt() == 1 ? QStringLiteral( "" ) : QStringLiteral( "s" ) ) );
             }
             if ( !posterPath.isEmpty() && hasConfiguration() && !fSkipImages )
             {
@@ -835,7 +835,7 @@ namespace NMediaManager
             url.setScheme( "https" );
             url.setHost( "api.themoviedb.org" );
 
-            auto path = QString( "/3/tv/%1" ).arg( tmdbid );
+            auto path = QStringLiteral( "/3/tv/%1" ).arg( tmdbid );
             bool hasEpisode = fSearchInfo->hasEpisodes();
             if ( seasonNum == -1 )
                 seasonNum = fSearchInfo->season();
@@ -847,7 +847,7 @@ namespace NMediaManager
             std::shared_ptr< CTransformResult > seasonInfo;
             if ( seasonNum != -1 )
             {
-                path += QString( "/season/%1" ).arg( seasonNum );
+                path += QStringLiteral( "/season/%1" ).arg( seasonNum );
                 seasonInfo = std::make_shared< CTransformResult >( EMediaType::eTVSeason );
                 seasonInfo->setTitle( showInfo->title() );
                 seasonInfo->setTMDBID( showInfo->tmdbID() );
@@ -889,7 +889,7 @@ namespace NMediaManager
             //qDebug().nospace().noquote() << doc.toJson( QJsonDocument::Indented );
 
             auto numSeasons = doc.object().contains( "number_of_seasons" ) ? doc.object()[ "number_of_seasons" ].toInt() : -1;
-            //showInfo->fSubTitle = QString( "%1 Season%2" ).arg( numSeasons ).arg( numSeasons != 1 ? "s" : "" );
+            //showInfo->fSubTitle = QStringLiteral( "%1 Season%2" ).arg( numSeasons ).arg( numSeasons != 1 ? "s" : "" );
 
             auto seasons = doc.object()[ "seasons" ].toArray();
 
@@ -930,7 +930,7 @@ namespace NMediaManager
             seasonInfo->setSeasonOnly( true );
 
             auto episodes = doc.object()[ "episodes" ].toArray();
-            seasonInfo->setEpisode( QString( "%1 Episode%2" ).arg( episodes.count() ).arg( episodes.count() == 1 ? QStringLiteral( "" ) : QStringLiteral( "s" ) ) );
+            seasonInfo->setEpisode( QStringLiteral( "%1 Episode%2" ).arg( episodes.count() ).arg( episodes.count() == 1 ? QStringLiteral( "" ) : QStringLiteral( "s" ) ) );
             seasonInfo->setSeasonTMDBID( doc.object().contains( "id" ) ? QString::number( doc.object()[ "id" ].toInt() ) : QString() );
 
             // season match

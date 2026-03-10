@@ -55,7 +55,7 @@ namespace NMediaManager
             processInfo->fSetMetainfoTagsOnSuccess = true;
             processInfo->fOldName = item->data( ECustomRoles::eAbsFilePath ).toString();
             auto fi = QFileInfo( processInfo->fOldName );
-            processInfo->fItem = new QStandardItem( QString( "Validate '%1'" ).arg( getDispName( processInfo->fOldName ) ) );
+            processInfo->fItem = new QStandardItem( QStringLiteral( "Validate '%1'" ).arg( getDispName( processInfo->fOldName ) ) );
             processInfo->fItem->setData( processInfo->fOldName, ECustomRoles::eOldName );
 
             bool aOK = true;
@@ -99,7 +99,7 @@ namespace NMediaManager
 
         QString CValidateMKVModel::getProgressLabel( std::shared_ptr< SProcessInfo > processInfo ) const
         {
-            auto retVal = QString( "Validating MKV<ul><li>%1</li></ul>" ).arg( getDispName( processInfo->fOldName ) );
+            auto retVal = QStringLiteral( "Validating MKV<ul><li>%1</li></ul>" ).arg( getDispName( processInfo->fOldName ) );
             return retVal;
         }
 

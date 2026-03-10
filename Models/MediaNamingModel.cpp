@@ -206,7 +206,7 @@ namespace NMediaManager
                     {
                         for ( auto &&titleNumPos : diskNumPos.second )
                         {
-                            auto searchName = QString( "%1 - S%2E%3" ).arg( searchNamePos.first ).arg( seasonPos.first, 2, 10, QChar( '0' ) ).arg( episodeNum, 2, 10, QChar( '0' ) );
+                            auto searchName = QStringLiteral( "%1 - S%2E%3" ).arg( searchNamePos.first ).arg( seasonPos.first, 2, 10, QChar( '0' ) ).arg( episodeNum, 2, 10, QChar( '0' ) );
                             fDiskRipSearchMap[ titleNumPos.second ] = searchName;
                             episodeNum++;
                         }
@@ -517,7 +517,7 @@ namespace NMediaManager
                 if ( NCore::CTransformResult::isDeleteThis( newName ) )
                     myItem = new QStandardItem( tr( "Delete '%1'" ).arg( getDispName( oldName ) ) );
                 else
-                    myItem = new QStandardItem( QString( "'%1' => '%2'" ).arg( getDispName( oldName ) ).arg( getDispName( newName ) ) );
+                    myItem = new QStandardItem( QStringLiteral( "'%1' => '%2'" ).arg( getDispName( oldName ) ).arg( getDispName( newName ) ) );
 
                 myItem->setData( oldName, ECustomRoles::eOldName );
                 myItem->setData( newName, ECustomRoles::eNewName );
@@ -653,12 +653,12 @@ namespace NMediaManager
                                     {
                                         aOK = QFile( oldName ).remove();
                                         if ( !aOK )
-                                            errorMsg = QString( "Destination file '%1' exists and is identical to the new '%2' file, but the old file can not be deleted" ).arg( oldName ).arg( newName );
+                                            errorMsg = QStringLiteral( "Destination file '%1' exists and is identical to the new '%2' file, but the old file can not be deleted" ).arg( oldName ).arg( newName );
                                     }
                                     else
                                     {
                                         aOK = false;
-                                        errorMsg = QString( "Destination file Exists - Old Size: %1 New Size: %2" ).arg( NTowel42Utils::NFileUtils::byteSizeString( QFileInfo( oldName ), false ) ).arg( NTowel42Utils::NFileUtils::byteSizeString( QFileInfo( newName ), false ) );
+                                        errorMsg = QStringLiteral( "Destination file Exists - Old Size: %1 New Size: %2" ).arg( NTowel42Utils::NFileUtils::byteSizeString( QFileInfo( oldName ), false ) ).arg( NTowel42Utils::NFileUtils::byteSizeString( QFileInfo( newName ), false ) );
                                     }
                                 }
                                 else

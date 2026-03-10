@@ -64,7 +64,7 @@ namespace NMediaManager
             processInfo->fOldName = item->data( ECustomRoles::eAbsFilePath ).toString();
             processInfo->fNewNames << processInfo->fOldName + ".bak";
 
-            processInfo->fItem = new QStandardItem( QString( "Delete '%1'?" ).arg( getDispName( processInfo->fOldName ) ) );
+            processInfo->fItem = new QStandardItem( QStringLiteral( "Delete '%1'?" ).arg( getDispName( processInfo->fOldName ) ) );
             processInfo->fItem->setData( processInfo->fOldName, ECustomRoles::eOldName );
             processInfo->fBackupOrig = true;
             processInfo->fModifyTimestampsOnNewFiles = false;
@@ -85,7 +85,7 @@ namespace NMediaManager
 
         QString CValidateNFOModel::getProgressLabel( std::shared_ptr< SProcessInfo > processInfo ) const
         {
-            auto retVal = QString( "Removing NFO<ul><li>%1</li></ul>" ).arg( getDispName( processInfo->fOldName ) );
+            auto retVal = QStringLiteral( "Removing NFO<ul><li>%1</li></ul>" ).arg( getDispName( processInfo->fOldName ) );
             return retVal;
         }
 

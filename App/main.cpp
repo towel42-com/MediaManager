@@ -36,7 +36,7 @@ void myMessageOutput( QtMsgType type, const QMessageLogContext & context, const 
 {
     static QFile * sOutFile{ nullptr };
     QByteArray localMsg = msg.toLocal8Bit();
-    QString realMsg = QString( "%1 (%2:%3, %4)" ).arg( QString::fromLocal8Bit( localMsg ) ).arg( ( QFileInfo( QString::fromLocal8Bit( context.file ) ).fileName() ) ).arg( context.line ).arg( QString::fromLocal8Bit( context.function ) );
+    QString realMsg = QStringLiteral( "%1 (%2:%3, %4)" ).arg( QString::fromLocal8Bit( localMsg ) ).arg( ( QFileInfo( QString::fromLocal8Bit( context.file ) ).fileName() ) ).arg( context.line ).arg( QString::fromLocal8Bit( context.function ) );
 
     QString typeString;
     switch ( type )
@@ -58,7 +58,7 @@ void myMessageOutput( QtMsgType type, const QMessageLogContext & context, const 
                 //abort();
             break;
     }
-    realMsg = QString( "%1: %2" ).arg( typeString ).arg( realMsg ).trimmed();
+    realMsg = QStringLiteral( "%1: %2" ).arg( typeString ).arg( realMsg ).trimmed();
 
 #ifdef Q_OS_WINDOWS
     OutputDebugString( qUtf16Printable( msg + "\n" ) );

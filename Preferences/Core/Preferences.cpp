@@ -221,14 +221,14 @@ namespace NMediaManager
                         defaultColor = background ? Qt::yellow : Qt::black;
                         break;
                 };
-                return settings.value( QString( "%1-%2ground" ).arg( toString( status ) ).arg( background ? QStringLiteral( "Back" ) : QStringLiteral( "Fore" ) ), defaultColor ).value< QColor >();
+                return settings.value( QStringLiteral( "%1-%2ground" ).arg( toString( status ) ).arg( background ? QStringLiteral( "Back" ) : QStringLiteral( "Fore" ) ), defaultColor ).value< QColor >();
             }
 
             void CPreferences::setColorForStatus( EItemStatus status, bool background, const QColor &value )
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eColorsPrefs ) );
-                settings.setValue( QString( "%1-%2ground" ).arg( toString( status ) ).arg( background ? QStringLiteral( "Back" ) : QStringLiteral( "Fore" ) ), value );
+                settings.setValue( QStringLiteral( "%1-%2ground" ).arg( toString( status ) ).arg( background ? QStringLiteral( "Back" ) : QStringLiteral( "Fore" ) ), value );
                 emitSigPreferencesChanged( EPreferenceType::eColorsPrefs );
             }
 
@@ -240,7 +240,7 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
-                settings.setValue( QString( "PageVisible-%1" ).arg( pageName ), isVisible );
+                settings.setValue( QStringLiteral( "PageVisible-%1" ).arg( pageName ), isVisible );
                 emitSigPreferencesChanged( EPreferenceType::eSystemPrefs );
             }
 
@@ -248,7 +248,7 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eSystemPrefs ) );
-                return settings.value( QString( "PageVisible-%1" ).arg( pageName ), true ).toBool();
+                return settings.value( QStringLiteral( "PageVisible-%1" ).arg( pageName ), true ).toBool();
             }
 
             int CPreferences::getNumSearchPages() const
@@ -294,7 +294,7 @@ namespace NMediaManager
 
             QString CPreferences::getImageFileName( const QFileInfo &fi, const QSize &sz, const QString &ext ) const
             {
-                return fi.absoluteDir().absoluteFilePath( fi.completeBaseName() + QString( "-%1x%2-%3.%4" ).arg( sz.width() ).arg( sz.height() ).arg( imageInterval() ).arg( ext ) );
+                return fi.absoluteDir().absoluteFilePath( fi.completeBaseName() + QStringLiteral( "-%1x%2-%3.%4" ).arg( sz.width() ).arg( sz.height() ).arg( imageInterval() ).arg( ext ) );
             }
 
             QString CPreferences::getImageFileName( const QFileInfo &fi, const QString &ext ) const
@@ -904,7 +904,7 @@ namespace NMediaManager
                         bool isRegEx = ( ii.indexOf( "\\" ) != -1 ) || ( ii.indexOf( "?" ) != -1 ) || ( ii.indexOf( "{" ) != -1 ) || ( ii.indexOf( "}" ) != -1 );
 
                         if ( isRegEx )
-                            fKnownStringRegExsCache << QString( "(?<word>" + ii + ")" );
+                            fKnownStringRegExsCache << QStringLiteral( "(?<word>" ) + ii + QStringLiteral( ")" );
                         else
                             nonRegExs << QRegularExpression::escape( ii );
                     }
@@ -1036,7 +1036,7 @@ namespace NMediaManager
                 for ( auto &&ii : realValues )
                     ii = ii.toLower();
 #endif
-                settings.setValue( QString( "SkippedDirs (%1)" ).arg( forMediaNaming ? QStringLiteral( "Media Transform" ) : QStringLiteral( "Media Tagging" ) ), realValues );
+                settings.setValue( QStringLiteral( "SkippedDirs (%1)" ).arg( forMediaNaming ? QStringLiteral( "Media Transform" ) : QStringLiteral( "Media Tagging" ) ), realValues );
                 emitSigPreferencesChanged( EPreferenceType::eLoadPrefs );
             }
 
@@ -1044,7 +1044,7 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eLoadPrefs ) );
-                settings.setValue( QString( "IgnoreSkipFileNames (%1)" ).arg( forMediaNaming ? QStringLiteral( "Media Transform" ) : QStringLiteral( "Media Tagging" ) ), value );
+                settings.setValue( QStringLiteral( "IgnoreSkipFileNames (%1)" ).arg( forMediaNaming ? QStringLiteral( "Media Transform" ) : QStringLiteral( "Media Tagging" ) ), value );
                 emitSigPreferencesChanged( EPreferenceType::eLoadPrefs );
             }
 
@@ -1052,14 +1052,14 @@ namespace NMediaManager
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eLoadPrefs ) );
-                return settings.value( QString( "IgnoreSkipFileNames (%1)" ).arg( forMediaNaming ? QStringLiteral( "Media Transform" ) : QStringLiteral( "Media Tagging" ) ), false ).toBool();
+                return settings.value( QStringLiteral( "IgnoreSkipFileNames (%1)" ).arg( forMediaNaming ? QStringLiteral( "Media Transform" ) : QStringLiteral( "Media Tagging" ) ), false ).toBool();
             }
 
             QStringList CPreferences::getSkippedPaths( bool forMediaNaming ) const
             {
                 QSettings settings;
                 settings.beginGroup( toString( EPreferenceType::eLoadPrefs ) );
-                return settings.value( QString( "SkippedDirs (%1)" ).arg( forMediaNaming ? QStringLiteral( "Media Transform" ) : QStringLiteral( "Media Tagging" ) ), getDefaultSkippedPaths( forMediaNaming ) ).toStringList();
+                return settings.value( QStringLiteral( "SkippedDirs (%1)" ).arg( forMediaNaming ? QStringLiteral( "Media Transform" ) : QStringLiteral( "Media Tagging" ) ), getDefaultSkippedPaths( forMediaNaming ) ).toStringList();
             }
 
             bool CPreferences::isIgnoredPath( const QFileInfo &fileInfo ) const

@@ -154,24 +154,24 @@ namespace NMediaManager
                         {
                             // transcode or copy the default audio stream
                             // and put it in the front
-                            retVal << "-map" << QString( "0:a:%1?" ).arg( defaultAudioStreamNum );   // map from the default stream
-                            retVal << QString( "-c:a:%1" ).arg( currAudioStreamNum ) << audioFormat;   // add a copy from the original stream to the front (since some players ignore the disposition
-                            retVal << QString( "-disposition:a:%1" ).arg( currAudioStreamNum ) << "default";   // mark it as the default
+                            retVal << "-map" << QStringLiteral( "0:a:%1?" ).arg( defaultAudioStreamNum );   // map from the default stream
+                            retVal << QStringLiteral( "-c:a:%1" ).arg( currAudioStreamNum ) << audioFormat;   // add a copy from the original stream to the front (since some players ignore the disposition
+                            retVal << QStringLiteral( "-disposition:a:%1" ).arg( currAudioStreamNum ) << "default";   // mark it as the default
                             if ( transcodeNeeded.defaultAudioNotAAC51() )
                             {
                                 auto numChannels = std::min( mediaInfo->audioChannelCount( defaultAudioStreamNum ), 6 );
-                                retVal << QString( "-ac:a:%1" ).arg( currAudioStreamNum ) << QString::number( numChannels );   // convert it to 5.1
+                                retVal << QStringLiteral( "-ac:a:%1" ).arg( currAudioStreamNum ) << QString::number( numChannels );   // convert it to 5.1
                                 if ( numChannels > 2 )
-                                    audioFormat += QString( " %1.1" ).arg( numChannels - 1 );
+                                    audioFormat += QStringLiteral( " %1.1" ).arg( numChannels - 1 );
                                 else if ( numChannels == 2 )
                                     audioFormat += " stereo";
                                 else
                                     audioFormat += " mono";
                             }
                             if ( transcodeNeeded.bitrateTooHigh() && defaultAudioStreamBitrate )
-                                retVal << "-b:a" << QString( "%1" ).arg( defaultAudioStreamBitrate ) << "-maxrate" << QString( "%1" ).arg( static_cast< uint64_t >( defaultAudioStreamBitrate * 1.1 ) ) << "-bufsize" << QString( "%1" ).arg( defaultAudioStreamBitrate / 2 );
+                                retVal << "-b:a" << QStringLiteral( "%1" ).arg( defaultAudioStreamBitrate ) << "-maxrate" << QStringLiteral( "%1" ).arg( static_cast< uint64_t >( defaultAudioStreamBitrate * 1.1 ) ) << "-bufsize" << QStringLiteral( "%1" ).arg( defaultAudioStreamBitrate / 2 );
 
-                            retVal << QString( "-metadata:s:a:%1" ).arg( currAudioStreamNum ) << QString( R"(title="Transcoded Default Track #%1 from '%2' to '%3'")" ).arg( defaultAudioStreamNum ).arg( mediaInfo->getMediaTag( defaultAudioStreamNum, NTowel42Utils::EMediaTags::eAudioCodecDisp ) ).arg( audioFormat );   // set the metadata
+                            retVal << QStringLiteral( "-metadata:s:a:%1" ).arg( currAudioStreamNum ) << QStringLiteral( R"(title="Transcoded Default Track #%1 from '%2' to '%3'")" ).arg( defaultAudioStreamNum ).arg( mediaInfo->getMediaTag( defaultAudioStreamNum, NTowel42Utils::EMediaTags::eAudioCodecDisp ) ).arg( audioFormat );   // set the metadata
 
                             currAudioStreamNum++;
 
@@ -180,9 +180,9 @@ namespace NMediaManager
                                 auto numAudioStreams = mediaInfo->numAudioStreams();
                                 for ( int ii = 0; ii < numAudioStreams; ++ii )
                                 {
-                                    retVal << "-map" << QString( "0:a:%1?" ).arg( ii );   // map this from the original stream
-                                    retVal << QString( "-c:a:%1" ).arg( currAudioStreamNum ) << "copy";   // just copy the audio as the new stream
-                                    retVal << QString( "-disposition:a:%1" ).arg( currAudioStreamNum++ ) << "0";   // its not the default and stream number is the new stream number
+                                    retVal << "-map" << QStringLiteral( "0:a:%1?" ).arg( ii );   // map this from the original stream
+                                    retVal << QStringLiteral( "-c:a:%1" ).arg( currAudioStreamNum ) << "copy";   // just copy the audio as the new stream
+                                    retVal << QStringLiteral( "-disposition:a:%1" ).arg( currAudioStreamNum++ ) << "0";   // its not the default and stream number is the new stream number
                                 }
                             }
                         }
@@ -198,7 +198,7 @@ namespace NMediaManager
                             auto widthDiff = 1.0 * std::abs( currRes.first - resolution.value().first ) / ( 1.0 * resolution.value().first );
                             auto heightDiff = 1.0 * std::abs( currRes.second - resolution.value().second ) / ( 1.0 * resolution.value().second );
 
-                            auto scale = QString( "scale%1=%2:%3" ).arg( hwAccel.isEmpty() ? "" : ( "_" + hwAccel ) );
+                            auto scale = QStringLiteral( "scale%1=%2:%3" ).arg( hwAccel.isEmpty() ? "" : ( "_" + hwAccel ) );
                             if ( widthDiff > heightDiff )
                                 scale = scale.arg( resolution.value().first ).arg( -1 );
                             else
@@ -211,7 +211,7 @@ namespace NMediaManager
                             uint64_t lclBitrate = getTargetBitrate( mediaInfo, true, false );
                             if ( bitrate.has_value() )
                                 lclBitrate = bitrate.value() - ( defaultAudioStreamBitrate / 1000 );
-                            retVal << "-b:v" << QString( "%1k" ).arg( lclBitrate ) << "-maxrate" << QString( "%1k" ).arg( static_cast< uint64_t >( lclBitrate * 1.1 ) ) << "-bufsize" << QString( "%1k" ).arg( lclBitrate / 2 );
+                            retVal << "-b:v" << QStringLiteral( "%1k" ).arg( lclBitrate ) << "-maxrate" << QStringLiteral( "%1k" ).arg( static_cast< uint64_t >( lclBitrate * 1.1 ) ) << "-bufsize" << QStringLiteral( "%1k" ).arg( lclBitrate / 2 );
                         }
                         else if ( isHEVC )
                         {
@@ -249,53 +249,53 @@ namespace NMediaManager
                         int subTitleStreamNum = 0;
                         for ( int ii = 0; ii < numSubtitleStreams; ++ii )
                         {
-                            retVal << "-map" << QString( "0:s:%1?" ).arg( subTitleStreamNum );
+                            retVal << "-map" << QStringLiteral( "0:s:%1?" ).arg( subTitleStreamNum );
 
                             auto currCodec = subtitleCodecs[ ii ].toLower();
-                            auto subTitleCodec = QString( "copy" );
+                            auto subTitleCodec = QStringLiteral( "copy" );
                             if ( isEncoderFormat( mediaInfo, "matroska" ) )
                             {
                                 if ( ( currCodec == "ass" ) || ( currCodec == "srt" ) || ( currCodec == "ssa" ) || ( currCodec == "hdmv_pgs_subtitle" ) || ( currCodec == "subrip" ) || ( currCodec == "xsub" ) || ( currCodec == "dvdsub" ) || ( currCodec == "dvd_subtitle" ) )
-                                    subTitleCodec = QString( "copy" );
+                                    subTitleCodec = QStringLiteral( "copy" );
                                 else
                                     subTitleCodec = "srt";
                             }
                             else if ( isEncoderFormat( mediaInfo, "mp4" ) )
                             {
                                 if ( currCodec == "mov_text" )
-                                    subTitleCodec = QString( "copy" );
+                                    subTitleCodec = QStringLiteral( "copy" );
                                 else
                                     subTitleCodec = "mov_text";
                             }
                             else if ( isEncoderFormat( mediaInfo, "mov" ) )
                             {
                                 if ( currCodec == "mov_text" )
-                                    subTitleCodec = QString( "copy" );
+                                    subTitleCodec = QStringLiteral( "copy" );
                                 else
                                     subTitleCodec = "mov_text";
                             }
-                            retVal << QString( "-c:s:%1" ).arg( subTitleStreamNum++ ) << subTitleCodec;
+                            retVal << QStringLiteral( "-c:s:%1" ).arg( subTitleStreamNum++ ) << subTitleCodec;
                         }
 
                         int fileNum = 1;
                         for ( auto &&srtFile : srtFiles )
                         {
-                            retVal << "-map" << QString( "%1:0?" ).arg( fileNum++ )   //
-                                   << "-map" << QString( "0:s:%1?" ).arg( subTitleStreamNum )   //
-                                   << QString( "-metadata:s:s:%1" ).arg( subTitleStreamNum ) << QString( "language=%1" ).arg( srtFile.isoCode() )   //
-                                   << QString( "-metadata:s:s:%1" ).arg( subTitleStreamNum ) << QString( "handler_name=%1" ).arg( srtFile.language() )   //
-                                   << QString( "-metadata:s:s:%1" ).arg( subTitleStreamNum ) << QString( "title=%1" ).arg( srtFile.displayName() )   //
+                            retVal << "-map" << QStringLiteral( "%1:0?" ).arg( fileNum++ )   //
+                                   << "-map" << QStringLiteral( "0:s:%1?" ).arg( subTitleStreamNum )   //
+                                   << QStringLiteral( "-metadata:s:s:%1" ).arg( subTitleStreamNum ) << QStringLiteral( "language=%1" ).arg( srtFile.isoCode() )   //
+                                   << QStringLiteral( "-metadata:s:s:%1" ).arg( subTitleStreamNum ) << QStringLiteral( "handler_name=%1" ).arg( srtFile.language() )   //
+                                   << QStringLiteral( "-metadata:s:s:%1" ).arg( subTitleStreamNum ) << QStringLiteral( "title=%1" ).arg( srtFile.displayName() )   //
                                 ;
                             subTitleStreamNum++;
                         }
 
                         for ( auto &&subIdxPair : subIdxFiles )
                         {
-                            retVal << "-map" << QString( "%1:0?" ).arg( fileNum++ )   //
-                                   << "-map" << QString( "0:s:%1?" ).arg( subTitleStreamNum )   //
-                                   << QString( "-c:s:%1" ).arg( subTitleStreamNum ) << "copy" << QString( "-metadata:s:s:%1" ).arg( subTitleStreamNum ) << QString( "language=%1" ).arg( subIdxPair.first.isoCode() )   //
-                                   << QString( "-metadata:s:s:%1" ).arg( subTitleStreamNum ) << QString( "handler_name=%1" ).arg( subIdxPair.first.language() )   //
-                                   << QString( "-metadata:s:s:%1" ).arg( subTitleStreamNum ) << QString( "title=%1" ).arg( subIdxPair.first.displayName() )   //
+                            retVal << "-map" << QStringLiteral( "%1:0?" ).arg( fileNum++ )   //
+                                   << "-map" << QStringLiteral( "0:s:%1?" ).arg( subTitleStreamNum )   //
+                                   << QStringLiteral( "-c:s:%1" ).arg( subTitleStreamNum ) << "copy" << QStringLiteral( "-metadata:s:s:%1" ).arg( subTitleStreamNum ) << QStringLiteral( "language=%1" ).arg( subIdxPair.first.isoCode() )   //
+                                   << QStringLiteral( "-metadata:s:s:%1" ).arg( subTitleStreamNum ) << QStringLiteral( "handler_name=%1" ).arg( subIdxPair.first.language() )   //
+                                   << QStringLiteral( "-metadata:s:s:%1" ).arg( subTitleStreamNum ) << QStringLiteral( "title=%1" ).arg( subIdxPair.first.displayName() )   //
                                 ;
                             subTitleStreamNum++;
                         }

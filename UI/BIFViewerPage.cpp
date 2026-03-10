@@ -296,7 +296,7 @@ namespace NMediaManager
             new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "Number of BIF Images" ) << tr( "12-15" ) << QString::number( fBIF->numImages().fValue ) << fBIF->numImages().fPrettyPrint );
             new QTreeWidgetItem(
                 fImpl->bifFileValues, QStringList() << tr( "milliseconds/Frame" ) << tr( "16-19" )
-                                                    << QString( "%1s (%2ms)" ).arg( NTowel42Utils::CTimeString( fBIF->timePerFrame().fValue ).toString( "ss.zzz" ) ).arg( fBIF->timePerFrame().fValue ) << fBIF->timePerFrame().fPrettyPrint );
+                                                    << QStringLiteral( "%1s (%2ms)" ).arg( NTowel42Utils::CTimeString( fBIF->timePerFrame().fValue ).toString( "ss.zzz" ) ).arg( fBIF->timePerFrame().fValue ) << fBIF->timePerFrame().fPrettyPrint );
             new QTreeWidgetItem( fImpl->bifFileValues, QStringList() << tr( "Reserved" ) << tr( "20-64" ) << QString() << fBIF->reserved() );
 
             formatBIFTable();

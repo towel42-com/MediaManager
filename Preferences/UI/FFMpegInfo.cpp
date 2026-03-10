@@ -107,7 +107,7 @@ namespace NMediaManager
                     if ( pos != -1 )
                         currText = currText.left( pos - 1 );
 
-                    auto text = QString( "%1 (%2)" ).arg( currText ).arg( info.count() );
+                    auto text = QStringLiteral( "%1 (%2)" ).arg( currText ).arg( info.count() );
                     gb->setTitle( text );
                 }
             }

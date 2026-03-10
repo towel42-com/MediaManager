@@ -249,7 +249,7 @@ namespace NMediaManager
             QString extra;
             EMediaType retVal = EMediaType::eUnknownType;   // default is a movie
 
-            auto regExpStr = QString( R"((^|[^A-Z])S(?<garbage>EASON(_?))?\s*(?<season>\d{1,4}))" );
+            auto regExpStr = QStringLiteral( R"((^|[^A-Z])S(?<garbage>EASON(_?))?\s*(?<season>\d{1,4}))" );
             auto regExp = QRegularExpression( regExpStr, QRegularExpression::PatternOption::CaseInsensitiveOption );
             auto match = regExp.match( title );
             std::list< std::pair< int, int > > positions;
@@ -265,7 +265,7 @@ namespace NMediaManager
 
             auto regExpStr1 = QStringLiteral( R"((^|[^A-Z])E(?<garbage1>PISODE)?(?<startEpisode>\d{1,4})(?<dash>\-)?E(?<garbage2>PISODE)?(?<endEpisode>\d{1,4}))" );
             auto regExpStr2 = QStringLiteral( R"((^|[^A-Z])E(?<garbage>PISODE)?(?<episode>\d{1,4})(?![E-]))" );
-            regExpStr = QString( R"(((%1)|(%2)))" ).arg( regExpStr1 ).arg( regExpStr2 );
+            regExpStr = QStringLiteral( R"(((%1)|(%2)))" ).arg( regExpStr1 ).arg( regExpStr2 );
             regExp = QRegularExpression( regExpStr, QRegularExpression::PatternOption::CaseInsensitiveOption );
             match = regExp.match( title );
             if ( match.hasMatch() )
@@ -311,7 +311,7 @@ namespace NMediaManager
                 retVal = EMediaType::eTVEpisode;
             }
 
-            regExpStr = QString( R"((^|[^A-Z])(?<season>\d{1,4})[xX](?<episode>\d{1,4}))" );
+            regExpStr = QStringLiteral( R"((^|[^A-Z])(?<season>\d{1,4})[xX](?<episode>\d{1,4}))" );
             regExp = QRegularExpression( regExpStr, QRegularExpression::PatternOption::CaseInsensitiveOption );
             match = regExp.match( title );
             if ( match.hasMatch() )
@@ -455,9 +455,9 @@ namespace NMediaManager
 
         QString SSearchTMDBInfo::toString( bool forDebug ) const
         {
-            auto retVal = forDebug ? QString( "SSearchTMDBInfo(%1 (%2)-S%3E%4-%5-%6-%7)" ) : QString( "Search Name: '%1' - Release Date: %2 - Season: %3 - Episode: %4 - TMDB ID: %5 - Media Type: %6 Auto Determined: %7 - Exact Match Only: %8" );
+            auto retVal = forDebug ? QStringLiteral( "SSearchTMDBInfo(%1 (%2)-S%3E%4-%5-%6-%7)" ) : QStringLiteral( "Search Name: '%1' - Release Date: %2 - Season: %3 - Episode: %4 - TMDB ID: %5 - Media Type: %6 Auto Determined: %7 - Exact Match Only: %8" );
 
-            retVal = retVal.arg( searchName() ).arg( forDebug ? releaseDate().second : ( releaseDate().second.isEmpty() ? "<Not Set>" : releaseDate().second ) ).arg( forDebug ? QString::number( season() ) : ( season() == -1 ) ? "<Not Set>" : QString::number( season() ) ).arg( episodeString( forDebug ) ).arg( forDebug ? tmdbIDString() : tmdbIDString().isEmpty() ? "<Not Set>" : tmdbIDString() ).arg( toEnumString( fMediaType.first ) ).arg( fMediaType.second ? QStringLiteral( "Yes" ) : QStringLiteral( "No" ) ).arg( forDebug ? QString( "%1" ).arg( exactMatchOnly() ) : exactMatchOnly() ? QStringLiteral( "Yes" ) : QStringLiteral( "No" ) );
+            retVal = retVal.arg( searchName() ).arg( forDebug ? releaseDate().second : ( releaseDate().second.isEmpty() ? "<Not Set>" : releaseDate().second ) ).arg( forDebug ? QString::number( season() ) : ( season() == -1 ) ? "<Not Set>" : QString::number( season() ) ).arg( episodeString( forDebug ) ).arg( forDebug ? tmdbIDString() : tmdbIDString().isEmpty() ? "<Not Set>" : tmdbIDString() ).arg( toEnumString( fMediaType.first ) ).arg( fMediaType.second ? QStringLiteral( "Yes" ) : QStringLiteral( "No" ) ).arg( forDebug ? QStringLiteral( "%1" ).arg( exactMatchOnly() ) : exactMatchOnly() ? QStringLiteral( "Yes" ) : QStringLiteral( "No" ) );
 
             return retVal;
         }
@@ -605,7 +605,7 @@ namespace NMediaManager
 
             //basically capture anything inside parens that doesnt start with imdb
             auto regExpStr1 = QStringLiteral( R"((?<releaseDate1>\d{2}|\d{4}))" );
-            auto regExpStr = QString( R"((?<fulltext>[\.\(\[]%1([\.\)\]]|$)))" ).arg( regExpStr1 );
+            auto regExpStr = QStringLiteral( R"((?<fulltext>[\.\(\[]%1([\.\)\]]|$)))" ).arg( regExpStr1 );
             auto regExp = QRegularExpression( regExpStr );
             Q_ASSERT( regExp.isValid() );
             auto match = regExp.match( fSearchName );
@@ -614,7 +614,7 @@ namespace NMediaManager
             {
                 auto regExpStr2 = QStringLiteral( R"((([\(\[])\s*(?<!(tv|im|tm)dbid\=))(?<releaseDate2>[^\(\[\)\]]+)\s*(\)|\]))" );
                 auto regExpStr3 = QStringLiteral( R"((([\(\[]|^)|(?<!(\d|t)))(?<releaseDate3>\d{2}|\d{4})([^0-9sS]|\)|\]|$))" );
-                regExpStr = QString( "(?<fulltext>(%2|%3))" ).arg( regExpStr2 ).arg( regExpStr3 );
+                regExpStr = QStringLiteral( "(?<fulltext>(%2|%3))" ).arg( regExpStr2 ).arg( regExpStr3 );
 
                 regExp = QRegularExpression( regExpStr );
                 Q_ASSERT( regExp.isValid() );
@@ -835,7 +835,7 @@ namespace NMediaManager
                 if ( fTMDBID.isEmpty() )
                     return {};
 
-                url.setPath( QString( "/3/tv/%1" ).arg( fTMDBID ) );
+                url.setPath( QStringLiteral( "/3/tv/%1" ).arg( fTMDBID ) );
 
                 QUrlQuery query;
                 query.addQueryItem( "api_key", CSearchTMDB::apiKeyV3() );
@@ -849,7 +849,7 @@ namespace NMediaManager
                 if ( fTMDBID.isEmpty() )
                     return {};
 
-                url.setPath( QString( "/3/movie/%1" ).arg( fTMDBID ) );
+                url.setPath( QStringLiteral( "/3/movie/%1" ).arg( fTMDBID ) );
 
                 QUrlQuery query;
                 query.addQueryItem( "api_key", CSearchTMDB::apiKeyV3() );
@@ -867,7 +867,7 @@ namespace NMediaManager
 
         std::list< int > SSearchTMDBInfo::episodesFromString( const QString &episodeStr, bool &aOK ) const
         {
-            return NTowel42Utils::intsFromString( episodeStr, QString( R"((?:E|Episode\s*)?)" ), true, &aOK );
+            return NTowel42Utils::intsFromString( episodeStr, QStringLiteral( R"((?:E|Episode\s*)?)" ), true, &aOK );
         }
     }
 }

@@ -517,14 +517,14 @@ namespace NMediaManager
             Q_ASSERT( !fIcon.isNull() );
 
             fTab = new QWidget();
-            fTab->setObjectName( QString( "%1-Tab" ).arg( name ) );
+            fTab->setObjectName( QStringLiteral( "%1-Tab" ).arg( name ) );
             auto vertLayout = new QVBoxLayout( fTab );
             vertLayout->setSpacing( 6 );
-            vertLayout->setObjectName( QString( "%1-Vertlayout" ).arg( name ) );
+            vertLayout->setObjectName( QStringLiteral( "%1-Vertlayout" ).arg( name ) );
             vertLayout->setContentsMargins( 0, 0, 0, 0 );
 
             fPage->setParent( fTab );
-            fPage->setObjectName( QString( "%1-Page" ).arg( name ) );
+            fPage->setObjectName( QStringLiteral( "%1-Page" ).arg( name ) );
 
             vertLayout->addWidget( fPage );
 

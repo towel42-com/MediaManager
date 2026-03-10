@@ -264,11 +264,11 @@ namespace NMediaManager
             {
                 if ( ii.size() == 1 )
                 {
-                    episodeList << QString( "E%1" ).arg( ii.front(), 2, 10, QChar( '0' ) );
+                    episodeList << QStringLiteral( "E%1" ).arg( ii.front(), 2, 10, QChar( '0' ) );
                 }
                 else
                 {
-                    auto curr = QString( "E%1%3E%2" ).arg( ii.front(), 2, 10, QChar( '0' ) ).arg( ii.back(), 2, 10, QChar( '0' ) );
+                    auto curr = QStringLiteral( "E%1%3E%2" ).arg( ii.front(), 2, 10, QChar( '0' ) ).arg( ii.back(), 2, 10, QChar( '0' ) );
                     curr = curr.arg( ( std::abs( ii.back() - ii.front() ) == 1 ) ? QString() : QStringLiteral( "-" ) );
                     episodeList << curr;
                 }
@@ -287,7 +287,7 @@ namespace NMediaManager
                 return returnPattern;
 
             // see if the capture name exists in the return pattern
-            auto capRegEx = QString( "\\<%1\\>" ).arg( captureName );
+            auto capRegEx = QStringLiteral( "\\<%1\\>" ).arg( captureName );
             auto regExp = QRegularExpression( capRegEx );
 
             int start = -1;
@@ -303,7 +303,7 @@ namespace NMediaManager
             }
 
             // its in there..now lets see if its optional
-            auto optRegExStr = QString( R"(\{(?<replText>[^{}]+)\}\:%1)" ).arg( capRegEx );
+            auto optRegExStr = QStringLiteral( R"(\{(?<replText>[^{}]+)\}\:%1)" ).arg( capRegEx );
             regExp = QRegularExpression( optRegExStr );
             match = regExp.match( returnPattern );
             bool optional = match.hasMatch();
@@ -335,7 +335,7 @@ namespace NMediaManager
             QString retVal = inFile;
             retVal.replace( QRegularExpression( R"(^(([A-Za-z]\:)|(\/)|(\\))+)" ), "" );
 
-            auto regExStr = QString( "(?<hours>\\d{1,2}):(?<minutes>\\d{2})" );
+            auto regExStr = QStringLiteral( "(?<hours>\\d{1,2}):(?<minutes>\\d{2})" );
             retVal.replace( QRegularExpression( regExStr ), "\\1\\2" );
 
             regExStr = R"(\s*\:\s*)";
@@ -404,7 +404,7 @@ namespace NMediaManager
             retVal = replaceCapture( "episode_year", retVal, episodeYear );
             retVal = replaceCapture( "tmdbid", retVal, tmdbid );
             retVal = replaceCapture( "show_tmdbid", retVal, showTMDBID );
-            retVal = replaceCapture( "season", retVal, QString( "%1" ).arg( season, fileInfo.isDir() ? 1 : 2, QChar( '0' ) ) );
+            retVal = replaceCapture( "season", retVal, QStringLiteral( "%1" ).arg( season, fileInfo.isDir() ? 1 : 2, QChar( '0' ) ) );
             retVal = replaceCapture( "episode", retVal, episode );
             retVal = replaceCapture( "episode_title", retVal, episodeTitle );
             retVal = replaceCapture( "extra_info", retVal, extraInfo );
@@ -438,7 +438,7 @@ namespace NMediaManager
             if ( forDebug )
             {
                 QStringList tmp;
-                tmp << "InfoType: '" + NMediaManager::NCore::toEnumString( mediaType() ) + "'" << "Title: '" + title() + "'" << "Movie ReleaseDate: '" + fMovieReleaseDate.second + "'" << "ShowFirstAirDate: '" + fShowFirstAirDate.second + "'" << "SeasonStartDate: '" + fSeasonStartDate.second + "'" << "EpisodeAirDate: '" + fEpisodeAirDate.second + "'" << "TMDBID: '" + tmdbID() + "'" << "Season TMBDID: '" + seasonTMDBID() + "'" << "Episode TMDBID: '" + episodeTMDBID() + "'" << "Season: '" + season() + "'" << QString( QStringLiteral( " Season Only? %1" ) ).arg( fSeasonOnly ? QStringLiteral( "Yes" ) : QStringLiteral( "No" )) << "Episode: '" + episode() + "'" << "Sub Title: '" + subTitle() + "'" << "ExtraInfo: '" + extraInfo() + "'" << "Description: '" + description() + "'" << QString( "Has Pixmap? %1" ).arg( pixmap().isNull() ? QStringLiteral( "No" ) : QStringLiteral( "Yes" ) );
+                tmp << "InfoType: '" + NMediaManager::NCore::toEnumString( mediaType() ) + "'" << "Title: '" + title() + "'" << "Movie ReleaseDate: '" + fMovieReleaseDate.second + "'" << "ShowFirstAirDate: '" + fShowFirstAirDate.second + "'" << "SeasonStartDate: '" + fSeasonStartDate.second + "'" << "EpisodeAirDate: '" + fEpisodeAirDate.second + "'" << "TMDBID: '" + tmdbID() + "'" << "Season TMBDID: '" + seasonTMDBID() + "'" << "Episode TMDBID: '" + episodeTMDBID() + "'" << "Season: '" + season() + "'" << QString( QStringLiteral( " Season Only? %1" ) ).arg( fSeasonOnly ? QStringLiteral( "Yes" ) : QStringLiteral( "No" )) << "Episode: '" + episode() + "'" << "Sub Title: '" + subTitle() + "'" << "ExtraInfo: '" + extraInfo() + "'" << "Description: '" + description() + "'" << QStringLiteral( "Has Pixmap? %1" ).arg( pixmap().isNull() ? QStringLiteral( "No" ) : QStringLiteral( "Yes" ) );
                 QStringList children = { " - Children(" };
                 for ( auto &&ii : fChildren )
                 {

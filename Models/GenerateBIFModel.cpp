@@ -67,7 +67,7 @@ namespace NMediaManager
             auto fi = QFileInfo( processInfo->fOldName );
             auto sz = NPreferences::NCore::CPreferences::instance()->getThumbnailSize( fi );
 
-            processInfo->fItem = new QStandardItem( QString( "Generate Thumbnail Videos from '%1'" ).arg( getDispName( processInfo->fOldName ) ) );
+            processInfo->fItem = new QStandardItem( QStringLiteral( "Generate Thumbnail Videos from '%1'" ).arg( getDispName( processInfo->fOldName ) ) );
             processInfo->fItem->setData( processInfo->fOldName, ECustomRoles::eOldName );
 
             if ( NPreferences::NCore::CPreferences::instance()->generateBIF() )
@@ -149,7 +149,7 @@ namespace NMediaManager
                                   << "-i" << processInfo->fOldName   // input file
                                   << "-an"   // no audio
                                   << "-sn"   // no subtitles
-                                  << "-vf" << QString( "scale=w=%1:h=%2" ).arg( sz.width() ).arg( sz.height() ) << "-vsync"
+                                  << "-vf" << QStringLiteral( "scale=w=%1:h=%2" ).arg( sz.width() ).arg( sz.height() ) << "-vsync"
                                   << "cfr"   // constant frame  videwo sync method
                                   << "-f"
                                   << "image2" << processInfo->fTempDir->filePath( "img_%05d.jpg" );
@@ -177,7 +177,7 @@ namespace NMediaManager
                     auto allImages = NTowel42Utils::NFileUtils::findAllFiles( dir, { "img_*.jpg" }, false, true, &errorMsg );
                     if ( !allImages.has_value() || allImages.value().isEmpty() )
                     {
-                        msg = QString( "No images exists in dir '%1' of the format 'img_*.jpg' - %2" ).arg( dir.absolutePath() ).arg( errorMsg );
+                        msg = QStringLiteral( "No images exists in dir '%1' of the format 'img_*.jpg' - %2" ).arg( dir.absolutePath() ).arg( errorMsg );
                         return false;
                     }
 
@@ -244,7 +244,7 @@ namespace NMediaManager
             if ( !processInfo )
                 return {};
 
-            auto retVal = QString( "Generating Thumbnail Videos<ul><li>%1</li>to<li>%2</li></ul>" ).arg( getDispName( processInfo->fOldName ) ).arg( getDispName( bif ? processInfo->primaryNewName() : processInfo->fNewNames.back() ) );
+            auto retVal = QStringLiteral( "Generating Thumbnail Videos<ul><li>%1</li>to<li>%2</li></ul>" ).arg( getDispName( processInfo->fOldName ) ).arg( getDispName( bif ? processInfo->primaryNewName() : processInfo->fNewNames.back() ) );
             return retVal;
         }
 
