@@ -55,3 +55,9 @@ set(qtproject_QRC
 
 file(GLOB qtproject_QRC_SOURCES "resources/*")
 
+ SET( project_pri_DEPS
+    Qt6::Core
+    Qt6::Network
+    Qt6::Widgets
+    ${project_pri_DEPS}
+)

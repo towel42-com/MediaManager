@@ -27,7 +27,6 @@
 
 #include <QObject>
 #include <QList>
-#include <QAuthenticator>
 #include <QHash>
 #include <optional>
 #include <unordered_set>
