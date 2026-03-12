@@ -22,7 +22,7 @@
 #include "UI/MainWindow.h"
 #include "T42-Utils/ValidateOpenSSL.h"
 #include "T42-Utils/ProgressBarProxyStyle.h"
-#include "Version.h"
+#include "Version/Version.h"
 
 #include <QApplication>
 #include <debugapi.h>

@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2022 Scott Aron Bloom
+# Copyright (c) 2022-2026 Scott Aron Bloom and Towel 42 Development, LLC
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,8 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-find_package(Git REQUIRED)
 find_package(CreateVersion REQUIRED)
+find_package(Git REQUIRED)
 
 GetGitInfo(${CMAKE_SOURCE_DIR} GIT_VERSION_INFO)
 STRING(TIMESTAMP BUILD_DATE "%m/%d/%Y" UTC)
@@ -34,21 +34,20 @@ SET( VENDOR   "Towel 42 Development, LLC" )
 SET( HOMEPAGE         "www.towel42.com" )
 SET( PRODUCT_HOMEPAGE "github.com/towel42-com/MediaManager" )
 SET( EMAIL            "support@towel42.com" )
-STRING(TIMESTAMP COPYRIGHT "Copyright ${VENDOR} 2021-%Y")
+SET( START_YEAR       2022 )
 
-CreateVersion( ${CMAKE_SOURCE_DIR} 
+CreateVersion(
     MAJOR ${MAJOR_VERSION} 
     MINOR ${MINOR_VERSION} 
+    AHEAD ${GIT_VERSION_INFO_AHEAD}
     PATCH ${GIT_VERSION_INFO_REV}
     DIFF  ${GIT_VERSION_INFO_DIFF}
-    AHEAD ${GIT_VERSION_INFO_AHEAD}
     APP_NAME ${APP_NAME} 
     VENDOR ${VENDOR} 
     HOMEPAGE ${HOMEPAGE} 
     PRODUCT_HOMEPAGE ${PRODUCT_HOMEPAGE} 
     EMAIL ${EMAIL} 
-    BUILD_DATE ${BUILD_DATE}
-    BUILD_TIME ${BUILD_TIME}
-    COPYRIGHT  ${COPYRIGHT}
+    START_YEAR ${START_YEAR}
+    SUBDIR ON
     )
 
