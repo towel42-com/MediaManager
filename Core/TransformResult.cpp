@@ -258,23 +258,8 @@ namespace NMediaManager
             for ( auto &&ii : fExtraEpisodes )
                 episodes.push_back( ii->episode().toInt() );
 
-            auto groupedEpisodes = NTowel42Utils::group( episodes );
-            QStringList episodeList;
-            for ( auto &&ii : groupedEpisodes )
-            {
-                if ( ii.size() == 1 )
-                {
-                    episodeList << QStringLiteral( "E%1" ).arg( ii.front(), 2, 10, QChar( '0' ) );
-                }
-                else
-                {
-                    auto curr = QStringLiteral( "E%1%3E%2" ).arg( ii.front(), 2, 10, QChar( '0' ) ).arg( ii.back(), 2, 10, QChar( '0' ) );
-                    curr = curr.arg( ( std::abs( ii.back() - ii.front() ) == 1 ) ? QString() : QStringLiteral( "-" ) );
-                    episodeList << curr;
-                }
-            }
-
-            auto retVal = episodeList.join( "," );
+            auto groupedEpisodes = NTowel42Utils::groupContiguousNumbers( episodes );
+            auto retVal = NTowel42Utils::contiguousNumbersText( groupedEpisodes );
             if ( retVal.startsWith( 'E' ) )
                 retVal = retVal.mid( 1 );
             return retVal;
