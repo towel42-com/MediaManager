@@ -284,100 +284,10 @@ namespace NMediaManager
             //qDebug() << "Before" << *this;
             if ( reply && reply->hasError() )   // replys with an error do not get cached
             {
-                bool careAboutError = true;
-                QString title = "Unknown Issue";
-
-                auto errorMsg = reply->errorString();
-                auto pos = errorMsg.indexOf( " - server replied:" );
-                QString prefix;
-                if ( pos != -1 )
-                {
-                    prefix = errorMsg.left( pos ).trimmed();
-                    errorMsg = errorMsg.mid( pos + 18 ).trimmed();
-                }
-
-                if ( reply->isReply( fConfigReply ) )
-                {
-                    fConfigErrorCount++;
-                    if ( fConfigErrorCount < 5 )
-                    {
-                        QTimer::singleShot( 0, this, &CSearchTMDB::slotGetConfig );
-                        return;
-                    }
-                    title = tr( "Could not download configuration" );
-                    fConfigReply.reset();
-                }
-                else if ( reply->isReply( fSearchReply ) )
-                {
-                    fSearchReply.reset();
-                    title = tr( "Could not search for %1(s)" ).arg( getSearchName() );
-                    if ( errorMsg == "Not Found" )
-                    {
-                        fErrorMessage = tr( "Could not find %1" ).arg( getSearchName() );
-                        emitSigFinished();
-                        return;
-                    }
-                }
-                else if ( reply->isReply( fGetMovieReply ) )
-                {
-                    fErrorMessage = tr( "Could not find Movie with TMDBID: <b>%1</b>" ).arg( fGetMovieReply->tmdbID() );
-                    fGetMovieReply.reset();
-                    emitSigFinished();
-                    return;
-                }
-                else if ( reply->isReply( fGetTVReply ) )
-                {
-                    fErrorMessage = tr( "Could not find TV Show with TMDBID: <b>%1</b>" ).arg( fGetTVReply->tmdbID() );
-                    fGetTVReply.reset();
-                    emitSigFinished();
-                    return;
-                }
-                else
-                {
-                    if ( fImageInfoReplies.find( reply->key() ) != fImageInfoReplies.end() )
-                    {
-                        title = tr( "Could not get image(s)" );
-
-                        auto pos = fImageInfoReplies.find( reply->key() );
-                        ( *pos ).second->setPixmapPath( QString() );
-                        fImageInfoReplies.erase( pos );
-                    }
-                    else if ( fTVInfoReplies.find( reply->key() ) != fTVInfoReplies.end() )
-                    {
-                        title = tr( "Could not find TV Details information" );
-                        auto pos = fTVInfoReplies.find( reply->key() );
-                        fTVInfoReplies.erase( pos );
-                    }
-                    else if ( fSeasonInfoReplies.first.find( reply->key() ) != fSeasonInfoReplies.first.end() )
-                    {
-                        title = tr( "Could not find Season/Episode information" );
-                        auto pos = fSeasonInfoReplies.first.find( reply->key() );
-                        auto info = ( *pos ).second;
-                        fSeasonInfoReplies.first.erase( pos );
-                        auto parent = info->parent().lock();
-                        if ( parent )
-                            parent->removeChild( info );
-                        careAboutError = fSeasonInfoReplies.first.empty() && !fSeasonInfoReplies.second.has_value();
-                    }
-                    if ( careAboutError && ( errorMsg == "Not Found" ) )
-                    {
-                        fErrorMessage = title;
-                        return;
-                    }
-                }
-
-                if ( careAboutError )
-                {
-                    fErrorMessage = prefix + "-" + errorMsg;
-                    emitSigFinished();
-                    return;
-                }
-                else
-                {
-                    checkIfStillSearching();
-                    return;
-                }
+                handleRequestError( reply );
+                return;
             }
+            
             bool handled = loadConfig( reply );
             handled = handled || loadSearchResult( reply );
             handled = handled || loadMovieResult( reply );
@@ -782,7 +692,9 @@ namespace NMediaManager
 
             auto posterPath = resultItem.contains( "poster_path" ) ? resultItem[ "poster_path" ].toString() : QString();
 
-            if ( !fSearchInfo->isMatch( releaseDate, tmdbid, title ) && !fSearchInfo->isMatch( firstAirDate, tmdbid, title ) )
+            auto matchesReleaseDate = fSearchInfo->isMatch( releaseDate, tmdbid, title );
+            auto matchesFirstAirDate = fSearchInfo->isMatch( firstAirDate, tmdbid, title );
+            if ( !matchesReleaseDate && !matchesFirstAirDate )
                 return false;
 
             auto searchResult = std::make_shared< CTransformResult >( fSearchInfo->isTVMedia() ? EMediaType::eTVShow : EMediaType::eMovie );   // movie or TV show
@@ -1047,6 +959,103 @@ namespace NMediaManager
 
             info->setPixmap( pm );
             return true;
+        }
+
+        void CSearchTMDB::handleRequestError( std::shared_ptr< CNetworkReply > reply )
+        {
+                bool careAboutError = true;
+                QString title = "Unknown Issue";
+
+                auto errorMsg = reply->errorString();
+                auto pos = errorMsg.indexOf( " - server replied:" );
+                QString prefix;
+                if ( pos != -1 )
+                {
+                    prefix = errorMsg.left( pos ).trimmed();
+                    errorMsg = errorMsg.mid( pos + 18 ).trimmed();
+                }
+
+                if ( reply->isReply( fConfigReply ) )
+                {
+                    fConfigErrorCount++;
+                    if ( fConfigErrorCount < 5 )
+                    {
+                        QTimer::singleShot( 0, this, &CSearchTMDB::slotGetConfig );
+                        return;
+                    }
+                    title = tr( "Could not download configuration" );
+                    fConfigReply.reset();
+                }
+                else if ( reply->isReply( fSearchReply ) )
+                {
+                    fSearchReply.reset();
+                    title = tr( "Could not search for %1(s)" ).arg( getSearchName() );
+                    if ( errorMsg == "Not Found" )
+                    {
+                        fErrorMessage = tr( "Could not find %1" ).arg( getSearchName() );
+                        emitSigFinished();
+                        return;
+                    }
+                }
+                else if ( reply->isReply( fGetMovieReply ) )
+                {
+                    fErrorMessage = tr( "Could not find Movie with TMDBID: <b>%1</b>" ).arg( fGetMovieReply->tmdbID() );
+                    fGetMovieReply.reset();
+                    emitSigFinished();
+                    return;
+                }
+                else if ( reply->isReply( fGetTVReply ) )
+                {
+                    fErrorMessage = tr( "Could not find TV Show with TMDBID: <b>%1</b>" ).arg( fGetTVReply->tmdbID() );
+                    fGetTVReply.reset();
+                    emitSigFinished();
+                    return;
+                }
+                else
+                {
+                    if ( fImageInfoReplies.find( reply->key() ) != fImageInfoReplies.end() )
+                    {
+                        title = tr( "Could not get image(s)" );
+
+                        auto pos = fImageInfoReplies.find( reply->key() );
+                        ( *pos ).second->setPixmapPath( QString() );
+                        fImageInfoReplies.erase( pos );
+                    }
+                    else if ( fTVInfoReplies.find( reply->key() ) != fTVInfoReplies.end() )
+                    {
+                        title = tr( "Could not find TV Details information" );
+                        auto pos = fTVInfoReplies.find( reply->key() );
+                        fTVInfoReplies.erase( pos );
+                    }
+                    else if ( fSeasonInfoReplies.first.find( reply->key() ) != fSeasonInfoReplies.first.end() )
+                    {
+                        title = tr( "Could not find Season/Episode information" );
+                        auto pos = fSeasonInfoReplies.first.find( reply->key() );
+                        auto info = ( *pos ).second;
+                        fSeasonInfoReplies.first.erase( pos );
+                        auto parent = info->parent().lock();
+                        if ( parent )
+                            parent->removeChild( info );
+                        careAboutError = fSeasonInfoReplies.first.empty() && !fSeasonInfoReplies.second.has_value();
+                    }
+                    if ( careAboutError && ( errorMsg == "Not Found" ) )
+                    {
+                        fErrorMessage = title;
+                        return;
+                    }
+                }
+
+                if ( careAboutError )
+                {
+                    fErrorMessage = prefix + "-" + errorMsg;
+                    emitSigFinished();
+                    return;
+                }
+                else
+                {
+                    checkIfStillSearching();
+                    return;
+                }
         }
 
     }

@@ -114,6 +114,9 @@ namespace NMediaManager
             void emitSigFinished();
             void handleRequestFinished( std::shared_ptr< CNetworkReply > networkReply );
 
+        private:
+            void handleRequestError( std::shared_ptr< CNetworkReply > reply );
+
             void startAutoSearchTimer();
             std::shared_ptr< CNetworkReply > sendRequest( const QNetworkRequest &request, ERequestType requestType );   // sometimes returns the cache value
 
