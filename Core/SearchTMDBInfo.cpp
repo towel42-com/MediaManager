@@ -441,10 +441,8 @@ namespace NMediaManager
             if ( fEpisodes.empty() )
                 return forDebug ? "<Not Set>" : QString();
 
-            auto groupedEpisodes = NTowel42Utils::group( fEpisodes );
-            QString retVal;
-            //auto pos = fEpisodes.begin();
-            return QString();
+            auto groupedEpisodes = NTowel42Utils::groupContiguousNumbers( fEpisodes );
+            return NTowel42Utils::contiguousNumbersText( groupedEpisodes );
         }
 
         QDebug operator<<( QDebug debug, const SSearchTMDBInfo &info )
@@ -597,9 +595,6 @@ namespace NMediaManager
             {
                 fSearchName = ( *pos ).second.first;
                 fReleaseDate = ( *pos ).second.second;
-                if ( fSearchName.indexOf( "2025" ) != -1 )
-                    int xyz = 0;
-
                 return;
             }
 
@@ -644,12 +639,8 @@ namespace NMediaManager
                             fReleaseDate = { date, releaseDate };
                             auto newSearchName = fSearchName;
                             newSearchName.replace( match.capturedStart( "fulltext" ), match.capturedLength( "fulltext" ), "" );
-                            if ( newSearchName.indexOf( "2025" ) != -1 )
-                                int xyz = 0;
                             sReleaseDateLookup[ smartTrim( fSearchName ) ] = std::make_pair( newSearchName, fReleaseDate.value() );
                             fSearchName = newSearchName;
-                            if ( fSearchName.indexOf( "2025" ) != -1 )
-                                int xyz = 0;
                         }
                     }
                 }
@@ -827,7 +818,7 @@ namespace NMediaManager
                 query.addQueryItem( "query", searchStrings.join( "+" ) );
                 url.setQuery( query );
 
-                //qDebug() << url.toString();
+                qDebug() << url.toString();
                 return std::make_pair( url, isTVMedia() ? ESearchType::eSearchTV : ESearchType::eSearchMovie );
             }
             else if ( isTVMedia() )   // by tmdbid
