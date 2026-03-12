@@ -1744,17 +1744,15 @@ namespace NMediaManager
 
             if ( searchPath.isFile() )
             {
-                retVal = getMediaDate( fi.absoluteDir().absolutePath() );
+                searchPath = QFileInfo( fi.absoluteDir().absolutePath() );
             }
 
-            while ( !retVal.isValid() )
+            while ( !isRootPath( searchPath.absoluteFilePath() ) )
             {
                 auto baseName = searchPath.isDir() ? searchPath.fileName() : searchPath.completeBaseName();
                 NCore::SSearchTMDBInfo searchInfo( baseName, {} );
                 if ( searchInfo.releaseDateSet() )
                     retVal = searchInfo.releaseDate().first;
-                if ( isRootPath( searchPath.absoluteFilePath() ) )
-                    break;
                 searchPath = QFileInfo( searchPath.absolutePath() );
             }
             return retVal;
