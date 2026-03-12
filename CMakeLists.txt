@@ -20,11 +20,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.31)
 #cmake_policy(SET CMP0126 NEW)
 #cmake_policy(SET CMP0077 NEW)
 
-project(root-MediaManager) 
+set( MAIN_EXE_PROJECT_NAME "MediaManager" )
+set( APP_NAME              "Media Manager" )
+set( MAJOR_VERSION         1 )
+set( MINOR_VERSION        35 )
+
+SET_PROPERTY(GLOBAL PROPERTY MAIN_EXE_PROJECT_NAME ${MAIN_EXE_PROJECT_NAME})
+project(Root-${MAIN_EXE_PROJECT_NAME} VERSION ${MAJOR_VERSION}.${MINOR_VERSION})
 
 SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/T42-CMakeUtils/Modules ${CMAKE_MODULE_PATH})
 
@@ -36,8 +42,9 @@ find_package(Qt6 COMPONENTS Core Widgets Multimedia REQUIRED)
 find_package(Deploy REQUIRED)
 find_package(CheckOpenSSL REQUIRED)
 find_package(AddUnitTest REQUIRED)
+find_package(LoadVersionInfo REQUIRED)
 
-include( VersionInfo.cmake )
+LoadVersionInfoFile()
 
 CheckOpenSSL()
 
@@ -45,7 +52,7 @@ option( gtest_force_shared_crt "Use shared ( DLL ) run-time lib even when Google
 
 set_property( GLOBAL PROPERTY USE_FOLDERS ON )
 
-file( REAL_PATH ~/Dropbox/home/bin/MediaManager CMAKE_INSTALL_PREFIX EXPAND_TILDE)
+file( REAL_PATH ~/Dropbox/home/bin/${MAIN_EXE_PROJECT_NAME}  CMAKE_INSTALL_PREFIX EXPAND_TILDE)
 MESSAGE( STATUS "Installing to ${CMAKE_INSTALL_PREFIX}" )
 
 SET(TOWEL42_UTILS_DLL ON)
@@ -85,7 +92,7 @@ set_target_properties( string_test PROPERTIES FOLDER MKVValidator )
 set_target_properties( testmini    PROPERTIES FOLDER MKVValidator )
 set_target_properties( zlib        PROPERTIES FOLDER MKVValidator )
 
-#set_property( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT MediaManager ) 
+#set_property( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${MAIN_EXE_PROJECT_NAME} ) 
 
 include( InstallerInfo.cmake )
 
