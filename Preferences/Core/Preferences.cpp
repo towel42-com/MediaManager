@@ -201,6 +201,19 @@ namespace NMediaManager
             {
             }
 
+            void CPreferences::addSearchNameToCache( const QString &origName, const QString &cachedName )
+            {
+                fSearchNameCache.insert( origName, new QString( cachedName ) );
+            }
+
+            std::optional< QString > CPreferences::cachedSearchName( const QString &origName ) const
+            {
+                auto retVal = fSearchNameCache.object( origName );
+                if ( retVal )
+                    return *retVal;
+                return {};
+            }
+
             /// ////////////////////////////////////////////////////////
             /// Color Options
             /// ////////////////////////////////////////////////////////
@@ -906,9 +919,17 @@ namespace NMediaManager
                         if ( isRegEx )
                             fKnownStringRegExsCache << QStringLiteral( "(?<word>" ) + ii + QStringLiteral( ")" );
                         else
+                        {
                             nonRegExs << QRegularExpression::escape( ii );
+                            if ( ii.startsWith( "www" ) )
+                                int xyz = 0;
+                            auto spaceForPeriod = ii;
+                            spaceForPeriod.replace( '.', ' ' );
+                            if ( spaceForPeriod != ii )
+                                nonRegExs << QRegularExpression::escape( spaceForPeriod );
+                        }
                     }
-                    auto primRegEx = R"(((?<prefix>\[|\()|\W)(?<word>)" + nonRegExs.join( "|" ) + R"()((?<suffix>\]|\))|\W|$))";
+                    auto primRegEx = R"(((?<prefix>\[|\()|\W|^)(?<word>)" + nonRegExs.join( "|" ) + R"()((?<suffix>\]|\))|\W|$))";
                     fKnownStringRegExsCache << primRegEx;
                 }
                 return fKnownStringRegExsCache;

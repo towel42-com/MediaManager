@@ -33,6 +33,7 @@
 #include <unordered_set>
 #include <optional>
 #include <memory>
+#include <QCache>
 
 class QFileInfo;
 class QWidget;
@@ -145,6 +146,9 @@ namespace NMediaManager
             public:
                 static CPreferences *instance();
                 virtual ~CPreferences() override;
+
+                void addSearchNameToCache( const QString &origName, const QString &cachedName );
+                std::optional< QString > cachedSearchName( const QString &origName ) const;
 
                 void recomputeSupportedFormats( QProgressDialog *dlg );
                 QString validateDefaults() const;
@@ -541,7 +545,7 @@ namespace NMediaManager
                 bool isMediaFile( const QString &path ) const;
                 bool isMediaFile( const QFileInfo &fi ) const;
                 bool isSubtitleFile( const QFileInfo &info, bool *isLangFileFormat = nullptr ) const;
-                bool isSubtitleFile(const QString &info,bool *isLangFileFormat = nullptr) const;
+                bool isSubtitleFile( const QString &info, bool *isLangFileFormat = nullptr ) const;
 
                 void setBIFPlayerSpeedMultiplier( int speed );   // 100 = "full speed" ie 1x default is 200x
                 int bifPlayerSpeedMultiplier() const;
@@ -649,6 +653,7 @@ namespace NMediaManager
                 mutable std::unordered_map< QString, bool > fIsSubtitleExtension;
                 mutable QStringList fKnownStringRegExsCache;
 
+                QCache< QString, QString > fSearchNameCache;
                 std::unique_ptr< QTextStream > fLogFileTS;
                 std::unique_ptr< QFile > fLogFile;
             };
