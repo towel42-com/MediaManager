@@ -363,11 +363,18 @@ namespace NMediaManager
             QString extendedInfo;
 
             fReleaseDate.reset();
-            fSearchName = smartTrim( stripExistingExtraInfo( fInitSearchString, extendedInfo ) );
-            fSearchName = smartTrim( stripKnownExtendedData( fSearchName, extendedInfo ) );
-            fSearchName = smartTrim( stripKnownData( fSearchName ) );
-            fSearchName = smartTrim( replaceKnownAbbreviations( fSearchName ) );
-
+            auto cachedName = NMediaManager::NPreferences::NCore::CPreferences::instance()->cachedSearchName( fInitSearchString );
+            if ( cachedName.has_value() )
+                fSearchName = cachedName.value();
+            else
+            {
+                fSearchName = fInitSearchString;
+                fSearchName = smartTrim( stripExistingExtraInfo( fSearchName, extendedInfo ) );
+                fSearchName = smartTrim( stripKnownExtendedData( fSearchName, extendedInfo ) );
+                fSearchName = smartTrim( stripKnownData( fSearchName ) );
+                fSearchName = smartTrim( replaceKnownAbbreviations( fSearchName ) );
+                NMediaManager::NPreferences::NCore::CPreferences::instance()->addSearchNameToCache( fInitSearchString, fSearchName );
+            }
             fFoundExtendedInfo = extendedInfo;
 
             extractDiskNum();

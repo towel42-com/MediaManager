@@ -26,6 +26,7 @@
 #include <QUrl>
 #include <QString>
 #include <QDate>
+#include <QCache>
 #include <optional>
 #include <memory>
 #include "T42-Utils/QtUtils.h"
