@@ -26,11 +26,11 @@
 
 #include "Core/LanguageInfo.h"
 #include "T42-Utils/QtUtils.h"
-#include "T42-Utils/MediaInfo.h"
+#include "T42-MediaUtils/MediaInfo.h"
 #include "T42-Utils/FileUtils.h"
 #include "T42-Utils/GPUDetect.h"
 #include "T42-Utils/ScrollMessageBox.h"
-#include "T42-Utils/FFMpegFormats.h"
+#include "T42-MediaUtils/FFMpegFormats.h"
 
 #include <QSettings>
 #include <QStringListModel>
@@ -170,7 +170,7 @@ namespace NMediaManager
                 return replaceText( txt, curr, function );
             }
 
-            void replaceText( const QString &txt, QStringList &curr, const QString &funcName, const NTowel42Utils::TFormatMap &value )
+            void replaceText( const QString &txt, QStringList &curr, const QString &funcName, const NTowel42MediaUtils::TFormatMap &value )
             {
                 QStringList function;
                 function   //
@@ -184,7 +184,7 @@ namespace NMediaManager
                 ;
 
                 auto first = true;
-                for ( auto &&ii : { NTowel42Utils::EFormatType::eUnknown, NTowel42Utils::EFormatType::eAudio, NTowel42Utils::EFormatType::eImage, NTowel42Utils::EFormatType::eSubtitle, NTowel42Utils::EFormatType::eVideo } )
+                for ( auto &&ii : { NTowel42MediaUtils::EFormatType::eUnknown, NTowel42MediaUtils::EFormatType::eAudio, NTowel42MediaUtils::EFormatType::eImage, NTowel42MediaUtils::EFormatType::eSubtitle, NTowel42MediaUtils::EFormatType::eVideo } )
                 {
                     auto pos = value.find( ii );
                     if ( pos == value.end() )
@@ -220,21 +220,21 @@ namespace NMediaManager
                 return replaceText( txt, curr, function );
             }
 
-            void replaceText( const QString &txt, QStringList &curr, const QString &funcName, const NTowel42Utils::TCodecToEncoderDecoderMap &value )
+            void replaceText( const QString &txt, QStringList &curr, const QString &funcName, const NTowel42MediaUtils::TCodecToEncoderDecoderMap &value )
             {
                 QStringList function;
                 function   //
-                    << QStringLiteral( "NTowel42Utils::TCodecToEncoderDecoderMap CPreferences::%1() const" ).arg( funcName )   //
+                    << QStringLiteral( "NTowel42MediaUtils::TCodecToEncoderDecoderMap CPreferences::%1() const" ).arg( funcName )   //
                     << "{";
 
                 int indent = 1;
                 function   //
-                    << getIndent( indent++ ) + QStringLiteral( "static auto defaultValue = NTowel42Utils::TCodecToEncoderDecoderMap(" )   //
+                    << getIndent( indent++ ) + QStringLiteral( "static auto defaultValue = NTowel42MediaUtils::TCodecToEncoderDecoderMap(" )   //
                     << getIndent( indent++ ) + "{";
                 ;
 
                 auto first = true;
-                for ( auto &&ii : { NTowel42Utils::EFormatType::eUnknown, NTowel42Utils::EFormatType::eAudio, NTowel42Utils::EFormatType::eImage, NTowel42Utils::EFormatType::eSubtitle, NTowel42Utils::EFormatType::eVideo } )
+                for ( auto &&ii : { NTowel42MediaUtils::EFormatType::eUnknown, NTowel42MediaUtils::EFormatType::eAudio, NTowel42MediaUtils::EFormatType::eImage, NTowel42MediaUtils::EFormatType::eSubtitle, NTowel42MediaUtils::EFormatType::eVideo } )
                 {
                     auto pos = value.find( ii );
                     if ( pos == value.end() )
@@ -422,7 +422,7 @@ namespace NMediaManager
 
             QStringList CPreferences::getDefaultFile() const
             {
-                auto retVal = QStringList() << QStringLiteral( R"(// clang-format off)" ) << QStringLiteral( R"(// The MIT License( MIT ))" ) << QStringLiteral( R"(//)" ) << QStringLiteral( R"(// Copyright( c ) 2020-2026 Towel42 Development, LLC and Scott Aron Bloom)" ) << QStringLiteral( R"(//)" ) << QStringLiteral( R"(// Permission is hereby granted, free of charge, to any person obtaining a copy)" ) << QStringLiteral( R"(// of this software and associated documentation files( the "Software" ), to deal)" ) << QStringLiteral( R"(// in the Software without restriction, including without limitation the rights)" ) << QStringLiteral( R"(// to use, copy, modify, merge, publish, distribute, sub-license, and/or sell)" ) << QStringLiteral( R"(// copies of the Software, and to permit persons to whom the Software is)" ) << QStringLiteral( R"(// furnished to do so, subject to the following conditions :)" ) << QStringLiteral( R"(//)" ) << QStringLiteral( R"(// The above copyright notice and this permission notice shall be included in)" ) << QStringLiteral( R"(// all copies or substantial portions of the Software.)" ) << QStringLiteral( R"(//)" ) << QStringLiteral( R"(// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR)" ) << QStringLiteral( R"(// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,)" ) << QStringLiteral( R"(// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE)" ) << QStringLiteral( R"(// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER)" ) << QStringLiteral( R"(// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,)" ) << QStringLiteral( R"(// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE)" ) << QStringLiteral( R"(// SOFTWARE.)" ) << QStringLiteral( R"()" ) << QStringLiteral( R"(#include "Preferences.h")" ) << QStringLiteral( R"(#include "T42-Utils/FFMpegFormats.h")" ) << QStringLiteral( R"()" ) << QStringLiteral( R"(namespace NMediaManager)" ) << getIndent( 0 ) + R"({)" << getIndent( 1 ) + R"(namespace NPreferences)" << getIndent( 1 ) + R"({)" << getIndent( 2 ) + R"(namespace NCore)" << getIndent( 2 ) + R"({)" << "%DEFAULT_SEASON_DIR_PATTERN%" << QStringLiteral( R"()" ) << "%DEFAULT_OUT_DIR_PATTERN%" << QStringLiteral( R"()" ) << "%DEFAULT_OUT_FILE_PATTERN%" << QStringLiteral( R"()" ) << "%DEFAULT_CUSTOM_PATHS_TO_DELETE%" << QStringLiteral( R"()" ) << "%DEFAULT_DELETE_CUSTOM%" << QStringLiteral( R"()" ) << "%DEFAULT_RIPPED_WITH_MKV_REGEX%" << QStringLiteral( R"()" ) << "%DEFAULT_DELETE_EXE%" << QStringLiteral( R"()" ) << "%DEFAULT_DELETE_NFO%" << QStringLiteral( R"()" ) << "%DEFAULT_DELETE_BAK%" << QStringLiteral( R"()" ) << "%DEFAULT_DELETE_IMAGES%" << QStringLiteral( R"()" ) << "%DEFAULT_KNOWN_STRINGS%" << QStringLiteral( R"()" ) << "%DEFAULT_KNOWN_EXTENDED_STRINGS%" << QStringLiteral( R"()" ) << "%DEFAULT_IGNORED_PATHS%" << QStringLiteral( R"()" ) << "%DEFAULT_KNOWN_ABBREVIATIONS%" << QStringLiteral( R"()" ) << "%DEFAULT_KNOWN_HYPHENATED%" << QStringLiteral( R"()" ) << "%DEFAULT_SKIPPED_PATHS%" << QStringLiteral( R"()" )
+                auto retVal = QStringList() << QStringLiteral( R"(// clang-format off)" ) << QStringLiteral( R"(// The MIT License( MIT ))" ) << QStringLiteral( R"(//)" ) << QStringLiteral( R"(// Copyright( c ) 2020-2026 Towel42 Development, LLC and Scott Aron Bloom)" ) << QStringLiteral( R"(//)" ) << QStringLiteral( R"(// Permission is hereby granted, free of charge, to any person obtaining a copy)" ) << QStringLiteral( R"(// of this software and associated documentation files( the "Software" ), to deal)" ) << QStringLiteral( R"(// in the Software without restriction, including without limitation the rights)" ) << QStringLiteral( R"(// to use, copy, modify, merge, publish, distribute, sub-license, and/or sell)" ) << QStringLiteral( R"(// copies of the Software, and to permit persons to whom the Software is)" ) << QStringLiteral( R"(// furnished to do so, subject to the following conditions :)" ) << QStringLiteral( R"(//)" ) << QStringLiteral( R"(// The above copyright notice and this permission notice shall be included in)" ) << QStringLiteral( R"(// all copies or substantial portions of the Software.)" ) << QStringLiteral( R"(//)" ) << QStringLiteral( R"(// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR)" ) << QStringLiteral( R"(// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,)" ) << QStringLiteral( R"(// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE)" ) << QStringLiteral( R"(// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER)" ) << QStringLiteral( R"(// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,)" ) << QStringLiteral( R"(// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE)" ) << QStringLiteral( R"(// SOFTWARE.)" ) << QStringLiteral( R"()" ) << QStringLiteral( R"(#include "Preferences.h")" ) << QStringLiteral( R"(#include "T42-MediaUtils/FFMpegFormats.h")" ) << QStringLiteral( R"()" ) << QStringLiteral( R"(namespace NMediaManager)" ) << getIndent( 0 ) + R"({)" << getIndent( 1 ) + R"(namespace NPreferences)" << getIndent( 1 ) + R"({)" << getIndent( 2 ) + R"(namespace NCore)" << getIndent( 2 ) + R"({)" << "%DEFAULT_SEASON_DIR_PATTERN%" << QStringLiteral( R"()" ) << "%DEFAULT_OUT_DIR_PATTERN%" << QStringLiteral( R"()" ) << "%DEFAULT_OUT_FILE_PATTERN%" << QStringLiteral( R"()" ) << "%DEFAULT_CUSTOM_PATHS_TO_DELETE%" << QStringLiteral( R"()" ) << "%DEFAULT_DELETE_CUSTOM%" << QStringLiteral( R"()" ) << "%DEFAULT_RIPPED_WITH_MKV_REGEX%" << QStringLiteral( R"()" ) << "%DEFAULT_DELETE_EXE%" << QStringLiteral( R"()" ) << "%DEFAULT_DELETE_NFO%" << QStringLiteral( R"()" ) << "%DEFAULT_DELETE_BAK%" << QStringLiteral( R"()" ) << "%DEFAULT_DELETE_IMAGES%" << QStringLiteral( R"()" ) << "%DEFAULT_KNOWN_STRINGS%" << QStringLiteral( R"()" ) << "%DEFAULT_KNOWN_EXTENDED_STRINGS%" << QStringLiteral( R"()" ) << "%DEFAULT_IGNORED_PATHS%" << QStringLiteral( R"()" ) << "%DEFAULT_KNOWN_ABBREVIATIONS%" << QStringLiteral( R"()" ) << "%DEFAULT_KNOWN_HYPHENATED%" << QStringLiteral( R"()" ) << "%DEFAULT_SKIPPED_PATHS%" << QStringLiteral( R"()" )
 
                                             << "%DEFAULT_FORCE_MEDIA_CONTAINER%" << QStringLiteral( R"()" ) << "%DEFAULT_MEDIA_CONTAINER_NAME%" << QStringLiteral( R"()" ) << "%DEFAULT_TRANSCODE_AUDIO%" << QStringLiteral( R"()" ) << "%DEFAULT_ONLY_TRANSCODE_AUDIO_ON_FORMAT_CHANGE%" << QStringLiteral( R"()" ) << "%DEFAULT_ADD_AAC%" << QStringLiteral( R"()" ) << "%DEFAULT_TRANSCODE_TO_AUDIO_CODEC%" << QStringLiteral( R"()" ) << "%DEFAULT_TRANSCODE_VIDEO%" << QStringLiteral( R"()" ) << "%DEFAULT_ONLY_TRANSCODE_VIDEO_ON_FORMAT_OR_BITRATE_CHANGE%" << QStringLiteral( R"()" ) << "%DEFAULT_TRANSCODE_TO_VIDEO_CODEC%" << QStringLiteral( R"()" ) << "%DEFAULT_LOSSLESS_TRANSCODING%" << QStringLiteral( R"()" ) << "%DEFAULT_GENERATE_LOW_BITRATE_VIDEO%" << QStringLiteral( R"()" ) << "%DEFAULT_BITRATE_THRESHOLD_PERCENTAGE%" << QStringLiteral( R"()" ) << "%DEFAULT_RESOLUTION_THRESHOLD_PERCENTAGE%" << QStringLiteral( R"()" ) << "%DEFAULT_GENERATE_NON_4k_VIDEO%" << QStringLiteral( R"()" ) << "%DEFAULT_USE_CRF%" << QStringLiteral( R"()" ) << "%DEFAULT_CRF%" << QStringLiteral( R"()" ) << "%DEFAULT_USE_TARGET_BITRATE%" << QStringLiteral( R"()" ) << "%DEFAULT_TARGET_4K_BITRATE%" << QStringLiteral( R"()" ) << "%DEFAULT_TARGET_HD_BITRATE%" << QStringLiteral( R"()" ) << "%DEFAULT_TARGET_SUBHD_BITRATE%" << QStringLiteral( R"()" ) << "%DEFAULT_GREATER_THAN_4K_DIVISOR%" << QStringLiteral( R"()" ) << "%DEFAULT_USE_PRESET%" << QStringLiteral( R"()" ) << "%DEFAULT_PRESET%" << QStringLiteral( R"()" ) << "%DEFAULT_USE_TUNE%" << QStringLiteral( R"()" ) << "%DEFAULT_TUNE%" << QStringLiteral( R"()" ) << "%DEFAULT_USE_PROFILE%" << QStringLiteral( R"()" ) << "%DEFAULT_PROFILE%" << QStringLiteral( R"()" )
 

@@ -22,9 +22,9 @@
 
 #include "BitrateExperiment.h"
 #include "T42-Utils/WidgetChanged.h"
-#include "T42-Utils/MediaInfo.h"
+#include "T42-MediaUtils/MediaInfo.h"
 #include "Preferences/Core/Preferences.h"
-#include "T42-Utils/FFMpegFormats.h"
+#include "T42-MediaUtils/FFMpegFormats.h"
 
 #include "ui_BitrateExperiment.h"
 
@@ -153,32 +153,32 @@ namespace NMediaManager
 
             void CBitrateExperiment::loadFromFile()
             {
-                auto mediaInfo = NTowel42Utils::CMediaInfo( fImpl->fileName->text() );
+                auto mediaInfo = NTowel42MediaUtils::CMediaInfo( fImpl->fileName->text() );
                 load( mediaInfo.getResolutionInfo() );
             }
 
             void CBitrateExperiment::slotResolutionChanged()
             {
                 auto curr = fImpl->resolutionName->currentText();
-                NTowel42Utils::SResolutionInfo resDef;
+                NTowel42MediaUtils::SResolutionInfo resDef;
 
                 if ( curr.startsWith( "8k" ) )
-                    resDef = NTowel42Utils::CMediaInfo::k8KResolution;
+                    resDef = NTowel42MediaUtils::CMediaInfo::k8KResolution();
                 else if ( curr.startsWith( "4k" ) )
-                    resDef = NTowel42Utils::CMediaInfo::k4KResolution;
+                    resDef = NTowel42MediaUtils::CMediaInfo::k4KResolution();
                 else if ( curr.startsWith( "1080p" ) )
-                    resDef = NTowel42Utils::CMediaInfo::k1080pResolution;
+                    resDef = NTowel42MediaUtils::CMediaInfo::k1080pResolution();
                 else if ( curr.startsWith( "1080i" ) )
-                    resDef = NTowel42Utils::CMediaInfo::k1080iResolution;
+                    resDef = NTowel42MediaUtils::CMediaInfo::k1080iResolution();
                 else if ( curr.startsWith( "720p" ) )
-                    resDef = NTowel42Utils::CMediaInfo::k720Resolution;
+                    resDef = NTowel42MediaUtils::CMediaInfo::k720Resolution();
                 else if ( curr.startsWith( "SD" ) )
-                    resDef = NTowel42Utils::CMediaInfo::k480Resolution;
+                    resDef = NTowel42MediaUtils::CMediaInfo::k480Resolution();
 
                 load( resDef );
             }
 
-            void CBitrateExperiment::load( const NTowel42Utils::SResolutionInfo &resDef )
+            void CBitrateExperiment::load( const NTowel42MediaUtils::SResolutionInfo &resDef )
             {
                 fDisableUpdate = true;
                 fImpl->width->setValue( resDef.fResolution.first );
@@ -190,9 +190,9 @@ namespace NMediaManager
                 slotChanged();
             }
 
-            std::shared_ptr< NTowel42Utils::SResolutionInfo > CBitrateExperiment::getResolutionDef() const
+            std::shared_ptr< NTowel42MediaUtils::SResolutionInfo > CBitrateExperiment::getResolutionDef() const
             {
-                auto retVal = std::make_shared< NTowel42Utils::SResolutionInfo >();
+                auto retVal = std::make_shared< NTowel42MediaUtils::SResolutionInfo >();
 
                 retVal->fResolution = { fImpl->width->value(), fImpl->height->value() };
                 retVal->fBitsPerPixel = fImpl->bitsPerColor->value() * 3;

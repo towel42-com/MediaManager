@@ -41,6 +41,7 @@ endif()
 set ( DEBUG_PATH 
         "%PATH%"
         "$<TARGET_FILE_DIR:Towel42Utils>"
+        "$<TARGET_FILE_DIR:Towel42MediaUtils>"
         "$<TARGET_FILE_DIR:MediaInfo>"
         "${QT6_INSTALL_PREFIX}/bin"
         )

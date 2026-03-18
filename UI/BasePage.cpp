@@ -26,7 +26,7 @@
 #include "Preferences/Core/Preferences.h"
 #include "Models/DirModel.h"
 #include "T42-Utils/DoubleProgressDlg.h"
-#include "T42-Utils/SetMKVTags.h"
+#include "T42-MediaUtils/SetMKVTags.h"
 #include "T42-Utils/QtUtils.h"
 #include "T42-Utils/StayAwake.h"
 
@@ -408,7 +408,7 @@ namespace NMediaManager
         void CBasePage::editMediaInfo( const QModelIndex &idx )
         {
             auto fn = fModel->fileInfo( idx ).absoluteFilePath();
-            NTowel42Utils::CSetMKVTags dlg( fn, NPreferences::NCore::CPreferences::instance()->getMKVPropEditEXE(), this );
+            NTowel42MediaUtils::CSetMKVTags dlg( fn, NPreferences::NCore::CPreferences::instance()->getMKVPropEditEXE(), this );
             if ( dlg.exec() == QDialog::Accepted )
                 fModel->reloadMediaInfo( idx );
             emit sigDialogClosed();

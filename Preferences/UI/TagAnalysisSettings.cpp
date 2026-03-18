@@ -28,7 +28,7 @@
 #include "T42-Utils/WidgetEnabler.h"
 #include "T42-Utils/UtilityModels.h"
 #include "T42-Utils/QtUtils.h"
-#include "T42-Utils/MediaInfo.h"
+#include "T42-MediaUtils/MediaInfo.h"
 
 #include <QSettings>
 #include <QStringListModel>
@@ -72,7 +72,7 @@ namespace NMediaManager
                 std::list< std::pair< QString, bool > > tmp;
                 for ( auto &&ii : allTags )
                 {
-                    tmp.emplace_back( std::make_pair( NTowel42Utils::displayName( ii.first ), ii.second ) );
+                    tmp.emplace_back( std::make_pair( NTowel42MediaUtils::displayName( ii.first ), ii.second ) );
                 }
 
                 fModel->setStringList( tmp );
@@ -88,12 +88,12 @@ namespace NMediaManager
                 NPreferences::NCore::CPreferences::instance()->setVerifyMediaComment( fImpl->verifyMediaComment->isChecked() );
                 NPreferences::NCore::CPreferences::instance()->setVerifyMediaCommentExpr( fImpl->verifyMediaCommentExpr->text() );
 
-                std::list< NTowel42Utils::EMediaTags > enabled;
+                std::list< NTowel42MediaUtils::EMediaTags > enabled;
 
                 auto checked = fModel->getCheckedStrings();
                 for ( auto &&ii : checked )
                 {
-                    enabled.emplace_back( NTowel42Utils::fromDisplayName( ii ) );
+                    enabled.emplace_back( NTowel42MediaUtils::fromDisplayName( ii ) );
                 }
 
                 NPreferences::NCore::CPreferences::instance()->setEnabledTags( enabled );

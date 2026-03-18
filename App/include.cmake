@@ -20,6 +20,7 @@ set(qtproject_QRC
 
 set( project_pub_DEPS
         Towel42Utils
+        Towel42MediaUtils
         UI
         PreferencesUI
         PreferencesCore

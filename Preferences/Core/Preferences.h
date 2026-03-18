@@ -41,7 +41,7 @@ class QDir;
 class QFile;
 class QTextStream;
 
-namespace NTowel42Utils
+namespace NTowel42MediaUtils
 {
     class CMediaInfo;
     struct SResolutionInfo;
@@ -163,26 +163,26 @@ namespace NMediaManager
                 void setTreatAsTVShowByDefault( bool value );
                 bool getTreatAsTVShowByDefault() const;
 
-                bool isEncoderFormat( std::shared_ptr< NTowel42Utils::CMediaInfo > mediaInfo, const QString &formatName ) const;
+                bool isEncoderFormat( std::shared_ptr< NTowel42MediaUtils::CMediaInfo > mediaInfo, const QString &formatName ) const;
                 bool isEncoderFormat( const QString &fileName, const QString &formatName ) const;
                 bool isEncoderFormat( const QFileInfo &fi, const QString &formatName ) const;
-                bool isDecoderFormat( std::shared_ptr< NTowel42Utils::CMediaInfo > mediaInfo, const QString &formatName ) const;
+                bool isDecoderFormat( std::shared_ptr< NTowel42MediaUtils::CMediaInfo > mediaInfo, const QString &formatName ) const;
                 bool isDecoderFormat( const QString &fileName, const QString &formatName ) const;
                 bool isDecoderFormat( const QFileInfo &fi, const QString &formatName ) const;
-                QStringList getTranscodeArgs( std::shared_ptr< NTowel42Utils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName, const std::list< NMediaManager::NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NMediaManager::NCore::SLanguageInfo, QString > > &subIdxFiles ) const;
-                QStringList getHighBitrateTranscodeArgs( std::shared_ptr< NTowel42Utils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName, const std::list< NMediaManager::NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NMediaManager::NCore::SLanguageInfo, QString > > &subIdxFiles ) const;
-                QStringList getHighResolutionTranscodeArgs( std::shared_ptr< NTowel42Utils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName, const std::list< NMediaManager::NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NMediaManager::NCore::SLanguageInfo, QString > > &subIdxFiles ) const;
+                QStringList getTranscodeArgs( std::shared_ptr< NTowel42MediaUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName, const std::list< NMediaManager::NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NMediaManager::NCore::SLanguageInfo, QString > > &subIdxFiles ) const;
+                QStringList getHighBitrateTranscodeArgs( std::shared_ptr< NTowel42MediaUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName, const std::list< NMediaManager::NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NMediaManager::NCore::SLanguageInfo, QString > > &subIdxFiles ) const;
+                QStringList getHighResolutionTranscodeArgs( std::shared_ptr< NTowel42MediaUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName, const std::list< NMediaManager::NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NMediaManager::NCore::SLanguageInfo, QString > > &subIdxFiles ) const;
 
-                std::shared_ptr< NTowel42Utils::CMediaInfo > getMediaInfo( const QFileInfo &fi, bool force = false );
-                std::shared_ptr< NTowel42Utils::CMediaInfo > getMediaInfo( const QString &fileName, bool force = false );
+                std::shared_ptr< NTowel42MediaUtils::CMediaInfo > getMediaInfo( const QFileInfo &fi, bool force = false );
+                std::shared_ptr< NTowel42MediaUtils::CMediaInfo > getMediaInfo( const QString &fileName, bool force = false );
 
                 // ffmpeg results
                 QStringList availableEncoderMediaFormats( bool verbose ) const;   // if true returns name - desc, otherwise name only
-                NTowel42Utils::TFormatMap getEncoderFormatExtensionsMap() const;
+                NTowel42MediaUtils::TFormatMap getEncoderFormatExtensionsMap() const;
                 QStringList getEncoderExtensionsForFormat( const QString &format, const QStringList &exclude = {} ) const;
 
                 QStringList availableDecoderMediaFormats( bool verbose ) const;   // if true returns name - desc, otherwise name only
-                NTowel42Utils::TFormatMap getDecoderFormatExtensionsMap() const;
+                NTowel42MediaUtils::TFormatMap getDecoderFormatExtensionsMap() const;
                 QStringList getDecoderExtensionsForFormat( const QString &format, const QStringList &exclude = {} ) const;
 
                 QStringList availableVideoEncodingCodecs( bool verbose ) const;   // if true returns name - desc, otherwise name only
@@ -203,16 +203,16 @@ namespace NMediaManager
                 QStringList availableSubtitleEncoders( bool verbose ) const;   // if true returns name - desc, otherwise name only
                 QStringList availableSubtitleDecoders( bool verbose ) const;   // if true returns name - desc, otherwise name only
 
-                NTowel42Utils::TCodecToEncoderDecoderMap getCodecToEncoderMap() const;
-                NTowel42Utils::TCodecToEncoderDecoderMap getCodecToDecoderMap() const;
+                NTowel42MediaUtils::TCodecToEncoderDecoderMap getCodecToEncoderMap() const;
+                NTowel42MediaUtils::TCodecToEncoderDecoderMap getCodecToDecoderMap() const;
 
                 QStringList availableHWAccels( bool verbose ) const;   // if true returns name - desc, otherwise name only
 
                 QStringList availableMediaEncoderFormatsStatic( bool verbose ) const;
-                NTowel42Utils::TFormatMap getEncoderFormatExtensionsMapStatic() const;
+                NTowel42MediaUtils::TFormatMap getEncoderFormatExtensionsMapStatic() const;
 
                 QStringList availableMediaDecoderFormatsStatic( bool verbose ) const;
-                NTowel42Utils::TFormatMap getDecoderFormatExtensionsMapStatic() const;
+                NTowel42MediaUtils::TFormatMap getDecoderFormatExtensionsMapStatic() const;
 
                 QStringList availableVideoEncodingCodecsStatic( bool verbose ) const;
                 QStringList availableVideoDecodingCodecsStatic( bool verbose ) const;
@@ -232,8 +232,8 @@ namespace NMediaManager
                 QStringList availableSubtitleEncodersStatic( bool verbose ) const;
                 QStringList availableSubtitleDecodersStatic( bool verbose ) const;
 
-                NTowel42Utils::TCodecToEncoderDecoderMap getCodecToEncoderMapStatic() const;
-                NTowel42Utils::TCodecToEncoderDecoderMap getCodecToDecoderMapStatic() const;
+                NTowel42MediaUtils::TCodecToEncoderDecoderMap getCodecToEncoderMapStatic() const;
+                NTowel42MediaUtils::TCodecToEncoderDecoderMap getCodecToDecoderMapStatic() const;
 
                 QStringList availableHWAccelsStatic( bool verbose ) const;
 
@@ -320,12 +320,12 @@ namespace NMediaManager
                 bool getUseTargetBitrate() const;
 
                 // since it can return raw gb/s over 4, use 64 bit int
-                uint64_t getTargetBitrate( std::shared_ptr< NTowel42Utils::CMediaInfo > mediaInfo, bool useKBS, bool addThreshold ) const;   // returns it in bits/second + threshold
-                uint64_t getTargetBitrate( const NTowel42Utils::SResolutionInfo &resInfo, bool useKBS, bool addThreshold ) const;   // returns it in bits/second + threshold
+                uint64_t getTargetBitrate( std::shared_ptr< NTowel42MediaUtils::CMediaInfo > mediaInfo, bool useKBS, bool addThreshold ) const;   // returns it in bits/second + threshold
+                uint64_t getTargetBitrate( const NTowel42MediaUtils::SResolutionInfo &resInfo, bool useKBS, bool addThreshold ) const;   // returns it in bits/second + threshold
 
-                static uint64_t getTargetBitrate( const NTowel42Utils::SResolutionInfo &resInfo, bool useKBS, bool addThreshold, int greaterThan4kDivisor, double resThreshold, int bitrate4k, int bitrateHD, int bitrateSubHD, double bitrateThreshold );   // returns it in bits/second + threshold
+                static uint64_t getTargetBitrate( const NTowel42MediaUtils::SResolutionInfo &resInfo, bool useKBS, bool addThreshold, int greaterThan4kDivisor, double resThreshold, int bitrate4k, int bitrateHD, int bitrateSubHD, double bitrateThreshold );   // returns it in bits/second + threshold
 
-                QString getTargetBitrateDisplayString( std::shared_ptr< NTowel42Utils::CMediaInfo > mediaInfo ) const;
+                QString getTargetBitrateDisplayString( std::shared_ptr< NTowel42MediaUtils::CMediaInfo > mediaInfo ) const;
 
                 void setTarget4kBitrate( int value );
                 int getTarget4kBitrateDefault() const;
@@ -419,10 +419,10 @@ namespace NMediaManager
                 void setIgnorePathNamesToIgnore( bool value );
                 bool getIgnorePathNamesToIgnore() const;
 
-                std::list< std::pair< NTowel42Utils::EMediaTags, bool > > getAllMediaTags() const;
-                std::list< NTowel42Utils::EMediaTags > getEnabledTags() const;
+                std::list< std::pair< NTowel42MediaUtils::EMediaTags, bool > > getAllMediaTags() const;
+                std::list< NTowel42MediaUtils::EMediaTags > getEnabledTags() const;
                 QStringList getEnabledTagsForDisplay() const;
-                void setEnabledTags( const std::list< NTowel42Utils::EMediaTags > &value );
+                void setEnabledTags( const std::list< NTowel42MediaUtils::EMediaTags > &value );
 
                 bool getVerifyMediaTags() const;
                 void setVerifyMediaTags( bool value );
@@ -540,7 +540,7 @@ namespace NMediaManager
                 bool hasAMDGPU() const;
                 int getGPUCount() const;
 
-                NTowel42Utils::CFFMpegFormats *getMediaFormats() const;
+                NTowel42MediaUtils::CFFMpegFormats *getMediaFormats() const;
 
                 bool isMediaFile( const QString &path ) const;
                 bool isMediaFile( const QFileInfo &fi ) const;
@@ -619,7 +619,7 @@ namespace NMediaManager
                 void sigMediaInfoLoaded( const QString &fileName ) const;
 
             private:
-                QStringList getTranscodeArgs( std::shared_ptr< NTowel42Utils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName, const std::list< NMediaManager::NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NMediaManager::NCore::SLanguageInfo, QString > > &subIdxFiles, const std::optional< std::pair< int, int > > &resolution, const std::optional< uint64_t > &bitrate ) const;
+                QStringList getTranscodeArgs( std::shared_ptr< NTowel42MediaUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName, const std::list< NMediaManager::NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NMediaManager::NCore::SLanguageInfo, QString > > &subIdxFiles, const std::optional< std::pair< int, int > > &resolution, const std::optional< uint64_t > &bitrate ) const;
 
                 QStringList getDefaultFile() const;
                 bool isFileWithExtension( const QFileInfo &fi, std::function< QStringList() > getExtensions, std::unordered_set< QString > &hash, std::unordered_map< QString, bool > &cache ) const;
@@ -640,7 +640,7 @@ namespace NMediaManager
                 QTimer *fPrefChangeTimer{ nullptr };
                 EPreferenceTypes fPending;
 
-                mutable std::unique_ptr< NTowel42Utils::CFFMpegFormats > fMediaFormats;
+                mutable std::unique_ptr< NTowel42MediaUtils::CFFMpegFormats > fMediaFormats;
 
                 mutable std::unordered_set< QString > fMediaExtensionsHash;
                 mutable std::unordered_map< QString, bool > fIsMediaExtension;

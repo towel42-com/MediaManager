@@ -23,8 +23,8 @@
 #include "TranscodeBitrate.h"
 #include "BitrateExperiment.h"
 #include "Preferences/Core/Preferences.h"
-#include "T42-Utils/MediaInfo.h"
-#include "T42-Utils/FFMpegFormats.h"
+#include "T42-MediaUtils/MediaInfo.h"
+#include "T42-MediaUtils/FFMpegFormats.h"
 
 #include "ui_TranscodeBitrate.h"
 

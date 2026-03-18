@@ -31,7 +31,7 @@ class QStandardItem;
 #include <list>
 #include <optional>
 
-namespace NTowel42Utils
+namespace NTowel42MediaUtils
 {
     enum class EMediaTags;
 }
@@ -83,7 +83,7 @@ namespace NMediaManager
             std::list< std::pair< QVariant, int > > fRoles;
             NCore::EMediaType fMediaType;
             std::optional< SCheckable > fCheckable;   // isCHeckable, yesno only, is checked
-            std::optional< std::pair< EType, NTowel42Utils::EMediaTags > > fEditable;
+            std::optional< std::pair< EType, NTowel42MediaUtils::EMediaTags > > fEditable;
         };
     }
 }

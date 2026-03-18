@@ -6,3 +6,6 @@
 	path = T42-Utils
 	url = ssh://git@github.com/towel42-com/T42-Utils
 	branch = trunk
+[submodule "T42-MediaUtils"]
+	path = T42-MediaUtils
+	url = git@github.com:towel42-com/T42-MediaUtils

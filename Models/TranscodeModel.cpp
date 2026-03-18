@@ -28,7 +28,7 @@
 #include "Preferences/Core/TranscodeNeeded.h"
 #include "T42-Utils/FileUtils.h"
 #include "T42-Utils/DoubleProgressDlg.h"
-#include "T42-Utils/MediaInfo.h"
+#include "T42-MediaUtils/MediaInfo.h"
 #include "T42-Utils/utils.h"
 #include "T42-Utils/StringUtils.h"
 

@@ -55,8 +55,10 @@ set_property( GLOBAL PROPERTY USE_FOLDERS ON )
 file( REAL_PATH ~/Dropbox/home/bin/${MAIN_EXE_PROJECT_NAME}  CMAKE_INSTALL_PREFIX EXPAND_TILDE)
 MESSAGE( STATUS "Installing to ${CMAKE_INSTALL_PREFIX}" )
 
-SET(TOWEL42_UTILS_DLL ON)
+SET(TOWEL42_MEDIAUTILS_DLL ON)
 SET(TOWEL42_MKVUTILS ON)
+
+SET(TOWEL42_UTILS_DLL ON)
 SET(TOWEL42_GIFSUPPORT ON)
 SET(TOWEL42_BIFSUPPORT ON)
 SET(TOWEL42_QNETWORK_SUPPORT ON)
@@ -66,8 +68,15 @@ SET(TOWEL42_ENABLE_TESTING ON)
 
 add_subdirectory( T42-Utils )
 
-add_subdirectory( T42-Utils/bif)
-add_subdirectory( T42-Utils/gif)
+add_subdirectory( T42-Utils/bif )
+add_subdirectory( T42-Utils/gif )
+add_subdirectory( T42-MediaUtils )
+
+add_compile_definitions( 
+    $<$<BOOL:TOWEL42_UTILS_DLL>:TOWEL42_UTILS_DLL>
+    $<$<BOOL:TOWEL42_MEDIAUTILS_DLL>:TOWEL42_MEDIAUTILS_DLL>
+)
+
 add_subdirectory( UI )
 add_subdirectory( Preferences/UI )
 add_subdirectory( Preferences/Core )

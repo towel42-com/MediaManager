@@ -25,7 +25,7 @@
 #include "T42-Utils/FileUtils.h"
 #include "T42-Utils/BackupFile.h"
 #include "T42-Utils/DoubleProgressDlg.h"
-#include "T42-Utils/MediaInfo.h"
+#include "T42-MediaUtils/MediaInfo.h"
 #include "T42-Utils/BIFFile.h"
 #include "T42-Utils/GIFWriterDlg.h"
 
@@ -94,7 +94,7 @@ namespace NMediaManager
             fFirstProcess = true;
             if ( !displayOnly )
             {
-                processInfo->fMaximum = NTowel42Utils::CMediaInfo::getNumberOfSeconds( processInfo->fOldName );
+                processInfo->fMaximum = NTowel42MediaUtils::CMediaInfo::getNumberOfSeconds( processInfo->fOldName );
 
                 bool isEmbyEXE = false;
                 processInfo->fCmd = NPreferences::NCore::CPreferences::instance()->getFFMpegEmbyEXE();

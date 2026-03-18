@@ -25,7 +25,7 @@
 
 #include <QDialog>
 
-namespace NTowel42Utils
+namespace NTowel42MediaUtils
 {
     struct SResolutionInfo;
 }
@@ -72,8 +72,8 @@ namespace NMediaManager
                 void sigChanged();
             private:
                 void loadFromFile();
-                void load( const NTowel42Utils::SResolutionInfo &resDef );
-                std::shared_ptr< NTowel42Utils::SResolutionInfo > getResolutionDef() const;
+                void load( const NTowel42MediaUtils::SResolutionInfo &resDef );
+                std::shared_ptr< NTowel42MediaUtils::SResolutionInfo > getResolutionDef() const;
 
                 bool fDisableUpdate{ false };
                 std::unique_ptr< Ui::CBitrateExperiment > fImpl;

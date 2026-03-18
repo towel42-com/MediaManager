@@ -22,7 +22,7 @@
 
 #include "TranscodeNeeded.h"
 #include "Preferences.h"
-#include "T42-Utils/MediaInfo.h"
+#include "T42-MediaUtils/MediaInfo.h"
 
 #include <QFileInfo>
 
@@ -54,7 +54,7 @@ namespace NMediaManager
 
             */
 
-            STranscodeNeeded::STranscodeNeeded( std::shared_ptr< NTowel42Utils::CMediaInfo > mediaInfo, const CPreferences *prefs ) :
+            STranscodeNeeded::STranscodeNeeded( std::shared_ptr< NTowel42MediaUtils::CMediaInfo > mediaInfo, const CPreferences *prefs ) :
                 fMediaInfo( mediaInfo )
             {
                 fWrongContainer = fWrongVideoCodec = fBitrateTooHigh = fWrongAudioCodec = fDefaultAudioNotAAC = false;
@@ -82,7 +82,7 @@ namespace NMediaManager
                 fWrongAudioCodec = prefs->getTranscodeAudio() && ( mediaInfo->numAudioStreams() != 0 ) && ( ( !mediaInfo->isCodec( "aac", prefs->getTranscodeToAudioCodec(), prefs->getMediaFormats() ) && !mediaInfo->isDefaultAudioCodec( prefs->getTranscodeToAudioCodec(), prefs->getMediaFormats() ) && ( fWrongContainer || !prefs->getOnlyTranscodeAudioOnFormatChange() ) ) );
             }
 
-            STranscodeNeeded::STranscodeNeeded( std::shared_ptr< NTowel42Utils::CMediaInfo > mediaInfo ) :
+            STranscodeNeeded::STranscodeNeeded( std::shared_ptr< NTowel42MediaUtils::CMediaInfo > mediaInfo ) :
                 STranscodeNeeded( mediaInfo, CPreferences::instance() )
             {
             }

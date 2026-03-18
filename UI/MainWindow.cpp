@@ -37,7 +37,7 @@
 #include "Core/SearchTMDBInfo.h"
 #include "Core/SearchTMDB.h"
 #include "T42-Utils/FileUtils.h"
-#include "T42-Utils/MediaInfo.h"
+#include "T42-MediaUtils/MediaInfo.h"
 
 #include "T42-Utils/QtUtils.h"
 #include "T42-Utils/utils.h"
@@ -132,8 +132,8 @@ namespace NMediaManager
             fFileChecker = new NTowel42Utils::CBackgroundFileCheck( this );
             connect( fFileChecker, &NTowel42Utils::CBackgroundFileCheck::sigFinished, this, &CMainWindow::slotFileCheckFinished );
 
-            NTowel42Utils::CMediaInfo::setFFProbeEXE( NPreferences::NCore::CPreferences::instance()->getFFProbeEXE() );
-            connect( NTowel42Utils::CMediaInfoMgr::instance(), &NTowel42Utils::CMediaInfoMgr::sigStatusMessage, []( const QString &msg ) { qDebug() << msg; } );
+            NTowel42MediaUtils::CMediaInfo::setFFProbeEXE( NPreferences::NCore::CPreferences::instance()->getFFProbeEXE() );
+            connect( NTowel42MediaUtils::CMediaInfoMgr::instance(), &NTowel42MediaUtils::CMediaInfoMgr::sigStatusMessage, []( const QString &msg ) { qDebug() << msg; } );
 
             addPages();
 

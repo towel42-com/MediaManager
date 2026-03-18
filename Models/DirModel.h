@@ -29,7 +29,7 @@
 class QTemporaryDir;
 #include <QFileInfo>   // filedevice
 #include "T42-Utils/QtHashUtils.h"
-#include "T42-Utils/MKVUtils.h"
+#include "T42-MediaUtils/MKVUtils.h"
 #include <unordered_set>
 #include <unordered_map>
 #include <optional>
@@ -49,10 +49,13 @@ class QTemporaryDir;
 
 namespace NTowel42Utils
 {
+    class CDoubleProgressDlg;
+}
+
+namespace NTowel42MediaUtils
+{
     class CMediaInfo;
-    class CDoubleProgressDlg;
     enum class EMediaTags;
-    class CDoubleProgressDlg;
 }
 
 class QTreeView;
@@ -242,7 +245,7 @@ namespace NMediaManager
             virtual bool showMediaItems() const { return false; };
 
             bool canShowMediaInfo() const;
-            virtual NTowel42Utils::TMediaTagMap getMediaTags( const QFileInfo &fi, const std::list< NTowel42Utils::EMediaTags > &tags = {} ) const;
+            virtual NTowel42MediaUtils::TMediaTagMap getMediaTags( const QFileInfo &fi, const std::list< NTowel42MediaUtils::EMediaTags > &tags = {} ) const;
             virtual void reloadMediaInfo( const QModelIndex &idx );
             virtual void reloadMediaInfo( const QModelIndex &idx, bool force );
 
@@ -250,7 +253,7 @@ namespace NMediaManager
             virtual bool areMediaTagsSameAsAutoSet( const QModelIndex &idx ) const final;
 
             bool setMediaTags( const QString &fileName, QString title, QString year, QString comment, QString *msg = nullptr, bool ignoreIsMediaFile = false ) const;
-            bool setMediaTag( const QString &filename, const std::pair< NTowel42Utils::EMediaTags, QVariant > &tagData, QString *msg = nullptr ) const;   //pair => tag, value
+            bool setMediaTag( const QString &filename, const std::pair< NTowel42MediaUtils::EMediaTags, QVariant > &tagData, QString *msg = nullptr ) const;   //pair => tag, value
 
             virtual void updatePath( const QModelIndex &idx, const QString &oldPath, const QString &newPath ) final;
             virtual void updateFile( const QModelIndex &idx, const QString &oldFile, const QString &newFile );
@@ -299,9 +302,9 @@ namespace NMediaManager
             virtual std::optional< std::pair< uint64_t, std::optional< uint64_t > > > getCurrentProgress( const QString & /*string*/ ) { return {}; }
             virtual std::optional< std::chrono::milliseconds > getMSRemaining( const QString & /*string*/, const std::pair< uint64_t, std::optional< uint64_t > > & /*currProgress*/ ) const { return {}; }
 
-            std::shared_ptr< NTowel42Utils::CMediaInfo > getMediaInfo( const QFileInfo &fi, bool force = false ) const;
-            std::shared_ptr< NTowel42Utils::CMediaInfo > getMediaInfo( const QModelIndex &idx, bool force = false ) const;
-            std::shared_ptr< NTowel42Utils::CMediaInfo > getMediaInfo( const QString &path, bool force = false ) const;
+            std::shared_ptr< NTowel42MediaUtils::CMediaInfo > getMediaInfo( const QFileInfo &fi, bool force = false ) const;
+            std::shared_ptr< NTowel42MediaUtils::CMediaInfo > getMediaInfo( const QModelIndex &idx, bool force = false ) const;
+            std::shared_ptr< NTowel42MediaUtils::CMediaInfo > getMediaInfo( const QString &path, bool force = false ) const;
 
             virtual bool isTitleSameAsAutoSet( const QModelIndex &idx, QString *msg = nullptr ) const;
             virtual bool isDateSameAsAutoSet( const QModelIndex &idx, QString *msg = nullptr ) const;
@@ -345,9 +348,9 @@ namespace NMediaManager
             virtual std::pair< bool, std::list< QStandardItem * > > processItem( const QStandardItem *item, bool displayOnly ) = 0;
             virtual void postAddItems( const QFileInfo &fileInfo, std::list< SDirNodeItem > &currItems ) const;
             virtual int firstMediaItemColumn() const;
-            virtual std::list< NTowel42Utils::EMediaTags > getMediaColumnsList() const;
+            virtual std::list< NTowel42MediaUtils::EMediaTags > getMediaColumnsList() const;
             virtual int lastMediaItemColumn() const final;
-            virtual int getMediaColumn( NTowel42Utils::EMediaTags mediaTag ) const final;
+            virtual int getMediaColumn( NTowel42MediaUtils::EMediaTags mediaTag ) const final;
 
             virtual void computeMediaColumnMap() const final;
             virtual void clearMediaColumnMap();
@@ -380,9 +383,9 @@ namespace NMediaManager
             virtual bool isLoading() const final { return fIsLoading; }
             virtual void setIsLoading( bool isLoading );
 
-            NTowel42Utils::TMediaTagMap getDefaultMediaTags( const QFileInfo &fi ) const;
+            NTowel42MediaUtils::TMediaTagMap getDefaultMediaTags( const QFileInfo &fi ) const;
             QStringList getMediaHeaders() const;
-            std::tuple< QStringList, std::list< NTowel42Utils::EMediaTags >, std::list< std::function< int() > > > getMediaDataInfo() const;
+            std::tuple< QStringList, std::list< NTowel42MediaUtils::EMediaTags >, std::list< std::function< int() > > > getMediaDataInfo() const;
 
             virtual void resizeColumns() const;
 
@@ -485,7 +488,7 @@ namespace NMediaManager
             mutable std::unordered_map< QFileInfo, bool > fIsRootPathCache;
             mutable std::unordered_map< QString, QString > fDispNameCache;
             std::optional< std::pair< QDateTime, uint64_t > > fLastProgress;
-            mutable std::optional< std::unordered_map< NTowel42Utils::EMediaTags, int > * > fMediaColumnMap;
+            mutable std::optional< std::unordered_map< NTowel42MediaUtils::EMediaTags, int > * > fMediaColumnMap;
             mutable int fLastMediaColumn{ -1 };
 
             mutable std::optional< QDateTime > fLastUpdateUI;
