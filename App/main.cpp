@@ -90,7 +90,7 @@ int main( int argc, char ** argv )
 
     qInstallMessageHandler( myMessageOutput );
 
-    auto aOK = NTowel42Utils::validateOpenSSL( true );
+    auto aOK = NTowel42Utils::validateOpenSSL( "3", true );
     if ( !aOK.first )
     {
         QMessageBox::critical( nullptr, QObject::tr( "Could not find OpenSSL libraries" ), aOK.second );
