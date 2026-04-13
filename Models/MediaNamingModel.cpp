@@ -141,10 +141,11 @@ namespace NMediaManager
         {
             auto filePath = fileInfo.absoluteFilePath();
 
-            auto pos = fileInfo.isDir() ? fDirMapping.find( filePath ) : fFileMapping.find( filePath );
+            auto &&map = fileInfo.isDir() ? fDirMapping : fFileMapping;
+            auto pos = map.find( filePath );
             auto retVal = std::make_pair( false, QString() );
 
-            if ( pos == ( fileInfo.isDir() ? fDirMapping.end() : fFileMapping.end() ) )
+            if ( pos == map.end() ) 
             {
                 QString fn = fileInfo.fileName();
                 if ( !fileInfo.isDir() )
