@@ -31,10 +31,9 @@
 #include <QFileInfo>
 #include <QMessageBox>
 
-
-void myMessageOutput( QtMsgType type, const QMessageLogContext & context, const QString & msg )
+void myMessageOutput( QtMsgType type, const QMessageLogContext &context, const QString &msg )
 {
-    static QFile * sOutFile{ nullptr };
+    static QFile *sOutFile{ nullptr };
     QByteArray localMsg = msg.toLocal8Bit();
     QString realMsg = QStringLiteral( "%1 (%2:%3, %4)" ).arg( QString::fromLocal8Bit( localMsg ) ).arg( ( QFileInfo( QString::fromLocal8Bit( context.file ) ).fileName() ) ).arg( context.line ).arg( QString::fromLocal8Bit( context.function ) );
 
@@ -55,7 +54,7 @@ void myMessageOutput( QtMsgType type, const QMessageLogContext & context, const 
             break;
         case QtFatalMsg:
             typeString = "Fatal";
-                //abort();
+            //abort();
             break;
     }
     realMsg = QStringLiteral( "%1: %2" ).arg( typeString ).arg( realMsg ).trimmed();
@@ -76,15 +75,17 @@ void myMessageOutput( QtMsgType type, const QMessageLogContext & context, const 
     //QTextStream ts( gOutFile );
     //ts << realMsg << "\n";
     //gOutFile->flush();
-
 }
 
-int main( int argc, char ** argv )
+int main( int argc, char **argv )
 {
     Q_INIT_RESOURCE( application );
 
     QApplication appl( argc, argv );
-    NVersion::setupApplication( appl, true );
+    NVersion::versionInfo()->setAboutText( "Application to manage your media files." );
+    NVersion::versionInfo()->setLogoPath( ":/Towel42UtilsResources/t42-logo.svg" );
+    NVersion::versionInfo()->setupApplication( NTowel42Utils::CVersionInfoData::EHomePageType::eProduct );
+
     auto proxyStyle = new NTowel42Utils::CProgressBarProxyStyle( QApplication::style() );
     QApplication::setStyle( proxyStyle );
 
@@ -108,7 +109,7 @@ int main( int argc, char ** argv )
         }
     }
     NMediaManager::NUi::CMainWindow mainWindow;
-    mainWindow.setWindowTitle( NVersion::getWindowTitle() );
+    mainWindow.setWindowTitle( NVersion::versionInfo()->getWindowTitle( true, NTowel42Utils::CVersionInfoData::EHomePageType::eProduct ) );
     mainWindow.show();
     if ( !bifName.isEmpty() && !mainWindow.setBIFFileName( bifName ) )
         return -1;
