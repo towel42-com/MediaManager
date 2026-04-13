@@ -242,13 +242,14 @@ namespace NMediaManager
         {
             if ( text != fFilter )
             {
+                beginFilterChange();
                 auto regEx = QRegularExpression( text, QRegularExpression::CaseInsensitiveOption );
                 if ( fFilter.isEmpty() || regEx.isValid() )
                 {
                     fFilter = text;
                     fFilterRegEx = regEx;
                 }
-                invalidateFilter();
+                endFilterChange();
             }
         }
 
