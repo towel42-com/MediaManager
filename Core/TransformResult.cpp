@@ -259,7 +259,7 @@ namespace NMediaManager
                 episodes.push_back( ii->episode().toInt() );
 
             auto groupedEpisodes = NTowel42Utils::groupContiguousNumbers( episodes );
-            auto retVal = NTowel42Utils::contiguousNumbersText( groupedEpisodes );
+            auto retVal = NTowel42Utils::contiguousNumbersText( groupedEpisodes, 2 );
             if ( retVal.startsWith( 'E' ) )
                 retVal = retVal.mid( 1 );
             return retVal;

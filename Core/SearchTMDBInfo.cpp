@@ -449,7 +449,7 @@ namespace NMediaManager
                 return forDebug ? "<Not Set>" : QString();
 
             auto groupedEpisodes = NTowel42Utils::groupContiguousNumbers( fEpisodes );
-            return NTowel42Utils::contiguousNumbersText( groupedEpisodes );
+            return NTowel42Utils::contiguousNumbersText( groupedEpisodes, 2 );
         }
 
         QDebug operator<<( QDebug debug, const SSearchTMDBInfo &info )
