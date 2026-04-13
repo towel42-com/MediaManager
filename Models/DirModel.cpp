@@ -33,7 +33,6 @@
 #include "T42-Utils/AutoWaitCursor.h"
 #include "T42-Utils/FileUtils.h"
 #include "T42-Utils/BackupFile.h"
-#include "T42-Utils/FileCompare.h"
 #include "T42-MediaUtils/MediaInfo.h"
 #include "T42-MediaUtils/MKVUtils.h"
 #include "T42-Utils/ForceUnbufferedProcessModifier.h"
