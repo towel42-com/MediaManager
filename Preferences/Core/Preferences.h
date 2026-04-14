@@ -87,6 +87,8 @@ namespace NMediaManager
         Q_DECLARE_OPERATORS_FOR_FLAGS( EPreferenceTypes );
         QString toString( EPreferenceType prefType, bool forEnum = false );
 
+        QString addStyleToText( const QString &text );
+
         namespace NCore
         {
             enum ETranscodePreset

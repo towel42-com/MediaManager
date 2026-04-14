@@ -54,10 +54,13 @@ namespace NMediaManager
                 QStringList getActions() const;
                 QStringList getHighBitrateAction() const;
                 QStringList getHighResolutionAction() const;
-                
-                QString getProgressLabelHeader( const QString &from, const QStringList & otherFiles, const QString &to ) const;
+
+                QString getProgressLabelHeader( const QString &from, const QStringList &otherFiles, const QString &to ) const;
                 QString getHighResolutionProgressLabelHeader( const QString &from, const QStringList &otherFiles, const QString &to ) const;
                 QString getHighBitrateProgressLabelHeader( const QString &from, const QStringList &otherFiles, const QString &to ) const;
+
+                bool mediaOK() const;
+                bool mediaQueued() const;
 
                 bool transcodeNeeded() const { return fWrongVideoCodec || fWrongAudioCodec || fDefaultAudioNotAAC || fWrongContainer; }
 
@@ -68,12 +71,14 @@ namespace NMediaManager
 
                 bool wrongContainer() const { return fWrongContainer; }   // when true container format needs changing
                 bool defaultAudioNotAAC51() const { return fDefaultAudioNotAAC; }   // when true aac audio is missing and needs to be added
-                bool wrongAudioCodec() const { return fWrongAudioCodec; }   // when true the audio codec needs to be transcoded 
-                bool wrongVideoCodec() const { return fWrongVideoCodec; }  // when true, the video codec needs to be transcoded
+                bool wrongAudioCodec() const { return fWrongAudioCodec; }   // when true the audio codec needs to be transcoded
+                bool wrongVideoCodec() const { return fWrongVideoCodec; }   // when true, the video codec needs to be transcoded
 
             private:
                 QString getProgressLabelHeader( const QString &from, const QStringList &mergedFiles, const QString &to, const QStringList &actions ) const;
-                
+
+                bool fMediaOK{ false };
+                bool fMediaQueued{ false };
                 bool fWrongVideoCodec{ false };
                 bool fBitrateTooHigh{ false };
                 bool fVideoResolutionTooHigh{ false };

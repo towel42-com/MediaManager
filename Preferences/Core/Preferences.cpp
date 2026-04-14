@@ -93,6 +93,11 @@ namespace NMediaManager
             }
         }
 
+        QString addStyleToText( const QString &text )
+        {
+            return QStringLiteral( "<p style='white-space:pre'>%1</p>" ).arg( text );
+        }
+
         namespace NCore
         {
             QString toString( ETranscodePreset preset, bool forEnum )

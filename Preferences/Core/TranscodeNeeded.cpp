@@ -58,7 +58,12 @@ namespace NMediaManager
                 fMediaInfo( mediaInfo )
             {
                 fWrongContainer = fWrongVideoCodec = fBitrateTooHigh = fWrongAudioCodec = fDefaultAudioNotAAC = false;
-                if ( !mediaInfo || !mediaInfo->aOK() || mediaInfo->isQueued() )
+                if ( !mediaInfo )
+                    return;
+
+                fMediaOK = mediaInfo->aOK();
+                fMediaQueued = mediaInfo->isQueued();
+                if ( !fMediaOK || fMediaQueued )
                     return;
 
                 fWrongContainer = prefs->getConvertMediaContainer() && !prefs->isEncoderFormat( mediaInfo, prefs->getConvertMediaToContainer() );
@@ -94,9 +99,21 @@ namespace NMediaManager
 
             std::optional< QString > STranscodeNeeded::getFormatMessage() const
             {
+                if ( !mediaOK() )
+                {
+                    auto msg = NPreferences::addStyleToText( QObject::tr( "File <b>'%1'</b> is not valid media" ).arg( QFileInfo( fMediaInfo->fileName() ).fileName() ) );
+                    return msg;
+                }
+
+                if ( mediaQueued() )
+                {
+                    auto msg = NPreferences::addStyleToText( QObject::tr( "File <b>'%1'</b> is still being analyzed" ).arg( QFileInfo( fMediaInfo->fileName() ).fileName() ) );
+                    return msg;
+                }
+
                 if ( wrongContainer() )
                 {
-                    auto msg = QObject::tr( "<p style='white-space:pre'>File <b>'%1'</b> is not using a %2 container</p>" ).arg( QFileInfo( fMediaInfo->fileName() ).fileName() ).arg( NPreferences::NCore::CPreferences::instance()->getConvertMediaToContainer() );
+                    auto msg = NPreferences::addStyleToText( QObject::tr( "File <b>'%1'</b> is not using a %2 container" ).arg( QFileInfo( fMediaInfo->fileName() ).fileName() ).arg( NPreferences::NCore::CPreferences::instance()->getConvertMediaToContainer() ) );
                     return msg;
                 }
                 return {};
@@ -106,7 +123,7 @@ namespace NMediaManager
             {
                 if ( wrongVideoCodec() )
                 {
-                    auto msg = QObject::tr( "<p style='white-space:pre'>File <b>'%1'</b> is not using the '%2' video codec</p>" ).arg( QFileInfo( fMediaInfo->fileName() ).fileName() ).arg( NPreferences::NCore::CPreferences::instance()->getTranscodeToVideoCodec() );
+                    auto msg = NPreferences::addStyleToText( QObject::tr( "File <b>'%1'</b> is not using the '%2' video codec" ).arg( QFileInfo( fMediaInfo->fileName() ).fileName() ).arg( NPreferences::NCore::CPreferences::instance()->getTranscodeToVideoCodec() ) );
                     return msg;
                 }
                 return {};
@@ -116,7 +133,7 @@ namespace NMediaManager
             {
                 if ( bitrateTooHigh() )
                 {
-                    auto msg = QObject::tr( "<p style='white-space:pre'>File <b>'%1'</b> overall bit rate is higher than '%2'</p>" ).arg( QFileInfo( fMediaInfo->fileName() ).fileName() ).arg( NPreferences::NCore::CPreferences::instance()->getTargetBitrateDisplayString( fMediaInfo ) );
+                    auto msg = addStyleToText( QObject::tr( "File <b>'%1'</b> overall bit rate is higher than '%2'" ).arg( QFileInfo( fMediaInfo->fileName() ).fileName() ).arg( NPreferences::NCore::CPreferences::instance()->getTargetBitrateDisplayString( fMediaInfo ) ) );
                     return msg;
                 }
                 return {};
@@ -127,7 +144,7 @@ namespace NMediaManager
                 if ( resolutionTooHigh() )
                 {
                     auto resolution = fMediaInfo->getResolution();
-                    auto msg = QObject::tr( "<p style='white-space:pre'>File <b>'%1'</b> resolution higher than HD resolution (1920x1080)</p>" ).arg( QFileInfo( fMediaInfo->fileName() ).fileName() );
+                    auto msg = addStyleToText( QObject::tr( "File <b>'%1'</b> resolution higher than HD resolution (1920x1080)" ).arg( QFileInfo( fMediaInfo->fileName() ).fileName() ) );
                     return msg;
                 }
                 return {};
@@ -138,14 +155,14 @@ namespace NMediaManager
                 if ( bitrateTooHigh() )
                 {
                     auto targetAudioCodec = defaultAudioNotAAC51() ? "AAC 5.1" : ( NPreferences::NCore::CPreferences::instance()->getTranscodeToAudioCodec() );
-                    auto msg = QObject::tr( "<p style='white-space:pre'>File <b>'%1'</b>'s overall bitrate is too high, removing all audio streams except the default an transcoding the audio track to the '%2' audio codec</p>" ).arg( QFileInfo( fMediaInfo->fileName() ).fileName() ).arg( targetAudioCodec );
+                    auto msg = addStyleToText( QObject::tr( "File <b>'%1'</b>'s overall bitrate is too high, removing all audio streams except the default an transcoding the audio track to the '%2' audio codec" ).arg( QFileInfo( fMediaInfo->fileName() ).fileName() ).arg( targetAudioCodec ) );
                     return msg;
                 }
 
                 if ( defaultAudioNotAAC51() || wrongAudioCodec() )
                 {
                     auto targetAudioCodec = defaultAudioNotAAC51() ? "AAC 5.1" : ( NPreferences::NCore::CPreferences::instance()->getTranscodeToAudioCodec() );
-                    auto msg = QObject::tr( "<p style='white-space:pre'>File <b>'%1'</b>'s default audio track is not the '%2' audio codec</p>" ).arg( QFileInfo( fMediaInfo->fileName() ).fileName() ).arg( targetAudioCodec );
+                    auto msg = addStyleToText( QObject::tr( "File <b>'%1'</b>'s default audio track is not the '%2' audio codec" ).arg( QFileInfo( fMediaInfo->fileName() ).fileName() ).arg( targetAudioCodec ) );
                     return msg;
                 }
 
@@ -192,7 +209,7 @@ namespace NMediaManager
                 return actions;
             }
 
-            QString STranscodeNeeded::getProgressLabelHeader( const QString &from, const QStringList &mergedFiles, const QString &to, const QStringList & actions ) const
+            QString STranscodeNeeded::getProgressLabelHeader( const QString &from, const QStringList &mergedFiles, const QString &to, const QStringList &actions ) const
             {
                 if ( actions.isEmpty() )
                     return {};
@@ -220,6 +237,16 @@ namespace NMediaManager
             QString STranscodeNeeded::getProgressLabelHeader( const QString &from, const QStringList &mergedFiles, const QString &to ) const
             {
                 return getProgressLabelHeader( from, mergedFiles, to, getActions() );
+            }
+
+            bool STranscodeNeeded::mediaOK() const
+            {
+                return fMediaOK;
+            }
+
+            bool STranscodeNeeded::mediaQueued() const
+            {
+                return fMediaQueued;
             }
 
             QString STranscodeNeeded::getHighResolutionProgressLabelHeader( const QString &from, const QStringList &mergedFiles, const QString &to ) const
