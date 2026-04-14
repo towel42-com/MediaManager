@@ -43,6 +43,7 @@ namespace NMediaManager
         CTranscodeModel::CTranscodeModel( NUi::CBasePage *page, QObject *parent /*= 0*/ ) :
             CDirModel( page, parent )
         {
+            connect( NTowel42MediaUtils::CMediaInfoMgr::instance(), &NTowel42MediaUtils::CMediaInfoMgr::sigFinishedProcessingMedia, this, &CTranscodeModel::slotMediaFinishedProcessing );
         }
 
         CTranscodeModel::~CTranscodeModel()
@@ -120,9 +121,56 @@ namespace NMediaManager
             return CDirModel::headers() << tr( "Language" ) << tr( "Forced?" ) << tr( "Hearing Impaired?" ) << tr( "On by Default?" ) << getMediaHeaders();
         }
 
-        void CTranscodeModel::postLoad( QTreeView *treeView )
+        void CTranscodeModel::slotMediaFinishedProcessing()
         {
-            CDirModel::postLoad( treeView );
+            if ( fPostProcessing )
+                return;
+
+            fPostProcessing = true;
+            auto itemsToDelete = postProcess( invisibleRootItem() );
+            for ( auto &&currItem : itemsToDelete )
+            {
+                deleteItem( currItem, true );
+            }
+            fPostProcessing = false;
+        }
+
+        std::unordered_set< QStandardItem * > CTranscodeModel::postProcess( QStandardItem *item )
+        {
+            std::unordered_set< QStandardItem * > retVal;
+            if ( !item || isLoading() || NTowel42MediaUtils::CMediaInfoMgr::instance()->isProcessing() )
+                return retVal;
+
+            for ( auto ii = 0; ii < item->rowCount(); ++ii )
+            {
+                auto child = item->child( ii );
+                auto curr = postProcess( child );
+                retVal.insert( curr.begin(), curr.end() );
+            }
+
+            bool deleteItem = false;
+
+            auto fi = fileInfo( item );
+            if ( fi.isFile() && fi.exists() )
+            {
+                auto parentTree = TParentTree();
+                auto previouslyAdded = std::unordered_set< QString >();
+                if ( !preFileFunction( fi, previouslyAdded, parentTree, false ) )
+                {
+                    emit sigStatusMessage( tr( "Removing media '%1' from list as it doesn't need processing" ).arg( fi.absoluteFilePath() ), false );
+                    deleteItem = true;
+                }
+            }
+            else if ( fi.exists() && !fi.isFile() && item->rowCount() == 0 )
+            {
+                deleteItem = true;
+            }
+
+            if ( deleteItem )
+            {
+                retVal.insert( item );
+            }
+            return retVal;
         }
 
         void CTranscodeModel::preLoad( QTreeView *treeView )

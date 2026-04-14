@@ -57,6 +57,9 @@ namespace NMediaManager
             CTranscodeModel( NUi::CBasePage *page, QObject *parent = nullptr );
             virtual ~CTranscodeModel() override;
 
+        private Q_SLOTS:
+            void slotMediaFinishedProcessing();
+
         protected:
             virtual std::optional< TItemStatus > computeItemStatus( const QModelIndex &idx ) const;   // the one to override
             virtual void clear() override;
@@ -94,7 +97,7 @@ namespace NMediaManager
             virtual int firstMediaItemColumn() const override { return EColumns::eMediaColumnLoc; }
             virtual QStringList headers() const override;
             virtual QString getProgressLabel( std::shared_ptr< SProcessInfo > processInfo ) const override;
-            virtual void postLoad( QTreeView * /*treeView*/ ) override;
+
             virtual void preLoad( QTreeView * /*treeView*/ ) override;
             virtual void postProcess( bool /*displayOnly*/ ) override;
             virtual std::pair< std::function< bool( const QVariant & ) >, int > getExcludeFuncForItemCount() const override;
@@ -131,6 +134,8 @@ namespace NMediaManager
             bool isSubtitleFile( const QFileInfo &fileInfo, bool *isLangFileFormat = nullptr ) const;
             bool isSubtitleFile( const QString &path, bool *isLangFileFormat = nullptr ) const;
 
+            std::unordered_set< QStandardItem * > postProcess( QStandardItem *item );
+
             std::list< QStandardItem * > getChildFiles( const QStandardItem *item, const QString &ext ) const;
             QList< QStandardItem * > getChildVideoFiles( const QStandardItem *item, bool goBelowDirs ) const;   // item should be a dir file
 
@@ -138,6 +143,7 @@ namespace NMediaManager
 
             mutable std::unordered_map< QString, std::optional< QList< QFileInfo > > > fSRTFileCache;
             mutable std::map< QStandardItem *, std::pair< QStandardItem *, NCore::SLanguageInfo > > fAllLangInfos;
+            bool fPostProcessing{ false };
         };
     }
 }
