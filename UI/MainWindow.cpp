@@ -133,7 +133,6 @@ namespace NMediaManager
             connect( fFileChecker, &NTowel42Utils::CBackgroundFileCheck::sigFinished, this, &CMainWindow::slotFileCheckFinished );
 
             NTowel42MediaUtils::CMediaInfo::setFFProbeEXE( NPreferences::NCore::CPreferences::instance()->getFFProbeEXE() );
-            connect( NTowel42MediaUtils::CMediaInfoMgr::instance(), &NTowel42MediaUtils::CMediaInfoMgr::sigStatusMessage, []( const QString &msg ) { qDebug() << msg; } );
 
             addPages();
 
@@ -191,6 +190,7 @@ namespace NMediaManager
             QTimer::singleShot( 0, this, &CMainWindow::slotDirectoryChangedImmediate );
             QTimer::singleShot( 0, this, &CMainWindow::slotWindowChanged );
             QTimer::singleShot( 0, this, &CMainWindow::slotValidateDefaults );
+            connect( NTowel42MediaUtils::CMediaInfoMgr::instance(), &NTowel42MediaUtils::CMediaInfoMgr::sigStatusMessage, this, &CMainWindow::slotStatusMessage );
         }
 
         CMainWindow::~CMainWindow()
@@ -205,12 +205,23 @@ namespace NMediaManager
             connect( this, &CMainWindow::sigPreferencesChanged, basePage, &CBasePage::slotPreferencesChanged );
             connect( basePage, &CBasePage::sigLoadFinished, this, &CMainWindow::slotLoadFinished );
             connect( basePage, &CBasePage::sigDialogClosed, this, &CMainWindow::slotQueuedPrefChange );
-            connect(
-                basePage, &CBasePage::sigStatusMessage,   //
-                [ & ]( const QString &status )   //
-                {   //
-                    this->statusBar()->showMessage( status, 500 );
-                } );
+            connect( basePage, &CBasePage::sigStatusMessage, this, &CMainWindow::slotStatusMessage );
+        }
+
+        void CMainWindow::slotStatusMessage( const QString &msg, bool debugData )
+        {
+            qDebug() << msg;
+            if ( !debugData )
+            {
+                auto currWidget = fImpl->tabWidget->currentWidget();
+                auto basePages = currWidget->findChildren< NUi::CBasePage * >();
+                if ( !basePages.isEmpty() )
+                {
+                    auto currPage = basePages.front();
+                    currPage->appendToLog( msg, true );
+                }
+                statusBar()->showMessage( msg );
+            }
         }
 
         std::shared_ptr< STabDef > CMainWindow::addPage( std::shared_ptr< STabDef > tabDef )

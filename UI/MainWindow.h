@@ -95,6 +95,7 @@ namespace NMediaManager
             virtual void slotFileCheckFinished( bool aOK, const QString &msg );
             virtual void slotValidateDefaults();
             virtual void slotPreferencesChanged( NPreferences::EPreferenceTypes prefType );
+            void slotStatusMessage( const QString &msg, bool debugData );
 
         Q_SIGNALS:
             void sigPreferencesChanged( NPreferences::EPreferenceTypes prefType );
