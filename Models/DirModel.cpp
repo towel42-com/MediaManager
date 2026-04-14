@@ -1172,7 +1172,7 @@ namespace NMediaManager
             if ( path.isEmpty() )
                 return;
 
-            emit sigStatusMessage( tr( "Updating media info for '%1'" ).arg( path ) );
+            emit sigStatusMessage( tr( "Updating media info for '%1'" ).arg( path ), false );
             auto item = getItemFromPath( path );
             if ( item )
             {
@@ -1446,6 +1446,29 @@ namespace NMediaManager
             if ( !fProcessQueue.front()->fItem )
                 return;
             appendError( fProcessQueue.front()->fItem, tr( "%1: FAILED TO PROCESS" ).arg( msg ) );
+        }
+
+        void CDirModel::deleteItem( QStandardItem *item, bool checkParentForNoChildren )
+        {
+            if ( !item || !item->parent() )
+                return;
+            auto fi = fileInfo( item );
+
+            auto absPath = fi.absoluteFilePath();
+            fMessagesForFiles.erase( absPath );
+            fPathMapping.erase( absPath );
+            fPathStatusCache.erase( absPath );
+            fDispNameCache.erase( absPath );
+            fItemStatusCache.erase( absPath );
+            fIsRootPathCache.erase( fi );
+
+            auto parent = item->parent();
+            item->parent()->removeRow( item->row() );
+            if ( checkParentForNoChildren )
+            {
+                if ( !parent->hasChildren() )
+                    deleteItem( parent, checkParentForNoChildren );
+            }
         }
 
         void CDirModel::slotRunNextProcessInQueue()
@@ -2034,7 +2057,7 @@ namespace NMediaManager
                 auto status = getItemStatus( peerIndex );
                 if ( status.has_value() && !status.value().second.startsWith( "<" ) )
                 {
-                    status.value().second = "<p style='white-space:pre'>" + status.value().second + "</p>";
+                    status.value().second = NPreferences::addStyleToText( status.value().second );
                 }
                 if ( status.has_value() )
                 {

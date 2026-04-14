@@ -279,7 +279,7 @@ namespace NMediaManager
             void sigProcessesFinished( bool status, bool showProcessResults, bool cancelled, bool reloadModel );
             void sigProcessingStarted();
             void sigDialogClosed();
-            void sigStatusMessage( const QString &msg );
+            void sigStatusMessage( const QString &msg, bool debugData );
 
         public Q_SLOTS:
             virtual bool isTVShow( const QModelIndex &idx ) const;
@@ -462,11 +462,10 @@ namespace NMediaManager
             void addProcessError( const QString &msg );
 
         protected:
+            void deleteItem( QStandardItem *item, bool checkParentForNoChildren );
             QDir fRootPath;
 
             CIconProvider *fIconProvider{ nullptr };
-
-            std::map< QString, QStandardItem * > fPathMapping;
 
             QTimer *fReloadTimer{ nullptr };
             NUi::CBasePage *fBasePage{ nullptr };
@@ -481,8 +480,10 @@ namespace NMediaManager
             mutable bool fFirstProcess{ true };
             mutable bool fIsLoading{ false };
 
-            std::unordered_map< QString, QStringList > fMessagesForFiles;
             std::list< QStandardItem * > fMsgItems;
+
+            std::unordered_map< QString, QStringList > fMessagesForFiles;
+            std::map< QString, QStandardItem * > fPathMapping;
             mutable std::unordered_map< QString, std::optional< TItemStatus > > fPathStatusCache;
             mutable std::unordered_map< QString, std::unordered_map< int, std::optional< TItemStatus > > > fItemStatusCache;
             mutable std::unordered_map< QFileInfo, bool > fIsRootPathCache;
