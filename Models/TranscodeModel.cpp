@@ -121,54 +121,69 @@ namespace NMediaManager
             return CDirModel::headers() << tr( "Language" ) << tr( "Forced?" ) << tr( "Hearing Impaired?" ) << tr( "On by Default?" ) << getMediaHeaders();
         }
 
+        void CTranscodeModel::reloadMediaInfo( const QModelIndex &idx )
+        {
+            CDirModel::reloadMediaInfo( idx );
+
+            deleteItemIfNoTranscodingNecessary( idx, false );
+        }
+
         void CTranscodeModel::slotMediaFinishedProcessing()
         {
             if ( fPostProcessing )
                 return;
 
             fPostProcessing = true;
-            auto itemsToDelete = postProcess( invisibleRootItem() );
-            for ( auto &&currItem : itemsToDelete )
+            auto items = findItemsToDelete( invisibleRootItem() );
+            for ( auto &&ii : items )
             {
-                deleteItem( currItem, true );
+                deleteItem( ii, true );
             }
             fPostProcessing = false;
         }
 
-        std::unordered_set< QStandardItem * > CTranscodeModel::postProcess( QStandardItem *item )
+        bool CTranscodeModel::itemNeedsTranscoding( const QModelIndex &idx )
+        {
+            auto fi = fileInfo( idx );
+
+            if ( !NPreferences::NCore::CPreferences::instance()->isMediaFile( fi ) )
+            {
+                return false;
+            }
+
+            auto parentTree = TParentTree();
+            auto previouslyAdded = std::unordered_set< QString >();
+            return preFileFunction( fi, previouslyAdded, parentTree, false );
+        }
+
+        void CTranscodeModel::deleteItemIfNoTranscodingNecessary( const QModelIndex &idx, bool checkParentsForEmpty )
+        {
+            if ( !itemNeedsTranscoding( idx ) )
+            {
+                emit sigStatusMessage( tr( "Removing media '%1' from list as it doesn't need processing" ).arg( fileInfo( idx ).absoluteFilePath() ), false );
+                this->deleteItem( itemFromIndex( idx ), checkParentsForEmpty );
+            }
+        }
+
+        std::unordered_set< QStandardItem * > CTranscodeModel::findItemsToDelete( QStandardItem *item )
         {
             std::unordered_set< QStandardItem * > retVal;
-            if ( !item || isLoading() || NTowel42MediaUtils::CMediaInfoMgr::instance()->isProcessing() )
-                return retVal;
-
             for ( auto ii = 0; ii < item->rowCount(); ++ii )
             {
-                auto child = item->child( ii );
-                auto curr = postProcess( child );
+                auto curr = findItemsToDelete( item->child( ii ) );
                 retVal.insert( curr.begin(), curr.end() );
             }
 
-            bool deleteItem = false;
-
             auto fi = fileInfo( item );
-            if ( fi.isFile() && fi.exists() )
+            if ( fi.isFile() )
             {
-                auto parentTree = TParentTree();
-                auto previouslyAdded = std::unordered_set< QString >();
-                if ( !preFileFunction( fi, previouslyAdded, parentTree, false ) )
-                {
-                    emit sigStatusMessage( tr( "Removing media '%1' from list as it doesn't need processing" ).arg( fi.absoluteFilePath() ), false );
-                    deleteItem = true;
-                }
+                if ( !itemNeedsTranscoding( indexFromItem( item ) ) )
+                    retVal.insert( item );
             }
-            else if ( fi.exists() && !fi.isFile() && item->rowCount() == 0 )
+            else if ( fi.isDir() || !fi.exists() )
             {
-                deleteItem = true;
-            }
-
-            if ( deleteItem )
-            {
-                retVal.insert( item );
+                if ( !item->hasChildren() )
+                    retVal.insert( item );
             }
             return retVal;
         }

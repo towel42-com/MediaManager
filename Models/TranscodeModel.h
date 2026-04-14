@@ -61,6 +61,12 @@ namespace NMediaManager
             void slotMediaFinishedProcessing();
 
         protected:
+            virtual void reloadMediaInfo( const QModelIndex &idx ) override;
+        
+            bool itemNeedsTranscoding( const QModelIndex &idx );
+            void deleteItemIfNoTranscodingNecessary( const QModelIndex &idx, bool checkParentsForEmpty );
+            std::unordered_set< QStandardItem * > findItemsToDelete( QStandardItem *item );
+
             virtual std::optional< TItemStatus > computeItemStatus( const QModelIndex &idx ) const;   // the one to override
             virtual void clear() override;
 
@@ -134,7 +140,7 @@ namespace NMediaManager
             bool isSubtitleFile( const QFileInfo &fileInfo, bool *isLangFileFormat = nullptr ) const;
             bool isSubtitleFile( const QString &path, bool *isLangFileFormat = nullptr ) const;
 
-            std::unordered_set< QStandardItem * > postProcess( QStandardItem *item );
+            std::unordered_set< QStandardItem * > itemsToDelete( QStandardItem *item );
 
             std::list< QStandardItem * > getChildFiles( const QStandardItem *item, const QString &ext ) const;
             QList< QStandardItem * > getChildVideoFiles( const QStandardItem *item, bool goBelowDirs ) const;   // item should be a dir file
