@@ -664,9 +664,13 @@ namespace NMediaManager
                                 }
                                 else
                                 {
-                                    if ( !NTowel42Utils::NFileUtils::backup( newName ) )
+                                    // same file just different case, dont backup
+                                    if ( oldName.compare( newName, Qt::CaseInsensitive ) != 0 )
                                     {
-                                        errorMsg = tr( "Could not backup %1" ).arg( newName );
+                                        if ( !NTowel42Utils::NFileUtils::backup( newName ) )
+                                        {
+                                            errorMsg = tr( "Could not backup %1" ).arg( newName );
+                                        }
                                     }
                                     auto fi = QFile( oldName );
                                     aOK = fi.rename( newName );
