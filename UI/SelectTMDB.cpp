@@ -173,7 +173,7 @@ namespace NMediaManager
         }
 
         const QString apiKeyV3 = "7c58ff37c9fadd56c51dae3a97339378";
-        const QString apiKeyV4 =
+         const QString apiKeyV4 =
             "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI3YzU4ZmYzN2M5ZmFkZDU2YzUxZGFlM2E5NzMzOTM3OCIsInN1YiI6IjVmYTAzMzJiNjM1MDEzMDAzMTViZjg2NyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.MBAzJIxvsRm54kgPKcfixxtfbg2bdNGDHKnEt15Nuac";
 
         void CSelectTMDB::deleteParent( QTreeWidgetItem *item )
@@ -381,7 +381,7 @@ namespace NMediaManager
 
             if ( info->mediaType() == NCore::EMediaType::eTVShow || info->mediaType() == NCore::EMediaType::eTVSeason )
             {
-                if ( !info->hasChildren() )
+                if ( !info->hasChildren() && !info->hasParent() )
                     return;
             }
 
@@ -597,7 +597,10 @@ namespace NMediaManager
             searchInfo->setSearchName( fImpl->searchName->text().trimmed() );
             searchInfo->setReleaseDate( fImpl->searchReleaseYear->text().trimmed() );
             searchInfo->setSeason( fImpl->searchSeason->value() );
-            searchInfo->setEpisodes( { fImpl->searchEpisode->value() } );
+            if ( fImpl->searchEpisode->value() > 0 )
+                searchInfo->setEpisodes( { fImpl->searchEpisode->value() } );
+            else
+                searchInfo->setEpisodes( {} );
             searchInfo->setTMDBID( fImpl->searchTMDBID->text().trimmed() );
             searchInfo->setMediaType( fImpl->searchForTVShows->isChecked() ? NCore::EMediaType::eTVShow : NCore::EMediaType::eMovie );
             searchInfo->setExactMatchOnly( fImpl->exactMatchesOnly->isChecked() );
