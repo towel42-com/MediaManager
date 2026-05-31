@@ -780,7 +780,7 @@ namespace NMediaManager
                 fSearchName.replace( match.capturedStart( "fulltext" ), match.capturedLength( "fulltext" ), "" );
             }
             if ( fSearchResult )
-                fTMDBID = fSearchResult->getTMDBID();
+                fTMDBID = fSearchResult->getSearchTMDBID();
         }
 
         bool SSearchTMDBInfo::canSearch() const

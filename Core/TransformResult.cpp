@@ -228,6 +228,11 @@ namespace NMediaManager
             return NTowel42Utils::NStringUtils::transformTitle( subTitles.join( "-" ) );
         }
 
+        QString CTransformResult::getSearchTMDBID() const
+        {
+            return tmdbID();
+        }
+
         QString CTransformResult::getTMDBID() const
         {
             auto retVal = tmdbID();
@@ -339,6 +344,11 @@ namespace NMediaManager
             return cleanFileName( fi.completeBaseName(), fi.isDir() );
         }
 
+        bool CTransformResult::hasParent() const
+        {
+            return !fParent.expired();
+        }
+
         void CTransformResult::onAllChildren( std::function< void( std::shared_ptr< CTransformResult > child ) > func, std::function< bool() > stopFunc )
         {
             for ( auto &&ii : fChildren )
@@ -423,7 +433,7 @@ namespace NMediaManager
             if ( forDebug )
             {
                 QStringList tmp;
-                tmp << "InfoType: '" + NMediaManager::NCore::toEnumString( mediaType() ) + "'" << "Title: '" + title() + "'" << "Movie ReleaseDate: '" + fMovieReleaseDate.second + "'" << "ShowFirstAirDate: '" + fShowFirstAirDate.second + "'" << "SeasonStartDate: '" + fSeasonStartDate.second + "'" << "EpisodeAirDate: '" + fEpisodeAirDate.second + "'" << "TMDBID: '" + tmdbID() + "'" << "Season TMBDID: '" + seasonTMDBID() + "'" << "Episode TMDBID: '" + episodeTMDBID() + "'" << "Season: '" + season() + "'" << QString( QStringLiteral( " Season Only? %1" ) ).arg( fSeasonOnly ? QStringLiteral( "Yes" ) : QStringLiteral( "No" )) << "Episode: '" + episode() + "'" << "Sub Title: '" + subTitle() + "'" << "ExtraInfo: '" + extraInfo() + "'" << "Description: '" + description() + "'" << QStringLiteral( "Has Pixmap? %1" ).arg( pixmap().isNull() ? QStringLiteral( "No" ) : QStringLiteral( "Yes" ) );
+                tmp << "InfoType: '" + NMediaManager::NCore::toEnumString( mediaType() ) + "'" << "Title: '" + title() + "'" << "Movie ReleaseDate: '" + fMovieReleaseDate.second + "'" << "ShowFirstAirDate: '" + fShowFirstAirDate.second + "'" << "SeasonStartDate: '" + fSeasonStartDate.second + "'" << "EpisodeAirDate: '" + fEpisodeAirDate.second + "'" << "TMDBID: '" + tmdbID() + "'" << "Season TMBDID: '" + seasonTMDBID() + "'" << "Episode TMDBID: '" + episodeTMDBID() + "'" << "Season: '" + season() + "'" << QString( QStringLiteral( " Season Only? %1" ) ).arg( fSeasonOnly ? QStringLiteral( "Yes" ) : QStringLiteral( "No" ) ) << "Episode: '" + episode() + "'" << "Sub Title: '" + subTitle() + "'" << "ExtraInfo: '" + extraInfo() + "'" << "Description: '" + description() + "'" << QStringLiteral( "Has Pixmap? %1" ).arg( pixmap().isNull() ? QStringLiteral( "No" ) : QStringLiteral( "Yes" ) );
                 QStringList children = { " - Children(" };
                 for ( auto &&ii : fChildren )
                 {

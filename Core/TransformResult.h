@@ -87,6 +87,7 @@ namespace NMediaManager
             std::pair< QDate, QString > getDate() const;
 
             QString getSubTitle() const;
+            QString getSearchTMDBID() const;
             QString getTMDBID() const;
             bool isSeasonOnly() const { return fSeasonOnly; }
             void setSeasonOnly( bool value ) { fSeasonOnly = value; }
@@ -138,6 +139,7 @@ namespace NMediaManager
 
             void setParent( std::shared_ptr< CTransformResult > parent ) { fParent = parent; }
 
+            bool hasParent() const;
             bool hasChildren() const { return !fChildren.empty(); }
             void addChild( std::shared_ptr< CTransformResult > child ) { fChildren.push_back( child ); }
 
