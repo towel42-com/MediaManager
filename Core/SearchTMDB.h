@@ -140,8 +140,8 @@ namespace NMediaManager
             [[nodiscard]] bool loadSearchResult( const QJsonObject &resultItem );
             [[nodiscard]] bool loadEpisodeDetails( int episodeNum, const QJsonObject &episodeInfo, std::shared_ptr< CTransformResult > seasonItem );
 
-            void addResult( std::shared_ptr< CTransformResult > result );
-            void addResultToList( std::list< std::shared_ptr< CTransformResult > > &list, std::shared_ptr< CTransformResult > result, std::shared_ptr< SSearchTMDBInfo > searchInfo ) const;
+            [[nodiscard]] bool addResult( std::shared_ptr< CTransformResult > result );
+            [[nodiscard]] bool addResultToList( std::list< std::shared_ptr< CTransformResult > > &list, std::shared_ptr< CTransformResult > result, std::shared_ptr< SSearchTMDBInfo > searchInfo ) const;
 
             void checkIfStillSearching();
 

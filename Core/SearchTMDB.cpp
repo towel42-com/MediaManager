@@ -287,7 +287,7 @@ namespace NMediaManager
                 handleRequestError( reply );
                 return;
             }
-            
+
             bool handled = loadConfig( reply );
             handled = handled || loadSearchResult( reply );
             handled = handled || loadMovieResult( reply );
@@ -339,7 +339,10 @@ namespace NMediaManager
                 return;
             if ( fSearchInfo && fSeasonInfoReplies.second.has_value() && !fSeasonInfoReplies.second.value() )
             {
-                fErrorMessage = QStringLiteral( "Could not find episode '%1' for TV show '%2'" ).arg( fSearchInfo->episodeString( false ) ).arg( fSearchInfo->searchName() );
+                if ( fSearchPageNumber.first == -1 )
+                    fErrorMessage = QStringLiteral( "Could not find TV show '%2'" ).arg( fSearchInfo->searchName() );
+                else
+                    fErrorMessage = QStringLiteral( "Could not find episode '%1' for TV show '%2'" ).arg( fSearchInfo->episodeString( false ) ).arg( fSearchInfo->searchName() );
             }
 
             //qDebug() << "After" << *this;
@@ -731,12 +734,11 @@ namespace NMediaManager
                 }
             }
 
+            auto isBestMatch = addResult( searchResult );
             if ( fSearchInfo->isTVMedia() && ( tmdbid != -1 ) )
             {
                 searchTVDetails( searchResult, tmdbid, -1 );
             }
-
-            addResult( searchResult );
 
             return true;
         }
@@ -914,7 +916,7 @@ namespace NMediaManager
             return false;
         }
 
-        void CSearchTMDB::addResultToList( std::list< std::shared_ptr< CTransformResult > > &list, std::shared_ptr< CTransformResult > result, std::shared_ptr< SSearchTMDBInfo > searchInfo ) const
+        bool CSearchTMDB::addResultToList( std::list< std::shared_ptr< CTransformResult > > &list, std::shared_ptr< CTransformResult > result, std::shared_ptr< SSearchTMDBInfo > searchInfo ) const
         {
             if ( ( list.size() == 1 ) && ( list.front()->isNotFoundResult() ) )
             {
@@ -928,16 +930,17 @@ namespace NMediaManager
                     break;
             }
             list.insert( pos, result );
+            return *list.begin() == result;
         }
 
-        void CSearchTMDB::addResult( std::shared_ptr< CTransformResult > result )   //, TBettterMatchFunc isBetterMatchFunc )
+        bool CSearchTMDB::addResult( std::shared_ptr< CTransformResult > result )   //, TBettterMatchFunc isBetterMatchFunc )
         {
             if ( fCurrentQueuedSearch.has_value() )
             {
                 addResultToList( fQueuedResults[ fCurrentQueuedSearch.value().first ], result, fCurrentQueuedSearch.value().second );
             }
 
-            addResultToList( fResults, result, fSearchInfo );
+            return addResultToList( fResults, result, fSearchInfo );
         }
 
         bool CSearchTMDB::loadImageResults( std::shared_ptr< CNetworkReply > reply )
