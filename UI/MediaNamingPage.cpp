@@ -377,7 +377,7 @@ namespace NMediaManager
             auto nm = model()->getSearchName( idx );
 
             CSelectTMDB dlg( nm, titleInfo, this );
-            dlg.setSearchForTVShows( model()->treatAsTVShow( QFileInfo( fullPath ), isTVShow ), true );
+            dlg.setSearchForTVShows( model()->treatAsTVShow( QFileInfo( fullPath ), isTVShow ), false );
             dlg.setExactMatchOnly( NPreferences::NCore::CPreferences::instance()->getExactMatchesOnly(), true );
 
             if ( dlg.exec() == QDialog::Accepted )
