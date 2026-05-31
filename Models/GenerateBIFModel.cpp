@@ -27,7 +27,7 @@
 #include "T42-Utils/DoubleProgressDlg.h"
 #include "T42-MediaUtils/MediaInfo.h"
 #include "T42-Utils/BIFFile.h"
-#include "T42-Utils/GIFWriterDlg.h"
+#include "T42-Utils/BIFToGIFWriterDlg.h"
 
 #include <QDir>
 #include <QTimer>
@@ -198,7 +198,7 @@ namespace NMediaManager
                             return false;
                         }
 
-                        aOK = NTowel42Utils::CGIFWriterDlg::saveToGIF(
+                        aOK = NTowel42Utils::CBIFToGIFWriterDlg::saveToGIF(
                             nullptr, processInfo->fNewNames.back(), allImages.value(), NPreferences::NCore::CPreferences::instance()->gifDitherImage(), NPreferences::NCore::CPreferences::instance()->gifFlipImage(),
                             NPreferences::NCore::CPreferences::instance()->gifLoopCount(), NPreferences::NCore::CPreferences::instance()->gifDelay(),
                             [ this, fi, processInfo ]( size_t min, size_t max )

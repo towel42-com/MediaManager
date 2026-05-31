@@ -32,7 +32,7 @@ add_library(${PROJECT_NAME} STATIC
 )
 
 set_target_properties( ${PROJECT_NAME} PROPERTIES FOLDER ${FOLDER_NAME} )
-
+add_definitions( -DTOWEL42_GIFSUPPORT=1 )
 target_link_libraries( ${PROJECT_NAME}
     PUBLIC
         ${project_pub_DEPS}
