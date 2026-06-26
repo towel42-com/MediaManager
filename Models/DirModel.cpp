@@ -1220,7 +1220,9 @@ namespace NMediaManager
                 if ( !item )
                     continue;
 
-                item->setText( mediaInfo[ *mediaTagIter ].toString() );
+                auto &&variant = mediaInfo[ *mediaTagIter ];
+                auto &&value = NTowel42Utils::variantToString( variant );
+                item->setText( value );
             }
 
             clearItemStatusCache( idx );
@@ -2327,7 +2329,7 @@ namespace NMediaManager
                 << tr( "Audio Codec(s)" )   //
                 << tr( "Total Audio Bitrate" )   //
                 << tr( "Default Audio Sample Rate" )   //
-                << tr( "Subtitles(s)" )   //
+                << tr( "Subtitle(s)" )   //
                 << tr( "Comment" );
 
             static auto sDefaultTags =   //
