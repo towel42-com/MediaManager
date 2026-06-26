@@ -75,23 +75,7 @@ namespace NMediaManager
 
                 for ( auto &&ii : srtFiles )
                 {
-                    //retVal << "-sub_charenc" << "cp1252";
                     retVal << "-i" << ii.path();
-
-                    //QFile file( ii.path() );
-                    //file.open( QFile::ReadOnly );
-                    //if ( file.isOpen() )
-                    //{
-                    //    auto bom = file.peek( 4 );
-                    //    qDebug() << ii.path() << "BOM:" << bom;
-                    //    auto codec = QTextCodec::codecForUtfText( bom, nullptr );
-                    //    if ( codec )
-                    //    {
-                    //        retVal << "-sub_charenc"
-                    //               << "cp1252";
-                    //         // codec->name();
-                    //    }
-                    //}
                 }
                 for ( auto &&subIDXPair : subIdxFiles )
                 {
@@ -110,14 +94,9 @@ namespace NMediaManager
                 if ( !resolution.has_value() && !bitrate.has_value() && ( transcodeNeeded.containerOnly() || !transcodeNeeded.transcodeNeeded() ) )
                 {
                     // already HVEC but wrong container, just copy
-                    retVal << "-map"
-                           << "0:v?"
-                           << "-c:v"
-                           << "copy"   //
-                           << "-map"
-                           << "0:a?"
-                           << "-c:a"
-                           << "copy"   //
+                    retVal << "-map" << "0:v" << "-map" << "0:a" << "-map" << "0:s" << "-c" << "copy"   //"
+                           //<< "-map" << "0:a?" << "-c:a" << "copy"   //
+                           //<< "-map" << "0:s?" << "-c:s" << "copy" //
                         ;
                 }
                 else
