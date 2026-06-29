@@ -1967,8 +1967,8 @@ namespace NMediaManager
             if ( pos != fIsRootPathCache.end() )
                 return ( *pos ).second;
 
-            bool retVal = false;
-            if ( !path.isFile() && !path.isRelative() )
+            bool retVal = path.isRoot();
+            if ( !retVal && !path.isFile() && !path.isRelative() )
             {
                 retVal = QFileInfo( fRootPath.absoluteFilePath( "." ) ) == path;
             }
