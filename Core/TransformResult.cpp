@@ -377,7 +377,7 @@ namespace NMediaManager
             // pixmap, parent, children and mediatype do not count
         }
 
-        QString CTransformResult::transformedName( const QFileInfo &fileInfo, const SPatternInfo &patternInfo, bool titleOnly ) const
+        QString CTransformResult::transformedName( const QFileInfo &fileInfo, const SPatternInfo &patternInfo, bool titleOnly, bool forceAsDir ) const
         {
             auto title = getTitle();
             auto releaseYear = getMovieReleaseYear();
@@ -391,7 +391,8 @@ namespace NMediaManager
             auto extraInfo = this->extraInfo();
             auto episodeTitle = getSubTitle();
 
-            QString retVal = fileInfo.isDir() ? patternInfo.dirPattern() : patternInfo.filePattern();
+            bool treatAsDir = ( forceAsDir || fileInfo.isDir() );
+            QString retVal = treatAsDir ? patternInfo.dirPattern() : patternInfo.filePattern();
             retVal = replaceCapture( "title", retVal, title );
             retVal = replaceCapture( "year", retVal, releaseYear );
             retVal = replaceCapture( "show_year", retVal, showYear );
@@ -399,20 +400,20 @@ namespace NMediaManager
             retVal = replaceCapture( "episode_year", retVal, episodeYear );
             retVal = replaceCapture( "tmdbid", retVal, tmdbid );
             retVal = replaceCapture( "show_tmdbid", retVal, showTMDBID );
-            retVal = replaceCapture( "season", retVal, QStringLiteral( "%1" ).arg( season, fileInfo.isDir() ? 1 : 2, QChar( '0' ) ) );
+            retVal = replaceCapture( "season", retVal, QStringLiteral( "%1" ).arg( season, treatAsDir ? 1 : 2, QChar( '0' ) ) );
             retVal = replaceCapture( "episode", retVal, episode );
             retVal = replaceCapture( "episode_title", retVal, episodeTitle );
             retVal = replaceCapture( "extra_info", retVal, extraInfo );
 
-            retVal = cleanFileName( retVal, fileInfo.isDir() );
-            if ( !titleOnly && !fileInfo.isDir() )
+            retVal = cleanFileName( retVal, treatAsDir );
+            if ( !titleOnly && !treatAsDir )
                 retVal += "." + fileInfo.suffix();
             return retVal;
         }
 
-        QString CTransformResult::transformedName( const QString &path, const SPatternInfo &info, bool titleOnly ) const
+        QString CTransformResult::transformedName( const QString &path, const SPatternInfo &info, bool titleOnly, bool forceAsDir ) const
         {
-            return transformedName( QFileInfo( path ), info, titleOnly );
+            return transformedName( QFileInfo( path ), info, titleOnly, forceAsDir );
         }
 
         void CTransformResult::removeChild( std::shared_ptr< CTransformResult > info )
