@@ -156,6 +156,7 @@ namespace NMediaManager
                     bool search = true;
                     if ( NPreferences::NCore::CPreferences::instance()->getOnlyTransformDirectories() && !model()->fileInfo( index ).isDir() )
                         search = false;
+                    search = search && !model()->isRootPath( index );
                     std::optional< NCore::EMediaType > forcedMediaType;
                     auto searchIndex = index;
                     if ( search && index.data( NModels::ECustomRoles::eIsSeasonDirRole ).toBool() )
