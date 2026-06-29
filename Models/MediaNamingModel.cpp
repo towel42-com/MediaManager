@@ -145,14 +145,8 @@ namespace NMediaManager
             auto pos = map.find( filePath );
             auto retVal = std::make_pair( false, QString() );
 
-            if ( pos == map.end() ) 
+            if ( pos == map.end() )
             {
-                QString fn = fileInfo.fileName();
-                if ( !fileInfo.isDir() )
-                {
-                    fn = fileInfo.fileName();
-                }
-
                 auto transformInfo = getTransformResult( filePath, false );
                 if ( !transformInfo )
                 {
@@ -177,7 +171,12 @@ namespace NMediaManager
                     else
                     {
                         retVal.first = true;
-                        retVal.second = transformInfo->transformedName( fileInfo, patternInfo, false );
+                        retVal.second = transformInfo->transformedName( fileInfo, patternInfo, false, false );
+                        if ( fileInfo.isFile() && isRootPath( fileInfo.absolutePath() ) )
+                        {
+                            auto dir = transformInfo->transformedName( fileInfo, patternInfo, false, true );
+                            retVal.second = dir + "/" + retVal.second;
+                        }
                     }
                 }
 
@@ -1065,7 +1064,7 @@ namespace NMediaManager
             if ( searchResults )
             {
                 year = searchResults->getYear();
-                title = searchResults->transformedName( fileName, searchResults->isTVShow() ? fTVPatterns : fMoviePatterns, true );
+                title = searchResults->transformedName( fileName, searchResults->isTVShow() ? fTVPatterns : fMoviePatterns, true, false );
             }
             return CDirModel::setMediaTags( fileName, title, year, QString(), &msg );
         }
@@ -1108,51 +1107,6 @@ namespace NMediaManager
             }
 
             return hasFiles;
-        }
-
-        std::shared_ptr< NCore::CTransformResult > CMediaNamingModel::getTransformResult( QStandardItem *item, bool checkParents ) const
-        {
-            auto idx = indexFromItem( item );
-            return getTransformResult( idx, checkParents );
-        }
-
-        std::shared_ptr< NCore::CTransformResult > CMediaNamingModel::getTransformResult( const QModelIndex &idx, bool checkParents ) const
-        {
-            if ( !idx.isValid() )
-                return {};
-
-            auto fi = fileInfo( idx );
-            return getTransformResult( fi, checkParents );
-        }
-
-        std::shared_ptr< NCore::CTransformResult > CMediaNamingModel::getTransformResult( const QString &path, bool checkParents ) const
-        {
-            return getTransformResult( QFileInfo( path ), checkParents );
-        }
-
-        std::shared_ptr< NCore::CTransformResult > CMediaNamingModel::getTransformResult( const QFileInfo &fi, bool checkParents ) const
-        {
-            auto path = fi.absoluteFilePath();
-            if ( path.isEmpty() )
-                return {};
-
-            auto pos = fTransformResultMap.find( path );
-            if ( pos != fTransformResultMap.end() )
-                return ( *pos ).second;
-
-            if ( !checkParents )
-                return {};
-
-            if ( isRootPath( fi.absoluteFilePath() ) )
-                return {};
-
-            auto regExStr = QStringLiteral( R"(^([A-Z]\:(\\|\/)|(\/))$)" );
-            auto regEx = QRegularExpression( regExStr, QRegularExpression::CaseInsensitiveOption );
-            auto match = regEx.match( path );
-            if ( match.hasMatch() )
-                return {};
-
-            return getTransformResult( fi.absolutePath(), true );
         }
 
         void CMediaNamingModel::updateTransformResults( const QString &newName, const QString &oldName )
@@ -1206,6 +1160,45 @@ namespace NMediaManager
                 fTransformResultMap[ newDir.absolutePath() ] = ( *pos2 ).second;
                 fTransformResultMap.erase( pos2 );
             }
+        }
+
+        std::shared_ptr< NCore::CTransformResult > CMediaNamingModel::getTransformResult( QStandardItem *item, bool checkParents ) const
+        {
+            auto idx = indexFromItem( item );
+            return getTransformResult( idx, checkParents );
+        }
+
+        std::shared_ptr< NCore::CTransformResult > CMediaNamingModel::getTransformResult( const QModelIndex &idx, bool checkParents ) const
+        {
+            if ( !idx.isValid() )
+                return {};
+
+            auto fi = fileInfo( idx );
+            return getTransformResult( fi, checkParents );
+        }
+
+        std::shared_ptr< NCore::CTransformResult > CMediaNamingModel::getTransformResult( const QString &path, bool checkParents ) const
+        {
+            return getTransformResult( QFileInfo( path ), checkParents );
+        }
+
+        std::shared_ptr< NCore::CTransformResult > CMediaNamingModel::getTransformResult( const QFileInfo &fi, bool checkParents ) const
+        {
+            auto path = fi.absoluteFilePath();
+            if ( path.isEmpty() )
+                return {};
+
+            auto pos = fTransformResultMap.find( path );
+            if ( pos != fTransformResultMap.end() )
+                return ( *pos ).second;
+
+            if ( !checkParents )
+                return {};
+
+            if ( isRootPath( fi ) )
+                return {};
+
+            return getTransformResult( fi.absolutePath(), true );
         }
     }
 }
