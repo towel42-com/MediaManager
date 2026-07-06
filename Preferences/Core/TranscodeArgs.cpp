@@ -94,9 +94,9 @@ namespace NMediaManager
                 if ( !resolution.has_value() && !bitrate.has_value() && ( transcodeNeeded.containerOnly() || !transcodeNeeded.transcodeNeeded() ) )
                 {
                     // already HVEC but wrong container, just copy
-                    retVal << "-map" << "0:v" << "-map" << "0:a" << "-map" << "0:s" << "-c" << "copy"   //"
-                           //<< "-map" << "0:a?" << "-c:a" << "copy"   //
-                           //<< "-map" << "0:s?" << "-c:s" << "copy" //
+                    retVal << "-map" << "0:v?" << "-c:v" << "copy"   //
+                           << "-map" << "0:a?" << "-c:a" << "copy"   //
+                           << "-map" << "0:s?" << "-c:s" << "srt"   //
                         ;
                 }
                 else
