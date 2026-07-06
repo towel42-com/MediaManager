@@ -1181,7 +1181,7 @@ namespace NMediaManager
                     { NTowel42MediaUtils::EMediaTags::eOverAllBitrateString, false },   //
                     { NTowel42MediaUtils::EMediaTags::eAudioChannelCount, false },   //
                     { NTowel42MediaUtils::EMediaTags::eTotalAudioBitrateString, false },   //
-                    { NTowel42MediaUtils::EMediaTags::eAllSubtitleLanguages, false },   //
+                    { NTowel42MediaUtils::EMediaTags::eAllSubtitleDispString, false },   //
                     { NTowel42MediaUtils::EMediaTags::eAllSubtitleCodecs, false } };
 
                 if ( !settings.contains( "EnabledTags" ) )
