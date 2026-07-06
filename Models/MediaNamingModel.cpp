@@ -92,9 +92,8 @@ namespace NMediaManager
 
         bool CMediaNamingModel::isValidName( const QString &path, bool isDir, std::optional< bool > isTVShow ) const
         {
-            bool defaultAsTVShow = isTVShow.has_value() ? isTVShow.value() : this->isChecked( path, EColumns::eIsTVShow );
-
-            bool asTVShow = treatAsTVShow( path, defaultAsTVShow );
+            auto defaultAsTVShow = isTVShow.value_or( this->isChecked( path, EColumns::eIsTVShow ) );
+            auto asTVShow = treatAsTVShow( path, defaultAsTVShow );
             if ( ( !asTVShow && fMoviePatterns.isValidName( path, isDir ) ) || ( asTVShow && fTVPatterns.isValidName( path, isDir ) ) )
                 return true;
 
