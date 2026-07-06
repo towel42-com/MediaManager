@@ -1912,7 +1912,7 @@ namespace NMediaManager
 
         int CDirModel::getMediaSubtitlesLoc() const
         {
-            return getMediaColumn( NTowel42MediaUtils::EMediaTags::eAllSubtitleLanguages );
+            return getMediaColumn( NTowel42MediaUtils::EMediaTags::eAllSubtitleDispString );
         }
 
         int CDirModel::getMediaCommentLoc() const
@@ -2345,7 +2345,7 @@ namespace NMediaManager
                     NTowel42MediaUtils::EMediaTags::eAllAudioCodecsDisp,   //
                     NTowel42MediaUtils::EMediaTags::eTotalAudioBitrateString,   //
                     NTowel42MediaUtils::EMediaTags::eAudioSampleRateString,   //
-                    NTowel42MediaUtils::EMediaTags::eAllSubtitleLanguages,   //
+                    NTowel42MediaUtils::EMediaTags::eAllSubtitleDispString,   //
                     NTowel42MediaUtils::EMediaTags::eComment   //
                 } );
 
