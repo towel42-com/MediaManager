@@ -170,8 +170,8 @@ namespace NMediaManager
             retVal += QStringLiteral( "AutoSearchTimer isActive? %1 " ).arg( fAutoSearchTimer.first && fAutoSearchTimer.first->isActive() );
             retVal += QStringLiteral( "AutoSearch Enabled? %1 " ).arg( fAutoSearchTimer.second );
 
-            retVal += QStringLiteral( "Error Message: %1 " ).arg( fErrorMessage.has_value() ? fErrorMessage.value() : QString() );
-            retVal += QStringLiteral( "Configuration: %1 ErrorCount: %2 " ).arg( fConfiguration.has_value() ? fConfiguration.value() : QStringLiteral( "<notset>" ) ).arg( fConfigErrorCount );
+            retVal += QStringLiteral( "Error Message: %1 " ).arg( fErrorMessage.value_or( QString() ) );
+            retVal += QStringLiteral( "Configuration: %1 ErrorCount: %2 " ).arg( fConfiguration.value_or( QStringLiteral( "<notset>" ) ) ).arg( fConfigErrorCount );
             ;
 
             retVal += QStringLiteral( "StopSearching: %1 SkipImages: %2 " ).arg( fStopSearching ).arg( fSkipImages );
@@ -937,7 +937,7 @@ namespace NMediaManager
         {
             if ( fCurrentQueuedSearch.has_value() )
             {
-                addResultToList( fQueuedResults[ fCurrentQueuedSearch.value().first ], result, fCurrentQueuedSearch.value().second );
+                (void)addResultToList( fQueuedResults[ fCurrentQueuedSearch.value().first ], result, fCurrentQueuedSearch.value().second );
             }
 
             return addResultToList( fResults, result, fSearchInfo );
@@ -966,99 +966,99 @@ namespace NMediaManager
 
         void CSearchTMDB::handleRequestError( std::shared_ptr< CNetworkReply > reply )
         {
-                bool careAboutError = true;
-                QString title = "Unknown Issue";
+            bool careAboutError = true;
+            QString title = "Unknown Issue";
 
-                auto errorMsg = reply->errorString();
-                auto pos = errorMsg.indexOf( " - server replied:" );
-                QString prefix;
-                if ( pos != -1 )
-                {
-                    prefix = errorMsg.left( pos ).trimmed();
-                    errorMsg = errorMsg.mid( pos + 18 ).trimmed();
-                }
+            auto errorMsg = reply->errorString();
+            auto pos = errorMsg.indexOf( " - server replied:" );
+            QString prefix;
+            if ( pos != -1 )
+            {
+                prefix = errorMsg.left( pos ).trimmed();
+                errorMsg = errorMsg.mid( pos + 18 ).trimmed();
+            }
 
-                if ( reply->isReply( fConfigReply ) )
+            if ( reply->isReply( fConfigReply ) )
+            {
+                fConfigErrorCount++;
+                if ( fConfigErrorCount < 5 )
                 {
-                    fConfigErrorCount++;
-                    if ( fConfigErrorCount < 5 )
-                    {
-                        QTimer::singleShot( 0, this, &CSearchTMDB::slotGetConfig );
-                        return;
-                    }
-                    title = tr( "Could not download configuration" );
-                    fConfigReply.reset();
+                    QTimer::singleShot( 0, this, &CSearchTMDB::slotGetConfig );
+                    return;
                 }
-                else if ( reply->isReply( fSearchReply ) )
+                title = tr( "Could not download configuration" );
+                fConfigReply.reset();
+            }
+            else if ( reply->isReply( fSearchReply ) )
+            {
+                fSearchReply.reset();
+                title = tr( "Could not search for %1(s)" ).arg( getSearchName() );
+                if ( errorMsg == "Not Found" )
                 {
-                    fSearchReply.reset();
-                    title = tr( "Could not search for %1(s)" ).arg( getSearchName() );
-                    if ( errorMsg == "Not Found" )
-                    {
-                        fErrorMessage = tr( "Could not find %1" ).arg( getSearchName() );
-                        emitSigFinished();
-                        return;
-                    }
-                }
-                else if ( reply->isReply( fGetMovieReply ) )
-                {
-                    fErrorMessage = tr( "Could not find Movie with TMDBID: <b>%1</b>" ).arg( fGetMovieReply->tmdbID() );
-                    fGetMovieReply.reset();
+                    fErrorMessage = tr( "Could not find %1" ).arg( getSearchName() );
                     emitSigFinished();
                     return;
                 }
-                else if ( reply->isReply( fGetTVReply ) )
+            }
+            else if ( reply->isReply( fGetMovieReply ) )
+            {
+                fErrorMessage = tr( "Could not find Movie with TMDBID: <b>%1</b>" ).arg( fGetMovieReply->tmdbID() );
+                fGetMovieReply.reset();
+                emitSigFinished();
+                return;
+            }
+            else if ( reply->isReply( fGetTVReply ) )
+            {
+                fErrorMessage = tr( "Could not find TV Show with TMDBID: <b>%1</b>" ).arg( fGetTVReply->tmdbID() );
+                fGetTVReply.reset();
+                emitSigFinished();
+                return;
+            }
+            else
+            {
+                if ( fImageInfoReplies.find( reply->key() ) != fImageInfoReplies.end() )
                 {
-                    fErrorMessage = tr( "Could not find TV Show with TMDBID: <b>%1</b>" ).arg( fGetTVReply->tmdbID() );
-                    fGetTVReply.reset();
-                    emitSigFinished();
-                    return;
-                }
-                else
-                {
-                    if ( fImageInfoReplies.find( reply->key() ) != fImageInfoReplies.end() )
-                    {
-                        title = tr( "Could not get image(s)" );
+                    title = tr( "Could not get image(s)" );
 
-                        auto pos = fImageInfoReplies.find( reply->key() );
-                        ( *pos ).second->setPixmapPath( QString() );
-                        fImageInfoReplies.erase( pos );
-                    }
-                    else if ( fTVInfoReplies.find( reply->key() ) != fTVInfoReplies.end() )
-                    {
-                        title = tr( "Could not find TV Details information" );
-                        auto pos = fTVInfoReplies.find( reply->key() );
-                        fTVInfoReplies.erase( pos );
-                    }
-                    else if ( fSeasonInfoReplies.first.find( reply->key() ) != fSeasonInfoReplies.first.end() )
-                    {
-                        title = tr( "Could not find Season/Episode information" );
-                        auto pos = fSeasonInfoReplies.first.find( reply->key() );
-                        auto info = ( *pos ).second;
-                        fSeasonInfoReplies.first.erase( pos );
-                        auto parent = info->parent().lock();
-                        if ( parent )
-                            parent->removeChild( info );
-                        careAboutError = fSeasonInfoReplies.first.empty() && !fSeasonInfoReplies.second.has_value();
-                    }
-                    if ( careAboutError && ( errorMsg == "Not Found" ) )
-                    {
-                        fErrorMessage = title;
-                        return;
-                    }
+                    auto pos = fImageInfoReplies.find( reply->key() );
+                    ( *pos ).second->setPixmapPath( QString() );
+                    fImageInfoReplies.erase( pos );
                 }
+                else if ( fTVInfoReplies.find( reply->key() ) != fTVInfoReplies.end() )
+                {
+                    title = tr( "Could not find TV Details information" );
+                    auto pos = fTVInfoReplies.find( reply->key() );
+                    fTVInfoReplies.erase( pos );
+                }
+                else if ( fSeasonInfoReplies.first.find( reply->key() ) != fSeasonInfoReplies.first.end() )
+                {
+                    title = tr( "Could not find Season/Episode information" );
+                    auto pos = fSeasonInfoReplies.first.find( reply->key() );
+                    auto info = ( *pos ).second;
+                    fSeasonInfoReplies.first.erase( pos );
+                    auto parent = info->parent().lock();
+                    if ( parent )
+                        parent->removeChild( info );
+                    careAboutError = fSeasonInfoReplies.first.empty() && !fSeasonInfoReplies.second.has_value();
+                }
+                if ( careAboutError && ( errorMsg == "Not Found" ) )
+                {
+                    fErrorMessage = title;
+                    return;
+                }
+            }
 
-                if ( careAboutError )
-                {
-                    fErrorMessage = prefix + "-" + errorMsg;
-                    emitSigFinished();
-                    return;
-                }
-                else
-                {
-                    checkIfStillSearching();
-                    return;
-                }
+            if ( careAboutError )
+            {
+                fErrorMessage = prefix + "-" + errorMsg;
+                emitSigFinished();
+                return;
+            }
+            else
+            {
+                checkIfStillSearching();
+                return;
+            }
         }
 
     }
