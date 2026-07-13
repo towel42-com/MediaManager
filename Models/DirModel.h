@@ -295,7 +295,10 @@ namespace NMediaManager
             void slotProcesssStateChanged( QProcess::ProcessState newState );
             void slotProgressCanceled();
             virtual void slotDataChanged( const QModelIndex &start, const QModelIndex &end, const QVector< int > &roles );
-            virtual void slotUpdateMediaInfo( const QString &path );
+
+            virtual void slotMediaInfoQueued( const QString &path );
+            virtual void slotMediaInfoLoaded( const QString &path );
+            virtual void slotMediaInfoFinished( const QString &path );
 
         protected:
             virtual QString getSecondaryProgressFormat( NTowel42Utils::CDoubleProgressDlg *progressDlg ) const;

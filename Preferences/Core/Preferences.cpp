@@ -199,7 +199,6 @@ namespace NMediaManager
             CPreferences::CPreferences()
             {
                 fMediaFormats = std::make_unique< NTowel42MediaUtils::CFFMpegFormats >( getFFMpegEXE() );
-                connect( NTowel42MediaUtils::CMediaInfoMgr::instance(), &NTowel42MediaUtils::CMediaInfoMgr::sigMediaLoaded, this, &CPreferences::sigMediaInfoLoaded );
             }
 
             CPreferences::~CPreferences()

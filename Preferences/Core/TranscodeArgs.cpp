@@ -219,7 +219,7 @@ namespace NMediaManager
                         retVal << "-map"
                                << "0:s?"   //
                                << "-c:s"
-                               << "copy";
+                               << "srt";
                     }
                     else
                     {
@@ -234,10 +234,11 @@ namespace NMediaManager
                             auto subTitleCodec = QStringLiteral( "copy" );
                             if ( isEncoderFormat( mediaInfo, "matroska" ) )
                             {
-                                if ( ( currCodec == "ass" ) || ( currCodec == "srt" ) || ( currCodec == "ssa" ) || ( currCodec == "hdmv_pgs_subtitle" ) || ( currCodec == "subrip" ) || ( currCodec == "xsub" ) || ( currCodec == "dvdsub" ) || ( currCodec == "dvd_subtitle" ) )
-                                    subTitleCodec = QStringLiteral( "copy" );
-                                else
-                                    subTitleCodec = "srt";
+                                subTitleCodec = "srt";
+                                //if ( ( currCodec == "ass" ) || ( currCodec == "srt" ) || ( currCodec == "ssa" ) || ( currCodec == "hdmv_pgs_subtitle" ) || ( currCodec == "subrip" ) || ( currCodec == "xsub" ) || ( currCodec == "dvdsub" ) || ( currCodec == "dvd_subtitle" ) )
+                                //    subTitleCodec = QStringLiteral( "copy" );
+                                //else
+                                //subTitleCodec = "srt";
                             }
                             else if ( isEncoderFormat( mediaInfo, "mp4" ) )
                             {

@@ -178,7 +178,9 @@ namespace NMediaManager
 
             connect( this, &QStandardItemModel::dataChanged, this, &CDirModel::slotDataChanged );
 
-            connect( NPreferences::NCore::CPreferences::instance(), &NPreferences::NCore::CPreferences::sigMediaInfoLoaded, this, &CDirModel::slotUpdateMediaInfo );
+            connect( NPreferences::NCore::CPreferences::instance(), &NPreferences::NCore::CPreferences::sigMediaInfoQueued, this, &CDirModel::slotMediaInfoQueued );
+            connect( NPreferences::NCore::CPreferences::instance(), &NPreferences::NCore::CPreferences::sigMediaInfoLoaded, this, &CDirModel::slotMediaInfoLoaded );
+            connect( NPreferences::NCore::CPreferences::instance(), &NPreferences::NCore::CPreferences::sigMediaInfoFinished, this, &CDirModel::slotMediaInfoFinished );
         }
 
         CDirModel::~CDirModel()
@@ -1167,12 +1169,21 @@ namespace NMediaManager
             return getMediaInfo( fileInfo, force );
         }
 
-        void CDirModel::slotUpdateMediaInfo( const QString &path )
+        void CDirModel::slotMediaInfoQueued( const QString &path )
+        {
+            (void)path;
+        }
+
+        void CDirModel::slotMediaInfoFinished( const QString &path )
+        {
+            (void)path;
+        }
+
+        void CDirModel::slotMediaInfoLoaded( const QString &path )
         {
             if ( path.isEmpty() )
                 return;
 
-            emit sigStatusMessage( tr( "Updating media info for '%1'" ).arg( path ), false );
             auto item = getItemFromPath( path );
             if ( item )
             {
