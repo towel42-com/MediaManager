@@ -1176,7 +1176,13 @@ namespace NMediaManager
 
         void CDirModel::slotMediaInfoFinished( const QString &path )
         {
-            (void)path;
+            auto pos = fPathStatusCache.find( path );
+            if ( pos != fPathStatusCache.end() )
+                fPathStatusCache.erase( pos );
+
+            auto pos2 = fItemStatusCache.find( path );
+            if ( pos2 != fItemStatusCache.end() )
+                fItemStatusCache.erase( pos2 );
         }
 
         void CDirModel::slotMediaInfoLoaded( const QString &path )
