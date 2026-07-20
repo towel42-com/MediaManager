@@ -844,12 +844,12 @@ namespace NMediaManager
             return autoSearchFinished() && CDirModel::canComputeStatus();
         }
 
-        QDate CMediaNamingModel::getMediaDate( const QFileInfo &fi ) const
+        std::optional< QDate > CMediaNamingModel::getMediaDate( const QFileInfo &fi, bool closest ) const
         {
             auto transformResults = getTransformResult( fi, true );
             if ( transformResults )
                 return transformResults->getDate().first;
-            return CDirModel::getMediaDate( fi );
+            return CDirModel::getMediaDate( fi, closest );
         }
 
         bool CMediaNamingModel::itemSearchOK( const QModelIndex &idx, QString *msg ) const

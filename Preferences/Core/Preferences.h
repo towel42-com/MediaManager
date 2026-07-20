@@ -433,21 +433,21 @@ namespace NMediaManager
                 void setVerifyMediaTitle( bool value );
 
                 QString getVerifyMediaTitleExpr() const;
-                QRegularExpression getVerifyMediaTitleExpr( const QFileInfo &fi, const QDate &date ) const;   // fills in the fields and returns a regularExpression
+                QRegularExpression getVerifyMediaTitleExpr( const QFileInfo &fi, const std::optional< QDate > &date ) const;   // fills in the fields and returns a regularExpression
                 void setVerifyMediaTitleExpr( const QString &value );
 
                 bool getVerifyMediaDate() const;
                 void setVerifyMediaDate( bool value );
 
                 QString getVerifyMediaDateExpr() const;
-                QRegularExpression getVerifyMediaDateExpr( const QFileInfo &fi, const QDate &date ) const;
+                QRegularExpression getVerifyMediaDateExpr( const QFileInfo &fi, const std::optional< QDate > &date ) const;
                 void setVerifyMediaDateExpr( const QString &value );
 
                 bool getVerifyMediaComment() const;
                 void setVerifyMediaComment( bool value );
 
                 QString getVerifyMediaCommentExpr() const;
-                QRegularExpression getVerifyMediaCommentExpr( const QFileInfo &fi, const QDate &date ) const;
+                QRegularExpression getVerifyMediaCommentExpr( const QFileInfo &fi, const std::optional< QDate > &date ) const;
                 void setVerifyMediaCommentExpr( const QString &value );
 
                 QStringList getDefaultCustomPathsToDelete() const;

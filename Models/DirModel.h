@@ -261,6 +261,7 @@ namespace NMediaManager
 
             bool isRootPath( const QString &path ) const;
             bool isRootPath( const QFileInfo &fileInfo ) const;
+            bool isRootPath( const QDir &dir ) const;
             bool isRootPath( const QModelIndex &index ) const;
 
             virtual void resetStatusCaches();
@@ -336,10 +337,10 @@ namespace NMediaManager
             virtual void clearPathStatusCache( const QFileInfo &fi ) const;
             virtual void clearPathStatusCache( const QString &path ) const;
 
-            virtual QString getMediaYear( const QFileInfo &fi ) const final;
-            virtual QDate getMediaDate( const QString &path ) const;
-            virtual QDate getMediaDate( const QFileInfo &fi ) const;
-            virtual QDate getMediaDate( const QModelIndex &index ) const;
+            virtual QString getMediaYear( const QFileInfo &fi ) const final;   // empty string if not found
+            virtual std::optional< QDate > getMediaDate( const QString &path, bool closest ) const;
+            virtual std::optional< QDate > getMediaDate( const QFileInfo &fi, bool closest ) const;
+            virtual std::optional< QDate > getMediaDate( const QModelIndex &index, bool closest ) const;
 
             bool progressCanceled() const;
 

@@ -183,11 +183,15 @@ namespace NMediaManager
             if ( !canShowMediaInfo() )
                 return {};
 
+            auto mediaInfo = getMediaInfo( idx, false );
+            if ( !mediaInfo || mediaInfo->isQueued() )
+                return {};
+
             auto fileInfo = this->fileInfo( idx );
             if ( !isMediaFile( fileInfo ) )
                 return {};
 
-            auto mediaDate = getMediaDate( fileInfo );
+            auto mediaDate = getMediaDate( fileInfo, true );
             //qDebug() << mediaDate;
 
             QRegularExpression regExp;

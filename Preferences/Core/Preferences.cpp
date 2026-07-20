@@ -199,6 +199,10 @@ namespace NMediaManager
             CPreferences::CPreferences()
             {
                 fMediaFormats = std::make_unique< NTowel42MediaUtils::CFFMpegFormats >( getFFMpegEXE() );
+                connect( NTowel42MediaUtils::CMediaInfoMgr::instance(), &NTowel42MediaUtils::CMediaInfoMgr::sigMediaFinished, this, &CPreferences::sigMediaInfoFinished );
+                connect( NTowel42MediaUtils::CMediaInfoMgr::instance(), &NTowel42MediaUtils::CMediaInfoMgr::sigMediaQueued, this, &CPreferences::sigMediaInfoQueued );
+                connect( NTowel42MediaUtils::CMediaInfoMgr::instance(), &NTowel42MediaUtils::CMediaInfoMgr::sigMediaLoaded, this, &CPreferences::sigMediaInfoLoaded );
+
             }
 
             CPreferences::~CPreferences()
@@ -1233,7 +1237,7 @@ namespace NMediaManager
                 emitSigPreferencesChanged( EPreferenceType::eTagPrefs );
             }
 
-            QString replaceFileInfo( const QFileInfo &fi, const QDate &date, const QString &expr )
+            QString replaceFileInfo( const QFileInfo &fi, const std::optional< QDate > &date, const QString &expr )
             {
                 QString retVal = expr;
 
@@ -1242,14 +1246,14 @@ namespace NMediaManager
                 retVal = retVal.replace( "<basename>", QRegularExpression::escape( fi.completeBaseName() ) );
                 retVal = retVal.replace( "<extension>", QRegularExpression::escape( fi.suffix() ) );
 
-                if ( date.isValid() )
+                if ( date.has_value() && date.value().isValid() )
                 {
-                    retVal = retVal.replace( "<year>", date.toString( "(yyyy)" ) );
-                    retVal = retVal.replace( "<month>", date.toString( "(M|MM|MMM|MMMM)" ) );
-                    retVal = retVal.replace( "<day>", date.toString( "(d|dd|ddd|dddd)" ) );
+                    retVal = retVal.replace( "<year>", date.value().toString( "(yyyy)" ) );
+                    retVal = retVal.replace( "<month>", date.value().toString( "(M|MM|MMM|MMMM)" ) );
+                    retVal = retVal.replace( "<day>", date.value().toString( "(d|dd|ddd|dddd)" ) );
 
                     auto dateFormat = "(" + NTowel42Utils::getDateFormats( { true, false } ).join( "|" ) + ")";
-                    retVal = retVal.replace( "<date>", date.toString( dateFormat ) );
+                    retVal = retVal.replace( "<date>", date.value().toString( dateFormat ) );
                 }
                 return retVal;
             }
@@ -1269,7 +1273,7 @@ namespace NMediaManager
                 emitSigPreferencesChanged( EPreferenceType::eTagPrefs );
             }
 
-            QRegularExpression CPreferences::getVerifyMediaTitleExpr( const QFileInfo &fi, const QDate &date ) const
+            QRegularExpression CPreferences::getVerifyMediaTitleExpr( const QFileInfo &fi, const std::optional< QDate > &date ) const
             {
                 auto regExStr = replaceFileInfo( fi, date, getVerifyMediaTitleExpr() );
                 return QRegularExpression( regExStr );
@@ -1319,7 +1323,7 @@ namespace NMediaManager
                 emitSigPreferencesChanged( EPreferenceType::eTagPrefs );
             }
 
-            QRegularExpression CPreferences::getVerifyMediaDateExpr( const QFileInfo &fi, const QDate &date ) const
+            QRegularExpression CPreferences::getVerifyMediaDateExpr( const QFileInfo &fi, const std::optional< QDate > &date ) const
             {
                 auto regExStr = replaceFileInfo( fi, date, getVerifyMediaDateExpr() );
                 return QRegularExpression( regExStr );
@@ -1355,7 +1359,7 @@ namespace NMediaManager
                 emitSigPreferencesChanged( EPreferenceType::eTagPrefs );
             }
 
-            QRegularExpression CPreferences::getVerifyMediaCommentExpr( const QFileInfo &fi, const QDate &date ) const
+            QRegularExpression CPreferences::getVerifyMediaCommentExpr( const QFileInfo &fi, const std::optional< QDate > &date ) const
             {
                 auto regExStr = replaceFileInfo( fi, date, getVerifyMediaCommentExpr() );
                 return QRegularExpression( regExStr );
@@ -2280,7 +2284,7 @@ namespace NMediaManager
 
             QString CPreferences::getTargetBitrateDisplayString( std::shared_ptr< NTowel42MediaUtils::CMediaInfo > mediaInfo ) const
             {
-                auto bps = NPreferences::NCore::CPreferences::instance()->getTargetBitrate( mediaInfo, false, false );
+                auto bps = getTargetBitrate( mediaInfo, false, false );
                 return NTowel42Utils::NFileUtils::byteSizeString( bps, true, false, 1, false, "bps" );
             }
 

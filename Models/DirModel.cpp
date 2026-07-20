@@ -1174,16 +1174,6 @@ namespace NMediaManager
             (void)path;
         }
 
-        void CDirModel::slotMediaInfoFinished( const QString &path )
-        {
-            auto pos = fPathStatusCache.find( path );
-            if ( pos != fPathStatusCache.end() )
-                fPathStatusCache.erase( pos );
-
-            auto pos2 = fItemStatusCache.find( path );
-            if ( pos2 != fItemStatusCache.end() )
-                fItemStatusCache.erase( pos2 );
-        }
 
         void CDirModel::slotMediaInfoLoaded( const QString &path )
         {
@@ -1201,6 +1191,20 @@ namespace NMediaManager
                 auto rhs = index( idx.row(), columnCount() - 1, idx.parent() );
                 emit dataChanged( lhs, rhs );
             }
+        }
+
+        void CDirModel::slotMediaInfoFinished( const QString &path )
+        {
+            slotMediaInfoLoaded( path );
+            //auto pos = fPathStatusCache.find( path );
+            //if ( pos != fPathStatusCache.end() )
+            //    fPathStatusCache.erase( pos );
+
+            //auto pos2 = fItemStatusCache.find( path );
+            //if ( pos2 != fItemStatusCache.end() )
+            //    fItemStatusCache.erase( pos2 );
+
+            //fItemStatusCache.clear();
         }
 
         bool CDirModel::canShowMediaInfo() const
@@ -1771,42 +1775,48 @@ namespace NMediaManager
 
         QString CDirModel::getMediaYear( const QFileInfo &fi ) const
         {
-            auto date = getMediaDate( fi );
-            if ( date.isValid() )
-                return QString::number( date.year() );
-            ;
+            auto date = getMediaDate( fi, true );
+            if ( date.has_value() && date.value().isValid() )
+                return QString::number( date.value().year() );
             return {};
         }
 
-        QDate CDirModel::getMediaDate( const QFileInfo &fi ) const
+        std::optional< QDate > CDirModel::getMediaDate( const QFileInfo &fi, bool closest ) const
         {
-            auto searchPath = fi;
-            QDate retVal;
+            QDir searchDir;
+            std::optional< QDate > retVal;
 
-            if ( searchPath.isFile() )
+            if ( fi.isFile() )
             {
-                searchPath = QFileInfo( fi.absoluteDir().absolutePath() );
+                searchDir = fi.absoluteDir();
             }
 
-            while ( !isRootPath( searchPath.absoluteFilePath() ) )
+            while ( !isRootPath( searchDir ) )
             {
-                auto baseName = searchPath.isDir() ? searchPath.fileName() : searchPath.completeBaseName();
+                auto baseName = searchDir.dirName();
+                if ( baseName.isEmpty() )
+                    break;
                 NCore::SSearchTMDBInfo searchInfo( baseName, {} );
                 if ( searchInfo.releaseDateSet() )
+                {
                     retVal = searchInfo.releaseDate().first;
-                searchPath = QFileInfo( searchPath.absolutePath() );
+                    if ( closest )
+                        break;
+                }
+                if ( !searchDir.cdUp() )
+                    break;
             }
             return retVal;
         }
 
-        QDate CDirModel::getMediaDate( const QModelIndex &index ) const
+        std::optional< QDate > CDirModel::getMediaDate( const QModelIndex &index, bool closest ) const
         {
-            return getMediaDate( fileInfo( index ) );
+            return getMediaDate( fileInfo( index ), closest );
         }
 
-        QDate CDirModel::getMediaDate( const QString &path ) const
+        std::optional< QDate > CDirModel::getMediaDate( const QString &path, bool closest ) const
         {
-            return getMediaDate( QFileInfo( path ) );
+            return getMediaDate( QFileInfo( path ), closest );
         }
 
         bool CDirModel::progressCanceled() const
@@ -1991,6 +2001,11 @@ namespace NMediaManager
             }
             fIsRootPathCache[ path ] = retVal;
             return retVal;
+        }
+
+        bool CDirModel::isRootPath( const QDir &dir ) const
+        {
+            return isRootPath( QFileInfo( dir.absolutePath() ) );
         }
 
         void CDirModel::updatePath( const QModelIndex &idx, const QString &oldPath, const QString &newPath )

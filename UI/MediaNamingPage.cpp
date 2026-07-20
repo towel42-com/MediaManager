@@ -37,6 +37,7 @@
 #include <QCoreApplication>
 #include <QMenu>
 #include <optional>
+#include <memory>
 
 namespace NMediaManager
 {
@@ -185,9 +186,9 @@ namespace NMediaManager
                     {
                         auto titleInfo = model()->getTransformResult( searchIndex, false );
                         auto searchInfo = std::make_shared< NCore::SSearchTMDBInfo >( name, titleInfo );
-                        auto releaseDate = model()->getMediaDate( index );
-                        if ( releaseDate.isValid() )
-                            searchInfo->setReleaseDate( releaseDate.toString() );
+                        auto releaseDate = model()->getMediaDate( index, true );
+                        if ( releaseDate.has_value() )
+                            searchInfo->setReleaseDate( releaseDate.value().toString() );
                         if ( forcedMediaType.has_value() )
                             searchInfo->setMediaType( forcedMediaType.value() );
 

@@ -93,8 +93,8 @@ namespace NMediaManager
             std::shared_ptr< NCore::CTransformResult > getTransformResult( const QString &path, bool checkParents ) const;
             std::shared_ptr< NCore::CTransformResult > getTransformResult( const QFileInfo &path, bool checkParents ) const;
 
-            virtual QDate getMediaDate( const QFileInfo &fi ) const override;
-            virtual QDate getMediaDate( const QModelIndex &idx ) const override { return CDirModel::getMediaDate( idx ); }
+            virtual std::optional< QDate > getMediaDate( const QFileInfo &fi, bool closest ) const override;
+            virtual std::optional< QDate > getMediaDate( const QModelIndex &idx, bool closest ) const override { return CDirModel::getMediaDate( idx, closest ); }
         public Q_SLOTS:
             void slotPatternChanged();
 
