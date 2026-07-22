@@ -105,7 +105,8 @@ namespace NMediaManager
             eMediaTagTypeRole,
             eYesNoCheckableOnly,
             eIsSeasonDirRole,
-            eIsSeasonDirCorrectRole
+            eIsSeasonDirCorrectRole,
+            eIsProtoTypeRole
         };
 
         enum class EType
@@ -198,6 +199,7 @@ namespace NMediaManager
 
             bool isDir( const QModelIndex &idx ) const;
             QFileInfo fileInfo( const QModelIndex &idx ) const;
+            QStandardItem *deleteIfProtoType( QStandardItem *item ) const;
             QString filePath( const QModelIndex &idx ) const;
 
             virtual bool ignoreExtrasOnSearch() const { return false; }
@@ -498,6 +500,8 @@ namespace NMediaManager
 
             mutable std::optional< QDateTime > fLastUpdateUI;
             mutable std::optional< QDateTime > fLastResizeColumns;
+            int fFindingItemsToDelete{ 0 };
+            mutable QModelIndexList fItemsDeleted;
         };
     }
 }

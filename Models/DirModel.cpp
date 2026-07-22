@@ -60,6 +60,7 @@
 
 #include <set>
 #include <list>
+#include <algorithm>
 
 QDebug operator<<( QDebug dbg, const NMediaManager::NModels::STreeNode &node )
 {
@@ -181,6 +182,10 @@ namespace NMediaManager
             connect( NPreferences::NCore::CPreferences::instance(), &NPreferences::NCore::CPreferences::sigMediaInfoQueued, this, &CDirModel::slotMediaInfoQueued );
             connect( NPreferences::NCore::CPreferences::instance(), &NPreferences::NCore::CPreferences::sigMediaInfoLoaded, this, &CDirModel::slotMediaInfoLoaded );
             connect( NPreferences::NCore::CPreferences::instance(), &NPreferences::NCore::CPreferences::sigMediaInfoFinished, this, &CDirModel::slotMediaInfoFinished );
+
+            auto protoItem = new QStandardItem;
+            protoItem->setData( true, eIsProtoTypeRole );
+            this->setItemPrototype( protoItem );
         }
 
         CDirModel::~CDirModel()
@@ -812,9 +817,31 @@ namespace NMediaManager
             return QFileInfo( path );
         }
 
+        QStandardItem *CDirModel::deleteIfProtoType( QStandardItem *item ) const
+        {
+            if ( !item || !item->data( eIsProtoTypeRole ).toBool() )
+                return nullptr;
+
+            auto idx = indexFromItem( item );
+            const_cast< CDirModel * >( this )->blockSignals( true );
+            delete item;
+            const_cast< CDirModel * >( this )->blockSignals( false );
+            auto parentLhs = idx.parent();
+            if ( parentLhs.isValid() )
+            {
+                auto parentRhs = index( idx.row(), columnCount( parentLhs ), parentLhs.parent() );
+                emit const_cast< CDirModel * >( this )->dataChanged( parentLhs, parentRhs );
+            }
+            return nullptr;
+        }
+
         QStandardItem *CDirModel::getPathItemFromIndex( const QModelIndex &idx ) const
         {
-            return itemFromIndex( idx );
+            if ( !idx.isValid() || ( std::find( fItemsDeleted.begin(), fItemsDeleted.end(), idx ) != fItemsDeleted.end() ) )
+                return nullptr;
+
+            auto retVal = itemFromIndex( idx );
+            return deleteIfProtoType( itemFromIndex( idx ) );
         }
 
         bool CDirModel::isDir( const QStandardItem *item ) const
@@ -2048,6 +2075,9 @@ namespace NMediaManager
                 for ( int jj = start.column(); jj <= end.column(); ++jj )
                 {
                     auto index = this->index( ii, jj, parent );
+                    auto item = itemFromIndex( index );
+                    if ( item )
+                        item->setData( data( index, Qt::DisplayRole ), Qt::DisplayRole );
                     auto fi = fileInfo( index );
 
                     clearPathStatusCache( fi );
@@ -2237,7 +2267,9 @@ namespace NMediaManager
             auto fi = fileInfo( idx );
             auto pos = fItemStatusCache.find( fi.absoluteFilePath() );
             if ( pos == fItemStatusCache.end() )
+            {
                 return;
+            }
 
             fItemStatusCache.erase( pos );
         }

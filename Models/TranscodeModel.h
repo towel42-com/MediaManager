@@ -150,8 +150,6 @@ namespace NMediaManager
 
             mutable std::unordered_map< QString, std::optional< QList< QFileInfo > > > fSRTFileCache;
             mutable std::map< QStandardItem *, std::pair< QStandardItem *, NCore::SLanguageInfo > > fAllLangInfos;
-            int fFindingItemsToDelete{ 0 };
-            QModelIndexList fItemsDeleted;
         };
     }
 }

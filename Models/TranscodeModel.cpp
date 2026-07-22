@@ -139,12 +139,10 @@ namespace NMediaManager
                 if ( !itemNeedsTranscoding( item ) )
                 {
                     fItemsDeleted.push_back( idx );
-                    emit sigStatusMessage( tr( "Removing media '%1' from list as it doesn't need processing" ).arg( rootPath().relativeFilePath( fi.absoluteFilePath() ) ), false );
+                    emit sigStatusMessage( tr( "Removing '%1' from processing list as it doesn't need transcoding" ).arg( rootPath().relativeFilePath( fi.absoluteFilePath() ) ), false );
                     deleteItem( item );
-                    return;
                 }
             }
-            return;
         }
 
         bool isEmptyNode( QStandardItem *item, const std::list< QStandardItem * > &emptyNodes )
@@ -154,7 +152,7 @@ namespace NMediaManager
             if ( item->rowCount() == 0 )
                 return true;
 
-            qDebug() << item->text();
+            //qDebug() << item->text();
             for ( auto ii = 0; ii < item->rowCount(); ++ii )
             {
                 auto child = item->child( ii );
@@ -205,7 +203,7 @@ namespace NMediaManager
 
             for ( auto &&ii : emptyNodes )
             {
-                qDebug() << ii->text();
+                //qDebug() << ii->text();
                 deleteItem( ii );
             }
             fItemsDeleted.clear();
