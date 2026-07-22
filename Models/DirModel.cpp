@@ -1174,7 +1174,6 @@ namespace NMediaManager
             (void)path;
         }
 
-
         void CDirModel::slotMediaInfoLoaded( const QString &path )
         {
             if ( path.isEmpty() )
@@ -1471,7 +1470,7 @@ namespace NMediaManager
             appendError( fProcessQueue.front()->fItem, tr( "%1: FAILED TO PROCESS" ).arg( msg ) );
         }
 
-        void CDirModel::deleteItem( QStandardItem *item, bool checkParentForNoChildren )
+        void CDirModel::deleteItem( QStandardItem *item )
         {
             if ( !item || !item->parent() )
                 return;
@@ -1487,11 +1486,6 @@ namespace NMediaManager
 
             auto parent = item->parent();
             item->parent()->removeRow( item->row() );
-            if ( checkParentForNoChildren )
-            {
-                if ( !parent->hasChildren() )
-                    deleteItem( parent, checkParentForNoChildren );
-            }
         }
 
         void CDirModel::slotRunNextProcessInQueue()

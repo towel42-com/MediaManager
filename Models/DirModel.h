@@ -466,7 +466,7 @@ namespace NMediaManager
             void addProcessError( const QString &msg );
 
         protected:
-            void deleteItem( QStandardItem *item, bool checkParentForNoChildren );
+            void deleteItem( QStandardItem *item );
             QDir fRootPath;
 
             CIconProvider *fIconProvider{ nullptr };

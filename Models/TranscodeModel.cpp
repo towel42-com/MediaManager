@@ -35,6 +35,7 @@
 #include <QDir>
 #include <QTimer>
 #include <QDebug>
+#include <algorithm>
 
 namespace NMediaManager
 {
@@ -123,28 +124,122 @@ namespace NMediaManager
 
         void CTranscodeModel::reloadMediaInfo( const QModelIndex &idx )
         {
+            if ( !idx.isValid() )
+                return;
+
+            if ( std::find( fItemsDeleted.begin(), fItemsDeleted.end(), idx ) != fItemsDeleted.end() )
+                return;
+
             CDirModel::reloadMediaInfo( idx );
 
-            deleteItemIfNoTranscodingNecessary( idx, false );
+            auto item = itemFromIndex( idx );
+            auto fi = fileInfo( item );
+            if ( fi.isFile() )
+            {
+                if ( !itemNeedsTranscoding( item ) )
+                {
+                    fItemsDeleted.push_back( idx );
+                    emit sigStatusMessage( tr( "Removing media '%1' from list as it doesn't need processing" ).arg( rootPath().relativeFilePath( fi.absoluteFilePath() ) ), false );
+                    deleteItem( item );
+                    return;
+                }
+            }
+            return;
+        }
+
+        bool isEmptyNode( QStandardItem *item, const std::list< QStandardItem * > &emptyNodes )
+        {
+            if ( !item )
+                return false;
+            if ( item->rowCount() == 0 )
+                return true;
+
+            qDebug() << item->text();
+            for ( auto ii = 0; ii < item->rowCount(); ++ii )
+            {
+                auto child = item->child( ii );
+                if ( !child )
+                    continue;
+                if ( std::find( emptyNodes.begin(), emptyNodes.end(), child ) == emptyNodes.end() )
+                    return false;
+            }
+
+            return true;
+        };
+
+        bool CTranscodeModel::findEmptyNodes( QStandardItem *parent, std::list< QStandardItem * > &emptyNodes, std::unordered_set< QStandardItem * > &emptyNodeSet )
+        {
+            if ( !parent )
+                return {};
+
+            bool retVal = false;
+            for ( auto ii = 0; ii < parent->rowCount(); ++ii )
+            {
+                auto curr = parent->child( ii );
+                auto fi = fileInfo( curr );
+                if ( ( emptyNodeSet.find( curr ) == emptyNodeSet.end() ) && ( !fi.exists() || ( fi.isDir() && isEmptyNode( curr, emptyNodes ) ) ) )
+                {
+                    emptyNodes.push_back( curr );
+                    emptyNodeSet.insert( curr );
+                    retVal = true;
+                }
+                else
+                {
+                    retVal = findEmptyNodes( curr, emptyNodes, emptyNodeSet ) || retVal;
+                }
+            }
+            return retVal;
         }
 
         void CTranscodeModel::slotMediaFinishedProcessing()
         {
-            if ( fPostProcessing )
+            if ( fFindingItemsToDelete != 0 )
                 return;
 
-            fPostProcessing = true;
-            auto items = findItemsToDelete( invisibleRootItem() );
-            for ( auto &&ii : items )
+            std::list< QStandardItem * > emptyNodes;
+            std::unordered_set< QStandardItem * > emptyNodeSet;
+            do
             {
-                deleteItem( ii, true );
             }
-            fPostProcessing = false;
+            while ( findEmptyNodes( invisibleRootItem(), emptyNodes, emptyNodeSet ) );   // first finds all leafs nodes that are empty
+
+            for ( auto &&ii : emptyNodes )
+            {
+                qDebug() << ii->text();
+                deleteItem( ii );
+            }
+            fItemsDeleted.clear();
         }
 
-        bool CTranscodeModel::itemNeedsTranscoding( const QModelIndex &idx )
+        std::unordered_set< QStandardItem * > CTranscodeModel::findMediaFileItemsToDelete( QStandardItem *item )
         {
-            auto fi = fileInfo( idx );
+            if ( item->parent() == nullptr )
+                return {};
+
+            fFindingItemsToDelete++;
+            std::unordered_set< QStandardItem * > retVal;
+            for ( auto ii = 0; ii < item->rowCount(); ++ii )
+            {
+                auto curr = findMediaFileItemsToDelete( item->child( ii ) );
+                retVal.insert( curr.begin(), curr.end() );
+            }
+
+            auto fi = fileInfo( item );
+            if ( fi.isFile() )
+            {
+                if ( !itemNeedsTranscoding( item ) )
+                {
+                    retVal.insert( item );
+                }
+            }
+
+            fFindingItemsToDelete--;
+            return retVal;
+        }
+
+        bool CTranscodeModel::itemNeedsTranscoding( QStandardItem *item )
+        {
+            auto fi = fileInfo( item );
 
             if ( !NPreferences::NCore::CPreferences::instance()->isMediaFile( fi ) )
             {
@@ -156,36 +251,9 @@ namespace NMediaManager
             return preFileFunction( fi, previouslyAdded, parentTree, false );
         }
 
-        void CTranscodeModel::deleteItemIfNoTranscodingNecessary( const QModelIndex &idx, bool checkParentsForEmpty )
+        bool CTranscodeModel::itemNeedsTranscoding( const QModelIndex &idx )
         {
-            if ( !itemNeedsTranscoding( idx ) )
-            {
-                emit sigStatusMessage( tr( "Removing media '%1' from list as it doesn't need processing" ).arg( fileInfo( idx ).absoluteFilePath() ), false );
-                this->deleteItem( itemFromIndex( idx ), checkParentsForEmpty );
-            }
-        }
-
-        std::unordered_set< QStandardItem * > CTranscodeModel::findItemsToDelete( QStandardItem *item )
-        {
-            std::unordered_set< QStandardItem * > retVal;
-            for ( auto ii = 0; ii < item->rowCount(); ++ii )
-            {
-                auto curr = findItemsToDelete( item->child( ii ) );
-                retVal.insert( curr.begin(), curr.end() );
-            }
-
-            auto fi = fileInfo( item );
-            if ( fi.isFile() )
-            {
-                if ( !itemNeedsTranscoding( indexFromItem( item ) ) )
-                    retVal.insert( item );
-            }
-            else if ( fi.isDir() || !fi.exists() )
-            {
-                if ( !item->hasChildren() )
-                    retVal.insert( item );
-            }
-            return retVal;
+            return itemNeedsTranscoding( itemFromIndex( idx ) );
         }
 
         void CTranscodeModel::preLoad( QTreeView *treeView )
@@ -1322,5 +1390,6 @@ namespace NMediaManager
                 fAllLangInfos[ item ] = { nullptr, language };   // need to handl subidx
             }
         }
+
     }
 }

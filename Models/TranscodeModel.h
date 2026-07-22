@@ -62,10 +62,11 @@ namespace NMediaManager
 
         protected:
             virtual void reloadMediaInfo( const QModelIndex &idx ) override;
-        
+
+            bool itemNeedsTranscoding( QStandardItem *item );
             bool itemNeedsTranscoding( const QModelIndex &idx );
-            void deleteItemIfNoTranscodingNecessary( const QModelIndex &idx, bool checkParentsForEmpty );
-            std::unordered_set< QStandardItem * > findItemsToDelete( QStandardItem *item );
+            std::unordered_set< QStandardItem * > findMediaFileItemsToDelete( QStandardItem *item );
+            bool findEmptyNodes( QStandardItem *parent, std::list< QStandardItem * > &emptyNodes, std::unordered_set< QStandardItem * > &emptyNodeSet );   // returns true if any empty (nodes with no children that are not empty themselves)
 
             virtual std::optional< TItemStatus > computeItemStatus( const QModelIndex &idx ) const;   // the one to override
             virtual void clear() override;
@@ -149,7 +150,8 @@ namespace NMediaManager
 
             mutable std::unordered_map< QString, std::optional< QList< QFileInfo > > > fSRTFileCache;
             mutable std::map< QStandardItem *, std::pair< QStandardItem *, NCore::SLanguageInfo > > fAllLangInfos;
-            bool fPostProcessing{ false };
+            int fFindingItemsToDelete{ 0 };
+            QModelIndexList fItemsDeleted;
         };
     }
 }
