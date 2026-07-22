@@ -820,7 +820,7 @@ namespace NMediaManager
         QStandardItem *CDirModel::deleteIfProtoType( QStandardItem *item ) const
         {
             if ( !item || !item->data( eIsProtoTypeRole ).toBool() )
-                return nullptr;
+                return item;
 
             auto idx = indexFromItem( item );
             const_cast< CDirModel * >( this )->blockSignals( true );
