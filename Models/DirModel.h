@@ -210,6 +210,11 @@ namespace NMediaManager
             QString filePath( const QStandardItem *item ) const;
 
             QStandardItem *getPathItemFromIndex( const QModelIndex &idx ) const;
+
+        public:
+            bool isFileItemDeleted( const QFileInfo &fi ) const;
+            bool isFileItemDeleted( const QModelIndex &idx ) const;
+
             QStandardItem *getItemFromPath( const QFileInfo &fi ) const;
             QStandardItem *getItemFromPath( const QString &path ) const;
 
@@ -501,7 +506,7 @@ namespace NMediaManager
             mutable std::optional< QDateTime > fLastUpdateUI;
             mutable std::optional< QDateTime > fLastResizeColumns;
             int fFindingItemsToDelete{ 0 };
-            mutable QModelIndexList fItemsDeleted;
+            mutable std::unordered_set< QFileInfo > fFileItemsDeleted;
         };
     }
 }
