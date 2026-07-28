@@ -69,7 +69,7 @@ namespace NMediaManager
             bool findEmptyNodes( QStandardItem *parent, std::list< QStandardItem * > &emptyNodes, std::unordered_set< QStandardItem * > &emptyNodeSet );   // returns true if any empty (nodes with no children that are not empty themselves)
 
             virtual std::optional< TItemStatus > computeItemStatus( const QModelIndex &idx ) const;   // the one to override
-            virtual void clear() override;
+            virtual void clear( bool clearCache ) override;
 
             virtual QStringList dirModelFilter() const override;
 

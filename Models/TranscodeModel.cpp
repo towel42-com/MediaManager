@@ -51,9 +51,9 @@ namespace NMediaManager
         {
         }
 
-        void CTranscodeModel::clear()
+        void CTranscodeModel::clear( bool clearCache )
         {
-            CDirModel::clear();
+            CDirModel::clear( clearCache );
             fSRTFileCache.clear();
         }
 
@@ -127,7 +127,7 @@ namespace NMediaManager
             if ( !idx.isValid() )
                 return;
 
-            if ( std::find( fItemsDeleted.begin(), fItemsDeleted.end(), idx ) != fItemsDeleted.end() )
+            if ( isFileItemDeleted( idx ) )
                 return;
 
             CDirModel::reloadMediaInfo( idx );
@@ -138,7 +138,6 @@ namespace NMediaManager
             {
                 if ( !itemNeedsTranscoding( item ) )
                 {
-                    fItemsDeleted.push_back( idx );
                     emit sigStatusMessage( tr( "Removing '%1' from processing list as it doesn't need transcoding" ).arg( rootPath().relativeFilePath( fi.absoluteFilePath() ) ), false );
                     deleteItem( item );
                 }
@@ -206,7 +205,7 @@ namespace NMediaManager
                 //qDebug() << ii->text();
                 deleteItem( ii );
             }
-            fItemsDeleted.clear();
+            fFileItemsDeleted.clear();
         }
 
         std::unordered_set< QStandardItem * > CTranscodeModel::findMediaFileItemsToDelete( QStandardItem *item )
@@ -361,7 +360,7 @@ namespace NMediaManager
             {
                 auto mediaInfo = getMediaInfo( fileInfo );
                 auto transcodeNeeded = NPreferences::NCore::STranscodeNeeded( mediaInfo );
-                retVal = !transcodeNeeded.isLoaded() || transcodeNeeded.transcodeNeeded() || transcodeNeeded.bitrateTooHigh() || transcodeNeeded.resolutionTooHigh();
+                retVal = !transcodeNeeded.isLoaded() || transcodeNeeded.transcodeNeeded() || transcodeNeeded.bitrateTooHigh() || transcodeNeeded.resolutionTooHigh() || transcodeNeeded.isDVProfile5();
             }
             return retVal;
         }
