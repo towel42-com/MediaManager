@@ -837,11 +837,21 @@ namespace NMediaManager
 
         QStandardItem *CDirModel::getPathItemFromIndex( const QModelIndex &idx ) const
         {
-            if ( !idx.isValid() || ( std::find( fItemsDeleted.begin(), fItemsDeleted.end(), idx ) != fItemsDeleted.end() ) )
+            if ( !idx.isValid() || ( isFileItemDeleted( idx ) ) )
                 return nullptr;
 
             auto retVal = itemFromIndex( idx );
             return deleteIfProtoType( itemFromIndex( idx ) );
+        }
+
+        bool CDirModel::isFileItemDeleted( const QModelIndex &idx ) const
+        {
+            return isFileItemDeleted( fileInfo( idx ) );
+        }
+
+        bool CDirModel::isFileItemDeleted( const QFileInfo &fi ) const
+        {
+            return std::find( fFileItemsDeleted.begin(), fFileItemsDeleted.end(), fi ) != fFileItemsDeleted.end();
         }
 
         bool CDirModel::isDir( const QStandardItem *item ) const
@@ -2383,7 +2393,7 @@ namespace NMediaManager
                 << tr( "Video Resolution" )   //
                 << tr( "Video Codec(s)" )   //
                 << tr( "Video Bitrate" )   //
-                << tr( "HDR Info" )   //
+                << tr( "Dolby Video Profile" )   //
                 << tr( "Audio Codec(s)" )   //
                 << tr( "Total Audio Bitrate" )   //
                 << tr( "Default Audio Sample Rate" )   //
