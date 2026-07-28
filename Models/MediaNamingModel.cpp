@@ -759,10 +759,10 @@ namespace NMediaManager
             fPatternTimer->start();
         }
 
-        void CMediaNamingModel::clear()
+        void CMediaNamingModel::clear( bool clearCache )
         {
             clearResults();
-            CDirModel::clear();
+            CDirModel::clear( clearCache );
         }
 
         void CMediaNamingModel::clearStatusResults()

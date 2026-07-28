@@ -66,7 +66,7 @@ namespace NMediaManager
             bool treatAsTVShow( const QFileInfo &fileInfo, bool defaultValue ) const;
             bool treatAsTVShow( const QString &path, bool defaultValue ) const;
             virtual int eventsPerPath() const override { return 5; }   // get timestamp, create parent paths, rename, setting tag info, settimestamp}
-            virtual void clear() override;
+            virtual void clear( bool clearCache ) override;
             void clearResults();
             void clearStatusResults();
 
