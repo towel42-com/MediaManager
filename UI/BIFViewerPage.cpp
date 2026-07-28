@@ -282,10 +282,10 @@ namespace NMediaManager
                 fBIF.reset();
                 return;
             }
-            load( false );
+            load( false, false );
         }
 
-        void CBIFViewerPage::load( bool /*postRun*/ )
+        void CBIFViewerPage::load( bool /*postRun*/, bool /*clearCache*/ )
         {
             if ( !fBIF )
                 return;

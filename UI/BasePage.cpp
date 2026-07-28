@@ -178,13 +178,13 @@ namespace NMediaManager
             stayAwake( true );
         }
 
-        void CBasePage::load( const QString &dirName )
+        void CBasePage::load( const QString &dirName, bool clearCache )
         {
             fDirName = dirName;
-            load( false );
+            load( false, clearCache );
         }
 
-        void CBasePage::load( bool postRun )
+        void CBasePage::load( bool postRun, bool clearCache )
         {
             if ( !fImpl )
                 return;
@@ -207,7 +207,7 @@ namespace NMediaManager
             appendSeparatorToLog();
             appendToLog( tr( "Loading Directory: '%1'" ).arg( fDirName ), true );
             appendSeparatorToLog();
-            clearDirModel();
+            clearDirModel( clearCache );
 
             filesView()->setModel( getDirModel() );
             setupModel();
@@ -255,7 +255,7 @@ namespace NMediaManager
                 fModel->showProcessResults( actionErrorName(), tr( "Issues:" ), QStyle::SP_MessageBoxCritical, QDialogButtonBox::Ok, this );
             }
             if ( !canceled && reloadModel )
-                load( true );
+                load( true, false );
             stayAwake( false );
         }
 
@@ -424,10 +424,10 @@ namespace NMediaManager
             return fModel.get();
         }
 
-        void CBasePage::clearDirModel()
+        void CBasePage::clearDirModel( bool clearCache )
         {
             if ( fModel )
-                fModel->clear();
+                fModel->clear( clearCache );
         }
 
         void CBasePage::stayAwake( bool enable )

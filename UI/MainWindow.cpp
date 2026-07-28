@@ -456,13 +456,6 @@ namespace NMediaManager
             }
         }
 
-        void CMainWindow::clearDirModel()
-        {
-            auto basePage = getCurrentBasePage();
-            if ( basePage )
-                return basePage->clearDirModel();
-        }
-
         bool CMainWindow::canRun() const
         {
             auto basePage = getCurrentBasePage();
@@ -485,7 +478,8 @@ namespace NMediaManager
             if ( basePage )
             {
                 fImpl->actionRun->setEnabled( false );
-                basePage->load( fImpl->directory->currentText() );
+                bool clearCache = QGuiApplication::keyboardModifiers() & Qt::ControlModifier;
+                basePage->load( fImpl->directory->currentText(), clearCache );
             }
         }
 

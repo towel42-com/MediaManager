@@ -113,7 +113,7 @@ namespace NMediaManager
             void fileNameChanged( NTowel42Utils::CDelayComboBox *comboBox, const QString &text, bool andExecute );
             void fileNameChanged();
             bool canLoad() const;
-            virtual void load( bool postRun ) override;
+            virtual void load( bool postRun, bool clearCache ) override;
             void clear();
             void formatBIFTable();
             void loadSettings( bool init );

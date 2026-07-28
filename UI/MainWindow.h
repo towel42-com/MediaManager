@@ -105,7 +105,6 @@ namespace NMediaManager
             std::shared_ptr< STabDef > addPage( std::shared_ptr< STabDef > tabDef );
 
             CBasePage *getCurrentBasePage() const;
-            void clearDirModel();
 
             bool isActivePageFileBased() const;
             bool isActivePageDirBased() const;

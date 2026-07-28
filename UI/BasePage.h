@@ -56,20 +56,22 @@ namespace NMediaManager
         class CBasePage : public QWidget
         {
             Q_OBJECT
+        protected:
+            virtual void load( bool postRun, bool clearCache );
+
         public:
             CBasePage( const QString &pageName, QWidget *parent = nullptr );
             virtual ~CBasePage() override;
 
-            virtual void load( const QString &dirName );
-            virtual void load( bool postRun );
+            virtual void load( const QString &dirName, bool clearCache );
 
-            void clearDirModel();
+            void clearDirModel( bool clearCache );
 
             virtual void run( const QModelIndex &idx );
             virtual bool canRun() const;
 
             QTreeView *filesView() const;
-            
+
             virtual void appendSeparatorToLog();
             virtual void appendToLog( const QString &msg, bool stdOut ) final;
             virtual void appendToLog( const QString &msg, std::pair< QString, bool > &previousText, bool stdOut, bool fromProcess );
@@ -108,6 +110,7 @@ namespace NMediaManager
             void sigLoadFinished( bool canceled );
             void sigDialogClosed();
             void sigStatusMessage( const QString &status, bool debugData );
+
         protected:
             virtual QMenu *menuForIndex( const QModelIndex &idx ) final;
             virtual void openLocation( const QModelIndex &idx ) final;

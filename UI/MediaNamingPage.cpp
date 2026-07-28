@@ -72,7 +72,7 @@ namespace NMediaManager
         void CMediaNamingPage::postNonQueuedRun( bool finalStep, bool canceled )
         {
             if ( finalStep && !canceled )
-                load( true );
+                load( true, false );
         }
 
         bool CMediaNamingPage::extendContextMenu( QMenu *menu, const QModelIndex &idx )

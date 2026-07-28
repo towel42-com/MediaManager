@@ -74,7 +74,7 @@ namespace NMediaManager
         void CTagsPage::postNonQueuedRun( bool finalStep, bool canceled )
         {
             if ( finalStep && !canceled )
-                load( true );
+                load( true, false );
         }
 
         void CTagsPage::postLoadFinished( bool canceled )
