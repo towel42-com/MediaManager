@@ -62,12 +62,13 @@ namespace NMediaManager
                 bool mediaOK() const;
                 bool mediaQueued() const;
 
-                bool transcodeNeeded() const { return fWrongVideoCodec || fWrongAudioCodec || fDefaultAudioNotAAC || fWrongContainer; }
+                bool transcodeNeeded() const { return fWrongVideoCodec || fWrongAudioCodec || fDefaultAudioNotAAC || fWrongContainer || fIsDVProfile5; }
 
+                bool isDVProfile5() const { return fIsDVProfile5; }
                 bool bitrateTooHigh() const { return fBitrateTooHigh; }   // when true create a secondary video at lower bitrate
                 bool resolutionTooHigh() const { return fVideoResolutionTooHigh; }   // when true create a secondary video at lower resolution
 
-                bool containerOnly() const { return fWrongContainer && !fWrongVideoCodec && !fWrongAudioCodec && !fDefaultAudioNotAAC; }
+                bool containerOnly() const { return fWrongContainer && !fWrongVideoCodec && !fIsDVProfile5 && !fWrongAudioCodec && !fDefaultAudioNotAAC; }
 
                 bool wrongContainer() const { return fWrongContainer; }   // when true container format needs changing
                 bool defaultAudioNotAAC51() const { return fDefaultAudioNotAAC; }   // when true aac audio is missing and needs to be added
@@ -80,6 +81,7 @@ namespace NMediaManager
                 bool fMediaOK{ false };
                 bool fMediaQueued{ false };
                 bool fWrongVideoCodec{ false };
+                bool fIsDVProfile5{ false };
                 bool fBitrateTooHigh{ false };
                 bool fVideoResolutionTooHigh{ false };
                 bool fWrongAudioCodec{ false };

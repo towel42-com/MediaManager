@@ -57,7 +57,7 @@ namespace NMediaManager
             STranscodeNeeded::STranscodeNeeded( std::shared_ptr< NTowel42MediaUtils::CMediaInfo > mediaInfo, const CPreferences *prefs ) :
                 fMediaInfo( mediaInfo )
             {
-                fWrongContainer = fWrongVideoCodec = fBitrateTooHigh = fWrongAudioCodec = fDefaultAudioNotAAC = false;
+                fWrongContainer = fWrongVideoCodec = fBitrateTooHigh = fWrongAudioCodec = fDefaultAudioNotAAC = fIsDVProfile5 = false;
                 if ( !mediaInfo )
                     return;
 
@@ -68,6 +68,7 @@ namespace NMediaManager
 
                 fWrongContainer = prefs->getConvertMediaContainer() && !prefs->isEncoderFormat( mediaInfo, prefs->getConvertMediaToContainer() );
                 fWrongVideoCodec = !mediaInfo->hasVideoCodec( prefs->getTranscodeToVideoCodec(), prefs->getMediaFormats() ) && ( fWrongContainer || !prefs->getOnlyTranscodeVideoOnFormatChange() );
+                fIsDVProfile5 = mediaInfo->isDVProfile5();
 
                 if ( prefs->getGenerateLowBitrateVideo() )
                 {
@@ -114,6 +115,12 @@ namespace NMediaManager
                 if ( wrongContainer() )
                 {
                     auto msg = NPreferences::addStyleToText( QObject::tr( "File <b>'%1'</b> is not using a %2 container" ).arg( QFileInfo( fMediaInfo->fileName() ).fileName() ).arg( NPreferences::NCore::CPreferences::instance()->getConvertMediaToContainer() ) );
+                    return msg;
+                }
+
+                if ( isDVProfile5() )
+                {
+                    auto msg = NPreferences::addStyleToText( QObject::tr( "File <b>'%1'</b> is not using a compatible HDR profile version" ).arg( QFileInfo( fMediaInfo->fileName() ).fileName() ) );
                     return msg;
                 }
                 return {};
