@@ -198,7 +198,7 @@ namespace NMediaManager
             virtual ~CDirModel() override;
 
             bool isDir( const QModelIndex &idx ) const;
-            QFileInfo fileInfo( const QModelIndex &idx ) const;
+            QFileInfo fileInfo( const QModelIndex &idx, bool ignoreDeleted = false ) const;
             QStandardItem *deleteIfProtoType( QStandardItem *item ) const;
             QString filePath( const QModelIndex &idx ) const;
 
@@ -209,7 +209,7 @@ namespace NMediaManager
             QFileInfo fileInfo( const QStandardItem *item ) const;
             QString filePath( const QStandardItem *item ) const;
 
-            QStandardItem *getPathItemFromIndex( const QModelIndex &idx ) const;
+            QStandardItem *getPathItemFromIndex( const QModelIndex &idx, bool ignoreDeleted = false ) const;
 
         public:
             bool isFileItemDeleted( const QFileInfo &fi ) const;
@@ -246,7 +246,7 @@ namespace NMediaManager
             std::pair< QString, bool > &stdOutRemaining() { return fStdOutRemaining; }
             std::pair< QString, bool > &stdErrRemaining() { return fStdErrRemaining; }
 
-            virtual void clear();
+            virtual void clear( bool clearCache );
 
             virtual bool showMediaItemsContextMenu() const { return showMediaItems(); };
             virtual bool showMediaItems() const { return false; };
@@ -411,7 +411,7 @@ namespace NMediaManager
 
             // model overrides during iteration
             virtual bool preDirFunction( const QFileInfo & /*dirInfo*/, bool /*countOnly*/ ) { return true; };
-            virtual void postDirFunction( bool /*aOK*/, const QFileInfo & /*dirInfo*/, TParentTree & /*parentTree*/, bool /*countOnly*/ ){};
+            virtual void postDirFunction( bool /*aOK*/, const QFileInfo & /*dirInfo*/, TParentTree & /*parentTree*/, bool /*countOnly*/ ) {};
 
             virtual bool preFileFunction( const QFileInfo &fileInfo, std::unordered_set< QString > &alreadyAdded, TParentTree &tree, bool countOnly ) = 0;
             virtual void postFileFunction( bool aOK, const QFileInfo &fileInfo, TParentTree &tree, bool countOnly ) = 0;
