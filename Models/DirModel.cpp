@@ -1174,7 +1174,11 @@ namespace NMediaManager
         {
             fPathMapping.clear();
             if ( clearCache )
+            {
                 fItemStatusCache.clear();
+                NTowel42MediaUtils::CMediaInfo::clearCache();
+            }
+
             QStandardItemModel::clear();
         }
 
