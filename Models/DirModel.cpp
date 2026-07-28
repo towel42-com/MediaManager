@@ -251,7 +251,7 @@ namespace NMediaManager
         void CDirModel::preLoad()
         {
             setIsLoading( true );
-            clear();
+            clear( false );
             setHorizontalHeaderLabels( headers() );
             preLoad( filesView() );
         }
@@ -829,15 +829,15 @@ namespace NMediaManager
             auto parentLhs = idx.parent();
             if ( parentLhs.isValid() )
             {
-                auto parentRhs = index( idx.row(), columnCount( parentLhs ), parentLhs.parent() );
+                auto parentRhs = index( idx.row(), columnCount( parentLhs ) - 1, parentLhs.parent() );
                 emit const_cast< CDirModel * >( this )->dataChanged( parentLhs, parentRhs );
             }
             return nullptr;
         }
 
-        QStandardItem *CDirModel::getPathItemFromIndex( const QModelIndex &idx ) const
+        QStandardItem *CDirModel::getPathItemFromIndex( const QModelIndex &idx, bool ignoreDeleted /*= false*/ ) const
         {
-            if ( !idx.isValid() || ( isFileItemDeleted( idx ) ) )
+            if ( !idx.isValid() || ( !ignoreDeleted && isFileItemDeleted( idx ) ) )
                 return nullptr;
 
             auto retVal = itemFromIndex( idx );
@@ -846,7 +846,10 @@ namespace NMediaManager
 
         bool CDirModel::isFileItemDeleted( const QModelIndex &idx ) const
         {
-            return isFileItemDeleted( fileInfo( idx ) );
+            auto fi = fileInfo( idx, true );
+            if ( !fi.exists() && fi.absoluteFilePath().isEmpty() )
+                return false;
+            return isFileItemDeleted( fi );
         }
 
         bool CDirModel::isFileItemDeleted( const QFileInfo &fi ) const
@@ -907,9 +910,9 @@ namespace NMediaManager
             return {};
         }
 
-        QFileInfo CDirModel::fileInfo( const QModelIndex &idx ) const
+        QFileInfo CDirModel::fileInfo( const QModelIndex &idx, bool ignoreDeleted /*= false*/ ) const
         {
-            auto item = getPathItemFromIndex( idx );
+            auto item = getPathItemFromIndex( idx, ignoreDeleted );
             return fileInfo( item );
         }
 
@@ -1167,9 +1170,11 @@ namespace NMediaManager
             return retVal;
         }
 
-        void CDirModel::clear()
+        void CDirModel::clear( bool clearCache )
         {
             fPathMapping.clear();
+            if ( clearCache )
+                fItemStatusCache.clear();
             QStandardItemModel::clear();
         }
 
@@ -1512,6 +1517,7 @@ namespace NMediaManager
             if ( !item || !item->parent() )
                 return;
             auto fi = fileInfo( item );
+            fFileItemsDeleted.insert( fi );
 
             auto absPath = fi.absoluteFilePath();
             fMessagesForFiles.erase( absPath );
@@ -2076,6 +2082,9 @@ namespace NMediaManager
 
         void CDirModel::slotDataChanged( const QModelIndex &start, const QModelIndex &end, const QVector< int > & /*roles*/ )
         {
+            if ( !start.isValid() || !end.isValid() )
+                return;
+
             auto parent = start.parent();
             if ( end.parent() != start.parent() )
                 return;
@@ -2085,9 +2094,6 @@ namespace NMediaManager
                 for ( int jj = start.column(); jj <= end.column(); ++jj )
                 {
                     auto index = this->index( ii, jj, parent );
-                    auto item = itemFromIndex( index );
-                    if ( item )
-                        item->setData( data( index, Qt::DisplayRole ), Qt::DisplayRole );
                     auto fi = fileInfo( index );
 
                     clearPathStatusCache( fi );
