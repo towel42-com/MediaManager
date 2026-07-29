@@ -191,6 +191,8 @@ namespace NMediaManager
             QTimer::singleShot( 0, this, &CMainWindow::slotWindowChanged );
             QTimer::singleShot( 0, this, &CMainWindow::slotValidateDefaults );
             connect( NTowel42MediaUtils::CMediaInfoMgr::instance(), &NTowel42MediaUtils::CMediaInfoMgr::sigStatusMessage, this, &CMainWindow::slotStatusMessage );
+
+            connect( NTowel42MediaUtils::CMediaInfoMgr::instance(), &NTowel42MediaUtils::CMediaInfoMgr::sigFinishedProcessingMedia, [ this ]() { slotLoadFinished( false ); } );
         }
 
         CMainWindow::~CMainWindow()
