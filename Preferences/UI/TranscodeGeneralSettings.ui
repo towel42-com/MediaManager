@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>373</width>
-    <height>279</height>
+    <width>622</width>
+    <height>310</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,9 +15,16 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
+    <widget class="QCheckBox" name="hideNoTranscodeNecessary">
+     <property name="text">
+      <string>Hide media files from directory listing that do not need transcoding?</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QGroupBox" name="convertMediaFormat">
      <property name="title">
-      <string>Convert Media files into Format?</string>
+      <string>Convert Media files into Container Format?</string>
      </property>
      <property name="checkable">
       <bool>true</bool>
@@ -26,7 +33,7 @@
       <item row="0" column="0">
        <widget class="QLabel" name="label">
         <property name="text">
-         <string>Format:</string>
+         <string>Container Format:</string>
         </property>
        </widget>
       </item>
@@ -39,14 +46,14 @@
          </size>
         </property>
         <property name="sizeAdjustPolicy">
-         <enum>QComboBox::AdjustToContentsOnFirstShow</enum>
+         <enum>QComboBox::SizeAdjustPolicy::AdjustToContentsOnFirstShow</enum>
         </property>
        </widget>
       </item>
       <item row="0" column="2">
        <spacer name="horizontalSpacer">
         <property name="orientation">
-         <enum>Qt::Horizontal</enum>
+         <enum>Qt::Orientation::Horizontal</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
@@ -91,7 +98,7 @@
       <item row="0" column="3">
        <spacer name="horizontalSpacer_9">
         <property name="orientation">
-         <enum>Qt::Horizontal</enum>
+         <enum>Qt::Orientation::Horizontal</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
@@ -124,7 +131,7 @@
    <item>
     <spacer name="verticalSpacer_7">
      <property name="orientation">
-      <enum>Qt::Vertical</enum>
+      <enum>Qt::Orientation::Vertical</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
@@ -137,8 +144,11 @@
   </layout>
  </widget>
  <tabstops>
+  <tabstop>hideNoTranscodeNecessary</tabstop>
   <tabstop>convertMediaFormat</tabstop>
   <tabstop>mediaFormats</tabstop>
+  <tabstop>generateLowBitrateVideo</tabstop>
+  <tabstop>bitrateThreshold</tabstop>
  </tabstops>
  <resources/>
  <connections/>
