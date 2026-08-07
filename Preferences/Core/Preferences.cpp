@@ -202,7 +202,6 @@ namespace NMediaManager
                 connect( NTowel42MediaUtils::CMediaInfoMgr::instance(), &NTowel42MediaUtils::CMediaInfoMgr::sigMediaFinished, this, &CPreferences::sigMediaInfoFinished );
                 connect( NTowel42MediaUtils::CMediaInfoMgr::instance(), &NTowel42MediaUtils::CMediaInfoMgr::sigMediaQueued, this, &CPreferences::sigMediaInfoQueued );
                 connect( NTowel42MediaUtils::CMediaInfoMgr::instance(), &NTowel42MediaUtils::CMediaInfoMgr::sigMediaLoaded, this, &CPreferences::sigMediaInfoLoaded );
-
             }
 
             CPreferences::~CPreferences()
@@ -1944,6 +1943,21 @@ namespace NMediaManager
             QStringList CPreferences::getDecoderExtensionsForFormat( const QString &formatName, const QStringList &exclude ) const
             {
                 return getMediaFormats()->getDecoderExtensionsForFormat( formatName, exclude );
+            }
+
+            void CPreferences::setHideNoTranscodeNecessary( bool value )
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eTranscodePrefs ) );
+                settings.setValue( "HideNoTranscodeNecessary", value );
+                emitSigPreferencesChanged( EPreferenceType::eTranscodePrefs );
+            }
+
+            bool CPreferences::getHideNoTranscodeNecessary() const
+            {
+                QSettings settings;
+                settings.beginGroup( toString( EPreferenceType::eTranscodePrefs ) );
+                return settings.value( "HideNoTranscodeNecessary", true ).toBool();
             }
 
             void CPreferences::setForceTranscode( bool value )

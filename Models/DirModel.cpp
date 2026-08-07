@@ -817,21 +817,26 @@ namespace NMediaManager
             return QFileInfo( path );
         }
 
-        QStandardItem *CDirModel::deleteIfProtoType( QStandardItem *item ) const
+        bool CDirModel::isPrototype( QStandardItem *item ) const
         {
-            if ( !item || !item->data( eIsProtoTypeRole ).toBool() )
+            return item && item->data( eIsProtoTypeRole ).toBool();
+        }
+
+        QStandardItem *CDirModel::deleteIfPrototype( QStandardItem *item ) const
+        {
+            if ( !isPrototype( item ) )
                 return item;
 
             auto idx = indexFromItem( item );
             const_cast< CDirModel * >( this )->blockSignals( true );
             delete item;
-            const_cast< CDirModel * >( this )->blockSignals( false );
             auto parentLhs = idx.parent();
             if ( parentLhs.isValid() )
             {
                 auto parentRhs = index( idx.row(), columnCount( parentLhs ) - 1, parentLhs.parent() );
                 emit const_cast< CDirModel * >( this )->dataChanged( parentLhs, parentRhs );
             }
+            const_cast< CDirModel * >( this )->blockSignals( false );
             return nullptr;
         }
 
@@ -841,7 +846,7 @@ namespace NMediaManager
                 return nullptr;
 
             auto retVal = itemFromIndex( idx );
-            return deleteIfProtoType( itemFromIndex( idx ) );
+            return deleteIfPrototype( retVal );
         }
 
         bool CDirModel::isFileItemDeleted( const QModelIndex &idx ) const
@@ -2098,9 +2103,7 @@ namespace NMediaManager
                 for ( int jj = start.column(); jj <= end.column(); ++jj )
                 {
                     auto index = this->index( ii, jj, parent );
-                    auto fi = fileInfo( index );
-
-                    clearPathStatusCache( fi );
+                    clearPathStatusCache( index );
                     clearItemStatusCache( index );
                 }
             }
@@ -2292,6 +2295,15 @@ namespace NMediaManager
             }
 
             fItemStatusCache.erase( pos );
+        }
+
+
+        void CDirModel::clearPathStatusCache( const QModelIndex &idx) const
+        {
+            (void)idx;
+            //auto pos = fPathStatusCache.find( fi.absoluteFilePath() );
+            //if ( pos != fPathStatusCache.end() )
+            //    fPathStatusCache.erase( pos );
         }
 
         void CDirModel::clearPathStatusCache( const QFileInfo &fi ) const

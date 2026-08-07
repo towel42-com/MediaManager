@@ -175,6 +175,9 @@ namespace NMediaManager
                 QStringList getHighBitrateTranscodeArgs( std::shared_ptr< NTowel42MediaUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName, const std::list< NMediaManager::NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NMediaManager::NCore::SLanguageInfo, QString > > &subIdxFiles ) const;
                 QStringList getHighResolutionTranscodeArgs( std::shared_ptr< NTowel42MediaUtils::CMediaInfo > mediaInfo, const QString &srcName, const QString &destName, const std::list< NMediaManager::NCore::SLanguageInfo > &srtFiles, const std::list< std::pair< NMediaManager::NCore::SLanguageInfo, QString > > &subIdxFiles ) const;
 
+                void setHideNoTranscodeNecessary( bool value );
+                bool getHideNoTranscodeNecessary() const;
+
                 std::shared_ptr< NTowel42MediaUtils::CMediaInfo > getMediaInfo( const QFileInfo &fi, bool force = false );
                 std::shared_ptr< NTowel42MediaUtils::CMediaInfo > getMediaInfo( const QString &fileName, bool force = false );
 

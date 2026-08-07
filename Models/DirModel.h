@@ -199,7 +199,8 @@ namespace NMediaManager
 
             bool isDir( const QModelIndex &idx ) const;
             QFileInfo fileInfo( const QModelIndex &idx, bool ignoreDeleted = false ) const;
-            QStandardItem *deleteIfProtoType( QStandardItem *item ) const;
+            bool isPrototype( QStandardItem *item ) const;
+            QStandardItem *deleteIfPrototype( QStandardItem *item ) const;
             QString filePath( const QModelIndex &idx ) const;
 
             virtual bool ignoreExtrasOnSearch() const { return false; }
@@ -343,6 +344,7 @@ namespace NMediaManager
             virtual void clearItemStatusCache( const QModelIndex &idx ) const;   // const due to possible (often) calls in ::data
             virtual void clearPathStatusCache( const QFileInfo &fi ) const;
             virtual void clearPathStatusCache( const QString &path ) const;
+	        virtual void clearPathStatusCache( const QModelIndex &idx ) const;
 
             virtual QString getMediaYear( const QFileInfo &fi ) const final;   // empty string if not found
             virtual std::optional< QDate > getMediaDate( const QString &path, bool closest ) const;

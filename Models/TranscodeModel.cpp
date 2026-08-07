@@ -136,7 +136,7 @@ namespace NMediaManager
             auto fi = fileInfo( item );
             if ( fi.isFile() )
             {
-                if ( !itemNeedsTranscoding( item ) )
+                if ( NPreferences::NCore::CPreferences::instance()->getHideNoTranscodeNecessary() && !itemNeedsTranscoding( item ) )
                 {
                     emit sigStatusMessage( tr( "Removing '%1' from processing list as it doesn't need transcoding" ).arg( rootPath().relativeFilePath( fi.absoluteFilePath() ) ), false );
                     deleteItem( item );
@@ -224,7 +224,7 @@ namespace NMediaManager
             auto fi = fileInfo( item );
             if ( fi.isFile() )
             {
-                if ( !itemNeedsTranscoding( item ) )
+                if ( NPreferences::NCore::CPreferences::instance()->getHideNoTranscodeNecessary() && !itemNeedsTranscoding( item ) )
                 {
                     retVal.insert( item );
                 }

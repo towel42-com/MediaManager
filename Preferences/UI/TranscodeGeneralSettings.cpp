@@ -60,6 +60,7 @@ namespace NMediaManager
 
                 fImpl->generateLowBitrateVideo->setChecked( NPreferences::NCore::CPreferences::instance()->getGenerateLowBitrateVideo() );
                 fImpl->bitrateThreshold->setValue( NPreferences::NCore::CPreferences::instance()->getBitrateThresholdPercentage() );
+                fImpl->hideNoTranscodeNecessary->setChecked( NPreferences::NCore::CPreferences::instance()->getHideNoTranscodeNecessary() );
             }
 
             void CTranscodeGeneralSettings::save()
@@ -69,6 +70,7 @@ namespace NMediaManager
 
                 NPreferences::NCore::CPreferences::instance()->setGenerateLowBitrateVideo( fImpl->generateLowBitrateVideo->isChecked() );
                 NPreferences::NCore::CPreferences::instance()->setBitrateThresholdPercentage( fImpl->bitrateThreshold->value() );
+                NPreferences::NCore::CPreferences::instance()->setHideNoTranscodeNecessary( fImpl->hideNoTranscodeNecessary->isChecked() );
             }
        }
     }
