@@ -25,6 +25,7 @@
 
 #include "DirModel.h"
 #include "Core/PatternInfo.h"
+#include <QDateTime>
 
 namespace NMediaManager
 {
@@ -93,8 +94,7 @@ namespace NMediaManager
             std::shared_ptr< NCore::CTransformResult > getTransformResult( const QString &path, bool checkParents ) const;
             std::shared_ptr< NCore::CTransformResult > getTransformResult( const QFileInfo &path, bool checkParents ) const;
 
-            virtual std::optional< QDate > getMediaDate( const QFileInfo &fi, bool closest ) const override;
-            virtual std::optional< QDate > getMediaDate( const QModelIndex &idx, bool closest ) const override { return CDirModel::getMediaDate( idx, closest ); }
+            virtual std::optional< QDate > getMediaDateForFileInfo( const QFileInfo &fi ) const override;
         public Q_SLOTS:
             void slotPatternChanged();
 

@@ -309,6 +309,17 @@ namespace NMediaManager
             virtual void slotMediaInfoLoaded( const QString &path );
             virtual void slotMediaInfoFinished( const QString &path );
 
+        public:
+            virtual QString getMediaYear( const QFileInfo &fi ) const final;   // empty string if not found
+            virtual std::optional< QDate > getMediaDateForFileInfo( const QFileInfo &fi ) const;
+            virtual std::optional< QDate > getMediaDate( const QString &path ) const final;
+            virtual std::optional< QDate > getMediaDate( const QFileInfo &fi ) const final;
+            virtual std::optional< QDate > getMediaDate( const QModelIndex &index ) const final;
+
+            virtual std::list< QDate > getMediaDates( const QString &path ) const;
+            virtual std::list< QDate > getMediaDates( const QFileInfo &fi ) const;
+            virtual std::list< QDate > getMediaDates( const QModelIndex &index ) const;
+
         protected:
             virtual QString getSecondaryProgressFormat( NTowel42Utils::CDoubleProgressDlg *progressDlg ) const;
             virtual std::optional< std::pair< uint64_t, std::optional< uint64_t > > > getCurrentProgress( const QString & /*string*/ ) { return {}; }
@@ -344,12 +355,7 @@ namespace NMediaManager
             virtual void clearItemStatusCache( const QModelIndex &idx ) const;   // const due to possible (often) calls in ::data
             virtual void clearPathStatusCache( const QFileInfo &fi ) const;
             virtual void clearPathStatusCache( const QString &path ) const;
-	        virtual void clearPathStatusCache( const QModelIndex &idx ) const;
-
-            virtual QString getMediaYear( const QFileInfo &fi ) const final;   // empty string if not found
-            virtual std::optional< QDate > getMediaDate( const QString &path, bool closest ) const;
-            virtual std::optional< QDate > getMediaDate( const QFileInfo &fi, bool closest ) const;
-            virtual std::optional< QDate > getMediaDate( const QModelIndex &index, bool closest ) const;
+            virtual void clearPathStatusCache( const QModelIndex &idx ) const;
 
             bool progressCanceled() const;
 

@@ -1821,48 +1821,73 @@ namespace NMediaManager
 
         QString CDirModel::getMediaYear( const QFileInfo &fi ) const
         {
-            auto date = getMediaDate( fi, true );
+            auto date = getMediaDate( fi );
             if ( date.has_value() && date.value().isValid() )
                 return QString::number( date.value().year() );
             return {};
         }
 
-        std::optional< QDate > CDirModel::getMediaDate( const QFileInfo &fi, bool closest ) const
+        std::optional< QDate > CDirModel::getMediaDateForFileInfo( const QFileInfo &fi ) const
+        {
+            auto baseName = fi.fileName();
+            if ( baseName.isEmpty() )
+                return {};
+            NCore::SSearchTMDBInfo searchInfo( baseName, {} );
+            if ( searchInfo.releaseDateSet() )
+            {
+                return searchInfo.releaseDate().first;
+            }
+            return {};
+        }
+
+        std::optional< QDate > CDirModel::getMediaDate( const QFileInfo &fi ) const
+        {
+            auto releaseDates = getMediaDates( fi );
+            if ( releaseDates.empty() )
+                return {};
+
+            return releaseDates.back();
+        }
+
+        std::list< QDate > CDirModel::getMediaDates( const QFileInfo &fi ) const
         {
             QDir searchDir;
-            std::optional< QDate > retVal;
+            std::list< QDate > retVal;
 
             if ( fi.isFile() )
-            {
                 searchDir = fi.absoluteDir();
-            }
+            else
+                searchDir = QDir( fi.absoluteFilePath() );
 
             while ( !isRootPath( searchDir ) )
             {
-                auto baseName = searchDir.dirName();
-                if ( baseName.isEmpty() )
-                    break;
-                NCore::SSearchTMDBInfo searchInfo( baseName, {} );
-                if ( searchInfo.releaseDateSet() )
-                {
-                    retVal = searchInfo.releaseDate().first;
-                    if ( closest )
-                        break;
-                }
+                auto mediaDate = getMediaDateForFileInfo( QFileInfo( searchDir.absolutePath() ) );
+                if ( mediaDate.has_value() )
+                    retVal.push_front( mediaDate.value() );
                 if ( !searchDir.cdUp() )
                     break;
             }
             return retVal;
         }
 
-        std::optional< QDate > CDirModel::getMediaDate( const QModelIndex &index, bool closest ) const
+        std::optional< QDate > CDirModel::getMediaDate( const QModelIndex &index ) const
         {
-            return getMediaDate( fileInfo( index ), closest );
+            return getMediaDate( fileInfo( index ) );
         }
 
-        std::optional< QDate > CDirModel::getMediaDate( const QString &path, bool closest ) const
+        std::optional< QDate > CDirModel::getMediaDate( const QString &path ) const
         {
-            return getMediaDate( QFileInfo( path ), closest );
+            return getMediaDate( QFileInfo( path ) );
+        }
+
+        std::list< QDate > CDirModel::getMediaDates( const QModelIndex &index ) const
+        {
+            return getMediaDates( fileInfo( index ) );
+        }
+
+        std::list< QDate > CDirModel::getMediaDates( const QString &path ) const
+        {
+            return getMediaDates( QFileInfo( path ) );
         }
 
         bool CDirModel::progressCanceled() const
@@ -2297,8 +2322,7 @@ namespace NMediaManager
             fItemStatusCache.erase( pos );
         }
 
-
-        void CDirModel::clearPathStatusCache( const QModelIndex &idx) const
+        void CDirModel::clearPathStatusCache( const QModelIndex &idx ) const
         {
             (void)idx;
             //auto pos = fPathStatusCache.find( fi.absoluteFilePath() );

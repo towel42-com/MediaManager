@@ -191,7 +191,7 @@ namespace NMediaManager
             if ( !isMediaFile( fileInfo ) )
                 return {};
 
-            auto mediaDate = getMediaDate( fileInfo, true );
+            auto mediaDate = getMediaDate( fileInfo );
             //qDebug() << mediaDate;
 
             QRegularExpression regExp;

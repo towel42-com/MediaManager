@@ -38,6 +38,7 @@
 #include <QMenu>
 #include <optional>
 #include <memory>
+#include <string>
 
 namespace NMediaManager
 {
@@ -184,26 +185,33 @@ namespace NMediaManager
 
                     if ( search )
                     {
-                        auto titleInfo = model()->getTransformResult( searchIndex, false );
-                        auto searchInfo = std::make_shared< NCore::SSearchTMDBInfo >( name, titleInfo );
-                        auto releaseDate = model()->getMediaDate( index, true );
-                        if ( releaseDate.has_value() )
-                            searchInfo->setReleaseDate( releaseDate.value().toString() );
-                        if ( forcedMediaType.has_value() )
-                            searchInfo->setMediaType( forcedMediaType.value() );
+                        auto releaseDates = model()->getMediaDates( index );
+                        QString msg;
+                        QString fullMsg;
 
-                        searchInfo->setExactMatchOnly( NPreferences::NCore::CPreferences::instance()->getExactMatchesOnly() );
-                        if ( mediaType.has_value() )
-                            searchInfo->setMediaType( mediaType.value() );
+                        for ( auto &&releaseDate : releaseDates )
+                        {
+                            auto titleInfo = model()->getTransformResult( searchIndex, false );
+                            auto searchInfo = std::make_shared< NCore::SSearchTMDBInfo >( name, titleInfo );
+                            searchInfo->setReleaseDate( releaseDate.toString() );
+                            if ( forcedMediaType.has_value() )
+                                searchInfo->setMediaType( forcedMediaType.value() );
 
-                        auto msg = tr( "Adding Background Search for '%1'" ).arg( QDir( fDirName ).relativeFilePath( path ) );
-                        auto fullMsg = msg + QStringLiteral( "\n\t%1\n" ).arg( searchInfo->toString( false ) );
-                        appendToLog( fullMsg, true );
-                        fProgressDlg->setLabelText( msg );
+                            searchInfo->setExactMatchOnly( NPreferences::NCore::CPreferences::instance()->getExactMatchesOnly() );
+                            if ( mediaType.has_value() )
+                                searchInfo->setMediaType( mediaType.value() );
+
+                            auto msg = tr( "Adding Background Search for '%1'" ).arg( QDir( fDirName ).relativeFilePath( path ) );
+                            auto fullMsg = msg + QStringLiteral( "\n\t%1\n" ).arg( searchInfo->toString( false ) );
+                            fSearchTMDB->addSearch( path, searchInfo );
+                        }
+
+                        if ( !fullMsg.isEmpty() )
+                            appendToLog( fullMsg, true );
+                        if ( !msg.isEmpty() )
+                            fProgressDlg->setLabelText( msg );
                         fProgressDlg->setValue( fProgressDlg->value() + 1 );
                         qApp->processEvents();
-
-                        fSearchTMDB->addSearch( path, searchInfo );
                     }
                     retVal = true;
                 }
