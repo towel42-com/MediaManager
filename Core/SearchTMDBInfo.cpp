@@ -696,6 +696,7 @@ namespace NMediaManager
         bool SSearchTMDBInfo::hasDiskNumber( QString &searchString, int &diskNum, std::shared_ptr< CTransformResult > searchResult )
         {
             //  insert cache cache
+            diskNum = -1;
             static std::unordered_map< QString, std::tuple< bool, QString, int > > sCache;
             auto pos = sCache.find( searchString );
             if ( pos != sCache.end() )

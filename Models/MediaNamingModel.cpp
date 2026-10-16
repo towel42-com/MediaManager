@@ -220,7 +220,7 @@ namespace NMediaManager
                 return;
 
             auto name = parentIdx.data().toString();
-            int diskNumber;
+            int diskNumber = -1;
             if ( NCore::SSearchTMDBInfo::hasDiskNumber( name, diskNumber, {} ) )
             {
                 auto childPaths = getDiskTitles( parentIdx );
