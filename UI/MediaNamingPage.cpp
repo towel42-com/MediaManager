@@ -189,6 +189,21 @@ namespace NMediaManager
                         QString msg;
                         QString fullMsg;
 
+                        if(releaseDates.empty())
+                        {
+                            auto titleInfo = model()->getTransformResult( searchIndex, false );
+                            auto searchInfo = std::make_shared< NCore::SSearchTMDBInfo >( name, titleInfo );
+                            if ( forcedMediaType.has_value() )
+                                searchInfo->setMediaType( forcedMediaType.value() );
+
+                            searchInfo->setExactMatchOnly( NPreferences::NCore::CPreferences::instance()->getExactMatchesOnly() );
+                            if ( mediaType.has_value() )
+                                searchInfo->setMediaType( mediaType.value() );
+
+                            auto msg = tr( "Adding Background Search for '%1'" ).arg( QDir( fDirName ).relativeFilePath( path ) );
+                            auto fullMsg = msg + QStringLiteral( "\n\t%1\n" ).arg( searchInfo->toString( false ) );
+                            fSearchTMDB->addSearch( path, searchInfo );
+                        }
                         for ( auto &&releaseDate : releaseDates )
                         {
                             auto titleInfo = model()->getTransformResult( searchIndex, false );
