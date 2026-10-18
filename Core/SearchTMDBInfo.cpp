@@ -214,6 +214,8 @@ namespace NMediaManager
             auto curr = smartTrim( inString.mid( posStart ) );
             retVal << curr;
             retVal.removeAll( QString() );
+            if ( curr.isEmpty() && retVal.isEmpty() )
+                return QStringList() << QString();
             return retVal;
         }
 
